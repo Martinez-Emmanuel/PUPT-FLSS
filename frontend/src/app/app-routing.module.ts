@@ -7,6 +7,16 @@ const routes: Routes = [
     loadChildren: () =>
       import('./auth/auth-routing.module').then((m) => m.AuthRoutingModule),
   },
+  {
+    path: 'core',
+    loadChildren: () =>
+      import('./core/core-routing.module').then((m) => m.CoreRoutingModule),
+  },
+  {
+    path: 'shared',
+    loadChildren: () =>
+      import('./shared/shared-routing.module').then((m) => m.SharedRoutingModule),
+  },
   { path: '', redirectTo: '/auth/login', pathMatch: 'full' },
   { path: '**', redirectTo: '/auth/login' },
 ];
