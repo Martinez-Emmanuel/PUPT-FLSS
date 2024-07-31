@@ -1,1 +1,85 @@
-<p>login works!</p>
+<div id="login-container" [style.background-image]="getBackgroundImage()">
+  <div class="login-image-section">
+    <app-slideshow [images]="slideshowImages"></app-slideshow>
+  </div>
+  <div class="login-form-section">
+    <!-- Login Header -->
+    <div id="login_header">
+      <img
+        src="assets/images/pup_taguig_logo.svg"
+        alt="University Logo"
+        class="university-logo"
+      />
+      <div class="header-text">
+        <div class="university-name">
+          POLYTECHNIC UNIVERSITY OF THE PHILIPPINES
+        </div>
+        <div class="system-name">FACULTY LOADING & SCHEDULING SYSTEM</div>
+      </div>
+    </div>
+
+    <!-- Login Form -->
+    <div id="login_form">
+      <!-- Form Header -->
+      <div id="form_header">
+        <h1>Log In</h1>
+        <p>Enter your username and password to start your session.</p>
+      </div>
+
+      <!-- Form Fields -->
+      <form id="form_fields">
+        <div class="input-container">
+          <mat-icon class="input-icon">person</mat-icon>
+          <input
+            type="text"
+            placeholder="Username"
+            class="login-input"
+            id="username"
+            name="username"
+            autocomplete="username"
+          />
+        </div>
+
+        <div class="input-container">
+          <mat-icon class="input-icon">lock</mat-icon>
+          <input
+            type="password"
+            placeholder="Password"
+            class="login-input"
+            id="password"
+            name="password"
+            autocomplete="current-password"
+          />
+        </div>
+      </form>
+
+      <!-- Log In Button -->
+      <div id="login_button">
+        <button mat-flat-button class="custom-mat-button">
+          <span>Log In</span>
+          <mat-icon fontSet="material-icons-sharp">login</mat-icon>
+        </button>
+      </div>
+    </div>
+
+    <div id="login_misc">
+      <div id="terms_text">
+        <span
+          >By using this service, you understood and agree to the PUP Taguig
+          Faculty Loading & Scheduling System
+        </span>
+        <a>Terms of Use</a> and <a>Privacy Statement</a>.
+      </div>
+
+      <!-- Switch Theme Button -->
+      <div id="switch_theme_container">
+        <button mat-button id="switch_theme" (click)="toggleTheme()">
+          <mat-icon>{{
+            (isDarkTheme$ | async) ? "light_mode" : "dark_mode"
+          }}</mat-icon>
+          <span>{{ (isDarkTheme$ | async) ? "Light" : "Dark" }} Theme</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
