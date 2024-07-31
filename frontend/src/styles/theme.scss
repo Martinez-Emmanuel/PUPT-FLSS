@@ -3,7 +3,9 @@
 
   --neutral-base: #151515;
   --neutral-fade: #1a1a1a26;
+  --neutral-disabled: #192422;
   --primary-one: #800000;
+  --error-base: #800000;
 }
 
 .dark-theme {
@@ -11,5 +13,7 @@
 
   --neutral-base: #dfdfdf;
   --neutral-fade: #d4d4d42a;
+  --neutral-disabled: #005642;
   --primary-one: #9b2424;
+  --error-base: #b43a3a;
 }
