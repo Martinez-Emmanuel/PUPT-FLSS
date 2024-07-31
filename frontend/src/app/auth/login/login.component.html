@@ -27,35 +27,87 @@
       </div>
 
       <!-- Form Fields -->
-      <form id="form_fields">
-        <div class="input-container">
-          <mat-icon class="input-icon">person</mat-icon>
-          <input
-            type="text"
-            placeholder="Username"
-            class="login-input"
-            id="username"
-            name="username"
-            autocomplete="username"
-          />
+      <form id="form_fields" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <div class="input-group">
+          <div class="input-container">
+            <mat-icon class="input-icon">person</mat-icon>
+            <input
+              type="text"
+              placeholder="Username"
+              class="login-input"
+              id="username"
+              formControlName="username"
+              autocomplete="username"
+              minlength="12"
+              maxlength="12"
+            />
+          </div>
+          @if (username && username.invalid && 
+            (username.dirty || username.touched)) {
+            <div 
+              class="error-message slide-down" 
+              [ngClass]="{'show': username.invalid}"
+            >
+              <mat-icon>error_outline</mat-icon>
+              @if (username.errors?.['required']) {
+                <span>Username is required.</span>
+              }
+              @if (username.errors?.['minlength'] || 
+                username.errors?.['maxlength']) {
+                <span>Username must be exactly 12 characters.</span>
+              }
+            </div>
+          }
         </div>
-
-        <div class="input-container">
-          <mat-icon class="input-icon">lock</mat-icon>
-          <input
-            type="password"
-            placeholder="Password"
-            class="login-input"
-            id="password"
-            name="password"
-            autocomplete="current-password"
-          />
+        
+        <div class="input-group">
+          <div class="input-container">
+            <mat-icon class="input-icon">lock</mat-icon>
+            <input
+              type="password"
+              placeholder="Password"
+              class="login-input"
+              id="password"
+              formControlName="password"
+              autocomplete="current-password"
+              minlength="8"
+              maxlength="40"
+            />
+          </div>
+          
+          @if (password && password.invalid && 
+            (password.dirty || password.touched)) {
+            <div 
+              class="error-message slide-down" 
+              [ngClass]="{'show': password.invalid}"
+            >
+              <mat-icon>error_outline</mat-icon>
+              @if (password.errors?.['required']) {
+                <span>Password is required.</span>
+              }
+              @if (password.errors?.['minlength']) {
+                <span>Password must be at least 8 characters.</span>
+              }
+              @if (password.errors?.['maxlength']) {
+                <span>Password cannot exceed 40 characters.</span>
+              }
+            </div>
+          }
         </div>
       </form>
 
       <!-- Log In Button -->
       <div id="login_button">
-        <button mat-flat-button class="custom-mat-button">
+        <button 
+          mat-flat-button 
+          class="custom-mat-button"
+          [ngClass]="{
+            'button-enabled': loginForm.valid,
+            'button-disabled': !loginForm.valid
+          }"
+          [disabled]="loginForm.invalid" 
+          (click)="onSubmit()"
+        >
           <span>Log In</span>
           <mat-icon fontSet="material-icons-sharp">login</mat-icon>
         </button>
@@ -64,8 +116,8 @@
 
     <div id="login_misc">
       <div id="terms_text">
-        <span
-          >By using this service, you understood and agree to the PUP Taguig
+        <span>
+          By using this service, you understood and agree to the PUP Taguig
           Faculty Loading & Scheduling System
         </span>
         <a>Terms of Use</a> and <a>Privacy Statement</a>.
@@ -74,9 +126,9 @@
       <!-- Switch Theme Button -->
       <div id="switch_theme_container">
         <button mat-button id="switch_theme" (click)="toggleTheme()">
-          <mat-icon>{{
-            (isDarkTheme$ | async) ? "light_mode" : "dark_mode"
-          }}</mat-icon>
+          <mat-icon>
+            {{ (isDarkTheme$ | async) ? "light_mode" : "dark_mode" }}
+          </mat-icon>
           <span>{{ (isDarkTheme$ | async) ? "Light" : "Dark" }} Theme</span>
         </button>
       </div>

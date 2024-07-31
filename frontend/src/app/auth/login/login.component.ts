@@ -4,13 +4,19 @@ import { SlideshowComponent } from '../../shared/slideshow/slideshow.component';
 import { MaterialModule } from '../../../imports/material.module';
 import { ThemeService } from '../../../services/theme/theme.service';
 import { Observable } from 'rxjs';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
   standalone: true,
-  imports: [CommonModule, SlideshowComponent, MaterialModule],
+  imports: [
+    CommonModule,
+    SlideshowComponent,
+    MaterialModule,
+    ReactiveFormsModule,
+  ],
 })
 export class LoginComponent implements OnInit, OnDestroy {
   backgroundImages: string[] = [
@@ -25,16 +31,17 @@ export class LoginComponent implements OnInit, OnDestroy {
     'assets/images/slideshow/pup_img_5.jpg',
   ];
 
-  currentBackgroundIndex = 0;
   private intervalId: any;
-
+  currentBackgroundIndex = 0;
   isDarkTheme$: Observable<boolean>;
+  loginForm: FormGroup;
 
-  constructor(
-    private renderer: Renderer2,
-    private themeService: ThemeService,
-  ) {
+  constructor(private renderer: Renderer2, private themeService: ThemeService, private formBuilder: FormBuilder) {
     this.isDarkTheme$ = this.themeService.isDarkTheme$;
+    this.loginForm = this.formBuilder.group({
+      username: ['', [Validators.required, Validators.minLength(12), Validators.maxLength(12)]],
+      password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(40)]]
+    });
   }
 
   ngOnInit() {
@@ -46,7 +53,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       clearInterval(this.intervalId);
     }
   }
-  
+
   toggleTheme() {
     this.themeService.toggleTheme();
   }
@@ -70,5 +77,15 @@ export class LoginComponent implements OnInit, OnDestroy {
       'background-image',
       backgroundImage
     );
+  }
+
+  get username() { return this.loginForm.get('username'); }
+  get password() { return this.loginForm.get('password'); }
+
+  onSubmit() {
+    if (this.loginForm.valid) {
+      // Perform login logic here
+      console.log('Form submitted:', this.loginForm.value);
+    }
   }
 }

@@ -1,7 +1,3 @@
-body {
-  font-family: "Inter Tight", sans-serif;
-}
-
 #login-container {
   display: flex;
   height: 100vh;
@@ -49,7 +45,7 @@ body {
 /* ------- LOGIN FORM SECTION STYLING ------- */
 
 .login-form-section {
-  padding: var(--spacing-xxl);
+  padding: var(--spacing-xxxl);
   flex: 40%;
   width: 100%;
   display: flex;
@@ -101,7 +97,7 @@ body {
   #login_form {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xl);
+    gap: var(--spacing-xxl);
     width: inherit;
     // border: 2px solid red;
 
@@ -153,7 +149,7 @@ body {
     #form_fields {
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-xl);
+      gap: var(--spacing-xxl);
 
       .input-container {
         position: relative;
@@ -225,5 +221,60 @@ body {
         }
       }
     }
+  }
+
+  .error-message {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    min-height: var(--spacing-lg);
+    margin-top: var(--spacing-xxs);
+    visibility: hidden;
+    overflow: hidden;
+    gap: var(--spacing-xxs);
+    font-size: var(--font-size-sm);
+
+    mat-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--error-base);
+      font-size: var(--font-size-md);
+      font-weight: 500;
+    }
+
+    span {
+      color: var(--error-base);
+      font-weight: 500;
+    }
+
+    &.show {
+      animation: slideDown 0.5s ease forwards;
+      visibility: visible;
+    }
+  }
+
+  .button-enabled {
+    opacity: 1;
+  }
+
+  .button-disabled {
+    opacity: var(--opacity-half);
+    cursor: not-allowed !important;
+    background-color: var(--neutral-disabled);
+  }
+}
+
+@keyframes slideDown {
+  0% {
+    height: 0;
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  100% {
+    height: auto;
+    opacity: 1;
+    transform: translateY(0);
   }
 }
