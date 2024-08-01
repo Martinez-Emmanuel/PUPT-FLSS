@@ -1,8 +1,8 @@
 import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SlideshowComponent } from '../../shared/slideshow/slideshow.component';
-import { MaterialModule } from '../../../imports/material.module';
-import { ThemeService } from '../../../services/theme/theme.service';
+import { MaterialComponent } from '../../core/imports/material.component';
+import { ThemeService } from '../../core/services/theme/theme.service';
 import { Observable } from 'rxjs';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 
@@ -14,7 +14,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
   imports: [
     CommonModule,
     SlideshowComponent,
-    MaterialModule,
+    MaterialComponent,
     ReactiveFormsModule,
   ],
 })
