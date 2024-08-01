@@ -2,13 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Faculty;
+use Illuminate\Http\Request;
 
 class FacultyController extends Controller
 {
+    /**
+     * Get all faculties.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function getFaculty()
     {
-        return response()->json(Faculty::all(), 200);
+        $faculties = Faculty::all();
+        return response()->json($faculties);
     }
 }

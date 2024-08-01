@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 
-class Faculty extends Model
+class Faculty extends Authenticatable
 {
-    use HasFactory;
+    use HasApiTokens, HasFactory;
+    protected $primaryKey = 'faculty_id';
+    protected $fillable = ['faculty_code', 'faculty_name', 'faculty_email', 'faculty_password'];
+    // Additional model properties and methods...
 }
