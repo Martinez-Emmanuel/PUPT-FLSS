@@ -18,6 +18,7 @@ export class SampleComponent implements OnInit{
   getFacultyData(){
     this.dataService.getData().subscribe(res => {
       this.faculties = res;
+      console.log(res);
     });
   }
   
