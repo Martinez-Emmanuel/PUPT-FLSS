@@ -1,0 +1,97 @@
+// Custom Theming for Angular Material
+// For more information: https://material.angular.io/guide/theming
+@use "@angular/material" as mat;
+@import "styles/m3-theme.scss";
+@import "styles/theme";
+
+@include mat.core();
+
+:root {
+  @include mat.all-component-themes($light-theme);
+
+  // Colors
+  @each $name, $palette in $_palettes {
+    @each $shade, $value in $palette {
+      --m3-#{$name}-#{$shade}: #{$value};
+    }
+  }
+
+  // Typography
+  --font-family: "Inter Tight",
+  "Helvetica Neue",
+  sans-serif;
+  --font-size-base: 16px;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  --font-size-xxl: 2rem;
+  --font-size-xxxl: 2.5rem;
+
+  // Line heights
+  --line-height-base: 1.5;
+  --line-height-headings: 1.2;
+
+  // Spacing
+  --spacing-xxs: 0.25rem;
+  --spacing-xs: 0.5rem;
+  --spacing-sm: 0.75rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  --spacing-xxl: 2.5rem;
+  --spacing-xxxl: 3rem;
+
+  // Border radius
+  --border-radius-sm: 0.25rem;
+  --border-radius-md: 0.5rem;
+  --border-radius-lg: 1rem;
+  --border-radius-xl: 2rem;
+
+  // Box Shadow
+  --shadow-level-1: 0 1px 3px rgba(0, 0, 0, 0.12),
+  0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow-level-2: 0 3px 6px rgba(0, 0, 0, 0.16),
+  0 3px 6px rgba(0, 0, 0, 0.23);
+  --shadow-level-3: 0 10px 20px rgba(0, 0, 0, 0.19),
+  0 6px 6px rgba(0, 0, 0, 0.23);
+  --shadow-level-4: 0 14px 28px rgba(0, 0, 0, 0.25),
+  0 10px 10px rgba(0, 0, 0, 0.22);
+  --shadow-level-5: 0 19px 38px rgba(0, 0, 0, 0.3),
+  0 15px 12px rgba(0, 0, 0, 0.22);
+
+  // Opacity
+  --opacity-transparent: 0;
+  --opacity-semi-transparent: 0.25;
+  --opacity-half: 0.5;
+  --opacity-semi-opaque: 0.75;
+  --opacity-opaque: 1;
+
+  // Breakpoints
+  --breakpoint-sm: 576px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 992px;
+  --breakpoint-xl: 1200px;
+}
+
+.dark-theme {
+  @include mat.all-component-colors($dark-theme);
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+}
+
+* {
+  color: var(--neutral-base);
+  transition: background-color 0.75s ease, color 0.75s ease;
+  font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+}
