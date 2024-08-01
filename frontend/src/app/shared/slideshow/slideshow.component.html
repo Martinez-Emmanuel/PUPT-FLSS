@@ -1,0 +1,18 @@
+<div class="image-slideshow">
+    @for (image of images; track $index) {
+      <div
+        [style.background-image]="'url(' + image + ')'"
+        [class.active]="$index === currentIndex"
+        class="slideshow-image">
+      </div>
+    }
+    <div class="indicators">
+      @for (image of images; track $index) {
+        <div
+          [class.active]="$index === currentIndex"
+          class="indicator"
+          (click)="goToSlide($index)">
+        </div>
+      }
+    </div>
+  </div>
