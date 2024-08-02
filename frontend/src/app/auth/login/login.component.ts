@@ -6,7 +6,7 @@ import { ThemeService } from '../../core/services/theme/theme.service';
 import { Observable } from 'rxjs';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth/auth.service';
-
+import { HttpClientModule } from '@angular/common/http';
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -17,6 +17,7 @@ import { AuthService } from '../../core/services/auth/auth.service';
     SlideshowComponent,
     MaterialComponent,
     ReactiveFormsModule,
+    HttpClientModule,
   ],
 
   providers: [AuthService] 
