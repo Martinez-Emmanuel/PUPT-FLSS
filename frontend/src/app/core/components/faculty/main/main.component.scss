@@ -1,0 +1,127 @@
+@import "../../../../../styles/mixins";
+
+.faculty-main-container {
+  height: 100%;
+  padding: var(--spacing-xxl);
+  box-sizing: border-box;
+  background: var(--main-bg); // Prevent flicker when refreshed
+}
+
+header {
+  width: inherit;
+  display: flex;
+  align-items: stretch;
+  justify-content: space-between;
+  // border: 1px solid red;
+
+  .header-name,
+  .header-navbar,
+  .header-account {
+    display: flex;
+    align-items: center;
+  }
+
+  .header-name {
+    gap: var(--spacing-lg);
+
+    .university-logo {
+      width: 4rem;
+      height: auto;
+    }
+
+    .header-text {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: var(--spacing-xxs);
+    }
+
+    .university-name,
+    .system-name {
+      font-family: "Trajan Pro";
+      font-size: var(--font-size-md);
+      font-weight: 600;
+      @include ellipsis;
+    }
+
+    .university-name {
+      color: var(--primary-one);
+    }
+  }
+
+  .header-navbar {
+    align-self: center;
+    align-items: stretch;
+    gap: var(--spacing-lg);
+    background-color: var(--neutral-light);
+    border-radius: var(--border-radius-xl);
+    position: relative;
+    display: flex;
+
+    .slider {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background-color: var(--primary-one);
+      border-radius: var(--border-radius-xl);
+      transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+      opacity: 0;
+      transform-origin: center;
+    }
+
+    a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--spacing-sm);
+      text-decoration: none;
+      padding: var(--spacing-md) var(--spacing-lg);
+      color: var(--neutral-base);
+      font-weight: 500;
+      border-radius: var(--border-radius-xl);
+      position: relative;
+      z-index: 1;
+      transition: color 0.3s ease;
+      cursor: pointer;
+      @include ellipsis;
+
+      &.active {
+        color: white;
+        transition: color 0.3s ease;
+      }
+
+      &:not(.active) {
+        transition: color 0.3s ease;
+      }
+
+      // Add hover effect
+      &:hover:not(.active) {
+        color: var(--primary-one);
+      }
+    }
+  }
+
+  .header-account {
+    gap: var(--spacing-lg);
+
+    .account-text {
+      text-align: right;
+
+      .account-name {
+        font-weight: 600;
+      }
+
+      .account-email {
+        opacity: var(--opacity-semi-opaque);
+      }
+    }
+
+    .profile-icon {
+      width: 3rem;
+      height: auto;
+    }
+  }
+}
