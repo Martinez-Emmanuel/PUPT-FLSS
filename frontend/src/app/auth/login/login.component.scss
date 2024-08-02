@@ -45,7 +45,7 @@
 /* ------- LOGIN FORM SECTION STYLING ------- */
 
 .login-form-section {
-  padding: var(--spacing-xxxl);
+  padding: var(--spacing-3xl);
   flex: 40%;
   width: 100%;
   display: flex;
@@ -97,7 +97,7 @@
   #login_form {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xxl);
+    gap: var(--spacing-xl);
     width: inherit;
     // border: 2px solid red;
 
@@ -108,7 +108,7 @@
 
       h1 {
         color: var(--primary-one);
-        font-size: var(--font-size-xxxl);
+        font-size: var(--font-size-3xl);
         margin: 0;
       }
 
@@ -149,7 +149,7 @@
     #form_fields {
       display: flex;
       flex-direction: column;
-      gap: var(--spacing-xxl);
+      gap: var(--spacing-xl);
 
       .input-container {
         position: relative;
