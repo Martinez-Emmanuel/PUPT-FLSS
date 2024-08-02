@@ -16,16 +16,16 @@
   }
 
   // Typography
-  --font-family: "Inter Tight",
-  "Helvetica Neue",
-  sans-serif;
+  --font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+  --font-size-xs: 0.65rem;
   --font-size-base: 16px;
   --font-size-sm: 0.875rem;
   --font-size-md: 1rem;
   --font-size-lg: 1.25rem;
   --font-size-xl: 1.5rem;
-  --font-size-xxl: 2rem;
-  --font-size-xxxl: 2.5rem;
+  --font-size-2xl: 2rem;
+  --font-size-2xxl: 2.5rem;
+  --font-size-3xl: 3rem;
 
   // Line heights
   --line-height-base: 1.5;
@@ -38,12 +38,13 @@
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
-  --spacing-xxl: 2.5rem;
-  --spacing-xxxl: 3rem;
+  --spacing-2xl: 2.5rem;
+  --spacing-3xl: 3rem;
 
   // Border radius
-  --border-radius-sm: 0.25rem;
-  --border-radius-md: 0.5rem;
+  --border-radius-base: 0.25rem;
+  --border-radius-sm: 0.5rem;
+  --border-radius-md: 0.75rem;
   --border-radius-lg: 1rem;
   --border-radius-xl: 2rem;
 
