@@ -45,6 +45,7 @@ class AuthController extends Controller
             'token' => $token,
             'faculty' => [
                 'faculty_id' => $faculty->faculty_id,
+                'faculty_name' => $faculty->faculty_name,
                 'faculty_code' => $faculty->faculty_code,
                 'faculty_email' => $faculty->faculty_email,
                 'faculty_type' => $faculty->faculty_type,
