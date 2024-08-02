@@ -18,12 +18,12 @@ export class ThemeService {
     this.updateTheme();
   }
 
-  private loadTheme() {
+  public loadTheme() {
     const savedTheme = localStorage.getItem('isDarkTheme');
     if (savedTheme) {
       this.isDarkTheme.next(JSON.parse(savedTheme));
-      this.updateTheme();
     }
+    this.updateTheme();
   }
 
   private saveTheme() {
