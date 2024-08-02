@@ -26,8 +26,8 @@
       /* Gradient text */
       background: linear-gradient(
         90deg,
-        rgba(169, 50, 50, 1) 0%,
-        rgba(128, 0, 0, 1) 100%
+        var(--primary-one) 0%,
+        var(--primary-two) 100%
       );
       background-clip: text;
       -webkit-background-clip: text;
@@ -50,14 +50,19 @@
       display: flex;
       gap: var(--spacing-md);
       font-size: var(--font-size-lg);
-      font-weight: 500;
+      font-weight: 600;
+
+      mat-icon {
+        width: max-content;
+        height: max-content;
+      }
 
       mat-icon,
       span {
         background: linear-gradient(
           90deg,
-          rgba(169, 50, 50, 1) 0%,
-          rgba(128, 0, 0, 1) 100%
+          var(--primary-one) 0%,
+          var(--primary-two) 100%
         );
         background-clip: text;
         -webkit-background-clip: text;
@@ -90,8 +95,8 @@
         border-radius: var(--border-radius-sm);
         background: linear-gradient(
           90deg,
-          rgba(169, 50, 50, 1) 0%,
-          rgba(128, 0, 0, 1) 100%
+          var(--primary-one) 0%,
+          var(--primary-two) 100%
         );
         width: 69%;
         z-index: 1;

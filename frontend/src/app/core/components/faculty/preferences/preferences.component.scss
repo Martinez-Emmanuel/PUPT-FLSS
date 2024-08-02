@@ -26,8 +26,8 @@
       /* Gradient text */
       background: linear-gradient(
         90deg,
-        rgba(169, 50, 50, 1) 0%,
-        rgba(128, 0, 0, 1) 100%
+        var(--primary-one) 0%,
+        var(--primary-two) 100%
       );
       background-clip: text;
       -webkit-background-clip: text;
