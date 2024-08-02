@@ -2,17 +2,19 @@
 
 .faculty-main-container {
   height: 100%;
-  padding: var(--spacing-xxl);
+  display: flex;
+  flex-direction: column;
   box-sizing: border-box;
+  gap: var(--spacing-2xl);
+  padding: var(--spacing-2xl);
   background: var(--main-bg); // Prevent flicker when refreshed
 }
 
-header {
+.faculty-main-header {
   width: inherit;
   display: flex;
   align-items: stretch;
   justify-content: space-between;
-  // border: 1px solid red;
 
   .header-name,
   .header-navbar,
@@ -124,4 +126,8 @@ header {
       height: auto;
     }
   }
+}
+
+.faculty-main-content {
+  height: 100%;
 }
