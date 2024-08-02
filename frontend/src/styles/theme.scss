@@ -1,19 +1,27 @@
 :root {
-    --login-bg: #ffffffcc;
+  --login-bg: #ffffffcc;
+  --main-bg: #ffffff;
 
-    --neutral-base: #151515;
-    --neutral-fade: #1a1a1a26;
-    --neutral-disabled: #192422;
-    --primary-one: #800000;
-    --error-base: #800000;
+  --neutral-base: #151515;
+  --neutral-fade: #1a1a1a26;
+  --neutral-light: #eeeeee;
+  --neutral-disabled: #192422;
+
+  --primary-one: #800000;
+
+  --error-base: #800000;
 }
 
 .dark-theme {
-    --login-bg: #171717f1;
+  --login-bg: #171717f1;
+  --main-bg: #171717;
 
-    --neutral-base: #dfdfdf;
-    --neutral-fade: #d4d4d42a;
-    --neutral-disabled: #005642;
-    --primary-one: #9b2424;
-    --error-base: #b43a3a;
+  --neutral-base: #dfdfdf;
+  --neutral-fade: #d4d4d42a;
+  --neutral-light: #1f1f1f;
+  --neutral-disabled: #005642;
+
+  --primary-one: #a93232;
+
+  --error-base: #b43a3a;
 }
