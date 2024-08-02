@@ -1,8 +1,7 @@
-// Custom Theming for Angular Material
-// For more information: https://material.angular.io/guide/theming
 @use "@angular/material" as mat;
 @import "styles/m3-theme.scss";
 @import "styles/theme";
+@import "styles/mixins";
 
 @include mat.core();
 
@@ -87,11 +86,12 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  background: var(--main-bg);
   font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+  transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 * {
   color: var(--neutral-base);
-  transition: background-color 0.75s ease, color 0.75s ease;
   font-family: "Inter Tight", "Helvetica Neue", sans-serif;
 }
