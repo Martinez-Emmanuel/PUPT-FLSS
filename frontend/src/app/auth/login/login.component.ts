@@ -1,10 +1,16 @@
 import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { SlideshowComponent } from '../../shared/slideshow/slideshow.component';
-import { MaterialComponent } from '../../core/imports/material.component';
-import { ThemeService } from '../../core/services/theme/theme.service';
 import { Observable } from 'rxjs';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+
+import { SlideshowComponent } from '../../shared/slideshow/slideshow.component';
+import { MaterialComponents } from '../../core/imports/material.component';
+import { ThemeService } from '../../core/services/theme/theme.service';
 
 @Component({
   selector: 'app-login',
@@ -14,7 +20,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
   imports: [
     CommonModule,
     SlideshowComponent,
-    MaterialComponent,
+    MaterialComponents,
     ReactiveFormsModule,
   ],
 })
@@ -36,11 +42,29 @@ export class LoginComponent implements OnInit, OnDestroy {
   isDarkTheme$: Observable<boolean>;
   loginForm: FormGroup;
 
-  constructor(private renderer: Renderer2, private themeService: ThemeService, private formBuilder: FormBuilder) {
+  constructor(
+    private renderer: Renderer2,
+    private themeService: ThemeService,
+    private formBuilder: FormBuilder
+  ) {
     this.isDarkTheme$ = this.themeService.isDarkTheme$;
     this.loginForm = this.formBuilder.group({
-      username: ['', [Validators.required, Validators.minLength(12), Validators.maxLength(12)]],
-      password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(40)]]
+      username: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(12),
+          Validators.maxLength(12),
+        ],
+      ],
+      password: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(8),
+          Validators.maxLength(40),
+        ],
+      ],
     });
   }
 
@@ -79,8 +103,12 @@ export class LoginComponent implements OnInit, OnDestroy {
     );
   }
 
-  get username() { return this.loginForm.get('username'); }
-  get password() { return this.loginForm.get('password'); }
+  get username() {
+    return this.loginForm.get('username');
+  }
+  get password() {
+    return this.loginForm.get('password');
+  }
 
   onSubmit() {
     if (this.loginForm.valid) {
