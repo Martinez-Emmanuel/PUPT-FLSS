@@ -111,6 +111,23 @@
             <span>Log In</span>
             <mat-icon fontSet="material-icons-sharp">login</mat-icon>
           </button>
+
+
+          <!-- for logout button -->
+          <!-- <div id="logout_button">
+            <button 
+              mat-flat-button 
+              class="custom-mat-button"
+              [ngClass]="{
+                'button-enabled': loginForm.valid,
+                'button-disabled': !loginForm.valid
+              }"
+              [disabled]="loginForm.invalid" 
+              (click)="onLogout()"
+            >
+              <span>Log Out</span>
+              <mat-icon fontSet="material-icons-sharp">login</mat-icon>
+            </button> -->
         </div>
       </div>
   
