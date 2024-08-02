@@ -1,0 +1,43 @@
+@import "../../../../../styles/mixins";
+* {
+  @include reset-styles;
+}
+
+.faculty-preferences-container {
+  height: 100%;
+}
+
+.preferences-row-one {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  #preferences_title {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+
+    h1 {
+      @include reset-styles;
+      width: max-content;
+      font-size: var(--font-size-2xxl);
+      font-weight: 700;
+
+      /* Gradient text */
+      background: linear-gradient(
+        90deg,
+        rgba(169, 50, 50, 1) 0%,
+        rgba(128, 0, 0, 1) 100%
+      );
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p {
+      @include reset-styles;
+      width: max-content;
+      font-size: var(--font-size-lg);
+    }
+  }
+}
