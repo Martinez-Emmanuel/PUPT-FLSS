@@ -1,0 +1,47 @@
+<div class="faculty-main-container">
+  <header class="faculty-main-header">
+    <!---->
+    <div class="header-name">
+      <img
+        src="assets/images/pup_taguig_logo.svg"
+        alt="University Logo"
+        class="university-logo"
+      />
+      <div class="header-text">
+        <div class="university-name">PUP – TAGUIG BRANCH</div>
+        <div class="system-name">FACULTY LOADING & SCHEDULING</div>
+      </div>
+    </div>
+
+    <nav class="header-navbar">
+      <div class="slider"></div>
+      <a routerLink="home" routerLinkActive="active">
+        <mat-icon fontSet="material-icons-round">home</mat-icon>Home
+      </a>
+      <a routerLink="preferences" routerLinkActive="active">
+        <mat-icon fontSet="material-icons-round">settings</mat-icon>Set
+        Preferences
+      </a>
+      <a routerLink="load-and-schedule" routerLinkActive="active">
+        <mat-icon fontSet="material-icons-round">calendar_month</mat-icon>Load
+        and Schedule
+      </a>
+    </nav>
+
+    <div class="header-account">
+      <div class="account-text">
+        <div class="account-name">PUP Taguig Faculty</div>
+        <div class="account-email">puptaguigfaculty&#64;pup.edu.ph</div>
+      </div>
+      <img
+        src="assets/images/default_profile_icon.png"
+        alt="Profile Icon"
+        class="profile-icon"
+      />
+    </div>
+  </header>
+
+  <main class="faculty-main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

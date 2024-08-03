@@ -1,13 +1,16 @@
 import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { SlideshowComponent } from '../../shared/slideshow/slideshow.component';
-import { MaterialComponent } from '../../core/imports/material.component';
-import { ThemeService } from '../../core/services/theme/theme.service';
 import { Observable } from 'rxjs';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { AuthService } from '../../core/services/auth/auth.service';
-import { HttpClientModule } from '@angular/common/http';
-import { Router } from '@angular/router';
+
+import { SlideshowComponent } from '../../shared/slideshow/slideshow.component';
+import { MaterialComponents } from '../../core/imports/material.component';
+import { ThemeService } from '../../core/services/theme/theme.service';
 
 @Component({
   selector: 'app-login',
@@ -17,13 +20,9 @@ import { Router } from '@angular/router';
   imports: [
     CommonModule,
     SlideshowComponent,
-    MaterialComponent,
+    MaterialComponents,
     ReactiveFormsModule,
-    HttpClientModule,
   ],
-
-  providers: [AuthService] 
-
 })
 export class LoginComponent implements OnInit, OnDestroy {
   backgroundImages: string[] = [
@@ -44,16 +43,28 @@ export class LoginComponent implements OnInit, OnDestroy {
   loginForm: FormGroup;
 
   constructor(
-    private renderer: Renderer2, 
-    private themeService: ThemeService, 
-    private formBuilder: FormBuilder, 
-    private authService: AuthService,
-    private router: Router
+    private renderer: Renderer2,
+    private themeService: ThemeService,
+    private formBuilder: FormBuilder
   ) {
     this.isDarkTheme$ = this.themeService.isDarkTheme$;
     this.loginForm = this.formBuilder.group({
-      username: ['', [Validators.required, Validators.minLength(12), Validators.maxLength(12)]],
-      password: ['', [Validators.required, Validators.minLength(8), Validators.maxLength(40)]]
+      username: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(12),
+          Validators.maxLength(12),
+        ],
+      ],
+      password: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(8),
+          Validators.maxLength(40),
+        ],
+      ],
     });
   }
 
@@ -92,78 +103,17 @@ export class LoginComponent implements OnInit, OnDestroy {
     );
   }
 
-  get username() { return this.loginForm.get('username'); }
-  get password() { return this.loginForm.get('password'); }
-
-  onSubmit() {
-   if (this.loginForm.valid) {
-      this.authService.login(this.loginForm.value.username, this.loginForm.value.password)
-        .subscribe(
-          response => {
-            console.log('Login successful', response);sessionStorage.setItem('faculty_code', response.faculty.faculty_code);
-            sessionStorage.setItem('faculty_name', response.faculty.faculty_name);
-            sessionStorage.setItem('faculty_type', response.faculty.faculty_type);
-            sessionStorage.setItem('faculty_email', response.faculty.faculty_email);
-
-            sessionStorage.setItem('token', response.token);
-            sessionStorage.setItem('expires_at', response.expires_at);
-
-              // Calculate the remaining time until expiration in milliseconds
-              const expirationTime = new Date(response.expires_at).getTime() - new Date().getTime();
-
-              // Set a timeout to automatically log the user out when the token expires
-              setTimeout(() => {
-                this.onAutoLogout();
-              }, expirationTime);
-
-            this.router.navigate(['/dashboard']); // Redirect to dashboard on successful login
-          },
-          error => {
-            console.error('Login failed', error);
-            // Handle login error (e.g., show an error message)
-          }
-        );
-    }
+  get username() {
+    return this.loginForm.get('username');
+  }
+  get password() {
+    return this.loginForm.get('password');
   }
 
-  onAutoLogout() {
-     // Check if the token is present
-     if (sessionStorage.getItem('token')) {
-      this.authService.logout().subscribe(
-        response => {
-          console.log('Logout successful', response);
-          sessionStorage.clear();
-
-          // Show alert message
-          alert('Session expired. Please log in again.');
-        },
-        error => {
-          console.error('Logout failed', error);
-          // Clear session storage and show alert message even if logout request fails
-          sessionStorage.clear();
-          alert('Session expired. Please log in again.');
-        }
-      );
-    } else {
-      // If no token is present, clear session storage and show alert message
-      sessionStorage.clear();
-      alert('Session expired. Please log in again.');
+  onSubmit() {
+    if (this.loginForm.valid) {
+      // Perform login logic here
+      console.log('Form submitted:', this.loginForm.value);
     }
-  } 
-
-  onLogout() {
-    this.authService.logout().subscribe(
-      response => {
-        console.log('Logout successful', response);
-        sessionStorage.clear();
-        
-        // Redirect to login page
-        this.router.navigate(['/login']);
-      },
-      error => {
-        console.error('Logout failed', error);
-        // Handle logout error (e.g., show an error message)
-      }
-    );
   }
 }
