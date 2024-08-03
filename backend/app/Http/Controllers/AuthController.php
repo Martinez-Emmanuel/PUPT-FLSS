@@ -1,12 +1,13 @@
 <?php
 
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 use App\Models\Faculty;
+use Laravel\Sanctum\PersonalAccessToken;
+use Carbon\Carbon;
 
 class AuthController extends Controller
 {
@@ -37,12 +38,27 @@ class AuthController extends Controller
         // Authenticate the user
         Auth::login($faculty);
 
-        // Create a new Sanctum token
-        $token = $faculty->createToken('faculty-token')->plainTextToken;
+        // Create a new Sanctum token with an expiration time
+        $tokenResult = $faculty->createToken('faculty-token');
+        $token = $tokenResult->plainTextToken;
+
+        // // Fetch the token expiration time
+        // $tokenModel = PersonalAccessToken::findToken($token);
+        // $expiresAt = $tokenModel->expires_at;
+
+        // Set token expiration (e.g., 1 hour from now)
+        $expiration = Carbon::now()->addMinutes(1);
+
+        // Update the token's expires_at attribute
+        $tokenResult->accessToken->expires_at = $expiration;
+        $tokenResult->accessToken->save();
+
+
 
         return response()->json([
             'message' => 'Login successful',
             'token' => $token,
+            'expires_at' => $expiration,
             'faculty' => [
                 'faculty_id' => $faculty->faculty_id,
                 'faculty_name' => $faculty->faculty_name,

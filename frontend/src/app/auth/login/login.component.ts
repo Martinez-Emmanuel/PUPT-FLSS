@@ -7,6 +7,8 @@ import { Observable } from 'rxjs';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { HttpClientModule } from '@angular/common/http';
+import { Router } from '@angular/router';
+
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
@@ -41,7 +43,13 @@ export class LoginComponent implements OnInit, OnDestroy {
   isDarkTheme$: Observable<boolean>;
   loginForm: FormGroup;
 
-  constructor(private renderer: Renderer2, private themeService: ThemeService, private formBuilder: FormBuilder, private authService: AuthService) {
+  constructor(
+    private renderer: Renderer2, 
+    private themeService: ThemeService, 
+    private formBuilder: FormBuilder, 
+    private authService: AuthService,
+    private router: Router
+  ) {
     this.isDarkTheme$ = this.themeService.isDarkTheme$;
     this.loginForm = this.formBuilder.group({
       username: ['', [Validators.required, Validators.minLength(12), Validators.maxLength(12)]],
@@ -98,7 +106,17 @@ export class LoginComponent implements OnInit, OnDestroy {
             sessionStorage.setItem('faculty_email', response.faculty.faculty_email);
 
             sessionStorage.setItem('token', response.token);
-            // Redirect or perform other actions on successful login
+            sessionStorage.setItem('expires_at', response.expires_at);
+
+              // Calculate the remaining time until expiration in milliseconds
+              const expirationTime = new Date(response.expires_at).getTime() - new Date().getTime();
+
+              // Set a timeout to automatically log the user out when the token expires
+              setTimeout(() => {
+                this.onAutoLogout();
+              }, expirationTime);
+
+            this.router.navigate(['/dashboard']); // Redirect to dashboard on successful login
           },
           error => {
             console.error('Login failed', error);
@@ -108,18 +126,39 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
   }
 
+  onAutoLogout() {
+     // Check if the token is present
+     if (sessionStorage.getItem('token')) {
+      this.authService.logout().subscribe(
+        response => {
+          console.log('Logout successful', response);
+          sessionStorage.clear();
+
+          // Show alert message
+          alert('Session expired. Please log in again.');
+        },
+        error => {
+          console.error('Logout failed', error);
+          // Clear session storage and show alert message even if logout request fails
+          sessionStorage.clear();
+          alert('Session expired. Please log in again.');
+        }
+      );
+    } else {
+      // If no token is present, clear session storage and show alert message
+      sessionStorage.clear();
+      alert('Session expired. Please log in again.');
+    }
+  } 
+
   onLogout() {
     this.authService.logout().subscribe(
       response => {
         console.log('Logout successful', response);
-        // Remove the token from local storage or session storage
-        sessionStorage.removeItem('faculty_code');
-        sessionStorage.removeItem('faculty_name');
-        sessionStorage.removeItem('faculty_type');
-        sessionStorage.removeItem('faculty_email');
+        sessionStorage.clear();
         
-        sessionStorage.removeItem('token');
-        // Redirect or perform other actions on successful logout
+        // Redirect to login page
+        this.router.navigate(['/login']);
       },
       error => {
         console.error('Logout failed', error);
