@@ -75,6 +75,8 @@ export class LoginComponent implements OnInit, OnDestroy {
     });
   }
 
+  errorMessage: string = '';
+
   ngOnInit() {
     this.startBackgroundSlideshow();
   }
@@ -117,34 +119,55 @@ export class LoginComponent implements OnInit, OnDestroy {
     return this.loginForm.get('password');
   }
 
-  onSubmit() {
-    if (this.loginForm.valid) {
-      this.authService.login(this.loginForm.value.username, this.loginForm.value.password)
-        .subscribe(
-          response => {
-            console.log('Login successful', response);sessionStorage.setItem('faculty_code', response.faculty.faculty_code);
-            sessionStorage.setItem('faculty_name', response.faculty.faculty_name);
-            sessionStorage.setItem('faculty_type', response.faculty.faculty_type);
-            sessionStorage.setItem('faculty_email', response.faculty.faculty_email);
+ onSubmit() {
+  if (this.loginForm.valid) {
 
-            sessionStorage.setItem('token', response.token);
-            sessionStorage.setItem('expires_at', response.expires_at);
+      this.authService.login(
+      this.loginForm.value.username, 
+      this.loginForm.value.password)
 
-            const expirationTime = new Date(response.expires_at).getTime() - new Date().getTime();
+      .subscribe(
+        response => {
+          console.log('Login successful', response);
+          sessionStorage.setItem('faculty_code', 
+            response.faculty.faculty_code);
+          sessionStorage.setItem('faculty_name', 
+            response.faculty.faculty_name);
+          sessionStorage.setItem('faculty_type', 
+            response.faculty.faculty_type);
+          sessionStorage.setItem('faculty_email', 
+            response.faculty.faculty_email);
+          sessionStorage.setItem('token', 
+            response.token);
+          sessionStorage.setItem('expires_at', 
+            response.expires_at);
 
-            setTimeout(() => {
-              this.onAutoLogout();
-            }, expirationTime);
+          const expirationTime = 
+            new Date(response.expires_at).getTime() - new Date().getTime();
 
-            this.router.navigate(['/faculty']);  // Navigate to faculty
-          },
-          error => {
-            console.error('Login failed', error);
-            // Handle login error (e.g., show an error message)
+          setTimeout(() => {
+            this.onAutoLogout();
+          }, expirationTime);
+
+          this.router.navigate(['/faculty']);  
+        },
+        error => {
+          console.error('Login failed', error);
+          // Set error message for the frontend
+          if (error.status === 401 && error.error.message 
+              === 'Invalid Credentials') {
+            this.errorMessage = 
+            'Invalid username or password. Please try again.';
+          } else {
+            this.errorMessage 
+            = 'An error occurred during login. Please try again later.';
           }
-        );
-    }
+          console.log(this.errorMessage);
+        }
+      );
   }
+}
+
 
   onAutoLogout() {
     // Check if the token is present
