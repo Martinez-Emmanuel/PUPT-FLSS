@@ -13,7 +13,7 @@ export class AuthService {
   login(username: string, password: string): Observable<any> {
     const loginData = {
       faculty_code: username,
-      faculty_password: password
+      faculty_password: password  
     };
     return this.http.post(`${this.apiUrl}/login`, loginData);
   }

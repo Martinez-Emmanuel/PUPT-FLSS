@@ -128,7 +128,14 @@ export class LoginComponent implements OnInit, OnDestroy {
             sessionStorage.setItem('faculty_email', response.faculty.faculty_email);
 
             sessionStorage.setItem('token', response.token);
-            
+            sessionStorage.setItem('expires_at', response.expires_at);
+
+            const expirationTime = new Date(response.expires_at).getTime() - new Date().getTime();
+
+            setTimeout(() => {
+              this.onAutoLogout();
+            }, expirationTime);
+
             this.router.navigate(['/faculty']);  // Navigate to faculty
           },
           error => {
@@ -139,19 +146,41 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
   }
 
-  onLogout() {
-    this.authService.logout().subscribe(
-      response => {
-        console.log('Logout successful', response);
-        // Remove the token from local storage or session storage
-        sessionStorage.removeItem('faculty_code');
-        sessionStorage.removeItem('faculty_name');
-        sessionStorage.removeItem('faculty_type');
-        sessionStorage.removeItem('faculty_email');
+  onAutoLogout() {
+    // Check if the token is present
+    if (sessionStorage.getItem('token')) {
+     this.authService.logout().subscribe(
+       response => {
+         console.log('Logout successful', response);
+         sessionStorage.clear();
 
-        sessionStorage.removeItem('token');
-        // Redirect or perform other actions on successful logout
-      },
+         // Show alert message
+         alert('Session expired. Please log in again.');
+       },
+       error => {
+         console.error('Logout failed', error);
+         // Clear session storage and show alert message even if logout request fails
+         sessionStorage.clear();
+         alert('Session expired. Please log in again.');
+         this.router.navigate(['/login']);  // Redirect to login page
+       }
+     );
+   } else {
+     // If no token is present, clear session storage and show alert message
+     sessionStorage.clear();
+     alert('Session expired. Please log in again.');
+   }
+ } 
+
+ onLogout() {
+  this.authService.logout().subscribe(
+    response => {
+      console.log('Logout successful', response);
+      sessionStorage.clear();
+
+      // Redirect to login page
+      this.router.navigate(['/login']);
+    },
       error => {
         console.error('Logout failed', error);
         // Handle logout error (e.g., show an error message)

@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { MaterialComponents } from '../../../imports/material.component';
+import { Router } from '@angular/router';
+import { AuthService } from '../../../services/auth/auth.service';
 
 @Component({
   selector: 'app-home',
@@ -9,15 +11,31 @@ import { MaterialComponents } from '../../../imports/material.component';
   styleUrl: './home.component.scss'
 })
 export class HomeComponent implements OnInit{
-  facultyName: string = 'Unknown Faculty';  // Initialize with a default value
+  facultyCode: string | null = '';
+  facultyName: string | null = '';
+  facultyType: string | null = '';
+  facultyEmail: string | null = '';
 
-  constructor() { }
+
+  constructor(private authService: AuthService, private router: Router) { }
 
   ngOnInit(): void {
-    // Update the property
-    const storedName = sessionStorage.getItem('faculty_name');
-    if (storedName) {
-      this.facultyName = storedName;
-    }
+    this.facultyCode = sessionStorage.getItem('faculty_code');
+    this.facultyName = sessionStorage.getItem('faculty_name');
+    this.facultyType = sessionStorage.getItem('faculty_type');
+    this.facultyEmail = sessionStorage.getItem('faculty_email');
+  }
+
+  logout() {
+    this.authService.logout().subscribe(
+      response => {
+        console.log('Logout successful', response);
+        sessionStorage.clear();
+        this.router.navigate(['/login']);
+      },
+      error => {
+        console.error('Logout failed', error);
+      }
+    );
   }
 }
