@@ -1,0 +1,40 @@
+.material-dialog-container {
+  padding-top: var(--spacing-sm);
+}
+
+.dialog-title {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-xl);
+  font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+  color: var(--primary-one);
+  font-weight: 500;
+
+  mat-icon {
+    font-weight: 500;
+  }
+}
+
+.dialog-field {
+  width: 100%;
+}
+
+.cancel span {
+  color: var(--primary-one);
+}
+
+.confirm span {
+  color: white;
+}
+
+.button-enabled {
+  opacity: 1;
+}
+
+.button-disabled {
+  opacity: 0.5;
+  background-color: var(--primary-one);
+  cursor: not-allowed;
+}
