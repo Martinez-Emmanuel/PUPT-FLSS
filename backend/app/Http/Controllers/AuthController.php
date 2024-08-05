@@ -4,9 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Hash;
 use App\Models\Faculty;
-use Laravel\Sanctum\PersonalAccessToken;
 use Carbon\Carbon;
 
 class AuthController extends Controller
@@ -28,8 +27,8 @@ class AuthController extends Controller
         // Find the faculty by faculty_code
         $faculty = Faculty::where('faculty_code', $loginUserData['faculty_code'])->first();
 
-        // Check if faculty exists and password matches (plaintext comparison)
-        if (!$faculty || $loginUserData['faculty_password'] !== $faculty->faculty_password) {
+        // Check if faculty exists and password matches
+        if (!$faculty || !Hash::check($loginUserData['faculty_password'], $faculty->faculty_password)) {
             return response()->json([
                 'message' => 'Invalid Credentials'
             ], 401);
@@ -42,18 +41,12 @@ class AuthController extends Controller
         $tokenResult = $faculty->createToken('faculty-token');
         $token = $tokenResult->plainTextToken;
 
-        // // Fetch the token expiration time
-        // $tokenModel = PersonalAccessToken::findToken($token);
-        // $expiresAt = $tokenModel->expires_at;
-
         // Set token expiration (e.g., 1 hour from now)
-        $expiration = Carbon::now()->addMinutes(1);
+        $expiration = Carbon::now()->addMinutes(60);
 
         // Update the token's expires_at attribute
         $tokenResult->accessToken->expires_at = $expiration;
         $tokenResult->accessToken->save();
-
-
 
         return response()->json([
             'message' => 'Login successful',
@@ -68,6 +61,8 @@ class AuthController extends Controller
             ]
         ]);
     }
+
+
 
     /**
      * Handle logout request.
