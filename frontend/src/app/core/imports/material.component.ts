@@ -4,6 +4,14 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInput } from '@angular/material/input';
+import { FormsModule } from '@angular/forms';
+import { MatTableModule } from '@angular/material/table';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { MatOptionModule } from '@angular/material/core';
+import { MatDialogModule } from '@angular/material/dialog';
 
 export const MaterialComponents = [
   MatToolbarModule,
@@ -11,6 +19,14 @@ export const MaterialComponents = [
   MatSidenavModule,
   MatListModule,
   MatIconModule,
-  MatTabsModule
+  MatTabsModule,
+  MatFormFieldModule,
+  MatInput,
+  FormsModule,
+  MatTableModule,
+  MatInputModule,
+  MatSelectModule,
+  MatOptionModule,
+  MatDialogModule
   // ... other material modules
 ];
