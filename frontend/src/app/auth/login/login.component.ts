@@ -23,6 +23,7 @@ import { AuthService } from '../../core/services/auth/auth.service';
     CommonModule,
     SlideshowComponent,
     MaterialComponents,
+    MaterialComponents,
     ReactiveFormsModule,
   ],
 
@@ -56,6 +57,22 @@ export class LoginComponent implements OnInit, OnDestroy {
   ) {
     this.isDarkTheme$ = this.themeService.isDarkTheme$;
     this.loginForm = this.formBuilder.group({
+      username: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(12),
+          Validators.maxLength(12),
+        ],
+      ],
+      password: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(8),
+          Validators.maxLength(40),
+        ],
+      ],
       username: [
         '',
         [
@@ -112,6 +129,12 @@ export class LoginComponent implements OnInit, OnDestroy {
     );
   }
 
+  get username() {
+    return this.loginForm.get('username');
+  }
+  get password() {
+    return this.loginForm.get('password');
+  }
   get username() {
     return this.loginForm.get('username');
   }

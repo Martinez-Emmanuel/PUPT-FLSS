@@ -278,3 +278,275 @@
     transform: translateY(0);
   }
 }
+
+// Media queries for different screen sizes
+@media (max-width: 768px) {
+  #login-container {
+    padding: var(--spacing-md);
+  }
+
+  .login-image-section {
+    display: none;
+  }
+
+  .login-form-section {
+    padding: var(--spacing-lg);
+    width: 100%;
+    align-items: center;
+  }
+
+  #login_header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    .university-logo {
+      width: 3rem;
+    }
+
+    .header-text {
+      gap: var(--spacing-xs);
+    }
+
+    .university-name,
+    .system-name {
+      font-size: var(--font-size-sm);
+      text-align: center;
+    }
+  }
+
+  #form_header {
+    h1 {
+      font-size: var(--font-size-xl);
+    }
+
+    p {
+      font-size: var(--font-size-md);
+    }
+  }
+
+  .login-input {
+    height: 3rem;
+    font-size: var(--font-size-md);
+  }
+
+  .custom-mat-button {
+    height: 3rem;
+    font-size: var(--font-size-md);
+
+    mat-icon {
+      font-size: var(--font-size-md);
+    }
+  }
+
+  #login_misc {
+    padding: var(--spacing-sm);
+  }
+
+  #terms_text {
+    font-size: var(--font-size-sm);
+  }
+
+  #switch_theme_container {
+    justify-content: center;
+
+    #switch_theme {
+      font-size: var(--font-size-sm);
+
+      mat-icon {
+        font-size: var(--font-size-md);
+      }
+    }
+  }
+
+  .error-message {
+    font-size: var(--font-size-xs);
+  }
+
+  #login_form {
+    max-width: 100%;
+    padding: 0 15px;
+  }
+
+  .custom-mat-button,
+  .login-input {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  #login-container {
+    padding: var(--spacing-sm);
+  }
+
+  .login-form-section {
+    padding: var(--spacing-sm);
+    align-items: center;
+  }
+
+  #login_header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    .university-logo {
+      width: 2.5rem;
+    }
+
+    .university-name,
+    .system-name {
+      font-size: var(--font-size-xs);
+      text-align: center;
+    }
+  }
+
+  #form_header {
+    h1 {
+      font-size: var(--font-size-lg);
+    }
+
+    p {
+      font-size: var(--font-size-sm);
+    }
+  }
+
+  .login-input {
+    height: 2.5rem;
+    font-size: var(--font-size-sm);
+  }
+
+  .custom-mat-button {
+    height: 2.5rem;
+    font-size: var(--font-size-sm);
+
+    mat-icon {
+      font-size: var(--font-size-sm);
+    }
+  }
+
+  #login_misc {
+    padding: var(--spacing-sm);
+  }
+
+  #terms_text {
+    font-size: var(--font-size-xs);
+  }
+
+  #switch_theme_container {
+    justify-content: center;
+
+    #switch_theme {
+      font-size: var(--font-size-xs);
+
+      mat-icon {
+        font-size: var(--font-size-sm);
+      }
+    }
+  }
+
+  .error-message {
+    font-size: var(--font-size-xxs);
+  }
+
+  #login_form {
+    max-width: 100%;
+    padding: 0 10px;
+  }
+
+  .custom-mat-button,
+  .login-input {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 320px) {
+  #login-container {
+    padding: var(--spacing-xs);
+  }
+
+  .login-form-section {
+    padding: var(--spacing-xs);
+    align-items: center;
+  }
+
+  #login_header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    .university-logo {
+      width: 2rem;
+    }
+
+    .header-text {
+      gap: var(--spacing-xxs);
+    }
+
+    .university-name,
+    .system-name {
+      font-size: var(--font-size-xxs);
+      text-align: center;
+    }
+  }
+
+  #form_header {
+    h1 {
+      font-size: var(--font-size-md);
+    }
+
+    p {
+      font-size: var(--font-size-xs);
+    }
+  }
+
+  .login-input {
+    height: 2rem;
+    font-size: var(--font-size-xs);
+  }
+
+  .custom-mat-button {
+    height: 2rem;
+    font-size: var(--font-size-xs);
+
+    mat-icon {
+      font-size: var(--font-size-xs);
+    }
+  }
+
+  #login_misc {
+    padding: var(--spacing-xs);
+  }
+
+  #terms_text {
+    font-size: var(--font-size-xxs);
+  }
+
+  #switch_theme_container {
+    justify-content: center;
+
+    #switch_theme {
+      font-size: var(--font-size-xxs);
+
+      mat-icon {
+        font-size: var(--font-size-xs);
+      }
+    }
+  }
+
+  .error-message {
+    font-size: var(--font-size-xxxs);
+  }
+
+  #login_form {
+    max-width: 100%;
+    padding: 0 5px;
+  }
+
+  .custom-mat-button,
+  .login-input {
+    width: 100%;
+    max-width: 100%;
+  }
+}
