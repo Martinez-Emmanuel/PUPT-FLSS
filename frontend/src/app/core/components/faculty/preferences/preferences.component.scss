@@ -1,43 +1,176 @@
 @import "../../../../../styles/mixins";
+
 * {
   @include reset-styles;
 }
 
 .faculty-preferences-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
   height: 100%;
+  transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 .preferences-row-one {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-
   #preferences_title {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xxs);
 
     h1 {
-      @include reset-styles;
       width: max-content;
       font-size: var(--font-size-2xxl);
       font-weight: 700;
-
-      /* Gradient text */
-      background: linear-gradient(
-        90deg,
-        var(--primary-one) 0%,
-        var(--primary-two) 100%
-      );
+      background: var(--gradient-primary);
       background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     p {
-      @include reset-styles;
       width: max-content;
       font-size: var(--font-size-lg);
+    }
+  }
+}
+
+.preferences-row-two {
+  height: calc(100vh - 18rem);
+  box-sizing: border-box;
+  display: flex;
+  gap: var(--spacing-lg);
+
+  #subjects_container,
+  #table_container {
+    border-radius: var(--border-radius-md);
+    height: 100%;
+  }
+}
+
+#subjects_container {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+
+  .custom-mat-search {
+    width: 100%;
+  }
+
+  #subjects_list {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+
+    .subjects-scroll-container {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: var(--spacing-sm);
+      @include custom-scrollbar;
+    }
+
+    .subject-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--spacing-sm);
+      margin-bottom: var(--spacing-xs);
+      border-radius: var(--border-radius-sm);
+      transition: background-color 0.5s ease;
+
+      .subject-info {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xxs);
+
+        .subject-code {
+          font-weight: 700;
+          font-size: var(--font-size-sm);
+        }
+
+        .subject-title {
+          font-weight: 400;
+          font-size: var(--font-size-md);
+        }
+      }
+
+      .add-button {
+        @include flex-center;
+        color: var(--neutral-dark);
+      }
+    }
+  }
+}
+
+#table_container {
+  flex: 7;
+  overflow: auto;
+  background-color: var(--neutral-light);
+  @include hide-scrollbar;
+
+  .mat-mdc-table {
+    width: 100%;
+    background-color: var(--neutral-light);
+    transition: none !important;
+    table-layout: fixed;
+  }
+
+  .mat-mdc-header-cell {
+    background-color: var(--primary-one);
+    color: white;
+    font-weight: 500;
+    font-size: var(--font-size-md);
+    text-align: center;
+    position: sticky;
+    top: 0;
+  }
+
+  .mat-mdc-cell {
+    padding: var(--spacing-sm);
+    text-align: center;
+    text-wrap: wrap;
+  }
+
+  .custom-mat-button {
+    @include flex-center;
+
+    mat-icon {
+      font-size: var(--font-size-lg);
+      color: var(--primary-one);
+      @include flex-center;
+    }
+  }
+
+  @mixin column-width($width) {
+    width: $width;
+    min-width: $width;
+    max-width: $width;
+  }
+
+  .mat-column-action {
+    @include column-width(50px);
+  }
+  .mat-column-num {
+    @include column-width(50px);
+  }
+  .mat-column-lec,
+  .mat-column-lab,
+  .mat-column-units {
+    @include column-width(70px);
+  }
+
+  .preferred-day-dropdown {
+    max-width: 90%;
+    border: none;
+    background-color: var(--neutral-light);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+
+    option {
+      background-color: var(--neutral-light);
     }
   }
 }
