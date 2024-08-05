@@ -2,27 +2,33 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-use Illuminate\Auth\Authenticatable;
+namespace App\Models;
+
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Support\Facades\Hash;
 
-class Faculty extends Model implements AuthenticatableContract
+class Faculty extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Authenticatable;
+    use HasApiTokens, HasFactory, Notifiable;
 
-    protected $table = 'faculties';
-    protected $primaryKey = 'faculty_id'; // Specify the primary key
-
-    public $timestamps = false;
+    protected $primaryKey = 'faculty_id';
 
     protected $fillable = [
-        'faculty_name', 
-        'faculty_code', 
-        'faculty_password', 
-        'faculty_email', 
-        'faculty_type'
+        'faculty_name',
+        'faculty_code',
+        'faculty_password',
+        'faculty_email',
+        'faculty_type',
     ];
-}
 
+    /**
+     * Hash the password before saving to the database.
+     */
+    public function setFacultyPasswordAttribute($value)
+    {
+        $this->attributes['faculty_password'] = Hash::make($value);
+    }
+}
