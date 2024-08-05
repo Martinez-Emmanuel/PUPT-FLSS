@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Renderer2 } from '@angular/core';
+import { Component, OnInit, OnDestroy, Renderer2, ElementRef } from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -28,7 +28,6 @@ import { AuthService } from '../../core/services/auth/auth.service';
   ],
 
   providers: [AuthService]
-
 })
 export class LoginComponent implements OnInit, OnDestroy {
   backgroundImages: string[] = [
@@ -50,6 +49,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   constructor(
     private renderer: Renderer2,
+    private elementRef: ElementRef,
     private themeService: ThemeService,
     private formBuilder: FormBuilder,
     private authService: AuthService,
@@ -57,22 +57,6 @@ export class LoginComponent implements OnInit, OnDestroy {
   ) {
     this.isDarkTheme$ = this.themeService.isDarkTheme$;
     this.loginForm = this.formBuilder.group({
-      username: [
-        '',
-        [
-          Validators.required,
-          Validators.minLength(12),
-          Validators.maxLength(12),
-        ],
-      ],
-      password: [
-        '',
-        [
-          Validators.required,
-          Validators.minLength(8),
-          Validators.maxLength(40),
-        ],
-      ],
       username: [
         '',
         [
@@ -122,11 +106,10 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   updateBackgroundImage() {
     const backgroundImage = this.getBackgroundImage();
-    this.renderer.setStyle(
-      document.getElementById('login-container'),
-      'background-image',
-      backgroundImage
-    );
+    const loginContainer = this.elementRef.nativeElement.querySelector('.login-container');
+    if (loginContainer) {
+      this.renderer.setStyle(loginContainer, 'background-image', backgroundImage);
+    }
   }
 
   get username() {
@@ -135,39 +118,23 @@ export class LoginComponent implements OnInit, OnDestroy {
   get password() {
     return this.loginForm.get('password');
   }
-  get username() {
-    return this.loginForm.get('username');
-  }
-  get password() {
-    return this.loginForm.get('password');
-  }
 
- onSubmit() {
-  if (this.loginForm.valid) {
-
+  onSubmit() {
+    if (this.loginForm.valid) {
       this.authService.login(
-      this.loginForm.value.username, 
-      this.loginForm.value.password)
-
-      .subscribe(
+        this.loginForm.value.username, 
+        this.loginForm.value.password
+      ).subscribe(
         response => {
           console.log('Login successful', response);
-          sessionStorage.setItem('faculty_code', 
-            response.faculty.faculty_code);
-          sessionStorage.setItem('faculty_name', 
-            response.faculty.faculty_name);
-          sessionStorage.setItem('faculty_type', 
-            response.faculty.faculty_type);
-          sessionStorage.setItem('faculty_email', 
-            response.faculty.faculty_email);
-          sessionStorage.setItem('token', 
-            response.token);
-          sessionStorage.setItem('expires_at', 
-            response.expires_at);
+          sessionStorage.setItem('faculty_code', response.faculty.faculty_code);
+          sessionStorage.setItem('faculty_name', response.faculty.faculty_name);
+          sessionStorage.setItem('faculty_type', response.faculty.faculty_type);
+          sessionStorage.setItem('faculty_email', response.faculty.faculty_email);
+          sessionStorage.setItem('token', response.token);
+          sessionStorage.setItem('expires_at', response.expires_at);
 
-          const expirationTime = 
-            new Date(response.expires_at).getTime() - new Date().getTime();
-
+          const expirationTime = new Date(response.expires_at).getTime() - new Date().getTime();
           setTimeout(() => {
             this.onAutoLogout();
           }, expirationTime);
@@ -177,56 +144,52 @@ export class LoginComponent implements OnInit, OnDestroy {
         error => {
           console.error('Login failed', error);
           // Set error message for the frontend
-          if (error.status === 401 && error.error.message 
-              === 'Invalid Credentials') {
-            this.errorMessage = 
-            'Invalid username or password. Please try again.';
+          if (error.status === 401 && error.error.message === 'Invalid Credentials') {
+            this.errorMessage = 'Invalid username or password. Please try again.';
           } else {
-            this.errorMessage 
-            = 'An error occurred during login. Please try again later.';
+            this.errorMessage = 'An error occurred during login. Please try again later.';
           }
           console.log(this.errorMessage);
         }
       );
+    }
   }
-}
-
 
   onAutoLogout() {
     // Check if the token is present
     if (sessionStorage.getItem('token')) {
-     this.authService.logout().subscribe(
-       response => {
-         console.log('Logout successful', response);
-         sessionStorage.clear();
+      this.authService.logout().subscribe(
+        response => {
+          console.log('Logout successful', response);
+          sessionStorage.clear();
 
-         // Show alert message
-         alert('Session expired. Please log in again.');
-       },
-       error => {
-         console.error('Logout failed', error);
-         // Clear session storage and show alert message even if logout request fails
-         sessionStorage.clear();
-         alert('Session expired. Please log in again.');
-         this.router.navigate(['/login']);  // Redirect to login page
-       }
-     );
-   } else {
-     // If no token is present, clear session storage and show alert message
-     sessionStorage.clear();
-     alert('Session expired. Please log in again.');
-   }
- } 
-
- onLogout() {
-  this.authService.logout().subscribe(
-    response => {
-      console.log('Logout successful', response);
+          // Show alert message
+          alert('Session expired. Please log in again.');
+        },
+        error => {
+          console.error('Logout failed', error);
+          // Clear session storage and show alert message even if logout request fails
+          sessionStorage.clear();
+          alert('Session expired. Please log in again.');
+          this.router.navigate(['/login']);  // Redirect to login page
+        }
+      );
+    } else {
+      // If no token is present, clear session storage and show alert message
       sessionStorage.clear();
+      alert('Session expired. Please log in again.');
+    }
+  } 
 
-      // Redirect to login page
-      this.router.navigate(['/login']);
-    },
+  onLogout() {
+    this.authService.logout().subscribe(
+      response => {
+        console.log('Logout successful', response);
+        sessionStorage.clear();
+
+        // Redirect to login page
+        this.router.navigate(['/login']);
+      },
       error => {
         console.error('Logout failed', error);
         // Handle logout error (e.g., show an error message)
