@@ -8,16 +8,18 @@ import { AuthService } from '../../../services/auth/auth.service';
   standalone: true,
   imports: [MaterialComponents],
   templateUrl: './home.component.html',
-  styleUrl: './home.component.scss'
+  styleUrls: ['./home.component.scss']
 })
-export class HomeComponent implements OnInit{
+export class HomeComponent implements OnInit {
   facultyCode: string | null = '';
   facultyName: string | null = '';
   facultyType: string | null = '';
   facultyEmail: string | null = '';
 
-
-  constructor(private authService: AuthService, private router: Router) { }
+  constructor(private authService: AuthService, private router: Router) {
+    // For debugging because i dont have logout button yet
+    (window as any).homeComponent = this;
+  }
 
   ngOnInit(): void {
     this.facultyCode = sessionStorage.getItem('faculty_code');
