@@ -1,6 +1,7 @@
 @import "../../../../../styles/mixins";
 * {
   @include reset-styles;
+  transition: background-color 0.5s ease, color 0.5s ease;
 }
 
 .faculty-home-container {
@@ -50,7 +51,7 @@
       display: flex;
       gap: var(--spacing-md);
       font-size: var(--font-size-lg);
-      font-weight: 600;
+      font-weight: 500;
 
       mat-icon {
         width: max-content;
@@ -59,14 +60,7 @@
 
       mat-icon,
       span {
-        background: linear-gradient(
-          90deg,
-          var(--primary-one) 0%,
-          var(--primary-two) 100%
-        );
-        background-clip: text;
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        color: var(--primary-one);
       }
     }
 
