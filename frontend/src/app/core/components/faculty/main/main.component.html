@@ -39,6 +39,8 @@
           alt="Profile Icon"
           class="profile-icon"
           (click)="toggleDropdown()"
+          matTooltip="Click to open settings"
+          matTooltipPosition="below"
         />
         @if (isDropdownOpen) {
         <div class="dropdown-menu">
