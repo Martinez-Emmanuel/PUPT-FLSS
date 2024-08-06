@@ -1,6 +1,7 @@
+@import "../../../styles/mixins";
 *,
 *::before {
-  transition: background-color 0.5s ease, color 0.5s ease;
+  @include default-transition;
 }
 
 .login-container {
@@ -70,7 +71,6 @@
     align-items: center;
     text-align: left;
     gap: var(--spacing-lg);
-    // border: 2px solid purple;
 
     .university-logo {
       width: 4.5rem;
@@ -103,7 +103,6 @@
     flex-direction: column;
     gap: var(--spacing-xl);
     width: inherit;
-    // border: 2px solid red;
 
     #form_header {
       display: flex;

@@ -1,7 +1,7 @@
 @import "../../../../../styles/mixins";
 * {
   @include reset-styles;
-  transition: background-color 0.5s ease, color 0.5s ease;
+  @include default-transition;
 }
 
 .faculty-home-container {
@@ -24,12 +24,7 @@
       font-size: var(--font-size-2xxl);
       font-weight: 700;
 
-      /* Gradient text */
-      background: linear-gradient(
-        90deg,
-        var(--primary-one) 0%,
-        var(--primary-two) 100%
-      );
+      @include gradient-primary(315deg);
       background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
@@ -67,7 +62,7 @@
     #semester_bar {
       position: relative;
       height: var(--font-size-xs);
-      background-color: var(--neutral-bar, #ddd);
+      background-color: var(--neutral-bar);
       border-radius: var(--border-radius-sm);
       margin-top: var(--spacing-md);
 
@@ -78,7 +73,7 @@
         width: 100%;
         height: 100%;
         border-radius: var(--border-radius-sm);
-        background-color: var(--neutral-bar, #ddd);
+        background-color: var(--neutral-bar);
       }
 
       #progress_fill {
