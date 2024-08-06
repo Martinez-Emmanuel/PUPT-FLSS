@@ -1,15 +1,13 @@
+@import "../../../styles/mixins.scss";
 .material-dialog-container {
   padding-top: var(--spacing-sm);
 }
 
 .dialog-title {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
+  @include flex-center($justify: flex-start);
   gap: var(--spacing-sm);
   font-size: var(--font-size-xl);
   font-family: "Inter Tight", "Helvetica Neue", sans-serif;
-  color: var(--primary-one);
   font-weight: 500;
 
   mat-icon {
@@ -34,7 +32,6 @@
 }
 
 .button-disabled {
-  opacity: 0.5;
+  opacity: var(--opacity-half);
   background-color: var(--primary-one);
-  cursor: not-allowed;
 }
