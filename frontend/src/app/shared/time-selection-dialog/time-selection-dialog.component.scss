@@ -1,0 +1,37 @@
+@import "../../../styles/mixins.scss";
+.material-dialog-container {
+  padding-top: var(--spacing-sm);
+}
+
+.dialog-title {
+  @include flex-center($justify: flex-start);
+  gap: var(--spacing-sm);
+  font-size: var(--font-size-xl);
+  font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+  font-weight: 500;
+
+  mat-icon {
+    font-weight: 500;
+  }
+}
+
+.dialog-field {
+  width: 100%;
+}
+
+.cancel span {
+  color: var(--primary-one);
+}
+
+.confirm span {
+  color: white;
+}
+
+.button-enabled {
+  opacity: 1;
+}
+
+.button-disabled {
+  opacity: var(--opacity-half);
+  background-color: var(--primary-one);
+}

@@ -1,13 +1,153 @@
 <div class="faculty-preferences-container">
-  <!--Home first row-->
+  <!--Preferences first row-->
   <div class="preferences-row-one">
-    <!--Home greertings-->
+    <!--Preferences title-->
     <div id="preferences_title">
       <h1>Set Preferences</h1>
       <p>
-        Fill the form below and submit your preferred subjects and schedule for
-        the upcoming semester.
+        Submit your preferred subjects and schedule for the upcoming semester.
       </p>
+    </div>
+
+    <!--Display Max & Selected Units -->
+    <div id="units_container">
+      <div class="units max">
+        <h2>{{ maxUnits }}</h2>
+        <span>Max. Units Allowed</span>
+      </div>
+      <div class="units total">
+        <h2>{{ totalUnits }}</h2>
+        <span>Total Units Selected</span>
+      </div>
+    </div>
+  </div>
+
+  <!--Preferences second row-->
+  <div class="preferences-row-two">
+    <!--Subjects Container-->
+    <div id="subjects_container">
+      <!--Subjects Search-->
+      <div id="subjects_search">
+        <mat-form-field appearance="fill" class="custom-mat-search">
+          <mat-label>Search</mat-label>
+          <input matInput />
+          <mat-icon matPrefix>search</mat-icon>
+        </mat-form-field>
+      </div>
+      <!--Subjects List-->
+      <div id="subjects_list">
+        <div class="subjects-scroll-container">
+          @for (subject of subjects; track subject.code) {
+          <div class="subject-card">
+            <div class="subject-info">
+              <span class="subject-code">{{ subject.code }}</span>
+              <span class="subject-title">{{ subject.title }}</span>
+            </div>
+            <button
+              mat-icon-button
+              class="add-button"
+              (click)="addSubjectToTable(subject)"
+            >
+              <mat-icon>add</mat-icon>
+            </button>
+          </div>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!--Preferences Table-->
+    <div id="table_container">
+      <table mat-table [dataSource]="dataSource" class="mat-elevation-z0">
+        <!-- Action Column -->
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let element">
+            <button
+              mat-icon-button
+              class="custom-mat-button"
+              (click)="removeSubject(element.subjectCode)"
+            >
+              <mat-icon>remove_circle</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+        <!-- # Column -->
+        <ng-container matColumnDef="num">
+          <th mat-header-cell *matHeaderCellDef>#</th>
+          <td mat-cell *matCellDef="let element; let i = index">{{ i + 1 }}</td>
+        </ng-container>
+
+        <!-- Subject Code Column -->
+        <ng-container matColumnDef="subjectCode">
+          <th mat-header-cell *matHeaderCellDef>Subject Code</th>
+          <td mat-cell *matCellDef="let element">{{ element.subjectCode }}</td>
+        </ng-container>
+
+        <!-- Subject Title Column -->
+        <ng-container matColumnDef="subjectTitle">
+          <th mat-header-cell *matHeaderCellDef>Subject Title</th>
+          <td mat-cell *matCellDef="let element">{{ element.subjectTitle }}</td>
+        </ng-container>
+
+        <!-- Lec Column -->
+        <ng-container matColumnDef="lec">
+          <th mat-header-cell *matHeaderCellDef>Lec</th>
+          <td mat-cell *matCellDef="let element">{{ element.lec }}</td>
+        </ng-container>
+
+        <!-- Lab Column -->
+        <ng-container matColumnDef="lab">
+          <th mat-header-cell *matHeaderCellDef>Lab</th>
+          <td mat-cell *matCellDef="let element">{{ element.lab }}</td>
+        </ng-container>
+
+        <!-- Units Column -->
+        <ng-container matColumnDef="units">
+          <th mat-header-cell *matHeaderCellDef>Units</th>
+          <td mat-cell *matCellDef="let element">{{ element.units }}</td>
+        </ng-container>
+
+        <!-- Preferred Day Column -->
+        <ng-container matColumnDef="preferredDay">
+          <th mat-header-cell *matHeaderCellDef>Preferred Day</th>
+          <td mat-cell *matCellDef="let element">
+            <select
+              class="preferred-day-dropdown"
+              [(ngModel)]="element.preferredDay"
+              (change)="onDayChange(element, $event)"
+              name="preferredDay"
+            >
+              <option value="" disabled selected>Select day</option>
+              @for (day of daysOfWeek; track day) {
+              <option [value]="day">
+                {{ day }}
+              </option>
+              }
+            </select>
+          </td>
+        </ng-container>
+
+        <!-- Preferred Time Column -->
+        <ng-container matColumnDef="preferredTime">
+          <th mat-header-cell *matHeaderCellDef>Preferred Time</th>
+          <td mat-cell *matCellDef="let element">
+            <button
+              mat-button
+              (click)="openTimeDialog(element)"
+              class="preferred-time-button"
+            >
+              {{
+                element.preferredTime
+                  ? (element.preferredTime | timeFormat)
+                  : "Select time"
+              }}
+            </button>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
     </div>
   </div>
 </div>

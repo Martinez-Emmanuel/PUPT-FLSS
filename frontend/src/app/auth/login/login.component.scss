@@ -1,3 +1,9 @@
+@import "../../../styles/mixins";
+*,
+*::before {
+  @include default-transition;
+}
+
 .login-container {
   display: flex;
   height: 100vh;
@@ -19,7 +25,6 @@
   background-color: var(--login-bg);
   backdrop-filter: blur(50px) saturate(150%);
   z-index: 1;
-  transition: background-color 0.5s ease;
 }
 
 .login-image-section,
@@ -66,7 +71,6 @@
     align-items: center;
     text-align: left;
     gap: var(--spacing-lg);
-    // border: 2px solid purple;
 
     .university-logo {
       width: 4.5rem;
@@ -99,7 +103,6 @@
     flex-direction: column;
     gap: var(--spacing-xl);
     width: inherit;
-    // border: 2px solid red;
 
     #form_header {
       display: flex;
@@ -261,7 +264,6 @@
   .button-disabled {
     opacity: var(--opacity-half);
     cursor: not-allowed !important;
-    background-color: var(--neutral-disabled);
   }
 }
 

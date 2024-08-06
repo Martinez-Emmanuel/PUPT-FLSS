@@ -1,5 +1,10 @@
 @import "../../../../../styles/mixins";
 
+* {
+  color: var(--neutral-base);
+  @include default-transition(true);
+}
+
 .faculty-main-container {
   height: 100%;
   display: flex;
@@ -7,7 +12,7 @@
   box-sizing: border-box;
   gap: var(--spacing-2xl);
   padding: var(--spacing-2xl);
-  background: var(--main-bg); // Prevent flicker when refreshed
+  background-color: var(--main-bg); // Prevent flicker when refreshed
 }
 
 .faculty-main-header {
@@ -45,7 +50,6 @@
       font-family: "Trajan Pro";
       font-size: var(--font-size-md);
       font-weight: 600;
-      @include ellipsis;
     }
 
     .university-name {
@@ -88,20 +92,26 @@
       z-index: 1;
       transition: color 0.3s ease;
       cursor: pointer;
-      @include ellipsis;
 
       &.active {
         color: white;
         transition: color 0.3s ease;
+
+        mat-icon {
+          color: white;
+        }
       }
 
       &:not(.active) {
         transition: color 0.3s ease;
       }
 
-      // Add hover effect
       &:hover:not(.active) {
         color: var(--primary-one);
+
+        mat-icon {
+          color: var(--primary-one);
+        }
       }
     }
   }
@@ -121,9 +131,66 @@
       }
     }
 
-    .profile-icon {
-      width: 3rem;
-      height: auto;
+    .profile-dropdown {
+      position: relative;
+
+      .profile-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &:hover {
+          box-shadow: 0 0 0 3px var(--neutral-hover);
+        }
+      }
+
+      .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background-color: var(--neutral-light);
+        box-shadow: var(--shadow-level-1);
+        border-radius: var(--border-radius-md);
+        z-index: 3;
+
+        .dropdown-item {
+          @include ellipsis;
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-xs);
+          padding: var(--spacing-md) var(--spacing-md);
+          color: var(--neutral-base);
+          transition: background-color 0.3s ease;
+          border-radius: var(--border-radius-sm);
+          font-weight: 500;
+          cursor: pointer;
+
+          &:hover {
+            background-color: var(--neutral-option);
+          }
+
+          &.logout {
+            color: var(--primary-one);
+
+            mat-icon {
+              color: var(--primary-one);
+            }
+
+            &:hover {
+              background-color: var(--primary-fade);
+            }
+          }
+
+          mat-icon {
+            display: flex;
+            align-items: center;
+            font-size: var(--font-size-lg);
+            font-weight: 500;
+          }
+        }
+      }
     }
   }
 }

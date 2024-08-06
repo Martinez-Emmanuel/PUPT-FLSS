@@ -16,9 +16,10 @@
   }
 
   // Typography
-  --font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+  --font-family: "Inter Tight",
+  "Helvetica Neue",
+  sans-serif;
   --font-size-xs: 0.65rem;
-  --font-size-base: 16px;
   --font-size-sm: 0.875rem;
   --font-size-md: 1rem;
   --font-size-lg: 1.25rem;
@@ -40,6 +41,7 @@
   --spacing-xl: 2rem;
   --spacing-2xl: 2.5rem;
   --spacing-3xl: 3rem;
+  --spacing-4xl: 4rem;
 
   // Border radius
   --border-radius-base: 0.25rem;
@@ -88,11 +90,23 @@ body {
   padding: 0;
   box-sizing: border-box;
   background: var(--main-bg);
+  color: var(--neutral-base);
   font-family: "Inter Tight", "Helvetica Neue", sans-serif;
-  transition: background-color 0.5s ease, color 0.5s ease;
+  transition: background-color 0.5s ease;
 }
 
 * {
-  color: var(--neutral-base);
   font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+}
+
+/*
+.mdc-text-field--outlined {
+  --mdc-outlined-text-field-container-shape: 10px !important;
+}
+*/
+
+.mdc-text-field--filled {
+  // when appearance="fill"
+  border-top-left-radius: 10px !important;
+  border-top-right-radius: 10px !important;
 }

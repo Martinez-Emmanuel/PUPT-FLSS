@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { PreferencesComponent } from './preferences.component';
 
 describe('PreferencesComponent', () => {
@@ -8,7 +8,10 @@ describe('PreferencesComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PreferencesComponent]
+      imports: [
+        NoopAnimationsModule,
+        PreferencesComponent 
+      ]
     })
     .compileComponents();
 

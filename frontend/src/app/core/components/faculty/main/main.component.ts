@@ -1,38 +1,52 @@
-import { Component, AfterViewInit, ElementRef, Renderer2, OnDestroy, NgZone } from '@angular/core';
+import {
+  Component,
+  AfterViewInit,
+  ElementRef,
+  Renderer2,
+  OnDestroy,
+  NgZone,
+} from '@angular/core';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
-import { MatIconModule } from '@angular/material/icon';
 import { filter, takeUntil } from 'rxjs/operators';
 import { Subject, fromEvent } from 'rxjs';
+import { CommonModule } from '@angular/common';
+
+import { MaterialComponents } from '../../../imports/material.component';
+import { ThemeService } from '../../../services/theme/theme.service';
 
 @Component({
   selector: 'app-main',
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
   standalone: true,
-  imports: [RouterModule, MatIconModule]
+  imports: [RouterModule, MaterialComponents, CommonModule],
 })
 export class MainComponent implements AfterViewInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private isInitialLoad = true;
   private resizeObserver!: ResizeObserver;
+  public isDropdownOpen = false;
 
   constructor(
     private el: ElementRef,
     private renderer: Renderer2,
     private router: Router,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    public themeService: ThemeService
   ) {}
 
   ngAfterViewInit() {
     this.setupSlider();
 
     // Listen to router events
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd),
-      takeUntil(this.destroy$)
-    ).subscribe(() => {
-      setTimeout(() => this.updateSliderPosition(), 0);
-    });
+    this.router.events
+      .pipe(
+        filter((event) => event instanceof NavigationEnd),
+        takeUntil(this.destroy$)
+      )
+      .subscribe(() => {
+        setTimeout(() => this.updateSliderPosition(), 0);
+      });
 
     // Initial update
     setTimeout(() => this.updateSliderPosition(), 0);
@@ -60,6 +74,14 @@ export class MainComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  toggleDropdown() {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  toggleTheme() {
+    this.themeService.toggleTheme();
+  }
+
   setupSlider() {
     const navbar = this.el.nativeElement.querySelector('.header-navbar');
     const navItems = navbar.querySelectorAll('a');
@@ -74,7 +96,7 @@ export class MainComponent implements AfterViewInit, OnDestroy {
 
   setupResizeObserver() {
     const navbar = this.el.nativeElement.querySelector('.header-navbar');
-    
+
     this.resizeObserver = new ResizeObserver(() => {
       this.ngZone.run(() => {
         this.updateSliderPosition();
@@ -97,10 +119,10 @@ export class MainComponent implements AfterViewInit, OnDestroy {
         this.renderer.setStyle(slider, 'left', `${activeItem.offsetLeft}px`);
         this.renderer.setStyle(slider, 'opacity', '1');
         this.renderer.setStyle(slider, 'transform', 'scale(1)');
-        
+
         // Force a reflow
         slider.offsetHeight;
-        
+
         // Re-enable transitions
         this.renderer.removeStyle(slider, 'transition');
       } else {
