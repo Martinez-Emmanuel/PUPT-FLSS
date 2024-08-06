@@ -15,10 +15,6 @@
     }
   }
 
-  --gradient-primary: linear-gradient(90deg,
-    var(--primary-one) 0%,
-    var(--primary-two) 100%);
-
   // Typography
   --font-family: "Inter Tight",
   "Helvetica Neue",
@@ -94,13 +90,12 @@ body {
   padding: 0;
   box-sizing: border-box;
   background: var(--main-bg);
+  color: var(--neutral-base);
   font-family: "Inter Tight", "Helvetica Neue", sans-serif;
-  transition: background-color 0.75s ease;
+  transition: background-color 0.5s ease;
 }
 
 * {
-  color: var(--neutral-base);
-
   font-family: "Inter Tight", "Helvetica Neue", sans-serif;
 }
 
