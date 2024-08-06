@@ -1,15 +1,20 @@
+/* Truncate text with ellipsis */
 @mixin ellipsis {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-@mixin flex-center {
+/* Flexbox (center by default) with customizable values */
+@mixin flex-center($direction: row, $align: center, $justify: center, $gap: 0) {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-direction: $direction;
+  align-items: $align;
+  justify-content: $justify;
+  gap: $gap;
 }
 
+/* Reset margins, paddings, borders, and box-sizing */
 @mixin reset-styles {
   margin: 0;
   padding: 0;
@@ -17,6 +22,42 @@
   box-sizing: border-box;
 }
 
+/* Default page transition. Add the true parameter (optional) to include text */
+@mixin default-transition($include-color: false) {
+  transition: background-color 0.5s ease;
+  @if $include-color {
+    transition: background-color 0.5s ease, color 0.5s ease;
+  }
+}
+
+/* Primary gradient background */
+@mixin gradient-primary($degree: 90deg) {
+  background: linear-gradient(
+    $degree,
+    var(--gradient-light-start) 0%,
+    var(--gradient-light-end) 100%
+  );
+}
+
+/* Secondary gradient background */
+@mixin gradient-secondary($degree: 90deg) {
+  background: linear-gradient(
+    $degree,
+    var(--gradient-dark-start) 0%,
+    var(--gradient-dark-end) 100%
+  );
+}
+
+/* Soft secondary gradient background */
+@mixin gradient-soft-secondary($degree: 90deg) {
+  background: linear-gradient(
+    $degree,
+    var(--gradient-soft-gray-start) 0%,
+    var(--gradient-soft-gray-end) 100%
+  );
+}
+
+/* Custom scrollbar styling */
 @mixin custom-scrollbar {
   &::-webkit-scrollbar {
     width: 5px;
@@ -30,8 +71,11 @@
     background-color: var(--neutral-bar);
     border-radius: 3px;
   }
+
+  cursor: pointer;
 }
 
+/* Hide the scrollbar */
 @mixin hide-scrollbar {
   &::-webkit-scrollbar {
     display: none;
