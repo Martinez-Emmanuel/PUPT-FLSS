@@ -1,23 +1,24 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { MaterialComponents } from '../../../imports/material.component';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { ThemeService } from '../../../services/theme/theme.service';
 import { TimeFormatPipe } from '../../../pipes/time-format/time-format.pipe';
 import { TimeSelectionDialogComponent } from '../../../../shared/time-selection-dialog/time-selection-dialog.component';
-
-interface Subject {
-  code: string;
-  title: string;
-  lightColor: string;
-  darkColor: string;
-  lec: number;
-  lab: number;
-  units: number;
-}
+import {
+  MockSubjectService,
+  Subject,
+} from '../../../mocks/mock-subject.service';
 
 interface TableData {
   subjectCode: string;
@@ -39,102 +40,15 @@ interface TableData {
     TimeFormatPipe,
   ],
   templateUrl: './preferences.component.html',
-  styleUrl: './preferences.component.scss',
+  styleUrls: ['./preferences.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PreferencesComponent implements OnInit, OnDestroy {
-  subjects: Subject[] = [
-    {
-      code: 'COMP20133',
-      title: 'Web Development',
-      lightColor: '#FFE5E5',
-      darkColor: '#3D2626',
-      lec: 3,
-      lab: 1,
-      units: 4,
-    },
-    {
-      code: 'COMP20134',
-      title: 'Database Systems',
-      lightColor: '#E5FFE5',
-      darkColor: '#263D26',
-      lec: 2,
-      lab: 2,
-      units: 4,
-    },
-    {
-      code: 'COMP20135',
-      title: 'Data Structures and Algorithms',
-      lightColor: '#E5E5FF',
-      darkColor: '#26263D',
-      lec: 3,
-      lab: 0,
-      units: 3,
-    },
-    {
-      code: 'COMP20136',
-      title: 'Software Engineering',
-      lightColor: '#FFFFE5',
-      darkColor: '#3D3D26',
-      lec: 3,
-      lab: 1,
-      units: 4,
-    },
-    {
-      code: 'COMP20137',
-      title: 'Computer Networks',
-      lightColor: '#FFE5FF',
-      darkColor: '#3D263D',
-      lec: 2,
-      lab: 2,
-      units: 4,
-    },
-    {
-      code: 'COMP20138',
-      title: 'Artificial Intelligence',
-      lightColor: '#E5FFFF',
-      darkColor: '#263D3D',
-      lec: 3,
-      lab: 1,
-      units: 4,
-    },
-    {
-      code: 'COMP20139',
-      title: 'Machine Learning',
-      lightColor: '#F0E5FF',
-      darkColor: '#322639',
-      lec: 3,
-      lab: 1,
-      units: 4,
-    },
-    {
-      code: 'COMP20140',
-      title: 'Computer Graphics',
-      lightColor: '#E5FFF0',
-      darkColor: '#263932',
-      lec: 2,
-      lab: 2,
-      units: 4,
-    },
-    {
-      code: 'COMP20141',
-      title: 'Strategic Business Analysis with Contemporary Issues and Trends',
-      lightColor: '#FFF0E5',
-      darkColor: '#3D3226',
-      lec: 3,
-      lab: 1,
-      units: 4,
-    },
-    {
-      code: 'COMP20142',
-      title:
-        'Technology for Teaching and Learning 2 - Instrumentation and Technology in Mathematics',
-      lightColor: '#E5F0FF',
-      darkColor: '#263239',
-      lec: 3,
-      lab: 1,
-      units: 4,
-    },
-  ];
+  subjects: Subject[] = [];
+  totalUnits: number = 0;
+  maxUnits: number = 25;
+
+  tableData: TableData[] = [];
 
   displayedColumns: string[] = [
     'action',
@@ -147,7 +61,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     'preferredDay',
     'preferredTime',
   ];
-  tableData: TableData[] = [];
+
   daysOfWeek: string[] = [
     'Monday',
     'Tuesday',
@@ -160,35 +74,56 @@ export class PreferencesComponent implements OnInit, OnDestroy {
 
   isDarkMode: boolean = false;
   private themeSubscription!: Subscription;
-  dataSource: MatTableDataSource<TableData>;
+  dataSource = new MatTableDataSource<TableData>([]);
 
   constructor(
     private themeService: ThemeService,
     private cdr: ChangeDetectorRef,
-    private dialog: MatDialog
-  ) {
-    this.dataSource = new MatTableDataSource<TableData>([]);
-  }
+    private dialog: MatDialog,
+    private mockSubjectService: MockSubjectService,
+    private snackBar: MatSnackBar
+  ) {}
 
   ngOnInit() {
+    // Subscribe to theme service
     this.themeSubscription = this.themeService.isDarkTheme$.subscribe(
       (isDark) => {
         this.isDarkMode = isDark;
+        this.cdr.markForCheck();
       }
     );
+
+    // Load subjects on initialization
+    this.loadSubjects();
   }
 
   ngOnDestroy() {
-    if (this.themeSubscription) {
-      this.themeSubscription.unsubscribe();
-    }
+    // Unsubscribes from the theme subscription
+    this.themeSubscription.unsubscribe();
   }
 
-  getSubjectColor(subject: Subject): string {
-    return this.isDarkMode ? subject.darkColor : subject.lightColor;
+  // Loads subjects from the *MOCK* service
+  loadSubjects() {
+    this.mockSubjectService.getSubjects().subscribe(
+      (subjects) => {
+        this.subjects = subjects;
+        this.cdr.markForCheck();
+      },
+      (error) => console.error('Error loading subjects:', error)
+    );
   }
 
+  // Adds a subject to the table if max units are not exceeded
   addSubjectToTable(subject: Subject) {
+    if (this.totalUnits + subject.units > this.maxUnits) {
+      this.snackBar.open('Maximum units have been reached.', 'Close', {
+        duration: 3000,
+        horizontalPosition: 'center',
+        verticalPosition: 'bottom',
+      });
+      return;
+    }
+
     const newTableData: TableData = {
       subjectCode: subject.code,
       subjectTitle: subject.title,
@@ -199,30 +134,41 @@ export class PreferencesComponent implements OnInit, OnDestroy {
       preferredTime: '',
     };
     this.dataSource.data = [...this.dataSource.data, newTableData];
-    this.cdr.detectChanges();
+    this.updateTotalUnits();
   }
 
+  // Removes a subject from the table based on its code
   removeSubject(subjectCode: string) {
     this.dataSource.data = this.dataSource.data.filter(
       (subject) => subject.subjectCode !== subjectCode
     );
-    this.cdr.detectChanges();
+    this.updateTotalUnits();
   }
 
+  // Updates the preferred day for a subject
   onDayChange(element: TableData, event: Event) {
     const selectElement = event.target as HTMLSelectElement;
     const newDay = selectElement.value;
 
-    const updatedData = this.dataSource.data.map((item) => {
-      if (item.subjectCode === element.subjectCode) {
-        return { ...item, preferredDay: newDay };
-      }
-      return item;
-    });
+    const updatedData = this.dataSource.data.map((item) =>
+      item.subjectCode === element.subjectCode
+        ? { ...item, preferredDay: newDay }
+        : item
+    );
     this.dataSource.data = updatedData;
-    this.cdr.detectChanges();
+    this.cdr.markForCheck();
   }
 
+  // Updates the total units based on subjects in the table
+  updateTotalUnits() {
+    this.totalUnits = this.dataSource.data.reduce(
+      (total, subject) => total + subject.units,
+      0
+    );
+    this.cdr.markForCheck();
+  }
+
+  // Opens a mat dialog for selecting time for a subject
   openTimeDialog(element: TableData): void {
     const [startTime, endTime] = element.preferredTime
       ? element.preferredTime.split(' - ')
@@ -236,10 +182,12 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         element.preferredTime = result;
-        this.cdr.detectChanges();
+        this.cdr.markForCheck();
       }
     });
   }
+
+  // Returns a formatted time string or a placeholder
   getFormattedTime(time: string): string {
     return time ? time : 'Select time';
   }

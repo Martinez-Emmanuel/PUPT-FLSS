@@ -8,6 +8,18 @@
         Submit your preferred subjects and schedule for the upcoming semester.
       </p>
     </div>
+
+    <!--Display Max & Selected Units -->
+    <div id="units_container">
+      <div class="units max">
+        <h2>{{ maxUnits }}</h2>
+        <span>Max. Units Allowed</span>
+      </div>
+      <div class="units total">
+        <h2>{{ totalUnits }}</h2>
+        <span>Total Units Selected</span>
+      </div>
+    </div>
   </div>
 
   <!--Preferences second row-->
@@ -26,10 +38,7 @@
       <div id="subjects_list">
         <div class="subjects-scroll-container">
           @for (subject of subjects; track subject.code) {
-          <div
-            class="subject-card"
-            [style.background-color]="getSubjectColor(subject)"
-          >
+          <div class="subject-card">
             <div class="subject-info">
               <span class="subject-code">{{ subject.code }}</span>
               <span class="subject-title">{{ subject.title }}</span>
@@ -107,6 +116,7 @@
               class="preferred-day-dropdown"
               [(ngModel)]="element.preferredDay"
               (change)="onDayChange(element, $event)"
+              name="preferredDay"
             >
               <option value="" disabled selected>Select day</option>
               @for (day of daysOfWeek; track day) {
@@ -118,6 +128,7 @@
           </td>
         </ng-container>
 
+        <!-- Preferred Time Column -->
         <ng-container matColumnDef="preferredTime">
           <th mat-header-cell *matHeaderCellDef>Preferred Time</th>
           <td mat-cell *matCellDef="let element">
