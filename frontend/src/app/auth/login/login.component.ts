@@ -134,17 +134,17 @@ export class LoginComponent implements OnInit, OnDestroy {
           sessionStorage.setItem('faculty_email', response.faculty.faculty_email);
           sessionStorage.setItem('token', response.token);
           sessionStorage.setItem('expires_at', response.expires_at);
-
+          sessionStorage.setItem('faculty_units', response.faculty.faculty_units.toString());
+  
           const expirationTime = new Date(response.expires_at).getTime() - new Date().getTime();
           setTimeout(() => {
             this.onAutoLogout();
           }, expirationTime);
-
+  
           this.router.navigate(['/faculty']);  
         },
         error => {
           console.error('Login failed', error);
-          // Set error message for the frontend
           if (error.status === 401 && error.error.message === 'Invalid Credentials') {
             this.errorMessage = 'Invalid username or password. Please try again.';
           } else {
@@ -155,6 +155,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       );
     }
   }
+  
 
   onAutoLogout() {
     // Check if the token is present
