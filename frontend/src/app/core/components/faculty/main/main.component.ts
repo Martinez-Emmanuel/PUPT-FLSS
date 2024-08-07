@@ -1,18 +1,11 @@
-import {
-  Component,
-  AfterViewInit,
-  ElementRef,
-  Renderer2,
-  OnDestroy,
-  NgZone,
-} from '@angular/core';
+import { Component, AfterViewInit, ElementRef, Renderer2, OnDestroy, NgZone } from '@angular/core';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { filter, takeUntil } from 'rxjs/operators';
 import { Subject, fromEvent } from 'rxjs';
 import { CommonModule } from '@angular/common';
-
 import { MaterialComponents } from '../../../imports/material.component';
 import { ThemeService } from '../../../services/theme/theme.service';
+import { AuthService } from '../../../services/auth/auth.service'; // Add this import
 
 @Component({
   selector: 'app-main',
@@ -26,13 +19,15 @@ export class MainComponent implements AfterViewInit, OnDestroy {
   private isInitialLoad = true;
   private resizeObserver!: ResizeObserver;
   public isDropdownOpen = false;
+  public isLoading = false; // Add this variable
 
   constructor(
     private el: ElementRef,
     private renderer: Renderer2,
     private router: Router,
     private ngZone: NgZone,
-    public themeService: ThemeService
+    public themeService: ThemeService,
+    private authService: AuthService // Add this parameter
   ) {}
 
   ngAfterViewInit() {
@@ -138,5 +133,21 @@ export class MainComponent implements AfterViewInit, OnDestroy {
     }
 
     this.isInitialLoad = false;
+  }
+
+  logout() {
+    this.isLoading = true; // Start the spinner
+    this.authService.logout().subscribe(
+      response => {
+        console.log('Logout successful', response);
+        sessionStorage.clear();
+        this.isLoading = false; 
+        this.router.navigate(['/login']);
+      },
+      error => {
+        console.error('Logout failed', error);
+        this.isLoading = false; 
+      }
+    );
   }
 }
