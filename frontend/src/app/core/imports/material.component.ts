@@ -13,6 +13,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 export const MaterialComponents = [
   MatToolbarModule,
@@ -30,4 +31,5 @@ export const MaterialComponents = [
   MatOptionModule,
   MatDialogModule,
   MatTooltipModule,
+  MatProgressSpinnerModule
 ];
