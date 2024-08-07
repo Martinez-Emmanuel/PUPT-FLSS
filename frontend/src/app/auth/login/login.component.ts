@@ -190,6 +190,47 @@ export class LoginComponent implements OnInit, OnDestroy {
             }
           }
         );
+      this.authService.login(
+        this.loginForm.value.username, 
+        this.loginForm.value.password
+      ).subscribe(
+        response => {
+          console.log('Login successful', response);
+          sessionStorage.setItem
+            ('faculty_id', response.faculty.faculty_id);
+          sessionStorage.setItem 
+            ('faculty_code', response.faculty.faculty_code);
+          sessionStorage.setItem
+            ('faculty_name', response.faculty.faculty_name);
+          sessionStorage.setItem
+            ('faculty_type', response.faculty.faculty_type);
+          sessionStorage.setItem
+            ('faculty_email', response.faculty.faculty_email);
+          sessionStorage.setItem
+            ('token', response.token);
+          sessionStorage.setItem
+            ('expires_at', response.expires_at);
+          sessionStorage.setItem(
+              'faculty_units', response.faculty.faculty_units.toString());
+  
+          const expirationTime = new Date
+            (response.expires_at).getTime() - new Date().getTime();
+          setTimeout(() => {
+            this.onAutoLogout();
+          }, expirationTime);
+  
+          this.router.navigate(['/faculty']);  
+        },
+        error => {
+          console.error('Login failed', error);
+          if (error.status === 401 && error.error.message === 'Invalid Credentials') {
+            this.errorMessage = 'Invalid username or password. Please try again.';
+          } else {
+            this.errorMessage = 'An error occurred during login. Please try again later.';
+          }
+          console.log(this.errorMessage);
+        }
+      );
     }
   }
 

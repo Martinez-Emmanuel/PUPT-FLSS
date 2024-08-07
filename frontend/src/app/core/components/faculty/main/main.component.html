@@ -52,7 +52,7 @@
             </mat-icon>
             Switch Theme
           </span>
-          <span class="dropdown-item logout">
+          <span class="dropdown-item logout" (click)="logout()">
             <mat-icon fontSet="material-icons-round">logout</mat-icon>
             Logout
           </span>
@@ -61,6 +61,10 @@
       </div>
     </div>
   </header>
+  
+  <div class="spinner-overlay" *ngIf="isLoading">
+    <mat-spinner></mat-spinner>
+  </div>
 
   <main class="faculty-main-content">
     <router-outlet></router-outlet>
