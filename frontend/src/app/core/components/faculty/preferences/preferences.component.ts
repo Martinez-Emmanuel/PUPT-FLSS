@@ -15,17 +15,18 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ThemeService } from '../../../services/theme/theme.service';
 import { TimeFormatPipe } from '../../../pipes/time-format/time-format.pipe';
 import { TimeSelectionDialogComponent } from '../../../../shared/time-selection-dialog/time-selection-dialog.component';
-import {
-  MockSubjectService,
-  Subject,
-} from '../../../mocks/mock-subject.service';
+import { HttpClientModule } from '@angular/common/http';
+import { 
+  CourseService, 
+  Course 
+} from '../../../services/course/courses.service';
 
 interface TableData {
-  subjectCode: string;
-  subjectTitle: string;
-  lec: number;
-  lab: number;
-  units: number;
+  subject_code: string;
+  subject_title: string;
+  lec_hours: number;
+  lab_hours: number;
+  total_units: number;
   preferredDay: string;
   preferredTime: string;
 }
@@ -38,13 +39,14 @@ interface TableData {
     CommonModule,
     TimeSelectionDialogComponent,
     TimeFormatPipe,
+    HttpClientModule
   ],
   templateUrl: './preferences.component.html',
   styleUrls: ['./preferences.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PreferencesComponent implements OnInit, OnDestroy {
-  subjects: Subject[] = [];
+  subjects: Course[] = [];
   totalUnits: number = 0;
   maxUnits: number = 25;
 
@@ -53,13 +55,13 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = [
     'action',
     'num',
-    'subjectCode',
-    'subjectTitle',
-    'lec',
-    'lab',
-    'units',
-    'preferredDay',
-    'preferredTime',
+    'subject_code', // This should match the matColumnDef in the template
+    'subject_title', // This should match the matColumnDef in the template
+    'lec_hours', // This should match the matColumnDef in the template
+    'lab_hours', // This should match the matColumnDef in the template
+    'total_units', // This should match the matColumnDef in the template
+    'preferredDay', // Custom property for preferred day
+    'preferredTime', // Custom property for preferred time
   ];
 
   daysOfWeek: string[] = [
@@ -80,12 +82,11 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     private themeService: ThemeService,
     private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
-    private mockSubjectService: MockSubjectService,
+    private courseService: CourseService,
     private snackBar: MatSnackBar
   ) {}
 
   ngOnInit() {
-    // Subscribe to theme service
     this.themeSubscription = this.themeService.isDarkTheme$.subscribe(
       (isDark) => {
         this.isDarkMode = isDark;
@@ -93,8 +94,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
       }
     );
 
-    // Load subjects on initialization
-    this.loadSubjects();
+    this.loadCourses();
   }
 
   ngOnDestroy() {
@@ -102,20 +102,21 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     this.themeSubscription.unsubscribe();
   }
 
-  // Loads subjects from the *MOCK* service
-  loadSubjects() {
-    this.mockSubjectService.getSubjects().subscribe(
-      (subjects) => {
-        this.subjects = subjects;
+  // Loads subjects from service
+  loadCourses() {
+    this.courseService.getCourses().subscribe(
+      (courses) => {
+        console.log('Received courses:', courses); // Log received data
+        this.subjects = courses;
         this.cdr.markForCheck();
       },
-      (error) => console.error('Error loading subjects:', error)
+      (error) => console.error('Error loading courses:', error)
     );
   }
 
-  // Adds a subject to the table if max units are not exceeded
-  addSubjectToTable(subject: Subject) {
-    if (this.totalUnits + subject.units > this.maxUnits) {
+  // Adds a subject to the table if max units are not exceeded 
+  addSubjectToTable(course: Course) {
+    if (this.totalUnits + course.total_units > this.maxUnits) {
       this.snackBar.open('Maximum units have been reached.', 'Close', {
         duration: 3000,
         horizontalPosition: 'center',
@@ -125,11 +126,11 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     }
 
     const newTableData: TableData = {
-      subjectCode: subject.code,
-      subjectTitle: subject.title,
-      lec: subject.lec,
-      lab: subject.lab,
-      units: subject.units,
+      subject_code: course.subject_code,
+      subject_title: course.subject_title,
+      lec_hours: course.lec_hours,
+      lab_hours: course.lab_hours,
+      total_units: course.total_units,
       preferredDay: '',
       preferredTime: '',
     };
@@ -138,20 +139,20 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   }
 
   // Removes a subject from the table based on its code
-  removeSubject(subjectCode: string) {
+  removeSubject(subject_code: string) {
     this.dataSource.data = this.dataSource.data.filter(
-      (subject) => subject.subjectCode !== subjectCode
+      (subject) => subject.subject_code !== subject_code
     );
     this.updateTotalUnits();
   }
 
-  // Updates the preferred day for a subject
+ // Updates the preferred day for a subject
   onDayChange(element: TableData, event: Event) {
     const selectElement = event.target as HTMLSelectElement;
     const newDay = selectElement.value;
 
     const updatedData = this.dataSource.data.map((item) =>
-      item.subjectCode === element.subjectCode
+      item.subject_code === element.subject_code
         ? { ...item, preferredDay: newDay }
         : item
     );
@@ -162,7 +163,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   // Updates the total units based on subjects in the table
   updateTotalUnits() {
     this.totalUnits = this.dataSource.data.reduce(
-      (total, subject) => total + subject.units,
+      (total, subject) => total + subject.total_units,
       0
     );
     this.cdr.markForCheck();
