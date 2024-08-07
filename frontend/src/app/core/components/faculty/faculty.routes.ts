@@ -30,6 +30,10 @@ export const FACULTY_ROUTES: Routes = [
             (m) => m.LoadAndScheduleComponent
           ),
       },
+      {
+        path: '**',
+        redirectTo: 'home',
+      },
     ],
   },
 ];
