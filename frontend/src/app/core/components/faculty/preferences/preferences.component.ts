@@ -1,10 +1,10 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  ChangeDetectionStrategy,
+import { 
+  Component, 
+  OnInit, 
+  OnDestroy, 
+  ChangeDetectionStrategy, 
   ChangeDetectorRef,
-} from '@angular/core';
+ } from '@angular/core';
 import { MaterialComponents } from '../../../imports/material.component';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
@@ -22,6 +22,7 @@ import {
 } from '../../../services/course/courses.service';
 
 interface TableData {
+  course_id: number;
   subject_code: string;
   subject_title: string;
   lec_hours: number;
@@ -39,11 +40,12 @@ interface TableData {
     CommonModule,
     TimeSelectionDialogComponent,
     TimeFormatPipe,
-    HttpClientModule
+    HttpClientModule,
   ],
   templateUrl: './preferences.component.html',
   styleUrls: ['./preferences.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [CourseService],
 })
 export class PreferencesComponent implements OnInit, OnDestroy {
   subjects: Course[] = [];
@@ -55,13 +57,13 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = [
     'action',
     'num',
-    'subject_code', // This should match the matColumnDef in the template
-    'subject_title', // This should match the matColumnDef in the template
-    'lec_hours', // This should match the matColumnDef in the template
-    'lab_hours', // This should match the matColumnDef in the template
-    'total_units', // This should match the matColumnDef in the template
-    'preferredDay', // Custom property for preferred day
-    'preferredTime', // Custom property for preferred time
+    'subject_code',
+    'subject_title',
+    'lec_hours',
+    'lab_hours',
+    'total_units',
+    'preferredDay',
+    'preferredTime',
   ];
 
   daysOfWeek: string[] = [
@@ -106,7 +108,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   loadCourses() {
     this.courseService.getCourses().subscribe(
       (courses) => {
-        console.log('Received courses:', courses); // Log received data
+        console.log('Received courses:', courses); // Log received data for testing
         this.subjects = courses;
         this.cdr.markForCheck();
       },
@@ -126,6 +128,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     }
 
     const newTableData: TableData = {
+      course_id: course.course_id,
       subject_code: course.subject_code,
       subject_title: course.subject_title,
       lec_hours: course.lec_hours,
@@ -197,9 +200,33 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   submitPreferences() {
     const facultyId = sessionStorage.getItem('faculty_id');
     const submittedData = {
-      facultyId,
-      preferences: this.dataSource.data,
+      faculty_id: facultyId,
+      preferences: this.dataSource.data.map((item) => ({
+        course_id: item.course_id,
+        preferred_day: item.preferredDay,
+        preferred_time: item.preferredTime,
+      })),
     };
-    console.log('Submitted Preferences:', submittedData);
+
+    console.log('Submitting preferences:', JSON.stringify(submittedData)); //for testing 
+
+    this.courseService.submitPreferences(submittedData).subscribe(
+      (response) => {
+        this.snackBar.open('Preferences submitted successfully.', 'Close', {
+          duration: 3000,
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom',
+        });
+        console.log('Preferences submitted successfully:', response); //for testing 
+      },
+      (error) => {
+        this.snackBar.open('Error submitting preferences.', 'Close', {
+          duration: 3000,
+          horizontalPosition: 'center',
+          verticalPosition: 'bottom',
+        });
+        console.error('Error submitting preferences:', error); //for testing 
+      }
+    );
   }
 }

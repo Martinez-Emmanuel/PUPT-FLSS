@@ -1,6 +1,5 @@
 <?php
 
-namespace App\Http\Controllers;
 
 namespace App\Http\Controllers;
 
@@ -38,7 +37,7 @@ class PreferenceController extends Controller
         $preferences = Preference::with(['faculty', 'course'])
             ->get()
             ->groupBy('faculty_id')
-            ->map(function($group) {
+            ->map(function ($group) {
                 $faculty = $group->first()->faculty;
                 return [
                     'faculty_id' => $faculty->faculty_id,
@@ -46,7 +45,7 @@ class PreferenceController extends Controller
                     'faculty_code' => $faculty->faculty_code,
                     'faculty_email' => $faculty->faculty_email,
                     'faculty_type' => $faculty->faculty_type,
-                    'preferences' => $group->map(function($preference) {
+                    'preferences' => $group->map(function ($preference) {
                         return [
                             'preference_id' => $preference->preference_id,
                             'course_id' => $preference->course_id,
