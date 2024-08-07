@@ -127,6 +127,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       ).subscribe(
         response => {
           console.log('Login successful', response);
+          sessionStorage.setItem('faculty_id', response.faculty.faculty_id);
           sessionStorage.setItem('faculty_code', response.faculty.faculty_code);
           sessionStorage.setItem('faculty_name', response.faculty.faculty_name);
           sessionStorage.setItem('faculty_type', response.faculty.faculty_type);
