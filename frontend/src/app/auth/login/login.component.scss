@@ -4,6 +4,10 @@
   @include default-transition;
 }
 
+:host {
+  @include custom-spinner(white);
+}
+
 .login-container {
   display: flex;
   height: 100vh;
@@ -167,6 +171,7 @@
         }
 
         .login-input {
+          @include default-transition;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -176,7 +181,8 @@
           border-radius: var(--border-radius-xl);
           box-sizing: border-box;
           border: 2px solid transparent;
-          transition: border-color 0.5s ease, background-color 0.5s ease;
+          color: var(--neutral-base);
+          transition: border-color 0.5s ease;
 
           &:focus {
             outline: none;
@@ -199,7 +205,6 @@
     #terms_text {
       font-size: var(--font-size-md);
       text-align: center;
-      // border: 2px solid yellow;
 
       span {
         line-height: var(--line-height-base);

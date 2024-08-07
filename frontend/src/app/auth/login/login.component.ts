@@ -1,4 +1,10 @@
-import { Component, OnInit, OnDestroy, Renderer2, ElementRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  Renderer2,
+  ElementRef,
+} from '@angular/core';
 import {
   FormBuilder,
   FormGroup,
@@ -7,12 +13,13 @@ import {
 } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
-import { Router } from '@angular/router';  // Import Router
+import { Router } from '@angular/router';
 
 import { SlideshowComponent } from '../../shared/slideshow/slideshow.component';
 import { MaterialComponents } from '../../core/imports/material.component';
 import { ThemeService } from '../../core/services/theme/theme.service';
 import { AuthService } from '../../core/services/auth/auth.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-login',
@@ -23,11 +30,10 @@ import { AuthService } from '../../core/services/auth/auth.service';
     CommonModule,
     SlideshowComponent,
     MaterialComponents,
-    MaterialComponents,
     ReactiveFormsModule,
   ],
 
-  providers: [AuthService]
+  providers: [AuthService],
 })
 export class LoginComponent implements OnInit, OnDestroy {
   backgroundImages: string[] = [
@@ -45,6 +51,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   private intervalId: any;
   currentBackgroundIndex = 0;
   isDarkTheme$: Observable<boolean>;
+  isLoading = false;
   loginForm: FormGroup;
 
   constructor(
@@ -53,7 +60,8 @@ export class LoginComponent implements OnInit, OnDestroy {
     private themeService: ThemeService,
     private formBuilder: FormBuilder,
     private authService: AuthService,
-    private router: Router  // Inject Router
+    private router: Router,
+    private snackBar: MatSnackBar
   ) {
     this.isDarkTheme$ = this.themeService.isDarkTheme$;
     this.loginForm = this.formBuilder.group({
@@ -106,9 +114,14 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   updateBackgroundImage() {
     const backgroundImage = this.getBackgroundImage();
-    const loginContainer = this.elementRef.nativeElement.querySelector('.login-container');
+    const loginContainer =
+      this.elementRef.nativeElement.querySelector('.login-container');
     if (loginContainer) {
-      this.renderer.setStyle(loginContainer, 'background-image', backgroundImage);
+      this.renderer.setStyle(
+        loginContainer,
+        'background-image',
+        backgroundImage
+      );
     }
   }
 
@@ -121,6 +134,62 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   onSubmit() {
     if (this.loginForm.valid) {
+      this.isLoading = true;
+      this.authService
+        .login(this.loginForm.value.username, this.loginForm.value.password)
+        .subscribe(
+          (response) => {
+            console.log('Login successful', response);
+            sessionStorage.setItem(
+              'faculty_code',
+              response.faculty.faculty_code
+            );
+            sessionStorage.setItem(
+              'faculty_name',
+              response.faculty.faculty_name
+            );
+            sessionStorage.setItem(
+              'faculty_type',
+              response.faculty.faculty_type
+            );
+            sessionStorage.setItem(
+              'faculty_email',
+              response.faculty.faculty_email
+            );
+            sessionStorage.setItem('token', response.token);
+            sessionStorage.setItem('expires_at', response.expires_at);
+
+            const expirationTime =
+              new Date(response.expires_at).getTime() - new Date().getTime();
+            setTimeout(() => {
+              this.onAutoLogout();
+            }, expirationTime);
+
+            this.isLoading = false;
+            this.router.navigate(['/faculty']);
+          },
+          (error) => {
+            console.error('Login failed', error);
+            this.isLoading = false;
+
+            if (
+              error.status === 401 &&
+              error.error.message === 'Invalid Credentials'
+            ) {
+              this.showErrorSnackbar(
+                'Invalid username or password. Please try again.'
+              );
+            } else if (error.status === 0) {
+              this.showErrorSnackbar(
+                'Unable to connect to the server. Please check your internet connection.'
+              );
+            } else {
+              this.showErrorSnackbar(
+                'An error occurred during login. Please try again later.'
+              );
+            }
+          }
+        );
       this.authService.login(
         this.loginForm.value.username, 
         this.loginForm.value.password
@@ -155,25 +224,32 @@ export class LoginComponent implements OnInit, OnDestroy {
       );
     }
   }
-  
+
+  showErrorSnackbar(message: string) {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+    });
+  }
 
   onAutoLogout() {
     // Check if the token is present
     if (sessionStorage.getItem('token')) {
       this.authService.logout().subscribe(
-        response => {
+        (response) => {
           console.log('Logout successful', response);
           sessionStorage.clear();
 
           // Show alert message
           alert('Session expired. Please log in again.');
         },
-        error => {
+        (error) => {
           console.error('Logout failed', error);
           // Clear session storage and show alert message even if logout request fails
           sessionStorage.clear();
           alert('Session expired. Please log in again.');
-          this.router.navigate(['/login']);  // Redirect to login page
+          this.router.navigate(['/login']); // Redirect to login page
         }
       );
     } else {
@@ -181,18 +257,18 @@ export class LoginComponent implements OnInit, OnDestroy {
       sessionStorage.clear();
       alert('Session expired. Please log in again.');
     }
-  } 
+  }
 
   onLogout() {
     this.authService.logout().subscribe(
-      response => {
+      (response) => {
         console.log('Logout successful', response);
         sessionStorage.clear();
 
         // Redirect to login page
         this.router.navigate(['/login']);
       },
-      error => {
+      (error) => {
         console.error('Logout failed', error);
         // Handle logout error (e.g., show an error message)
       }

@@ -29,5 +29,5 @@ export const MaterialComponents = [
   MatOptionModule,
   MatDialogModule,
   MatTooltipModule,
-  MatProgressSpinnerModule 
+  MatProgressSpinnerModule
 ];
