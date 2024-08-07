@@ -105,8 +105,13 @@
           [disabled]="loginForm.invalid"
           (click)="onSubmit()"
         >
+          @if(!isLoading) {
           <span>Log In</span>
+          } @if(!isLoading) {
           <mat-icon fontSet="material-icons-sharp">login</mat-icon>
+          } @if(isLoading) {
+          <mat-spinner diameter="30" class="custom-spinner"></mat-spinner>
+          }
         </button>
       </div>
     </div>
