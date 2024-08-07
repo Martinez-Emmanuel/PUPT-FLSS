@@ -21,7 +21,7 @@ class FacultySeeder extends Seeder
             'faculty_password' => 'password123',
             'faculty_email' => 'juan.delacruz@example.com',
             'faculty_type' => 'part-time',
-            'faculty_units' => 0, // Add initial units value
+            'faculty_units' => 18, // Add initial units value
         ]);
 
         Faculty::create([
@@ -30,7 +30,7 @@ class FacultySeeder extends Seeder
             'faculty_password' => 'password234',
             'faculty_email' => 'maria.clara@example.com',
             'faculty_type' => 'full-time',
-            'faculty_units' => 0, // Add initial units value
+            'faculty_units' => 30, // Add initial units value
         ]);
 
         Faculty::create([
@@ -39,7 +39,7 @@ class FacultySeeder extends Seeder
             'faculty_password' => 'password345',
             'faculty_email' => 'alice.johnson@example.com',
             'faculty_type' => 'temporary',
-            'faculty_units' => 0, // Add initial units value
+            'faculty_units' => 18, // Add initial units value
         ]);
 
         Faculty::create([
@@ -48,7 +48,7 @@ class FacultySeeder extends Seeder
             'faculty_password' => 'password456',
             'faculty_email' => 'bob.brown@example.com',
             'faculty_type' => 'temporary',
-            'faculty_units' => 0, // Add initial units value
+            'faculty_units' => 18, // Add initial units value
         ]);
 
         Faculty::create([
@@ -57,7 +57,7 @@ class FacultySeeder extends Seeder
             'faculty_password' => 'newpassword123',
             'faculty_email' => 'carol.white@example.com',
             'faculty_type' => 'full-time',
-            'faculty_units' => 0, // Add initial units value
+            'faculty_units' => 30, // Add initial units value
         ]);
     }
 }
