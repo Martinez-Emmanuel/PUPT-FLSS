@@ -196,16 +196,25 @@ export class LoginComponent implements OnInit, OnDestroy {
       ).subscribe(
         response => {
           console.log('Login successful', response);
-          sessionStorage.setItem('faculty_id', response.faculty.faculty_id);
-          sessionStorage.setItem('faculty_code', response.faculty.faculty_code);
-          sessionStorage.setItem('faculty_name', response.faculty.faculty_name);
-          sessionStorage.setItem('faculty_type', response.faculty.faculty_type);
-          sessionStorage.setItem('faculty_email', response.faculty.faculty_email);
-          sessionStorage.setItem('token', response.token);
-          sessionStorage.setItem('expires_at', response.expires_at);
-          sessionStorage.setItem('faculty_units', response.faculty.faculty_units.toString());
+          sessionStorage.setItem
+            ('faculty_id', response.faculty.faculty_id);
+          sessionStorage.setItem 
+            ('faculty_code', response.faculty.faculty_code);
+          sessionStorage.setItem
+            ('faculty_name', response.faculty.faculty_name);
+          sessionStorage.setItem
+            ('faculty_type', response.faculty.faculty_type);
+          sessionStorage.setItem
+            ('faculty_email', response.faculty.faculty_email);
+          sessionStorage.setItem
+            ('token', response.token);
+          sessionStorage.setItem
+            ('expires_at', response.expires_at);
+          sessionStorage.setItem(
+              'faculty_units', response.faculty.faculty_units.toString());
   
-          const expirationTime = new Date(response.expires_at).getTime() - new Date().getTime();
+          const expirationTime = new Date
+            (response.expires_at).getTime() - new Date().getTime();
           setTimeout(() => {
             this.onAutoLogout();
           }, expirationTime);

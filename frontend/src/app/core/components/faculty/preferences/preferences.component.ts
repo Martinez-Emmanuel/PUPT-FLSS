@@ -53,6 +53,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   maxUnits: number = 25;
 
   tableData: TableData[] = [];
+  loading = true;
 
   displayedColumns: string[] = [
     'action',
@@ -106,13 +107,18 @@ export class PreferencesComponent implements OnInit, OnDestroy {
 
   // Loads subjects from service
   loadCourses() {
+    this.loading = true; // Set loading to true before starting the request
     this.courseService.getCourses().subscribe(
       (courses) => {
         console.log('Received courses:', courses); // Log received data for testing
         this.subjects = courses;
+        this.loading = false; // Set loading to false when the request completes
         this.cdr.markForCheck();
       },
-      (error) => console.error('Error loading courses:', error)
+      (error) => {
+        console.error('Error loading courses:', error);
+        this.loading = false; // Set loading to false if there's an error
+      }
     );
   }
 

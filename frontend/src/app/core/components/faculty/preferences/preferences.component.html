@@ -37,6 +37,14 @@
       <!--Subjects List-->
       <div id="subjects_list">
         <div class="subjects-scroll-container">
+          <!-- Display spinner while loading -->
+          @if (loading) {
+            <div class="spinner-wrapper">
+              <mat-spinner diameter="30" class="custom-spinner"></mat-spinner>
+            </div>
+          }
+          <!-- Display subjects when loaded -->
+          @if (!loading) {
           <!-- Ensure the properties match the Course interface -->
           @for (subject of subjects; track subject.subject_code) {
             <div class="subject-card">
@@ -53,6 +61,7 @@
             </button>
           </div>
         }
+      }
         </div>
       </div>
     </div>
