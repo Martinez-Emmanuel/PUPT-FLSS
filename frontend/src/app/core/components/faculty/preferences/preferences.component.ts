@@ -191,4 +191,14 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   getFormattedTime(time: string): string {
     return time ? time : 'Select time';
   }
+
+  // Submit preferences and log to console
+  submitPreferences() {
+    const facultyId = sessionStorage.getItem('faculty_id');
+    const submittedData = {
+      facultyId,
+      preferences: this.dataSource.data,
+    };
+    console.log('Submitted Preferences:', submittedData);
+  }
 }
