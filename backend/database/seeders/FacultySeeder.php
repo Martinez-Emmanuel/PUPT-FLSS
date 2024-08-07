@@ -16,10 +16,10 @@ class FacultySeeder extends Seeder
     public function run()
     {
         Faculty::create([
-            'faculty_name' => 'Juan Dela Cruz',
+            'faculty_name' => 'Adriano Naoes',
             'faculty_code' => 'FA1234TG2024',
             'faculty_password' => 'password123',
-            'faculty_email' => 'juan.delacruz@example.com',
+            'faculty_email' => 'andreasnaoe@gmail.com',
             'faculty_type' => 'part-time',
             'faculty_units' => 18, // Add initial units value
         ]);
