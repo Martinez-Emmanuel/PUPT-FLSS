@@ -16,15 +16,13 @@
     <nav class="header-navbar">
       <div class="slider"></div>
       <a routerLink="home" routerLinkActive="active">
-        <mat-icon fontSet="material-icons-round">home</mat-icon>Home
+        <span mat-symbol="home"></span>Home
       </a>
       <a routerLink="preferences" routerLinkActive="active">
-        <mat-icon fontSet="material-icons-round">settings</mat-icon>Set
-        Preferences
+        <span mat-symbol="settings"></span>Set Preferences
       </a>
       <a routerLink="load-and-schedule" routerLinkActive="active">
-        <mat-icon fontSet="material-icons-round">calendar_month</mat-icon>Load
-        and Schedule
+        <span mat-symbol="calendar_month"></span>Load and Schedule
       </a>
     </nav>
 
@@ -45,15 +43,16 @@
         @if (isDropdownOpen) {
         <div class="dropdown-menu">
           <span class="dropdown-item" (click)="toggleTheme()">
-            <mat-icon fontSet="material-icons-round">
-              {{
-                (themeService.isDarkTheme$ | async) ? "light_mode" : "dark_mode"
-              }}
-            </mat-icon>
+            <span
+              [mat-symbol]="
+                (themeService.isDarkTheme$ | async) ? 'light_mode' : 'dark_mode'
+              "
+            ></span>
+
             Switch Theme
           </span>
           <span class="dropdown-item logout">
-            <mat-icon fontSet="material-icons-round">logout</mat-icon>
+            <span mat-symbol="logout"></span>
             Logout
           </span>
         </div>
