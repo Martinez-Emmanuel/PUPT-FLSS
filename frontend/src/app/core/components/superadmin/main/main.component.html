@@ -38,7 +38,6 @@
         <h4 class="list-subheader">Management</h4>
         <a
           class="list-item nested-item"
-          routerLink="/manage-admin"
           routerLinkActive="active-link"
           matRipple
         >
@@ -47,7 +46,6 @@
         </a>
         <a
           class="list-item nested-item"
-          routerLink="/manage-faculty"
           routerLinkActive="active-link"
           matRipple
         >
@@ -60,7 +58,7 @@
         <h4 class="list-subheader">Maintenance</h4>
         <a
           class="list-item nested-item"
-          routerLink="/programs"
+          routerLink="/superadmin/programs"
           routerLinkActive="active-link"
           matRipple
         >
@@ -69,7 +67,7 @@
         </a>
         <a
           class="list-item nested-item"
-          routerLink="/courses"
+          routerLink="/superadmin/courses"
           routerLinkActive="active-link"
           matRipple
         >
@@ -78,7 +76,7 @@
         </a>
         <a
           class="list-item nested-item"
-          routerLink="/curriculum"
+          routerLink="/superadmin/curriculum"
           routerLinkActive="active-link"
           matRipple
         >
@@ -87,7 +85,7 @@
         </a>
         <a
           class="list-item nested-item"
-          routerLink="/rooms"
+          routerLink="/superadmin/rooms"
           routerLinkActive="active-link"
           matRipple
         >
@@ -121,7 +119,7 @@
       <header class="sidenav-header">
         <!--Page Title-->
         <div class="title-container">
-          <h2 class="page-title">Dashboard</h2>
+          <h2 class="page-title">{{pageTitle}}</h2>
         </div>
 
         <!--Admin Account-->

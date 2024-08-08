@@ -95,6 +95,7 @@ mat-sidenav-content {
   .main-toolbar {
     position: sticky;
     top: 0;
+    z-index: 3;
     background: none;
     padding: 0;
 
@@ -157,7 +158,6 @@ mat-sidenav-content {
           background-color: var(--neutral-light);
           box-shadow: var(--shadow-level-1);
           border-radius: var(--border-radius-md);
-          z-index: 3;
 
           .dropdown-item {
             @include ellipsis;
