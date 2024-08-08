@@ -1,1 +1,170 @@
-<router-outlet></router-outlet>
+<!--Page Container-->
+<mat-sidenav-container class="sidenav-container">
+  <!--Side Nav Bar (Left Side)-->
+  <mat-sidenav
+    #drawer
+    class="sidenav-bar"
+    fixedInViewport
+    [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+    [mode]="(isHandset$ | async) ? 'push' : 'side'"
+    [opened]="(isHandset$ | async) === false"
+  >
+    <div class="side-toolbar">
+      <img
+        src="../../../../../assets/images/pup_taguig_logo.svg"
+        alt="PUP Taguig Logo"
+        class="side-toolbar-img"
+      />
+      <div class="header-name">
+        <div class="university-name">PUP TAGUIG</div>
+        <div class="system-name">FLS SYSTEM</div>
+      </div>
+    </div>
+    <mat-nav-list class="navbar-list">
+      <div class="group">
+        <h4 class="list-subheader">Dashboard</h4>
+        <a
+          class="list-item nested-item"
+          routerLink="/superadmin/dashboard"
+          routerLinkActive="active-link"
+          matRipple
+        >
+          <span mat-symbol="dashboard" matListItemIcon></span>
+          <span matListItemTitle>Dashboard</span>
+        </a>
+      </div>
+
+      <div class="group">
+        <h4 class="list-subheader">Management</h4>
+        <a
+          class="list-item nested-item"
+          routerLink="/manage-admin"
+          routerLinkActive="active-link"
+          matRipple
+        >
+          <span mat-symbol="admin_panel_settings" matListItemIcon></span>
+          <span matListItemTitle>Manage Admin</span>
+        </a>
+        <a
+          class="list-item nested-item"
+          routerLink="/manage-faculty"
+          routerLinkActive="active-link"
+          matRipple
+        >
+          <span mat-symbol="groups" matListItemIcon></span>
+          <span matListItemTitle>Manage Faculty</span>
+        </a>
+      </div>
+
+      <div class="group">
+        <h4 class="list-subheader">Maintenance</h4>
+        <a
+          class="list-item nested-item"
+          routerLink="/programs"
+          routerLinkActive="active-link"
+          matRipple
+        >
+          <span mat-symbol="school" matListItemIcon></span>
+          <span matListItemTitle>Programs</span>
+        </a>
+        <a
+          class="list-item nested-item"
+          routerLink="/courses"
+          routerLinkActive="active-link"
+          matRipple
+        >
+          <span mat-symbol="book" matListItemIcon></span>
+          <span matListItemTitle>Courses</span>
+        </a>
+        <a
+          class="list-item nested-item"
+          routerLink="/curriculum"
+          routerLinkActive="active-link"
+          matRipple
+        >
+          <span mat-symbol="list_alt" matListItemIcon></span>
+          <span matListItemTitle>Curriculum</span>
+        </a>
+        <a
+          class="list-item nested-item"
+          routerLink="/rooms"
+          routerLinkActive="active-link"
+          matRipple
+        >
+          <span mat-symbol="meeting_room" matListItemIcon></span>
+          <span matListItemTitle>Rooms</span>
+        </a>
+      </div>
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <!--Side Nav Content (Right Side)-->
+  <mat-sidenav-content class="sidenav-content">
+    <!--Main Toolbar-->
+    <mat-toolbar class="main-toolbar">
+      <!--Displays toggle sidenav button-->
+      @if (isHandset$ | async) {
+      <div class="toggle-button-container">
+        <button
+          type="button"
+          aria-label="Toggle sidenav"
+          mat-icon-button
+          (click)="drawer.toggle()"
+          class="toggle-button"
+        >
+          <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
+        </button>
+      </div>
+      }
+
+      <!--Actual sidenav content-->
+      <header class="sidenav-header">
+        <!--Page Title-->
+        <div class="title-container">
+          <h2 class="page-title">Dashboard</h2>
+        </div>
+
+        <!--Admin Account-->
+        <div class="header-account">
+          <div class="account-text">
+            <div class="account-name">PUP Taguig Super Admin</div>
+            <div class="account-email">puptaguigfaculty&#64;pup.edu.ph</div>
+          </div>
+          <div class="profile-dropdown">
+            <img
+              src="assets/images/default_superadmin_icon.png"
+              alt="Profile Icon"
+              class="profile-icon"
+              (click)="toggleDropdown()"
+              matTooltip="Click to open settings"
+              matTooltipPosition="below"
+            />
+            @if (isDropdownOpen) {
+            <div class="dropdown-menu">
+              <span class="dropdown-item" (click)="toggleTheme()">
+                <span
+                  [mat-symbol]="
+                    (themeService.isDarkTheme$ | async)
+                      ? 'light_mode'
+                      : 'dark_mode'
+                  "
+                ></span>
+
+                Switch Theme
+              </span>
+              <span class="dropdown-item logout">
+                <span mat-symbol="logout"></span>
+                Logout
+              </span>
+            </div>
+            }
+          </div>
+        </div>
+      </header>
+    </mat-toolbar>
+    <!-- Main Content -->
+    <div class="sidenav-main">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>
