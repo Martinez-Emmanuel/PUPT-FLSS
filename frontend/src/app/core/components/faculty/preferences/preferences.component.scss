@@ -148,6 +148,17 @@
   }
 }
 
+.spinner-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px; 
+}
+
+.custom-spinner {
+  margin: auto;
+}
+
 #table_container {
   flex: 7;
   overflow: auto;
@@ -229,3 +240,4 @@
     color: var(--primary-text);
   }
 }
+

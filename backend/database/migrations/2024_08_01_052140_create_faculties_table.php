@@ -18,6 +18,7 @@ return new class extends Migration {
             $table->string('faculty_password');
             $table->string('faculty_email');
             $table->string('faculty_type', 50);
+            $table->integer('faculty_units')->default(0);
             $table->timestamps();
         });
 
@@ -41,3 +42,4 @@ return new class extends Migration {
         Schema::dropIfExists('faculties');
     }
 };
+

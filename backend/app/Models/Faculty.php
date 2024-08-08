@@ -22,6 +22,7 @@ class Faculty extends Authenticatable
         'faculty_password',
         'faculty_email',
         'faculty_type',
+        'faculty_units', 
     ];
 
     /**
