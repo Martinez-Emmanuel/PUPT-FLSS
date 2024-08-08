@@ -15,61 +15,64 @@
 .preferences-row-one {
   @include flex-center;
   justify-content: space-between;
-}
 
-#preferences_title {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xxs);
+  #preferences_title {
+    @include flex-center(
+      $direction: column,
+      $align: none,
+      $justify: none,
+      $gap: var(--spacing-xxs)
+    );
+    height: 100%;
 
-  h1,
-  p {
-    width: max-content;
+    h1,
+    p {
+      width: max-content;
+    }
+
+    h1 {
+      @include gradient-primary(315deg);
+      font-size: var(--font-size-2xxl);
+      font-weight: 700;
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p {
+      font-size: var(--font-size-lg);
+    }
   }
 
-  h1 {
-    @include gradient-primary(315deg);
-    font-size: var(--font-size-2xxl);
-    font-weight: 700;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  p {
-    font-size: var(--font-size-lg);
-  }
-}
-
-#units_container {
-  @include flex-center;
-  gap: var(--spacing-sm);
-  height: inherit;
-  text-align: center;
-
-  .units {
+  #units_container {
     @include flex-center;
-    flex-direction: column;
+    gap: var(--spacing-sm);
     height: inherit;
-    border-radius: var(--border-radius-md);
-    padding: var(--spacing-md);
+    text-align: center;
 
-    h2 {
-      font-size: var(--font-size-2xl);
+    .units {
+      @include flex-center($direction: column);
+      height: inherit;
+      border-radius: var(--border-radius-md);
+      padding: var(--spacing-md);
+
+      h2 {
+        font-size: var(--font-size-2xl);
+      }
+
+      h2,
+      span {
+        color: white;
+      }
     }
 
-    h2,
-    span {
-      color: white;
+    .max {
+      @include gradient-primary(315deg);
     }
-  }
 
-  .max {
-    @include gradient-primary(315deg);
-  }
-
-  .total {
-    @include gradient-secondary(315deg);
+    .total {
+      @include gradient-secondary(315deg);
+    }
   }
 }
 
@@ -94,6 +97,10 @@
 
   .custom-mat-search {
     width: 100%;
+
+    span[mat-symbol] {
+      padding: var(--spacing-sm);
+    }
   }
 }
 
@@ -152,7 +159,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 100px; 
+  height: 100px;
 }
 
 .custom-spinner {
@@ -162,14 +169,41 @@
 #table_container {
   flex: 7;
   overflow: auto;
+  position: relative;
   background-color: var(--neutral-light);
   @include hide-scrollbar;
+  display: flex;
+  flex-direction: column;
 
   .mat-mdc-table {
     width: 100%;
     background-color: var(--neutral-light);
     transition: none !important;
     table-layout: fixed;
+  }
+
+  .table-footer {
+    @include flex-center($justify: flex-end, $gap: var(--spacing-xs));
+    flex-shrink: 0;
+    margin-top: auto;
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
+    padding: var(--spacing-sm) var(--spacing-lg);
+    background-color: var(--neutral-bar);
+
+    .submit-container {
+      @include flex-center($gap: var(--spacing-sm));
+      cursor: pointer;
+
+      &:hover {
+        color: var(--primary-one);
+
+        span {
+          color: var(--primary-one);
+        }
+      }
+    }
   }
 
   .mat-mdc-header-cell {
@@ -180,6 +214,7 @@
     text-align: center;
     position: sticky;
     top: 0;
+    z-index: 2;
   }
 
   .mat-mdc-cell {
@@ -191,7 +226,7 @@
   .custom-mat-button {
     @include flex-center;
 
-    mat-icon {
+    span[mat-symbol] {
       font-size: var(--font-size-lg);
       color: var(--primary-one);
       @include flex-center;
@@ -210,9 +245,9 @@
   .mat-column-num {
     @include column-width(50px);
   }
-  .mat-column-lec,
-  .mat-column-lab,
-  .mat-column-units {
+  .mat-column-lec_hours,
+  .mat-column-lab_hours,
+  .mat-column-total_units {
     @include column-width(70px);
   }
 
@@ -222,6 +257,8 @@
     background-color: var(--neutral-light);
     font-size: var(--font-size-sm);
     color: var(--primary-text);
+    border-radius: var(--border-radius-xl);
+    outline: none;
     font-weight: 500;
     cursor: pointer;
 
@@ -240,4 +277,3 @@
     color: var(--primary-text);
   }
 }
-
