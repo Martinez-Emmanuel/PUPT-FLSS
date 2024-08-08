@@ -26,7 +26,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: var(--login-bg);
+  background-color: var(--blur-bg);
   backdrop-filter: blur(50px) saturate(150%);
   z-index: 1;
 }
