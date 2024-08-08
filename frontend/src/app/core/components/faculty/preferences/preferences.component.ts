@@ -20,6 +20,7 @@ import {
   CourseService, 
   Course 
 } from '../../../services/course/courses.service';
+import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 interface TableData {
   course_id: number;
@@ -40,6 +41,7 @@ interface TableData {
     CommonModule,
     TimeSelectionDialogComponent,
     TimeFormatPipe,
+    MatSymbolDirective,
     HttpClientModule,
   ],
   templateUrl: './preferences.component.html',

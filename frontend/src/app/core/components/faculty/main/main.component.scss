@@ -97,7 +97,7 @@
         color: white;
         transition: color 0.3s ease;
 
-        mat-icon {
+        span.material-symbols-rounded {
           color: white;
         }
       }
@@ -109,7 +109,7 @@
       &:hover:not(.active) {
         color: var(--primary-one);
 
-        mat-icon {
+        span.material-symbols-rounded {
           color: var(--primary-one);
         }
       }
@@ -174,7 +174,7 @@
           &.logout {
             color: var(--primary-one);
 
-            mat-icon {
+            span.material-symbols-rounded {
               color: var(--primary-one);
             }
 
@@ -183,7 +183,7 @@
             }
           }
 
-          mat-icon {
+          span.material-symbols-rounded {
             display: flex;
             align-items: center;
             font-size: var(--font-size-lg);

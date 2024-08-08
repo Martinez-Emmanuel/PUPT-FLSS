@@ -5,6 +5,7 @@ import { Subject, fromEvent } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { MaterialComponents } from '../../../imports/material.component';
 import { ThemeService } from '../../../services/theme/theme.service';
+import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { AuthService } from '../../../services/auth/auth.service'; // Add this import
 
 @Component({
@@ -12,7 +13,7 @@ import { AuthService } from '../../../services/auth/auth.service'; // Add this i
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
   standalone: true,
-  imports: [RouterModule, MaterialComponents, CommonModule],
+  imports: [RouterModule, CommonModule, MatSymbolDirective, MaterialComponents],
 })
 export class MainComponent implements AfterViewInit, OnDestroy {
   private destroy$ = new Subject<void>();
