@@ -1,40 +1,37 @@
 @import "../../../../../styles/mixins.scss";
 
-*,
-*::before {
+* {
   @include reset-styles;
-  @include default-transition;
 }
 
 .sidenav-container {
   height: 100%;
+  background-color: var(--main-bg);
+  @include default-transition;
 }
 
 .sidenav-bar {
-  width: 15rem;
+  width: 16rem;
   background-color: var(--neutral-sidebar);
   padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: 0%;
+  @include default-transition;
 
   .side-toolbar {
-    @include flex-center(
-      $align: stretch,
-      $justify: flex-start,
-      $gap: var(--spacing-md)
-    );
-    padding: var(--spacing-lg) 0 var(--spacing-xl) var(--spacing-md);
+    @include flex-center($direction: column, $gap: var(--spacing-md));
+    padding: var(--spacing-lg) var(--spacing-md);
 
     img {
-      width: 25%;
+      width: 40%;
     }
 
     .header-name {
-      @include flex-center($direction: column, $align: flex-start);
+      @include flex-center($direction: column);
+      text-align: center;
 
       .university-name,
       .system-name {
         font-family: var(--font-header);
-        font-size: var(--font-size-md);
+        font-size: var(--font-size-sm);
         font-weight: 600;
       }
 
@@ -49,7 +46,7 @@
       $direction: column,
       $align: stretch,
       $justify: none,
-      $gap: var(--spacing-xl)
+      $gap: var(--spacing-lg)
     );
 
     .list-subheader {
@@ -59,31 +56,37 @@
     }
 
     .list-item {
-      @include flex-center($justify: flex-start, $gap: var(--spacing-sm));
-      padding: var(--spacing-sm);
-      text-decoration: none;
-      color: var(--neutral-base);
-      border-radius: var(--border-radius-xs);
+      transition: transform var(--duration-medium) ease;
+      width: calc(100% - 3px);
 
       &:hover {
-        background-color: var(--neutral-option);
+        transform: translateX(3px);
       }
+    }
 
-      &.active-link {
-        background-color: var(--primary-fade);
-        border-left: 5px solid var(--primary-one);
+    .active-link {
+      background-color: var(--primary-one);
 
-        span[matListItemIcon],
-        span[matListItemTitle] {
-          color: var(--primary-one);
-        }
+      span {
+        color: white;
+      }
+    }
+
+    .mat-mdc-list-item.active-link,
+    .mdc-list-item.mdc-list-item--activated {
+      background-color: var(--primary-one) !important;
+
+      &:focus,
+      &:focus-visible,
+      &::before,
+      &::after {
+        background-color: var(--primary-one) !important;
       }
     }
   }
 }
 
 mat-sidenav-content {
-  background-color: var(--main-bg);
   @include flex-center(
     $direction: column,
     $align: none,
@@ -102,101 +105,102 @@ mat-sidenav-content {
     .toggle-button-container {
       padding: 0 var(--spacing-lg) 0 0;
     }
-  }
 
-  .sidenav-header {
-    @include flex-center($align: stretch, $justify: space-between);
-    width: inherit;
-
-    .title-container .page-title {
-      @include flex-center;
-      @include gradient-primary-text($degree: 315deg);
-      height: 100%;
-      width: max-content;
-      font-size: var(--font-size-2xxl);
-      font-weight: 600;
-    }
-
-    .header-account {
-      @include flex-center;
-      font-size: var(--font-size-md);
-      gap: var(--spacing-lg);
-
-      .account-text {
-        text-align: right;
-
-        .account-name {
-          font-weight: 600;
-        }
-
-        .account-email {
-          opacity: var(--opacity-semi-opaque);
-        }
-      }
-
-      .profile-dropdown {
+    .sidenav-header {
+      @include flex-center($align: stretch, $justify: space-between);
+      width: inherit;
+  
+      .title-container .page-title {
         @include flex-center;
-        position: relative;
+        @include gradient-primary-text($degree: 315deg);
         height: 100%;
+        width: max-content;
+        font-size: var(--font-size-2xxl);
+        font-weight: 600;
+      }
+  
+      .header-account {
+        @include flex-center;
+        font-size: var(--font-size-md);
+        gap: var(--spacing-lg);
 
-        .profile-icon {
-          width: 3rem;
-          height: 3rem;
-          border-radius: 50%;
-          cursor: pointer;
-          transition: all 0.3s ease;
-
-          &:hover {
-            box-shadow: 0 0 0 3px var(--neutral-hover);
+        .account-text {
+          text-align: right;
+          line-height: var(--line-height-normal);
+      
+          .account-name {
+            font-weight: 600;
+          }
+      
+          .account-role {
+            opacity: var(--opacity-semi-opaque);
           }
         }
-
-        .dropdown-menu {
-          position: absolute;
-          top: 100%;
-          right: 0;
-          background-color: var(--neutral-light);
-          box-shadow: var(--shadow-level-1);
-          border-radius: var(--border-radius-md);
-
-          .dropdown-item {
-            @include ellipsis;
-            display: flex;
-            align-items: center;
-            gap: var(--spacing-xs);
-            padding: var(--spacing-md);
-            color: var(--neutral-base);
-            transition: background-color 0.3s ease;
-            border-radius: var(--border-radius-sm);
-            font-weight: 500;
+  
+        .profile-dropdown {
+          @include flex-center;
+          position: relative;
+  
+          .profile-icon {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
             cursor: pointer;
-
+            transition: all 0.3s ease;
+  
             &:hover {
-              background-color: var(--neutral-option);
+              box-shadow: 0 0 0 3px var(--neutral-hover);
             }
-
-            &.logout {
-              color: var(--primary-one);
-
-              span.material-symbols-rounded {
-                color: var(--primary-one);
-              }
-
-              &:hover {
-                background-color: var(--primary-fade);
-              }
-            }
-
-            span.material-symbols-rounded {
+          }
+  
+          .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background-color: var(--neutral-light);
+            box-shadow: var(--shadow-level-1);
+            border-radius: var(--border-radius-md);
+  
+            .dropdown-item {
+              @include ellipsis;
               display: flex;
               align-items: center;
-              font-size: var(--font-size-lg);
+              gap: var(--spacing-xs);
+              padding: var(--spacing-md);
+              color: var(--neutral-base);
+              transition: background-color 0.3s ease;
+              border-radius: var(--border-radius-sm);
               font-weight: 500;
+              cursor: pointer;
+  
+              &:hover {
+                background-color: var(--neutral-option);
+              }
+  
+              &.logout {
+                color: var(--primary-one);
+  
+                span.material-symbols-rounded {
+                  color: var(--primary-one);
+                }
+  
+                &:hover {
+                  background-color: var(--primary-fade);
+                }
+              }
+  
+              span.material-symbols-rounded {
+                display: flex;
+                align-items: center;
+                font-size: var(--font-size-lg);
+                font-weight: 500;
+              }
             }
           }
         }
       }
     }
+  
   }
 
   .sidenav-main {
