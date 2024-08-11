@@ -66,21 +66,25 @@
 
     .active-link {
       background-color: var(--primary-one);
+      transition: background-color var(--duration-long) ease,
+        transform var(--duration-medium) ease;
 
       span {
         color: white;
+      }
+
+      &:hover {
+        transform: translateX(3px);
       }
     }
 
     .mat-mdc-list-item.active-link,
     .mdc-list-item.mdc-list-item--activated {
-      background-color: var(--primary-one) !important;
-
       &:focus,
       &:focus-visible,
       &::before,
       &::after {
-        background-color: var(--primary-one) !important;
+        background-color: var(--primary-one);
       }
     }
   }
@@ -109,7 +113,7 @@ mat-sidenav-content {
     .sidenav-header {
       @include flex-center($align: stretch, $justify: space-between);
       width: inherit;
-  
+
       .title-container .page-title {
         @include flex-center;
         @include gradient-primary-text($degree: 315deg);
@@ -118,7 +122,7 @@ mat-sidenav-content {
         font-size: var(--font-size-2xxl);
         font-weight: 600;
       }
-  
+
       .header-account {
         @include flex-center;
         font-size: var(--font-size-md);
@@ -127,32 +131,32 @@ mat-sidenav-content {
         .account-text {
           text-align: right;
           line-height: var(--line-height-normal);
-      
+
           .account-name {
             font-weight: 600;
           }
-      
+
           .account-role {
             opacity: var(--opacity-semi-opaque);
           }
         }
-  
+
         .profile-dropdown {
           @include flex-center;
           position: relative;
-  
+
           .profile-icon {
             width: 3rem;
             height: 3rem;
             border-radius: 50%;
             cursor: pointer;
             transition: all 0.3s ease;
-  
+
             &:hover {
               box-shadow: 0 0 0 3px var(--neutral-hover);
             }
           }
-  
+
           .dropdown-menu {
             position: absolute;
             top: 100%;
@@ -160,7 +164,7 @@ mat-sidenav-content {
             background-color: var(--neutral-light);
             box-shadow: var(--shadow-level-1);
             border-radius: var(--border-radius-md);
-  
+
             .dropdown-item {
               @include ellipsis;
               display: flex;
@@ -172,23 +176,23 @@ mat-sidenav-content {
               border-radius: var(--border-radius-sm);
               font-weight: 500;
               cursor: pointer;
-  
+
               &:hover {
                 background-color: var(--neutral-option);
               }
-  
+
               &.logout {
                 color: var(--primary-one);
-  
+
                 span.material-symbols-rounded {
                   color: var(--primary-one);
                 }
-  
+
                 &:hover {
                   background-color: var(--primary-fade);
                 }
               }
-  
+
               span.material-symbols-rounded {
                 display: flex;
                 align-items: center;
@@ -200,7 +204,6 @@ mat-sidenav-content {
         }
       }
     }
-  
   }
 
   .sidenav-main {
