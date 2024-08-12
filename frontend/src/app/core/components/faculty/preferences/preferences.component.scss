@@ -13,11 +13,11 @@
 }
 
 .preferences-row-one {
-  @include flex-center;
+  @include flex-layout;
   justify-content: space-between;
 
   #preferences_title {
-    @include flex-center(
+    @include flex-layout(
       $direction: column,
       $align: none,
       $justify: none,
@@ -45,13 +45,13 @@
   }
 
   #units_container {
-    @include flex-center;
+    @include flex-layout;
     gap: var(--spacing-sm);
     height: inherit;
     text-align: center;
 
     .units {
-      @include flex-center($direction: column);
+      @include flex-layout($direction: column);
       height: inherit;
       border-radius: var(--border-radius-md);
       padding: var(--spacing-md);
@@ -150,7 +150,7 @@
   }
 
   .add-button {
-    @include flex-center;
+    @include flex-layout;
     color: var(--neutral-base);
   }
 }
@@ -183,7 +183,7 @@
   }
 
   .table-footer {
-    @include flex-center($justify: flex-end, $gap: var(--spacing-xs));
+    @include flex-layout($justify: flex-end, $gap: var(--spacing-xs));
     flex-shrink: 0;
     margin-top: auto;
     position: sticky;
@@ -193,7 +193,7 @@
     background-color: var(--neutral-bar);
 
     .submit-container {
-      @include flex-center($gap: var(--spacing-sm));
+      @include flex-layout($gap: var(--spacing-sm));
       cursor: pointer;
 
       &:hover {
@@ -224,12 +224,12 @@
   }
 
   .custom-mat-button {
-    @include flex-center;
+    @include flex-layout;
 
     span[mat-symbol] {
       font-size: var(--font-size-lg);
       color: var(--primary-one);
-      @include flex-center;
+      @include flex-layout;
     }
   }
 

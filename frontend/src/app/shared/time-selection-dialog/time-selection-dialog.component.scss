@@ -4,7 +4,7 @@
 }
 
 .dialog-title {
-  @include flex-center($justify: flex-start);
+  @include flex-layout($justify: flex-start);
   gap: var(--spacing-sm);
   font-size: var(--font-size-xl);
   font-family: "Inter Tight", "Helvetica Neue", sans-serif;

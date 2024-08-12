@@ -17,7 +17,7 @@
   @include default-transition;
 
   .side-toolbar {
-    @include flex-center($direction: column, $gap: var(--spacing-md));
+    @include flex-layout($direction: column, $gap: var(--spacing-md));
     padding: var(--spacing-lg) var(--spacing-md);
 
     img {
@@ -25,7 +25,7 @@
     }
 
     .header-name {
-      @include flex-center($direction: column);
+      @include flex-layout($direction: column);
       text-align: center;
 
       .university-name,
@@ -42,7 +42,7 @@
   }
 
   .navbar-list {
-    @include flex-center(
+    @include flex-layout(
       $direction: column,
       $align: stretch,
       $justify: none,
@@ -91,7 +91,7 @@
 }
 
 mat-sidenav-content {
-  @include flex-center(
+  @include flex-layout(
     $direction: column,
     $align: none,
     $justify: none,
@@ -111,11 +111,11 @@ mat-sidenav-content {
     }
 
     .sidenav-header {
-      @include flex-center($align: stretch, $justify: space-between);
+      @include flex-layout($align: stretch, $justify: space-between);
       width: inherit;
 
       .title-container .page-title {
-        @include flex-center;
+        @include flex-layout;
         @include gradient-primary-text($degree: 315deg);
         height: 100%;
         width: max-content;
@@ -124,7 +124,7 @@ mat-sidenav-content {
       }
 
       .header-account {
-        @include flex-center;
+        @include flex-layout;
         font-size: var(--font-size-md);
         gap: var(--spacing-lg);
 
@@ -142,7 +142,7 @@ mat-sidenav-content {
         }
 
         .profile-dropdown {
-          @include flex-center;
+          @include flex-layout;
           position: relative;
 
           .profile-icon {

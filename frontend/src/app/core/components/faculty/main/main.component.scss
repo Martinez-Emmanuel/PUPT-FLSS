@@ -7,7 +7,7 @@
 
 .faculty-main-container {
   height: 100%;
-  @include flex-center($direction: column, $align: none, $justify: none);
+  @include flex-layout($direction: column, $align: none, $justify: none);
   box-sizing: border-box;
   gap: var(--spacing-2xl);
   padding: var(--spacing-2xl);
@@ -15,13 +15,13 @@
 }
 
 .faculty-main-header {
-  @include flex-center($align: stretch, $justify: space-between);
+  @include flex-layout($align: stretch, $justify: space-between);
   width: inherit;
 
   .header-name,
   .header-navbar,
   .header-account {
-    @include flex-center;
+    @include flex-layout;
   }
 
   .header-name {
@@ -128,7 +128,7 @@
     }
 
     .profile-dropdown {
-      @include flex-center;
+      @include flex-layout;
       position: relative;
 
       .profile-icon {
