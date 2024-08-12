@@ -27,6 +27,7 @@
     .header-name {
       @include flex-layout($direction: column);
       text-align: center;
+      line-height: var(--line-height-base);
 
       .university-name,
       .system-name {
@@ -130,7 +131,7 @@ mat-sidenav-content {
 
         .account-text {
           text-align: right;
-          line-height: var(--line-height-normal);
+          line-height: var(--line-height-base);
 
           .account-name {
             font-weight: 600;
