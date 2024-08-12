@@ -1,34 +1,19 @@
-import { 
-  Component, 
-  OnInit, 
-  OnDestroy, 
-  ChangeDetectionStrategy, 
-  ChangeDetectorRef,
- } from '@angular/core';
-import { MaterialComponents } from '../../../imports/material.component';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
+import { MaterialComponents } from '../../../imports/material.component';
 import { ThemeService } from '../../../services/theme/theme.service';
 import { TimeFormatPipe } from '../../../pipes/time-format/time-format.pipe';
 import { TimeSelectionDialogComponent } from '../../../../shared/time-selection-dialog/time-selection-dialog.component';
-import { HttpClientModule } from '@angular/common/http';
-import { 
-  CourseService, 
-  Course 
-} from '../../../services/course/courses.service';
+import { CourseService, Course } from '../../../services/course/courses.service';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
+import { CustomDialogComponent, DialogData } from '../../../../shared/custom-dialog/custom-dialog.component';
 
-interface TableData {
-  course_id: number;
-  subject_code: string;
-  subject_title: string;
-  lec_hours: number;
-  lab_hours: number;
-  total_units: number;
+interface TableData extends Course {
   preferredDay: string;
   preferredTime: string;
 }
@@ -36,14 +21,7 @@ interface TableData {
 @Component({
   selector: 'app-preferences',
   standalone: true,
-  imports: [
-    MaterialComponents,
-    CommonModule,
-    TimeSelectionDialogComponent,
-    TimeFormatPipe,
-    MatSymbolDirective,
-    HttpClientModule,
-  ],
+  imports: [MaterialComponents, CommonModule, TimeSelectionDialogComponent, TimeFormatPipe, MatSymbolDirective],
   templateUrl: './preferences.component.html',
   styleUrls: ['./preferences.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -51,11 +29,10 @@ interface TableData {
 })
 export class PreferencesComponent implements OnInit, OnDestroy {
   subjects: Course[] = [];
-  totalUnits: number = 0;
-  maxUnits: number = 25;
-
-  tableData: TableData[] = [];
+  totalUnits = 0;
+  maxUnits = 25;
   loading = true;
+  isDarkMode = false;
 
   displayedColumns: string[] = [
     'action',
@@ -69,7 +46,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     'preferredTime',
   ];
 
-  daysOfWeek: string[] = [
+  daysOfWeek = [
     'Monday',
     'Tuesday',
     'Wednesday',
@@ -78,10 +55,9 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     'Saturday',
     'Sunday',
   ];
-
-  isDarkMode: boolean = false;
-  private themeSubscription!: Subscription;
   dataSource = new MatTableDataSource<TableData>([]);
+
+  private themeSubscription!: Subscription;
 
   constructor(
     private themeService: ThemeService,
@@ -103,45 +79,33 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    // Unsubscribes from the theme subscription
     this.themeSubscription.unsubscribe();
   }
 
-  // Loads subjects from service
   loadCourses() {
-    this.loading = true; // Set loading to true before starting the request
+    this.loading = true;
     this.courseService.getCourses().subscribe(
       (courses) => {
-        console.log('Received courses:', courses); // Log received data for testing
         this.subjects = courses;
-        this.loading = false; // Set loading to false when the request completes
+        this.loading = false;
         this.cdr.markForCheck();
       },
       (error) => {
         console.error('Error loading courses:', error);
-        this.loading = false; // Set loading to false if there's an error
+        this.loading = false;
+        this.cdr.markForCheck();
       }
     );
   }
 
-  // Adds a subject to the table if max units are not exceeded 
   addSubjectToTable(course: Course) {
     if (this.totalUnits + course.total_units > this.maxUnits) {
-      this.snackBar.open('Maximum units have been reached.', 'Close', {
-        duration: 3000,
-        horizontalPosition: 'center',
-        verticalPosition: 'bottom',
-      });
+      this.showSnackBar('Maximum units have been reached.');
       return;
     }
 
     const newTableData: TableData = {
-      course_id: course.course_id,
-      subject_code: course.subject_code,
-      subject_title: course.subject_title,
-      lec_hours: course.lec_hours,
-      lab_hours: course.lab_hours,
-      total_units: course.total_units,
+      ...course,
       preferredDay: '',
       preferredTime: '',
     };
@@ -149,7 +113,6 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     this.updateTotalUnits();
   }
 
-  // Removes a subject from the table based on its code
   removeSubject(subject_code: string) {
     this.dataSource.data = this.dataSource.data.filter(
       (subject) => subject.subject_code !== subject_code
@@ -157,21 +120,18 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     this.updateTotalUnits();
   }
 
- // Updates the preferred day for a subject
   onDayChange(element: TableData, event: Event) {
     const selectElement = event.target as HTMLSelectElement;
     const newDay = selectElement.value;
 
-    const updatedData = this.dataSource.data.map((item) =>
+    this.dataSource.data = this.dataSource.data.map((item) =>
       item.subject_code === element.subject_code
         ? { ...item, preferredDay: newDay }
         : item
     );
-    this.dataSource.data = updatedData;
     this.cdr.markForCheck();
   }
 
-  // Updates the total units based on subjects in the table
   updateTotalUnits() {
     this.totalUnits = this.dataSource.data.reduce(
       (total, subject) => total + subject.total_units,
@@ -180,61 +140,76 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  // Opens a mat dialog for selecting time for a subject
   openTimeDialog(element: TableData): void {
     const [startTime, endTime] = element.preferredTime
       ? element.preferredTime.split(' - ')
       : ['', ''];
 
-    const dialogRef = this.dialog.open(TimeSelectionDialogComponent, {
-      width: '250px',
-      data: { startTime, endTime },
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        element.preferredTime = result;
-        this.cdr.markForCheck();
-      }
-    });
+    this.dialog
+      .open(TimeSelectionDialogComponent, {
+        width: '300px',
+        data: { startTime, endTime },
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result) {
+          element.preferredTime = result;
+          this.cdr.markForCheck();
+        }
+      });
   }
 
-  // Returns a formatted time string or a placeholder
-  getFormattedTime(time: string): string {
-    return time ? time : 'Select time';
-  }
-
-  // Submit preferences and log to console
   submitPreferences() {
     const facultyId = sessionStorage.getItem('faculty_id');
     const submittedData = {
       faculty_id: facultyId,
-      preferences: this.dataSource.data.map((item) => ({
-        course_id: item.course_id,
-        preferred_day: item.preferredDay,
-        preferred_time: item.preferredTime,
-      })),
+      preferences: this.dataSource.data.map(
+        ({ course_id, preferredDay, preferredTime }) => ({
+          course_id,
+          preferred_day: preferredDay,
+          preferred_time: preferredTime,
+        })
+      ),
     };
 
-    console.log('Submitting preferences:', JSON.stringify(submittedData)); //for testing 
-
     this.courseService.submitPreferences(submittedData).subscribe(
-      (response) => {
-        this.snackBar.open('Preferences submitted successfully.', 'Close', {
-          duration: 3000,
-          horizontalPosition: 'center',
-          verticalPosition: 'bottom',
-        });
-        console.log('Preferences submitted successfully:', response); //for testing 
-      },
+      () => this.showSnackBar('Preferences submitted successfully.'),
       (error) => {
-        this.snackBar.open('Error submitting preferences.', 'Close', {
-          duration: 3000,
-          horizontalPosition: 'center',
-          verticalPosition: 'bottom',
-        });
-        console.error('Error submitting preferences:', error); //for testing 
+        console.error('Error submitting preferences:', error);
+        this.showSnackBar('Error submitting preferences.');
       }
     );
+  }
+
+  removeAllSubjects() {
+    const dialogData: DialogData = {
+      title: 'Remove All Courses',
+      content: 'Are you sure you want to remove all your selected courses?',
+      actionText: 'Remove All',
+      cancelText: 'Cancel',
+      action: 'remove',
+    };
+
+    this.dialog
+      .open(CustomDialogComponent, {
+        data: dialogData,
+        disableClose: true,
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result === 'remove') {
+          this.dataSource.data = [];
+          this.updateTotalUnits();
+          this.showSnackBar('All courses removed.');
+        }
+      });
+  }
+
+  showSnackBar(message: string) {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+    });
   }
 }

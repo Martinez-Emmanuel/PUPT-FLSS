@@ -115,6 +115,11 @@
     flex: 1;
     overflow-y: auto;
     padding-right: var(--spacing-sm);
+
+    .progress-wrapper {
+      height: 100%;
+      @include flex-layout;
+    }
   }
 }
 
@@ -155,17 +160,6 @@
   }
 }
 
-.spinner-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100px;
-}
-
-.custom-spinner {
-  margin: auto;
-}
-
 #table_container {
   flex: 7;
   overflow: auto;
@@ -183,24 +177,42 @@
   }
 
   .table-footer {
-    @include flex-layout($justify: flex-end, $gap: var(--spacing-xs));
+    @include flex-layout($justify: space-between, $gap: var(--spacing-xs));
     flex-shrink: 0;
     margin-top: auto;
     position: sticky;
     bottom: 0;
     z-index: 2;
-    padding: var(--spacing-sm) var(--spacing-lg);
     background-color: var(--neutral-bar);
+    padding: var(--spacing-xxs) var(--spacing-xxs);
 
-    .submit-container {
+    .button-container {
       @include flex-layout($gap: var(--spacing-sm));
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: var(--border-radius-xl);
       cursor: pointer;
 
-      &:hover {
-        color: var(--primary-one);
+      span {
+        color: var(--neutral-base);
+        @include default-transition(true);
+      }
 
-        span {
-          color: var(--primary-one);
+      .button-text {
+        font-weight: 500;
+
+        &.remove {
+          color: var(--primary-text);
+        }
+      }
+
+      span[mat-symbol="delete_sweep"] {
+        color: var(--primary-text);
+      }
+
+      &:hover {
+
+        .send, span[mat-symbol="send"] {
+          color: var(--secondary-text);
         }
       }
     }

@@ -39,8 +39,8 @@
         <div class="subjects-scroll-container">
           <!-- Display spinner while loading -->
           @if (loading) {
-          <div class="spinner-wrapper">
-            <mat-spinner diameter="30" class="custom-spinner"></mat-spinner>
+          <div class="progress-wrapper">
+            <mat-spinner diameter="40"></mat-spinner>
           </div>
           }
           <!-- Display subjects when loaded -->
@@ -77,11 +77,7 @@
               class="custom-mat-button"
               (click)="removeSubject(element.subject_code)"
             >
-              <span
-                mat-symbol="do_not_disturb_on"
-                variant="outlined"
-                size="20px"
-              ></span>
+              <span mat-symbol="do_not_disturb_on" variant="outlined"></span>
             </button>
           </td>
         </ng-container>
@@ -159,9 +155,13 @@
         <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
       </table>
       <div class="table-footer">
-        <div class="submit-container" (click)="submitPreferences()">
-          <span mat-symbol="done"></span>
-          <span>Submit Preferences</span>
+        <div matRipple class="button-container" (click)="removeAllSubjects()">
+          <span mat-symbol="delete_sweep"></span>
+          <span class="button-text remove">Remove all</span>
+        </div>
+        <div matRipple class="button-container" (click)="submitPreferences()">
+          <span class="button-text send">Submit Preferences</span>
+          <span mat-symbol="send"></span>
         </div>
       </div>
     </div>
