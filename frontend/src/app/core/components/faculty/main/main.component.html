@@ -15,13 +15,13 @@
 
     <nav class="header-navbar">
       <div class="slider"></div>
-      <a routerLink="home" routerLinkActive="active">
+      <a matRipple routerLink="home" routerLinkActive="active">
         <span mat-symbol="home"></span>Home
       </a>
-      <a routerLink="preferences" routerLinkActive="active">
+      <a matRipple routerLink="preferences" routerLinkActive="active">
         <span mat-symbol="settings"></span>Set Preferences
       </a>
-      <a routerLink="load-and-schedule" routerLinkActive="active">
+      <a matRipple routerLink="load-and-schedule" routerLinkActive="active">
         <span mat-symbol="calendar_month"></span>Load and Schedule
       </a>
     </nav>
@@ -42,7 +42,7 @@
         />
         @if (isDropdownOpen) {
         <div class="dropdown-menu">
-          <span class="dropdown-item" (click)="toggleTheme()">
+          <span matRipple class="dropdown-item" (click)="toggleTheme()">
             <span
               [mat-symbol]="
                 (themeService.isDarkTheme$ | async) ? 'light_mode' : 'dark_mode'
@@ -51,7 +51,7 @@
 
             Switch Theme
           </span>
-          <span class="dropdown-item logout" (click)="logout()">
+          <span matRipple class="dropdown-item logout" (click)="logout()">
             <span mat-symbol="logout"></span>
             Logout
           </span>
