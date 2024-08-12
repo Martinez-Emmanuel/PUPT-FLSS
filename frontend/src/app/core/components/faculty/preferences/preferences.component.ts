@@ -21,9 +21,15 @@ interface TableData extends Course {
 @Component({
   selector: 'app-preferences',
   standalone: true,
-  imports: [MaterialComponents, CommonModule, TimeSelectionDialogComponent, TimeFormatPipe, MatSymbolDirective],
+  imports: [
+    MaterialComponents,
+    CommonModule,
+    TimeSelectionDialogComponent,
+    TimeFormatPipe,
+    MatSymbolDirective,
+  ],
   templateUrl: './preferences.component.html',
-  styleUrls: ['./preferences.component.scss'],
+  styleUrl: './preferences.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [CourseService],
 })
@@ -34,7 +40,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   loading = true;
   isDarkMode = false;
 
-  displayedColumns: string[] = [
+  readonly displayedColumns: string[] = [
     'action',
     'num',
     'subject_code',
@@ -46,7 +52,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     'preferredTime',
   ];
 
-  daysOfWeek = [
+  readonly daysOfWeek = [
     'Monday',
     'Tuesday',
     'Wednesday',
@@ -60,57 +66,90 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   private themeSubscription!: Subscription;
 
   constructor(
-    private themeService: ThemeService,
-    private cdr: ChangeDetectorRef,
-    private dialog: MatDialog,
-    private courseService: CourseService,
-    private snackBar: MatSnackBar
+    private readonly themeService: ThemeService,
+    private readonly cdr: ChangeDetectorRef,
+    private readonly dialog: MatDialog,
+    private readonly courseService: CourseService,
+    private readonly snackBar: MatSnackBar
   ) {}
 
   ngOnInit() {
+    this.subscribeToThemeChanges();
+    this.loadCourses();
+  }
+
+  ngOnDestroy() {
+    this.themeSubscription?.unsubscribe();
+  }
+
+  private subscribeToThemeChanges() {
     this.themeSubscription = this.themeService.isDarkTheme$.subscribe(
       (isDark) => {
         this.isDarkMode = isDark;
         this.cdr.markForCheck();
       }
     );
-
-    this.loadCourses();
   }
 
-  ngOnDestroy() {
-    this.themeSubscription.unsubscribe();
-  }
-
-  loadCourses() {
+  private loadCourses() {
     this.loading = true;
-    this.courseService.getCourses().subscribe(
-      (courses) => {
+    this.courseService.getCourses().subscribe({
+      next: (courses) => {
         this.subjects = courses;
         this.loading = false;
         this.cdr.markForCheck();
       },
-      (error) => {
+      error: (error) => {
         console.error('Error loading courses:', error);
         this.loading = false;
         this.cdr.markForCheck();
-      }
+      },
+    });
+  }
+
+  get isRemoveDisabled(): boolean {
+    return !this.dataSource.data.length;
+  }
+
+  get isSubmitDisabled(): boolean {
+    return (
+      this.isRemoveDisabled ||
+      this.dataSource.data.some(
+        (subject) => !subject.preferredDay || !subject.preferredTime
+      )
     );
   }
 
   addSubjectToTable(course: Course) {
-    if (this.totalUnits + course.total_units > this.maxUnits) {
-      this.showSnackBar('Maximum units have been reached.');
+    if (this.isCourseAlreadyAdded(course) || this.isMaxUnitsExceeded(course)) {
       return;
     }
 
-    const newTableData: TableData = {
-      ...course,
-      preferredDay: '',
-      preferredTime: '',
-    };
-    this.dataSource.data = [...this.dataSource.data, newTableData];
+    this.dataSource.data = [
+      ...this.dataSource.data,
+      { ...course, preferredDay: '', preferredTime: '' },
+    ];
     this.updateTotalUnits();
+  }
+
+  private isCourseAlreadyAdded(course: Course): boolean {
+    if (
+      this.dataSource.data.some(
+        (subject) => subject.subject_code === course.subject_code
+      )
+    ) {
+      this.showSnackBar('This course has already been selected.');
+      return true;
+    }
+    return false;
+  }
+
+  private isMaxUnitsExceeded(course: Course): boolean {
+    if (this.totalUnits + course.total_units > this.maxUnits) {
+      this.showSnackBar('Maximum units have been reached.');
+      return true;
+    }
+    return false;
   }
 
   removeSubject(subject_code: string) {
@@ -121,18 +160,12 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   }
 
   onDayChange(element: TableData, event: Event) {
-    const selectElement = event.target as HTMLSelectElement;
-    const newDay = selectElement.value;
-
-    this.dataSource.data = this.dataSource.data.map((item) =>
-      item.subject_code === element.subject_code
-        ? { ...item, preferredDay: newDay }
-        : item
-    );
+    const newDay = (event.target as HTMLSelectElement).value;
+    element.preferredDay = newDay;
     this.cdr.markForCheck();
   }
 
-  updateTotalUnits() {
+  private updateTotalUnits() {
     this.totalUnits = this.dataSource.data.reduce(
       (total, subject) => total + subject.total_units,
       0
@@ -141,9 +174,10 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   }
 
   openTimeDialog(element: TableData): void {
-    const [startTime, endTime] = element.preferredTime
-      ? element.preferredTime.split(' - ')
-      : ['', ''];
+    const [startTime, endTime] = element.preferredTime?.split(' - ') || [
+      '',
+      '',
+    ];
 
     this.dialog
       .open(TimeSelectionDialogComponent, {
@@ -161,7 +195,19 @@ export class PreferencesComponent implements OnInit, OnDestroy {
 
   submitPreferences() {
     const facultyId = sessionStorage.getItem('faculty_id');
-    const submittedData = {
+    const submittedData = this.prepareSubmissionData(facultyId);
+
+    this.courseService.submitPreferences(submittedData).subscribe({
+      next: () => this.showSnackBar('Preferences submitted successfully.'),
+      error: (error) => {
+        console.error('Error submitting preferences:', error);
+        this.showSnackBar('Error submitting preferences.');
+      },
+    });
+  }
+
+  private prepareSubmissionData(facultyId: string | null) {
+    return {
       faculty_id: facultyId,
       preferences: this.dataSource.data.map(
         ({ course_id, preferredDay, preferredTime }) => ({
@@ -171,14 +217,6 @@ export class PreferencesComponent implements OnInit, OnDestroy {
         })
       ),
     };
-
-    this.courseService.submitPreferences(submittedData).subscribe(
-      () => this.showSnackBar('Preferences submitted successfully.'),
-      (error) => {
-        console.error('Error submitting preferences:', error);
-        this.showSnackBar('Error submitting preferences.');
-      }
-    );
   }
 
   removeAllSubjects() {
@@ -205,7 +243,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
       });
   }
 
-  showSnackBar(message: string) {
+  private showSnackBar(message: string) {
     this.snackBar.open(message, 'Close', {
       duration: 3000,
       horizontalPosition: 'center',

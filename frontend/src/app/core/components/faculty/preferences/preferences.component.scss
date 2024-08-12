@@ -191,6 +191,7 @@
       padding: var(--spacing-xs) var(--spacing-sm);
       border-radius: var(--border-radius-xl);
       cursor: pointer;
+      user-select: none;
 
       span {
         color: var(--neutral-base);
@@ -210,11 +211,22 @@
       }
 
       &:hover {
-
-        .send, span[mat-symbol="send"] {
+        .send,
+        span[mat-symbol="send"] {
           color: var(--secondary-text);
         }
       }
+    }
+
+    .button-container.disabled {
+      &:hover {
+        .send,
+        span[mat-symbol="send"] {
+          color: var(--neutral-base);
+        }
+      }
+      opacity: 0.6;
+      cursor: not-allowed;
     }
   }
 
@@ -261,6 +273,15 @@
   .mat-column-lab_hours,
   .mat-column-total_units {
     @include column-width(70px);
+  }
+
+  .mat-mdc-no-data-row {
+    height: var(--spacing-4xl);
+  }
+
+  .mat-mdc-no-data-row td {
+    font-size: initial;
+    text-align: center;
   }
 
   .preferred-day-dropdown {

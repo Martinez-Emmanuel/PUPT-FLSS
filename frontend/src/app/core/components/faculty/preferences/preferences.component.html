@@ -153,13 +153,41 @@
         </ng-container>
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+        <!-- No data row -->
+        <tr class="mat-row no-data-row" *matNoDataRow>
+          <td class="mat-cell" colspan="9">
+            No preferences have been added yet.
+          </td>
+        </tr>
       </table>
       <div class="table-footer">
-        <div matRipple class="button-container" (click)="removeAllSubjects()">
+        <!-- Remove All Button -->
+        <div
+          matRipple
+          class="button-container"
+          (click)="!isRemoveDisabled && removeAllSubjects()"
+          [matTooltip]="
+            isRemoveDisabled ? 'You must select at least one course.' : ''
+          "
+          [class.disabled]="isRemoveDisabled"
+        >
           <span mat-symbol="delete_sweep"></span>
           <span class="button-text remove">Remove all</span>
         </div>
-        <div matRipple class="button-container" (click)="submitPreferences()">
+
+        <!-- Submit Preferences Button -->
+        <div
+          matRipple
+          class="button-container"
+          (click)="!isSubmitDisabled && submitPreferences()"
+          [matTooltip]="
+            isSubmitDisabled
+              ? 'Select one or more course with all having preferred day and time.'
+              : ''
+          "
+          [class.disabled]="isSubmitDisabled"
+        >
           <span class="button-text send">Submit Preferences</span>
           <span mat-symbol="send"></span>
         </div>
