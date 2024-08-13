@@ -9,9 +9,10 @@
   font-size: var(--font-size-xl);
   font-family: "Inter Tight", "Helvetica Neue", sans-serif;
   font-weight: 500;
+  color: var(--primary-text);
 
-  mat-icon {
-    font-weight: 500;
+  span[mat-symbol] {
+    @include flex-layout;
   }
 }
 
@@ -20,7 +21,7 @@
 }
 
 .cancel span {
-  color: var(--primary-one);
+  color: var(--primary-text);
 }
 
 .confirm span {
