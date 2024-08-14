@@ -5,21 +5,25 @@ import { Subject, fromEvent } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { MaterialComponents } from '../../../imports/material.component';
 import { ThemeService } from '../../../services/theme/theme.service';
-import { AuthService } from '../../../services/auth/auth.service'; // Add this import
+import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
+import { AuthService } from '../../../services/auth/auth.service';
+import { MatDialog } from '@angular/material/dialog';
+import { CustomDialogComponent, DialogData } from '../../../../shared/custom-dialog/custom-dialog.component';
+import { timer, Observable, of } from 'rxjs';
+import { mergeMap, finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'app-main',
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
   standalone: true,
-  imports: [RouterModule, MaterialComponents, CommonModule],
+  imports: [RouterModule, CommonModule, MatSymbolDirective, MaterialComponents],
 })
 export class MainComponent implements AfterViewInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private isInitialLoad = true;
   private resizeObserver!: ResizeObserver;
   public isDropdownOpen = false;
-  public isLoading = false; // Add this variable
 
   constructor(
     private el: ElementRef,
@@ -27,13 +31,13 @@ export class MainComponent implements AfterViewInit, OnDestroy {
     private router: Router,
     private ngZone: NgZone,
     public themeService: ThemeService,
-    private authService: AuthService // Add this parameter
+    private authService: AuthService,
+    private dialog: MatDialog
   ) {}
 
   ngAfterViewInit() {
     this.setupSlider();
 
-    // Listen to router events
     this.router.events
       .pipe(
         filter((event) => event instanceof NavigationEnd),
@@ -43,10 +47,8 @@ export class MainComponent implements AfterViewInit, OnDestroy {
         setTimeout(() => this.updateSliderPosition(), 0);
       });
 
-    // Initial update
     setTimeout(() => this.updateSliderPosition(), 0);
 
-    // Listen for window resize events
     this.ngZone.runOutsideAngular(() => {
       fromEvent(window, 'resize')
         .pipe(takeUntil(this.destroy$))
@@ -57,7 +59,6 @@ export class MainComponent implements AfterViewInit, OnDestroy {
         });
     });
 
-    // Use ResizeObserver to watch for navbar size changes
     this.setupResizeObserver();
   }
 
@@ -108,20 +109,15 @@ export class MainComponent implements AfterViewInit, OnDestroy {
 
     if (activeItem) {
       if (this.isInitialLoad) {
-        // Instantly set position without transition
         this.renderer.setStyle(slider, 'transition', 'none');
         this.renderer.setStyle(slider, 'width', `${activeItem.offsetWidth}px`);
         this.renderer.setStyle(slider, 'left', `${activeItem.offsetLeft}px`);
         this.renderer.setStyle(slider, 'opacity', '1');
         this.renderer.setStyle(slider, 'transform', 'scale(1)');
 
-        // Force a reflow
         slider.offsetHeight;
-
-        // Re-enable transitions
         this.renderer.removeStyle(slider, 'transition');
       } else {
-        // Animate to new position
         this.renderer.setStyle(slider, 'width', `${activeItem.offsetWidth}px`);
         this.renderer.setStyle(slider, 'left', `${activeItem.offsetLeft}px`);
         this.renderer.setStyle(slider, 'opacity', '1');
@@ -136,18 +132,41 @@ export class MainComponent implements AfterViewInit, OnDestroy {
   }
 
   logout() {
-    this.isLoading = true; // Start the spinner
-    this.authService.logout().subscribe(
-      response => {
-        console.log('Logout successful', response);
-        sessionStorage.clear();
-        this.isLoading = false; 
-        this.router.navigate(['/login']);
-      },
-      error => {
-        console.error('Logout failed', error);
-        this.isLoading = false; 
+    const confirmDialogRef = this.dialog.open(CustomDialogComponent, {
+      data: {
+        title: 'Log Out',
+        content: 'Are you sure you want to log out? This will end your current session.',
+        actionText: 'Log Out',
+        cancelText: 'Cancel',
+        action: 'Log Out',
+      } as DialogData,
+    });
+  
+    confirmDialogRef.afterClosed().subscribe((result) => {
+      console.log('Dialog result:', result);
+      if (result === 'Log Out') {
+        const loadingDialogRef = this.dialog.open(CustomDialogComponent, {
+          data: {
+            title: 'Logging Out',
+            content: 'Currently logging you out...',
+            showProgressBar: true,
+          } as DialogData,
+          disableClose: true,
+        });
+  
+        this.authService.logout().subscribe(
+          (response) => {
+            console.log('Logout successful', response);
+            sessionStorage.clear();
+            loadingDialogRef.close();
+            this.router.navigate(['/login']);
+          },
+          (error) => {
+            console.error('Logout failed', error);
+            loadingDialogRef.close();
+          }
+        );
       }
-    );
+    });
   }
 }

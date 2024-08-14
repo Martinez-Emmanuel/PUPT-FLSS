@@ -16,9 +16,9 @@
   }
 
   // Typography
-  --font-family: "Inter Tight",
-  "Helvetica Neue",
-  sans-serif;
+  --font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+  --font-header: "Trajan Pro", serif;
+
   --font-size-xs: 0.65rem;
   --font-size-sm: 0.875rem;
   --font-size-md: 1rem;
@@ -30,7 +30,7 @@
 
   // Line heights
   --line-height-base: 1.5;
-  --line-height-headings: 1.2;
+  --line-height-normal: 1.25;
 
   // Spacing
   --spacing-xxs: 0.25rem;
@@ -45,6 +45,7 @@
 
   // Border radius
   --border-radius-base: 0.25rem;
+  --border-radius-xs: 0.3rem;
   --border-radius-sm: 0.5rem;
   --border-radius-md: 0.75rem;
   --border-radius-lg: 1rem;
@@ -68,6 +69,17 @@
   --opacity-half: 0.5;
   --opacity-semi-opaque: 0.75;
   --opacity-opaque: 1;
+
+  // Transitions Duration
+  --duration-instant: 0.1s;
+  --duration-short: 0.2s;
+  --duration-medium: 0.3s;
+  --duration-long: 0.5s;
+  --duration-extra-long: 0.7s;
+
+  // Dialog Sizes
+  --dialog-base: 20rem;
+  --dialog-medium: 30rem;
 
   // Breakpoints
   --breakpoint-sm: 576px;
@@ -97,6 +109,7 @@ body {
 
 * {
   font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+  @include custom-scrollbar;
 }
 
 /*
@@ -109,4 +122,8 @@ body {
   // when appearance="fill"
   border-top-left-radius: 10px !important;
   border-top-right-radius: 10px !important;
+}
+
+.mdc-list-item__primary-text {
+  font-family: "Inter Tight", sans-serif !important;
 }

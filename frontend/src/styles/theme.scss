@@ -1,7 +1,8 @@
 :root {
   /* Page background */
-  --login-bg: #ffffffcc;
+  --blur-bg: #ffffffcc;
   --main-bg: #ffffff;
+  --blur-bg-strong: #ffffffe3;
 
   /* Neutral colors for text, element backgrounds, etc. */
   --neutral-base: #151515;
@@ -10,6 +11,7 @@
   --neutral-hover: #2c2c2c30;
   --neutral-option: #a2a2a230;
   --neutral-bar: #d7d7d7;
+  --neutral-sidebar: #f0f0f0;
 
   /* Primary colors variations */
   --primary-one: #800000;
@@ -19,6 +21,8 @@
   --primary-hover: #e3d9d9;
 
   --error-base: #800000;
+
+  --secondary-text: #a47f1a;
 
   /* Gradient-speficic values */
 
@@ -37,8 +41,9 @@
 
 .dark-theme {
   /* Page background */
-  --login-bg: #171717f1;
-  --main-bg: #171717;
+  --blur-bg: #171717f1;
+  --main-bg: #141414;
+  --blur-bg-strong: #171717f1;
 
   /* Neutral colors for text, element backgrounds, etc. */
   --neutral-base: #dfdfdf;
@@ -47,15 +52,18 @@
   --neutral-hover: #6b6b6b9e;
   --neutral-option: #34343481;
   --neutral-bar: #323232;
+  --neutral-sidebar: #181818;
 
   /* Primary colors variations */
   --primary-one: #a93232;
   --primary-two: #9e2525;
-  --primary-fade: #a932322c;
+  --primary-fade: #a932321a;
   --primary-text: #e15d5d;
   --primary-hover: #2b2121;
 
   --error-base: #b43a3a;
+
+  --secondary-text: #cc9d1b;
 
   /* Gradient-speficic values */
 

@@ -30,7 +30,7 @@
       <form id="form_fields" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <div class="input-group">
           <div class="input-container">
-            <mat-icon class="input-icon">person</mat-icon>
+            <span mat-symbol="person" class="input-icon"></span>
             <input
               type="text"
               placeholder="Username"
@@ -48,7 +48,7 @@
             class="error-message slide-down"
             [ngClass]="{ show: username.invalid }"
           >
-            <mat-icon>error_outline</mat-icon>
+            <span mat-symbol="error"></span>
             @if (username.errors?.['required']) {
             <span>Username is required.</span>
             } @if (username.errors?.['minlength'] ||
@@ -61,7 +61,7 @@
 
         <div class="input-group">
           <div class="input-container">
-            <mat-icon class="input-icon">lock</mat-icon>
+            <span mat-symbol="lock" class="input-icon"></span>
             <input
               type="password"
               placeholder="Password"
@@ -80,7 +80,7 @@
             class="error-message slide-down"
             [ngClass]="{ show: password.invalid }"
           >
-            <mat-icon>error_outline</mat-icon>
+          <span mat-symbol="error"></span>
             @if (password.errors?.['required']) {
             <span>Password is required.</span>
             } @if (password.errors?.['minlength']) {
@@ -108,7 +108,7 @@
           @if(!isLoading) {
           <span>Log In</span>
           } @if(!isLoading) {
-          <mat-icon fontSet="material-icons-sharp">login</mat-icon>
+          <mat-icon fontSet="material-icons-round">login</mat-icon>
           } @if(isLoading) {
           <mat-spinner diameter="30" class="custom-spinner"></mat-spinner>
           }
@@ -129,11 +129,9 @@
       <div id="switch_theme_container">
         <button mat-button id="switch_theme" (click)="toggleTheme()">
           <mat-icon>
-            {{ (isDarkTheme$ | async) ? "light_mode" : "dark_mode" }}
+            {{ (isDarkTheme$ | async) ? "dark_mode" : "light_mode" }}
           </mat-icon>
-          <span>
-            Switch to {{ (isDarkTheme$ | async) ? "Light" : "Dark" }} Theme
-          </span>
+          <span> {{ (isDarkTheme$ | async) ? "Dark" : "Light" }} Theme </span>
         </button>
       </div>
     </div>

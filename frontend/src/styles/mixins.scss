@@ -6,7 +6,7 @@
 }
 
 /* Flexbox (center by default) with customizable values */
-@mixin flex-center($direction: row, $align: center, $justify: center, $gap: 0) {
+@mixin flex-layout($direction: row, $align: center, $justify: center, $gap: 0) {
   display: flex;
   flex-direction: $direction;
   align-items: $align;
@@ -57,6 +57,15 @@
   );
 }
 
+/* Primary Gradient for text */
+@mixin gradient-primary-text($degree: 90deg) {
+  @include gradient-primary($degree);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+}
+
 /* Custom-color material spinner */
 @mixin custom-spinner($color: var(--primary-one)) {
   .custom-spinner {
@@ -68,6 +77,7 @@
 @mixin custom-scrollbar {
   &::-webkit-scrollbar {
     width: 5px;
+    height: 5px;
   }
 
   &::-webkit-scrollbar-track {
@@ -77,9 +87,8 @@
   &::-webkit-scrollbar-thumb {
     background-color: var(--neutral-bar);
     border-radius: 3px;
+    cursor: pointer;
   }
-
-  cursor: pointer;
 }
 
 /* Hide the scrollbar */

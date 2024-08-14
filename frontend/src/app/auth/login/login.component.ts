@@ -20,6 +20,7 @@ import { MaterialComponents } from '../../core/imports/material.component';
 import { ThemeService } from '../../core/services/theme/theme.service';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 @Component({
   selector: 'app-login',
@@ -29,8 +30,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   imports: [
     CommonModule,
     SlideshowComponent,
-    MaterialComponents,
     ReactiveFormsModule,
+    MatSymbolDirective,
+    MaterialComponents,
   ],
 
   providers: [AuthService],

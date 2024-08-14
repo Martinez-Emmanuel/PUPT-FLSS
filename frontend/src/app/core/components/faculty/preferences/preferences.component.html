@@ -31,7 +31,7 @@
         <mat-form-field appearance="fill" class="custom-mat-search">
           <mat-label>Search</mat-label>
           <input matInput />
-          <mat-icon matPrefix>search</mat-icon>
+          <span mat-symbol="search" matPrefix></span>
         </mat-form-field>
       </div>
       <!--Subjects List-->
@@ -39,15 +39,15 @@
         <div class="subjects-scroll-container">
           <!-- Display spinner while loading -->
           @if (loading) {
-            <div class="spinner-wrapper">
-              <mat-spinner diameter="30" class="custom-spinner"></mat-spinner>
-            </div>
+          <div class="progress-wrapper">
+            <mat-spinner diameter="40"></mat-spinner>
+          </div>
           }
           <!-- Display subjects when loaded -->
           @if (!loading) {
           <!-- Ensure the properties match the Course interface -->
           @for (subject of subjects; track subject.subject_code) {
-            <div class="subject-card">
+          <div class="subject-card">
             <div class="subject-info">
               <span class="subject-code">{{ subject.subject_code }}</span>
               <span class="subject-title">{{ subject.subject_title }}</span>
@@ -57,11 +57,10 @@
               class="add-button"
               (click)="addSubjectToTable(subject)"
             >
-              <mat-icon>add</mat-icon>
+              <span mat-symbol="add" variant="outlined" size="20px"></span>
             </button>
           </div>
-        }
-      }
+          } }
         </div>
       </div>
     </div>
@@ -78,7 +77,7 @@
               class="custom-mat-button"
               (click)="removeSubject(element.subject_code)"
             >
-              <mat-icon>remove_circle</mat-icon>
+              <span mat-symbol="do_not_disturb_on" variant="outlined"></span>
             </button>
           </td>
         </ng-container>
@@ -92,22 +91,24 @@
           <th mat-header-cell *matHeaderCellDef>Subject Code</th>
           <td mat-cell *matCellDef="let element">{{ element.subject_code }}</td>
         </ng-container>
-        
+
         <ng-container matColumnDef="subject_title">
           <th mat-header-cell *matHeaderCellDef>Subject Title</th>
-          <td mat-cell *matCellDef="let element">{{ element.subject_title }}</td>
+          <td mat-cell *matCellDef="let element">
+            {{ element.subject_title }}
+          </td>
         </ng-container>
-        
+
         <ng-container matColumnDef="lec_hours">
           <th mat-header-cell *matHeaderCellDef>Lec</th>
           <td mat-cell *matCellDef="let element">{{ element.lec_hours }}</td>
         </ng-container>
-        
+
         <ng-container matColumnDef="lab_hours">
           <th mat-header-cell *matHeaderCellDef>Lab</th>
           <td mat-cell *matCellDef="let element">{{ element.lab_hours }}</td>
         </ng-container>
-        
+
         <ng-container matColumnDef="total_units">
           <th mat-header-cell *matHeaderCellDef>Units</th>
           <td mat-cell *matCellDef="let element">{{ element.total_units }}</td>
@@ -125,10 +126,10 @@
             >
               <option value="" disabled selected>Select day</option>
               @for (day of daysOfWeek; track day) {
-                <option [value]="day">
+              <option [value]="day">
                 {{ day }}
               </option>
-            }
+              }
             </select>
           </td>
         </ng-container>
@@ -152,14 +153,45 @@
         </ng-container>
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-      </table>
-    </div>
 
-    <!-- Mock submit button just for testing the submission of a preferences subject. -->
-    <div class="preferences-submit-row">
-      <button mat-raised-button color="primary" (click)="submitPreferences()">
-        Submit
-      </button>
+        <!-- No data row -->
+        <tr class="mat-row no-data-row" *matNoDataRow>
+          <td class="mat-cell" colspan="9">
+            No preferences have been added yet.
+          </td>
+        </tr>
+      </table>
+      <div class="table-footer">
+        <!-- Remove All Button -->
+        <div
+          matRipple
+          class="button-container"
+          (click)="!isRemoveDisabled && removeAllSubjects()"
+          [matTooltip]="
+            isRemoveDisabled ? 'You must select at least one course.' : ''
+          "
+          [class.disabled]="isRemoveDisabled"
+        >
+          <span mat-symbol="delete_sweep"></span>
+          <span class="button-text remove">Remove all</span>
+        </div>
+
+        <!-- Submit Preferences Button -->
+        <div
+          matRipple
+          class="button-container"
+          (click)="!isSubmitDisabled && submitPreferences()"
+          [matTooltip]="
+            isSubmitDisabled
+              ? 'Select one or more course with all having preferred day and time.'
+              : ''
+          "
+          [class.disabled]="isSubmitDisabled"
+        >
+          <span class="button-text send">Submit Preferences</span>
+          <span mat-symbol="send"></span>
+        </div>
+      </div>
     </div>
   </div>
 </div>
