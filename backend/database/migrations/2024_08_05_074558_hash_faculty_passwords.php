@@ -10,12 +10,12 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        $faculties = DB::table('faculties')->get();
+        $faculties = DB::table('faculty')->get();
 
         foreach ($faculties as $faculty) {
-            DB::table('faculties')
-                ->where('faculty_id', $faculty->faculty_id)
-                ->update(['faculty_password' => Hash::make($faculty->faculty_password)]);
+            DB::table('faculty')
+                ->where('id', $faculty->id)
+                ->update(['password' => Hash::make($faculty->password)]);
         }
     }
 
@@ -24,6 +24,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        // You might want to handle rollback logic here, but it's generally not needed for hashing
+        // Rollback logic if necessary
     }
 };
