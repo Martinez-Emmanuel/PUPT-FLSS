@@ -16,11 +16,20 @@ export class AuthGuard implements CanActivate {
     const expectedRole = next.data['role']; // Accessing 'role' using bracket notation
     
     if (token) {
-      // If a role is specified for the route, check if the user's role matches
       if (expectedRole && userRole !== expectedRole) {
-        console.log('Role mismatch! Redirecting to 404.');
-        // Redirect to the 404 error page if the role doesn't match
-        this.router.navigate(['/not-found']);
+        console.log(`Role mismatch! User role is ${userRole}, but expected role is ${expectedRole}. Redirecting accordingly.`);
+
+
+        // Redirection logic based on role
+        if (userRole === 'faculty') {
+          this.router.navigate(['/faculty']);
+        } else if (userRole === 'admin') {
+          this.router.navigate(['/admin']);
+        } else if (userRole === 'superadmin') {
+          this.router.navigate(['/superadmin']);
+        } else {
+          this.router.navigate(['/login']); // Default fallback
+        }
         return false;
       }
       console.log('Role match or no role restriction. Access granted.');

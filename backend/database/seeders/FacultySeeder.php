@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Seeder;
 use App\Models\Faculty;
 use Illuminate\Support\Facades\Hash;
-use App\Models\User;   
+use App\Models\User;
 
 
 class FacultySeeder extends Seeder
@@ -17,27 +17,27 @@ class FacultySeeder extends Seeder
      */
     public function run(): void
     {
-    // Creating Users
-    $user1 = User::create([
-        'name' => 'Steven Villarosa',
-        'code' => 'FA1234TG2023',
-        'password' => '#Q!FR&334', // Password will be hashed by the model mutator
-        'role' => 'faculty',
-    ]);
+        // Creating Users
+        $user1 = User::create([
+            'name' => 'Steven Villarosa',
+            'code' => 'FA1234TG2023',
+            'password' => '#Q!FR&334', // Password will be hashed by the model mutator
+            'role' => 'faculty',
+        ]);
 
-    $user2 = User::create([
-        'name' => 'Marissa Ferrer',
-        'code' => 'ADM001TG2024',
-        'password' => '$z7g235Y1', // Password will be hashed by the model mutator
-        'role' => 'admin',
-    ]);
+        $user2 = User::create([
+            'name' => 'Marissa Ferrer',
+            'code' => 'ADM001TG2024',
+            'password' => '$z7g235Y1', // Password will be hashed by the model mutator
+            'role' => 'admin',
+        ]);
 
-    $user3 = User::create([
-        'name' => 'Ermmanuel Martinez',
-        'code' => 'SDM001TG2024',
-        'password' => '!7DQK95#', // Password will be hashed by the model mutator
-        'role' => 'superadmin',
-    ]);
+        $user3 = User::create([
+            'name' => 'Ermmanuel Martinez',
+            'code' => 'SDM001TG2024',
+            'password' => '!7DQK95#', // Password will be hashed by the model mutator
+            'role' => 'superadmin',
+        ]);
 
         // Creating Faculties
         Faculty::create([

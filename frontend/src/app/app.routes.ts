@@ -1,6 +1,5 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard'; 
-import { NotFoundComponent } from './core/mocks/not-found/not-found.component'; 
 
 export const routes: Routes = [
   {
@@ -34,10 +33,6 @@ export const routes: Routes = [
       ),
     canActivate: [AuthGuard], // Protect with AuthGuard
     data: { role: 'superadmin' } // Only accessible by users with the 'superadmin' role
-  },
-  {
-    path: 'not-found',
-    component: NotFoundComponent, // Route to the 404 component
   },
   {
     path: '',
