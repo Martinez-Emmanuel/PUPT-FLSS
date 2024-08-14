@@ -6,6 +6,12 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\PreferenceController;
 use App\Http\Controllers\FacultyController;
+use App\Http\Controllers\RoomController;
+
+// Route::get('/rooms', [RoomController::class, 'index']);
+// Route::post('/addRoom', [RoomController::class, 'addRoom']);
+// Route::put('/rooms/{room_id}', [RoomController::class, 'updateRoom']);
+// Route::delete('/rooms/{room_id}', [RoomController::class, 'deleteRoom']);
 
 Route::post('login', [AuthController::class, 'login'])->name('login');
 
@@ -32,6 +38,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/addCourse', [CourseController::class, 'addCourse']);
     Route::put('/courses/{id}', [CourseController::class, 'updateCourse']);
     Route::delete('/courses/{id}', [CourseController::class, 'deleteCourse']);
+
+    //CRUD for rooms
+    Route::get('/rooms', [RoomController::class, 'index']);
+    Route::post('/addRoom', [RoomController::class, 'addRoom']);
+    Route::put('/rooms/{room_id}', [RoomController::class, 'updateRoom']);
+    Route::delete('/rooms/{room_id}', [RoomController::class, 'deleteRoom']);
 
 
     Route::get('/some-protected-route', function (Request $request) {
