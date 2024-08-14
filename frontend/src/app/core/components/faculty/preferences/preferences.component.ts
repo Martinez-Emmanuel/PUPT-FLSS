@@ -195,6 +195,10 @@ export class PreferencesComponent implements OnInit, OnDestroy {
 
   submitPreferences() {
     const facultyId = sessionStorage.getItem('faculty_id');
+    if (!facultyId) {
+      this.showSnackBar('Error: Faculty ID not found.');
+      return;
+    }
     const submittedData = this.prepareSubmissionData(facultyId);
 
     this.courseService.submitPreferences(submittedData).subscribe({

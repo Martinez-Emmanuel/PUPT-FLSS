@@ -162,6 +162,9 @@ export class LoginComponent implements OnInit, OnDestroy {
           
           if (response.user.faculty) {
             sessionStorage.setItem(
+              'faculty_id', 
+              response.user.faculty.faculty_id);
+            sessionStorage.setItem(
               'faculty_email', 
               response.user.faculty.faculty_email);
             sessionStorage.setItem(

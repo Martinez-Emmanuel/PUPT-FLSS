@@ -44,6 +44,7 @@ class AuthController extends Controller
                 'code' => $user->code,
                 'role' => $user->role,
                 'faculty' => $faculty ? [
+                    'faculty_id' => $faculty->id, // Include faculty_id here
                     'faculty_email' => $faculty->faculty_email,
                     'faculty_type' => $faculty->faculty_type,
                     'faculty_unit' => $faculty->faculty_unit,
@@ -53,18 +54,18 @@ class AuthController extends Controller
     }
 
     // Logout function
-  // Logout function
-public function logout(Request $request)
-{
-    $user = $request->user();
+    // Logout function
+    public function logout(Request $request)
+    {
+        $user = $request->user();
 
-    if ($user) {
-        // Revoke the token that was used to authenticate the current request
-        $request->user()->currentAccessToken()->delete();
-        return response()->json(['message' => 'Logged out successfully.'], 200);
+        if ($user) {
+            // Revoke the token that was used to authenticate the current request
+            $request->user()->currentAccessToken()->delete();
+            return response()->json(['message' => 'Logged out successfully.'], 200);
+        }
+
+        return response()->json(['message' => 'Unauthenticated.'], 401);
     }
-
-    return response()->json(['message' => 'Unauthenticated.'], 401);
-}
 
 }
