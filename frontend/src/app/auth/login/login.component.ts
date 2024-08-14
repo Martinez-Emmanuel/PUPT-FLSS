@@ -67,7 +67,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   ) {
     this.isDarkTheme$ = this.themeService.isDarkTheme$;
     this.loginForm = this.formBuilder.group({
-      username: [
+      code: [
         '',
         [
           Validators.required,
@@ -127,8 +127,8 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
   }
 
-  get username() {
-    return this.loginForm.get('username');
+  get code() {
+    return this.loginForm.get('code');
   }
   get password() {
     return this.loginForm.get('password');
@@ -138,93 +138,67 @@ export class LoginComponent implements OnInit, OnDestroy {
     if (this.loginForm.valid) {
       this.isLoading = true;
       this.authService
-        .login(this.loginForm.value.username, this.loginForm.value.password)
+        .login(this.loginForm.value.code, this.loginForm.value.password)
         .subscribe(
           (response) => {
             console.log('Login successful', response);
+            // Save the user data in sessionStorage
             sessionStorage.setItem(
-              'faculty_code',
-              response.faculty.faculty_code
+              'user_id', 
+              response.user.id
             );
             sessionStorage.setItem(
-              'faculty_name',
-              response.faculty.faculty_name
+              'user_name', 
+              response.user.name
             );
             sessionStorage.setItem(
-              'faculty_type',
-              response.faculty.faculty_type
+              'user_code', 
+              response.user.code
             );
             sessionStorage.setItem(
-              'faculty_email',
-              response.faculty.faculty_email
+              'user_role', 
+              response.user.role
             );
-            sessionStorage.setItem('token', response.token);
-            sessionStorage.setItem('expires_at', response.expires_at);
-
-            const expirationTime =
-              new Date(response.expires_at).getTime() - new Date().getTime();
-            setTimeout(() => {
-              this.onAutoLogout();
-            }, expirationTime);
-
-            this.isLoading = false;
-            this.router.navigate(['/faculty']);
-          },
-          (error) => {
-            console.error('Login failed', error);
-            this.isLoading = false;
-
-            if (
-              error.status === 401 &&
-              error.error.message === 'Invalid Credentials'
-            ) {
-              this.showErrorSnackbar(
-                'Invalid username or password. Please try again.'
-              );
-            } else if (error.status === 0) {
-              this.showErrorSnackbar(
-                'Unable to connect to the server. Please check your internet connection.'
-              );
-            } else {
-              this.showErrorSnackbar(
-                'An error occurred during login. Please try again later.'
-              );
-            }
+          
+          if (response.user.faculty) {
+            sessionStorage.setItem(
+              'faculty_email', 
+              response.user.faculty.faculty_email);
+            sessionStorage.setItem(
+              'faculty_type', 
+              response.user.faculty.faculty_type);
+            sessionStorage.setItem(
+              'faculty_unit', 
+              response.user.faculty.faculty_unit);
           }
-        );
-      this.authService.login(
-        this.loginForm.value.username, 
-        this.loginForm.value.password
-      ).subscribe(
-        response => {
-          console.log('Login successful', response);
-          sessionStorage.setItem
-            ('faculty_id', response.faculty.faculty_id);
-          sessionStorage.setItem 
-            ('faculty_code', response.faculty.faculty_code);
-          sessionStorage.setItem
-            ('faculty_name', response.faculty.faculty_name);
-          sessionStorage.setItem
-            ('faculty_type', response.faculty.faculty_type);
-          sessionStorage.setItem
-            ('faculty_email', response.faculty.faculty_email);
-          sessionStorage.setItem
-            ('token', response.token);
-          sessionStorage.setItem
-            ('expires_at', response.expires_at);
-          sessionStorage.setItem(
-              'faculty_units', response.faculty.faculty_units.toString());
-  
-          const expirationTime = new Date
-            (response.expires_at).getTime() - new Date().getTime();
+
+          sessionStorage.setItem('token', response.token);
+          sessionStorage.setItem('expires_at', response.expires_at);
+
+          const expirationTime = new Date(response.expires_at).getTime() - new Date().getTime();
           setTimeout(() => {
             this.onAutoLogout();
           }, expirationTime);
-  
-          this.router.navigate(['/faculty']);  
+          
+          // Role-based redirection
+          const role = response.user.role;
+          if (role === 'faculty') {
+            this.router.navigate(['/faculty']); // Redirect to faculty module
+          } else if (role === 'admin') {
+            this.router.navigate(['/admin']); // Redirect to admin module
+          } else if (role === 'superadmin') {
+            this.router.navigate(['/superadmin']); // Redirect to superadmin module
+          } else {
+            this.router.navigate(['/login']); // Redirect to login if role is unknown
+          }
+
+          this.isLoading = false;
+          
         },
-        error => {
+        (error) => {
           console.error('Login failed', error);
+          this.isLoading = false;
+
           if (error.status === 401 && error.error.message === 'Invalid Credentials') {
             this.errorMessage = 'Invalid username or password. Please try again.';
           } else {

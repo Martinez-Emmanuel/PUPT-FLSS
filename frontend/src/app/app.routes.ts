@@ -1,4 +1,6 @@
 import { Routes } from '@angular/router';
+import { AuthGuard } from './core/guards/auth.guard'; 
+import { NotFoundComponent } from './core/mocks/not-found/not-found.component'; 
 
 export const routes: Routes = [
   {
@@ -12,6 +14,8 @@ export const routes: Routes = [
       import('./core/components/faculty/faculty.routes').then(
         (m) => m.FACULTY_ROUTES
       ),
+    canActivate: [AuthGuard], // Protect with AuthGuard
+    data: { role: 'faculty' } // Only accessible by users with the 'faculty' role
   },
   {
     path: 'admin',
@@ -19,6 +23,8 @@ export const routes: Routes = [
       import('./core/components/admin/admin.routes').then(
         (m) => m.ADMIN_ROUTES
       ),
+    canActivate: [AuthGuard], // Protect with AuthGuard
+    data: { role: 'admin' } // Only accessible by users with the 'admin' role
   },
   {
     path: 'superadmin',
@@ -26,6 +32,12 @@ export const routes: Routes = [
       import('./core/components/superadmin/superadmin.routes').then(
         (m) => m.SUPERADMIN_ROUTES
       ),
+    canActivate: [AuthGuard], // Protect with AuthGuard
+    data: { role: 'superadmin' } // Only accessible by users with the 'superadmin' role
+  },
+  {
+    path: 'not-found',
+    component: NotFoundComponent, // Route to the 404 component
   },
   {
     path: '',
