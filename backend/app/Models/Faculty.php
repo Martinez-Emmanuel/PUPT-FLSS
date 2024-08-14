@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-namespace App\Models;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -14,16 +12,22 @@ class Faculty extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    protected $primaryKey = 'faculty_id';
+    protected $table = 'faculty';  
 
     protected $fillable = [
-        'faculty_name',
-        'faculty_code',
-        'faculty_password',
+        'user_id',
         'faculty_email',
         'faculty_type',
-        'faculty_units', 
+        'faculty_unit',
+        'faculty_password', // Include the password in fillable
     ];
+
+    public $timestamps = false;  // Disable timestamps
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     /**
      * Hash the password before saving to the database.

@@ -9,8 +9,6 @@ class Preference extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'preference_id';
-
     protected $fillable = [
         'faculty_id',
         'course_id',
@@ -28,4 +26,3 @@ class Preference extends Model
         return $this->belongsTo(Course::class, 'course_id');
     }
 }
-
