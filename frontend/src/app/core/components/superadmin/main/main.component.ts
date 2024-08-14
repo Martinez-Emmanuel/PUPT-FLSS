@@ -97,3 +97,7 @@ export class MainComponent implements OnInit {
     this.isDropdownOpen = !this.isDropdownOpen;
   }
 }
+
+
+
+

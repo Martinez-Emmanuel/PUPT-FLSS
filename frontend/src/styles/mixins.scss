@@ -6,7 +6,7 @@
 }
 
 /* Flexbox (center by default) with customizable values */
-@mixin flex-center($direction: row, $align: center, $justify: center, $gap: 0) {
+@mixin flex-layout($direction: row, $align: center, $justify: center, $gap: 0) {
   display: flex;
   flex-direction: $direction;
   align-items: $align;

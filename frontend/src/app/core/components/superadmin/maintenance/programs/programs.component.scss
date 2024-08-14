@@ -9,7 +9,7 @@
 }
 
 .programs-header {
-  @include flex-center($justify: flex-start);
+  @include flex-layout($justify: flex-start);
 
   h1 {
     @include gradient-primary(315deg);

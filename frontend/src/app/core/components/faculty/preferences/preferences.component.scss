@@ -13,11 +13,11 @@
 }
 
 .preferences-row-one {
-  @include flex-center;
+  @include flex-layout;
   justify-content: space-between;
 
   #preferences_title {
-    @include flex-center(
+    @include flex-layout(
       $direction: column,
       $align: none,
       $justify: none,
@@ -45,13 +45,13 @@
   }
 
   #units_container {
-    @include flex-center;
+    @include flex-layout;
     gap: var(--spacing-sm);
     height: inherit;
     text-align: center;
 
     .units {
-      @include flex-center($direction: column);
+      @include flex-layout($direction: column);
       height: inherit;
       border-radius: var(--border-radius-md);
       padding: var(--spacing-md);
@@ -115,6 +115,11 @@
     flex: 1;
     overflow-y: auto;
     padding-right: var(--spacing-sm);
+
+    .progress-wrapper {
+      height: 100%;
+      @include flex-layout;
+    }
   }
 }
 
@@ -150,20 +155,9 @@
   }
 
   .add-button {
-    @include flex-center;
+    @include flex-layout;
     color: var(--neutral-base);
   }
-}
-
-.spinner-wrapper {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100px;
-}
-
-.custom-spinner {
-  margin: auto;
 }
 
 #table_container {
@@ -183,26 +177,56 @@
   }
 
   .table-footer {
-    @include flex-center($justify: flex-end, $gap: var(--spacing-xs));
+    @include flex-layout($justify: space-between, $gap: var(--spacing-xs));
     flex-shrink: 0;
     margin-top: auto;
     position: sticky;
     bottom: 0;
     z-index: 2;
-    padding: var(--spacing-sm) var(--spacing-lg);
     background-color: var(--neutral-bar);
+    padding: var(--spacing-xxs) var(--spacing-xxs);
 
-    .submit-container {
-      @include flex-center($gap: var(--spacing-sm));
+    .button-container {
+      @include flex-layout($gap: var(--spacing-sm));
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: var(--border-radius-xl);
       cursor: pointer;
+      user-select: none;
 
-      &:hover {
-        color: var(--primary-one);
+      span {
+        color: var(--neutral-base);
+        @include default-transition(true);
+      }
 
-        span {
-          color: var(--primary-one);
+      .button-text {
+        font-weight: 500;
+
+        &.remove {
+          color: var(--primary-text);
         }
       }
+
+      span[mat-symbol="delete_sweep"] {
+        color: var(--primary-text);
+      }
+
+      &:hover {
+        .send,
+        span[mat-symbol="send"] {
+          color: var(--secondary-text);
+        }
+      }
+    }
+
+    .button-container.disabled {
+      &:hover {
+        .send,
+        span[mat-symbol="send"] {
+          color: var(--neutral-base);
+        }
+      }
+      opacity: 0.6;
+      cursor: not-allowed;
     }
   }
 
@@ -224,12 +248,12 @@
   }
 
   .custom-mat-button {
-    @include flex-center;
+    @include flex-layout;
 
     span[mat-symbol] {
       font-size: var(--font-size-lg);
       color: var(--primary-one);
-      @include flex-center;
+      @include flex-layout;
     }
   }
 
@@ -249,6 +273,15 @@
   .mat-column-lab_hours,
   .mat-column-total_units {
     @include column-width(70px);
+  }
+
+  .mat-mdc-no-data-row {
+    height: var(--spacing-4xl);
+  }
+
+  .mat-mdc-no-data-row td {
+    font-size: initial;
+    text-align: center;
   }
 
   .preferred-day-dropdown {

@@ -17,17 +17,17 @@
       />
       <div class="header-name">
         <div class="university-name">PUP TAGUIG</div>
-        <div class="system-name">FLS SYSTEM</div>
+        <div class="system-name">FACULTY LOADING<br>& SCHEDULING</div>
       </div>
     </div>
     <mat-nav-list class="navbar-list">
       <div class="group">
         <h4 class="list-subheader">Dashboard</h4>
         <a
-          class="list-item nested-item"
+          mat-list-item
+          class="list-item"
           routerLink="/superadmin/dashboard"
           routerLinkActive="active-link"
-          matRipple
         >
           <span mat-symbol="dashboard" matListItemIcon></span>
           <span matListItemTitle>Dashboard</span>
@@ -37,17 +37,15 @@
       <div class="group">
         <h4 class="list-subheader">Management</h4>
         <a
-          class="list-item nested-item"
-          routerLinkActive="active-link"
-          matRipple
+          mat-list-item
+          class="list-item"
         >
           <span mat-symbol="admin_panel_settings" matListItemIcon></span>
           <span matListItemTitle>Manage Admin</span>
         </a>
         <a
-          class="list-item nested-item"
-          routerLinkActive="active-link"
-          matRipple
+          mat-list-item
+          class="list-item"
         >
           <span mat-symbol="groups" matListItemIcon></span>
           <span matListItemTitle>Manage Faculty</span>
@@ -57,37 +55,37 @@
       <div class="group">
         <h4 class="list-subheader">Maintenance</h4>
         <a
-          class="list-item nested-item"
+          mat-list-item
+          class="list-item"
           routerLink="/superadmin/programs"
           routerLinkActive="active-link"
-          matRipple
         >
           <span mat-symbol="school" matListItemIcon></span>
           <span matListItemTitle>Programs</span>
         </a>
         <a
-          class="list-item nested-item"
+          mat-list-item
+          class="list-item"
           routerLink="/superadmin/courses"
           routerLinkActive="active-link"
-          matRipple
         >
           <span mat-symbol="book" matListItemIcon></span>
           <span matListItemTitle>Courses</span>
         </a>
         <a
-          class="list-item nested-item"
+          mat-list-item
+          class="list-item"
           routerLink="/superadmin/curriculum"
           routerLinkActive="active-link"
-          matRipple
         >
           <span mat-symbol="list_alt" matListItemIcon></span>
           <span matListItemTitle>Curriculum</span>
         </a>
         <a
-          class="list-item nested-item"
+          mat-list-item
+          class="list-item"
           routerLink="/superadmin/rooms"
           routerLinkActive="active-link"
-          matRipple
         >
           <span mat-symbol="meeting_room" matListItemIcon></span>
           <span matListItemTitle>Rooms</span>
@@ -125,8 +123,8 @@
         <!--Admin Account-->
         <div class="header-account">
           <div class="account-text">
-            <div class="account-name">PUP Taguig Super Admin</div>
-            <div class="account-email">puptaguigfaculty&#64;pup.edu.ph</div>
+            <div class="account-name">Juan Dela Cruz</div>
+            <div class="account-role">Super Administrator</div>
           </div>
           <div class="profile-dropdown">
             <img
