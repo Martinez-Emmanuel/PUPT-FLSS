@@ -16,7 +16,7 @@
   }
 
   // Typography
-  --font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+  --font-base: "Inter Tight", "Helvetica Neue", sans-serif;
   --font-header: "Trajan Pro", serif;
 
   --font-size-xs: 0.65rem;
@@ -27,6 +27,8 @@
   --font-size-2xl: 2rem;
   --font-size-2xxl: 2.5rem;
   --font-size-3xl: 3rem;
+  --font-size-3xxl: 3.5rem;
+  --font-size-4xl: 4rem;
 
   // Line heights
   --line-height-base: 1.5;
@@ -52,16 +54,11 @@
   --border-radius-xl: 2rem;
 
   // Box Shadow
-  --shadow-level-1: 0 1px 3px rgba(0, 0, 0, 0.12),
-  0 1px 2px rgba(0, 0, 0, 0.24);
-  --shadow-level-2: 0 3px 6px rgba(0, 0, 0, 0.16),
-  0 3px 6px rgba(0, 0, 0, 0.23);
-  --shadow-level-3: 0 10px 20px rgba(0, 0, 0, 0.19),
-  0 6px 6px rgba(0, 0, 0, 0.23);
-  --shadow-level-4: 0 14px 28px rgba(0, 0, 0, 0.25),
-  0 10px 10px rgba(0, 0, 0, 0.22);
-  --shadow-level-5: 0 19px 38px rgba(0, 0, 0, 0.3),
-  0 15px 12px rgba(0, 0, 0, 0.22);
+  --shadow-level-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow-level-2: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  --shadow-level-3: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
+  --shadow-level-4: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
+  --shadow-level-5: 0 19px 38px rgba(0, 0, 0, 0.3), 0 15px 12px rgba(0, 0, 0, 0.22);
 
   // Opacity
   --opacity-transparent: 0;
@@ -126,4 +123,40 @@ body {
 
 .mdc-list-item__primary-text {
   font-family: "Inter Tight", sans-serif !important;
+}
+
+/* Table Add/Edit Dialogs Styling */
+.table-dialog-container {
+  max-width: var(--dialog-base);
+}
+
+.table-dialog-content {
+  .dialog-form {
+    padding: var(--spacing-sm) 0;
+
+    .form-field {
+      width: 100%;
+    }
+  }
+}
+
+.table-dialog-title {
+  font-family: "Inter Tight", sans-serif !important;
+  color: var(--primary-text) !important;
+
+  span {
+    font-weight: 500;
+  }
+}
+
+.table-dialog-button {
+  .cancel-button {
+    font-size: var(--font-size-md);
+    color: var(--primary-text) !important;
+  }
+
+  .action-button {
+    font-size: var(--font-size-md);
+    color: white !important;
+  }
 }
