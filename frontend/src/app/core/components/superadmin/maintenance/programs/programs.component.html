@@ -1,110 +1,22 @@
 <div class="programs-container">
-  <div class="programs-header">
-    <button
-      mat-flat-button
-      class="custom-mat-button"
-      (click)="openAddProgramDialog()"
-    >
-      <mat-icon>add</mat-icon>
-      Add Program
-    </button>
+  <!--Table Header-->
+  <div class="programs-header-container">
+    <app-table-header
+      [searchLabel]="'Search Programs'"
+      [addButtonLabel]="'Add Program'"
+      (search)="onSearch($event)"
+      (add)="openAddProgramDialog()"
+    ></app-table-header>
   </div>
 
-  <ng-template #addEditProgramDialog>
-    <h2 mat-dialog-title>{{ isEdit ? "Edit Program" : "Add New Program" }}</h2>
-    <div mat-dialog-content class="custom-dialog">
-      <form [formGroup]="addProgramForm" class="dialog-form">
-        <mat-form-field appearance="outline">
-          <mat-label>Program Code</mat-label>
-          <input matInput formControlName="program_code" />
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Program Title</mat-label>
-          <input matInput formControlName="program_title" />
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Program Info</mat-label>
-          <input matInput formControlName="program_info"/>
-        </mat-form-field>
-        <mat-form-field appearance="outline">
-          <mat-label>Program Status</mat-label>
-          <mat-select formControlName="program_status">
-            <mat-option *ngFor="let status of programStatuses" [value]="status">
-              {{ status }}
-            </mat-option>
-          </mat-select>
-        </mat-form-field>
-      </form>
-    </div>
-    <div mat-dialog-actions>
-      <button mat-button (click)="closeDialog()">Cancel</button>
-      <button
-        mat-flat-button
-        class="action-button"
-        color="primary"
-        (click)="isEdit ? updateProgram() : addProgram()"
-      >
-        {{ isEdit ? "Update" : "Add" }}
-      </button>
-    </div>
-  </ng-template>
-
+  <!--Common Table-->
   <div class="programs-table-container">
-    <table
-      mat-table
-      [dataSource]="dataSource"
-      class="mat-elevation-z0 custom-table"
-    >
-      <!-- # Column -->
-      <ng-container matColumnDef="num">
-        <th mat-header-cell *matHeaderCellDef>#</th>
-        <td mat-cell *matCellDef="let element; let i = index">{{ i + 1 }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="program_code">
-        <th mat-header-cell *matHeaderCellDef>Program Code</th>
-        <td mat-cell *matCellDef="let element">{{ element.program_code }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="program_title">
-        <th mat-header-cell *matHeaderCellDef>Program Title</th>
-        <td mat-cell *matCellDef="let element">{{ element.program_title }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="program_info">
-        <th mat-header-cell *matHeaderCellDef>Program Info</th>
-        <td mat-cell *matCellDef="let element">{{ element.program_info }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="program_status">
-        <th mat-header-cell *matHeaderCellDef>Program Status</th>
-        <td mat-cell *matCellDef="let element">{{ element.program_status }}</td>
-      </ng-container>
-
-      <ng-container matColumnDef="action">
-        <th mat-header-cell *matHeaderCellDef>Actions</th>
-        <td mat-cell *matCellDef="let element">
-          <button
-            mat-button
-            class="edit-button"
-            (click)="openEditProgramDialog(element)"
-          >
-            <mat-icon>edit</mat-icon>
-            Edit
-          </button>
-          <button
-            mat-button
-            class="delete-button"
-            (click)="deleteProgram(element)"
-          >
-            <mat-icon>delete</mat-icon>
-            Delete
-          </button>
-        </td>
-      </ng-container>
-
-      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-    </table>
+    <app-common-table
+      [columns]="columns"
+      [data]="programs"
+      [displayedColumns]="displayedColumns"
+      (edit)="openEditProgramDialog($event)"
+      (delete)="deleteProgram($event)"
+    ></app-common-table>
   </div>
 </div>
