@@ -56,9 +56,12 @@
   // Box Shadow
   --shadow-level-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
   --shadow-level-2: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-  --shadow-level-3: 0 10px 20px rgba(0, 0, 0, 0.19), 0 6px 6px rgba(0, 0, 0, 0.23);
-  --shadow-level-4: 0 14px 28px rgba(0, 0, 0, 0.25), 0 10px 10px rgba(0, 0, 0, 0.22);
-  --shadow-level-5: 0 19px 38px rgba(0, 0, 0, 0.3), 0 15px 12px rgba(0, 0, 0, 0.22);
+  --shadow-level-3: 0 10px 20px rgba(0, 0, 0, 0.19),
+    0 6px 6px rgba(0, 0, 0, 0.23);
+  --shadow-level-4: 0 14px 28px rgba(0, 0, 0, 0.25),
+    0 10px 10px rgba(0, 0, 0, 0.22);
+  --shadow-level-5: 0 19px 38px rgba(0, 0, 0, 0.3),
+    0 15px 12px rgba(0, 0, 0, 0.22);
 
   // Opacity
   --opacity-transparent: 0;
@@ -100,20 +103,13 @@ body {
   box-sizing: border-box;
   background: var(--main-bg);
   color: var(--neutral-base);
-  font-family: "Inter Tight", "Helvetica Neue", sans-serif;
   transition: background-color 0.5s ease;
 }
 
 * {
-  font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+  font-family: var(--font-base);
   @include custom-scrollbar;
 }
-
-/*
-.mdc-text-field--outlined {
-  --mdc-outlined-text-field-container-shape: 10px !important;
-}
-*/
 
 .mdc-text-field--filled {
   // when appearance="fill"
@@ -122,41 +118,5 @@ body {
 }
 
 .mdc-list-item__primary-text {
-  font-family: "Inter Tight", sans-serif !important;
-}
-
-/* Table Add/Edit Dialogs Styling */
-.table-dialog-container {
-  max-width: var(--dialog-base);
-}
-
-.table-dialog-content {
-  .dialog-form {
-    padding: var(--spacing-sm) 0;
-
-    .form-field {
-      width: 100%;
-    }
-  }
-}
-
-.table-dialog-title {
-  font-family: "Inter Tight", sans-serif !important;
-  color: var(--primary-text) !important;
-
-  span {
-    font-weight: 500;
-  }
-}
-
-.table-dialog-button {
-  .cancel-button {
-    font-size: var(--font-size-md);
-    color: var(--primary-text) !important;
-  }
-
-  .action-button {
-    font-size: var(--font-size-md);
-    color: white !important;
-  }
+  font-family: var(--font-base) !important;
 }
