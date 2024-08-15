@@ -98,7 +98,8 @@ mat-sidenav-content {
     $justify: none,
     $gap: var(--spacing-md)
   );
-  padding: var(--spacing-xl);
+  padding: var(--spacing-2xl);
+  height: 100%;
 
   .main-toolbar {
     position: sticky;
