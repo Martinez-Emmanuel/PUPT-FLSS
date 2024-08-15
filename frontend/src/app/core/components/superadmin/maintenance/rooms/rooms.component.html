@@ -12,12 +12,12 @@
 
   <!-- Common Table -->
   <div class="rooms-table-container">
-    <app-common-table
+    <app-table-generic
       [columns]="columns"
       [data]="rooms"
       [displayedColumns]="displayedColumns"
       (edit)="openEditRoomDialog($event)"
       (delete)="deleteRoom($event)"
-    ></app-common-table>
+    ></app-table-generic>
   </div>
 </div>

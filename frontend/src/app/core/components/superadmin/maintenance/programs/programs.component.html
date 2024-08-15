@@ -11,12 +11,12 @@
 
   <!--Common Table-->
   <div class="programs-table-container">
-    <app-common-table
+    <app-table-generic
       [columns]="columns"
       [data]="programs"
       [displayedColumns]="displayedColumns"
       (edit)="openEditProgramDialog($event)"
       (delete)="deleteProgram($event)"
-    ></app-common-table>
+    ></app-table-generic>
   </div>
 </div>

@@ -6,7 +6,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 
-import { CommonTableComponent } from '../../../../../shared/common-table/common-table.component';
+import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
 import { TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
 import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 
@@ -19,7 +19,7 @@ import { Room, RoomService } from '../../../../services/superadmin/rooms/rooms.s
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    CommonTableComponent,
+    TableGenericComponent,
     TableHeaderComponent,
   ],
   templateUrl: './rooms.component.html',

@@ -7,7 +7,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 
 import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
-import { CommonTableComponent } from '../../../../../shared/common-table/common-table.component';
+import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
 import { TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
 
 import { Program, ProgramsService } from '../../../../services/superadmin/programs/programs.service';
@@ -18,7 +18,7 @@ import { Program, ProgramsService } from '../../../../services/superadmin/progra
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    CommonTableComponent,
+    TableGenericComponent,
     TableHeaderComponent,
   ],
   templateUrl: './programs.component.html',
