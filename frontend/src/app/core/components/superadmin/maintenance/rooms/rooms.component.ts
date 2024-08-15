@@ -1,4 +1,9 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -8,10 +13,15 @@ import { ReactiveFormsModule } from '@angular/forms';
 
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
 import { TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
-import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
+import {
+  TableDialogComponent,
+  DialogConfig,
+} from '../../../../../shared/table-dialog/table-dialog.component';
 
-import { Room, RoomService } from '../../../../services/superadmin/rooms/rooms.service';
-
+import {
+  Room,
+  RoomService,
+} from '../../../../services/superadmin/rooms/rooms.service';
 
 @Component({
   selector: 'app-rooms',
@@ -127,7 +137,10 @@ export class RoomsComponent implements OnInit {
 
   openAddRoomDialog() {
     const config = this.getDialogConfig();
-    const dialogRef = this.dialog.open(TableDialogComponent, { data: config });
+    const dialogRef = this.dialog.open(TableDialogComponent, {
+      data: config,
+      disableClose: true,
+    });
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
@@ -148,6 +161,7 @@ export class RoomsComponent implements OnInit {
 
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: config,
+      disableClose: true,
     });
 
     dialogRef.afterClosed().subscribe((result) => {

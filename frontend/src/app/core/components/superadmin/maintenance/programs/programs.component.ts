@@ -1,4 +1,9 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -6,11 +11,17 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 
-import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
+import {
+  TableDialogComponent,
+  DialogConfig,
+} from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
 import { TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
 
-import { Program, ProgramsService } from '../../../../services/superadmin/programs/programs.service';
+import {
+  Program,
+  ProgramsService,
+} from '../../../../services/superadmin/programs/programs.service';
 
 @Component({
   selector: 'app-programs',
@@ -118,7 +129,10 @@ export class ProgramsComponent implements OnInit {
 
   openAddProgramDialog() {
     const config = this.getDialogConfig();
-    const dialogRef = this.dialog.open(TableDialogComponent, { data: config });
+    const dialogRef = this.dialog.open(TableDialogComponent, {
+      data: config,
+      disableClose: true,
+    });
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
@@ -139,6 +153,7 @@ export class ProgramsComponent implements OnInit {
 
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: config,
+      disableClose: true,
     });
 
     dialogRef.afterClosed().subscribe((result) => {
