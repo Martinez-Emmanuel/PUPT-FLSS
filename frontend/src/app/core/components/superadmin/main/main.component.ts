@@ -1,21 +1,22 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { CommonModule } from '@angular/common';
 import { AsyncPipe } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
+import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
+
+import { Observable } from 'rxjs';
+import { map, shareReplay, filter } from 'rxjs/operators';
+
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
-import { Observable } from 'rxjs';
-import { map, shareReplay } from 'rxjs/operators';
-import { Router, NavigationEnd } from '@angular/router';
+
 import { ThemeService } from '../../../services/theme/theme.service';
 import { MaterialComponents } from '../../../imports/material.component';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
-import { ActivatedRoute } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { filter } from 'rxjs/operators';
-import { RouterModule } from '@angular/router';
 
 @Component({
   selector: 'app-main',
@@ -32,7 +33,7 @@ import { RouterModule } from '@angular/router';
     RouterModule,
     MaterialComponents,
     MatSymbolDirective,
-    CommonModule
+    CommonModule,
   ],
 })
 export class MainComponent implements OnInit {
@@ -41,11 +42,11 @@ export class MainComponent implements OnInit {
   public pageTitle!: string;
 
   private routeTitleMap: { [key: string]: string } = {
-    'dashboard': 'Dashboard',
-    'programs': 'Programs',
-    'courses': 'Courses',
-    'curriculum': 'Curriculum',
-    'rooms': 'Rooms',
+    dashboard: 'Dashboard',
+    programs: 'Programs',
+    courses: 'Courses',
+    curriculum: 'Curriculum',
+    rooms: 'Rooms',
     'manage-admin': 'Manage Admin',
     'manage-faculty': 'Manage Faculty',
   };
@@ -84,7 +85,7 @@ export class MainComponent implements OnInit {
     }
 
     // Set default title if no specific title is found in route data
-    const urlSegments = this.router.url.split('/').filter(segment => segment);
+    const urlSegments = this.router.url.split('/').filter((segment) => segment);
     const lastSegment = urlSegments[urlSegments.length - 1];
     this.pageTitle = this.routeTitleMap[lastSegment] || 'Dashboard';
   }
@@ -97,7 +98,3 @@ export class MainComponent implements OnInit {
     this.isDropdownOpen = !this.isDropdownOpen;
   }
 }
-
-
-
-
