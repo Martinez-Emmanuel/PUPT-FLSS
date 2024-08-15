@@ -8,9 +8,7 @@ import { ThemeService } from '../../../services/theme/theme.service';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { AuthService } from '../../../services/auth/auth.service';
 import { MatDialog } from '@angular/material/dialog';
-import { CustomDialogComponent, DialogData } from '../../../../shared/custom-dialog/custom-dialog.component';
-import { timer, Observable, of } from 'rxjs';
-import { mergeMap, finalize } from 'rxjs/operators';
+import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
 
 @Component({
   selector: 'app-main',
@@ -132,7 +130,7 @@ export class MainComponent implements AfterViewInit, OnDestroy {
   }
 
   logout() {
-    const confirmDialogRef = this.dialog.open(CustomDialogComponent, {
+    const confirmDialogRef = this.dialog.open(DialogGenericComponent, {
       data: {
         title: 'Log Out',
         content: 'Are you sure you want to log out? This will end your current session.',
@@ -145,7 +143,7 @@ export class MainComponent implements AfterViewInit, OnDestroy {
     confirmDialogRef.afterClosed().subscribe((result) => {
       console.log('Dialog result:', result);
       if (result === 'Log Out') {
-        const loadingDialogRef = this.dialog.open(CustomDialogComponent, {
+        const loadingDialogRef = this.dialog.open(DialogGenericComponent, {
           data: {
             title: 'Logging Out',
             content: 'Currently logging you out...',

@@ -9,7 +9,7 @@ import { MatDialog } from '@angular/material/dialog';
 
 import { CommonModule } from '@angular/common';
 
-import { CustomDialogComponent, DialogData } from '../custom-dialog/custom-dialog.component';
+import { DialogGenericComponent } from '../dialog-generic/dialog-generic.component';
 
 @Component({
   selector: 'app-table-generic',
@@ -88,7 +88,7 @@ export class TableGenericComponent<T> implements OnInit, AfterViewInit {
   }
 
   onDelete(item: T) {
-    const dialogRef = this.dialog.open(CustomDialogComponent, {
+    const dialogRef = this.dialog.open(DialogGenericComponent, {
       data: {
         title: 'Confirm Delete',
         content:
