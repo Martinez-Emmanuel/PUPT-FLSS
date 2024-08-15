@@ -18,13 +18,7 @@ import {
   FormGroup,
   Validators,
 } from '@angular/forms';
-
-interface Room {
-  room_code: string;
-  location: string;
-  room_type: string;
-  capacity: number;
-}
+import { RoomService, Room } from '../../../../services/room/room.service';
 
 @Component({
   selector: 'app-rooms',
@@ -54,13 +48,14 @@ export class RoomsComponent implements OnInit {
   dataSource = new MatTableDataSource<Room>([]);
   addRoomForm!: FormGroup;
   isEdit = false;
-  selectedRoom: Room | null = null;
+  selectedRoom: Room| null = null;
 
   constructor(
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private fb: FormBuilder,
-    private cd: ChangeDetectorRef
+    private cd: ChangeDetectorRef,
+    private roomService: RoomService
   ) {}
 
   ngOnInit(): void {
@@ -78,119 +73,17 @@ export class RoomsComponent implements OnInit {
   }
 
   loadRooms(): void {
-    const rooms: Room[] = [
-      {
-        room_code: 'A201',
-        location: 'Building A',
-        room_type: 'Lecture',
-        capacity: 50,
+    this.roomService.getRooms().subscribe({
+      next: (rooms) => {
+        this.dataSource.data = rooms;
+        this.cd.markForCheck(); // Ensure change detection
       },
-      {
-        room_code: 'A202',
-        location: 'Building A',
-        room_type: 'Lecture',
-        capacity: 50,
+      error: (err) => {
+        this.snackBar.open('Error loading rooms', 'Close', { duration: 2000 });
       },
-      {
-        room_code: 'A203',
-        location: 'Building A',
-        room_type: 'Lecture',
-        capacity: 50,
-      },
-      {
-        room_code: 'A204',
-        location: 'Building A',
-        room_type: 'Lecture',
-        capacity: 50,
-      },
-      {
-        room_code: 'A205',
-        location: 'Building A',
-        room_type: 'Lecture',
-        capacity: 50,
-      },
-      {
-        room_code: 'DOSTLAB',
-        location: 'Building A',
-        room_type: 'Lab',
-        capacity: 60,
-      },
-      {
-        room_code: 'ABOITIZLAB',
-        location: 'Building A',
-        room_type: 'Lab',
-        capacity: 60,
-      },
-      {
-        room_code: 'B302',
-        location: 'Building B',
-        room_type: 'Lab',
-        capacity: 30,
-      },
-      {
-        room_code: 'B303',
-        location: 'Building B',
-        room_type: 'Lab',
-        capacity: 30,
-      },
-      {
-        room_code: 'B304',
-        location: 'Building B',
-        room_type: 'Lab',
-        capacity: 30,
-      },
-      {
-        room_code: 'B305',
-        location: 'Building B',
-        room_type: 'Lab',
-        capacity: 30,
-      },
-      {
-        room_code: 'B306',
-        location: 'Building B',
-        room_type: 'Lab',
-        capacity: 30,
-      },
-      {
-        room_code: 'C101',
-        location: 'Building C',
-        room_type: 'Lecture',
-        capacity: 100,
-      },
-      {
-        room_code: 'ENG101',
-        location: 'Engineering Building',
-        room_type: 'Lecture',
-        capacity: 50,
-      },
-      {
-        room_code: 'ENG102',
-        location: 'Engineering Building',
-        room_type: 'Lab',
-        capacity: 60,
-      },
-      {
-        room_code: 'ENG103',
-        location: 'Engineering Building',
-        room_type: 'Lecture',
-        capacity: 50,
-      },
-      {
-        room_code: 'ENG104',
-        location: 'Engineering Building',
-        room_type: 'Lab',
-        capacity: 60,
-      },
-      {
-        room_code: 'ENG105',
-        location: 'Engineering Building',
-        room_type: 'Lecture',
-        capacity: 50,
-      },
-    ];    
-    this.dataSource.data = rooms;
+    });
   }
-
+  
   openAddRoomDialog(): void {
     this.isEdit = false;
     this.addRoomForm.reset();
@@ -215,10 +108,17 @@ export class RoomsComponent implements OnInit {
   addRoom(): void {
     if (this.addRoomForm.valid) {
       const newRoom: Room = this.addRoomForm.value;
-      this.dataSource.data = [...this.dataSource.data, newRoom];
-      this.closeDialog();
-      this.snackBar.open('Room added successfully', 'Close', {
-        duration: 2000,
+      this.roomService.addRoom(newRoom).subscribe({
+        next: ( ) => {
+          this.closeDialog();
+          this.snackBar.open('Room added successfully', 'Close', {
+            duration: 2000,
+          });
+          this.loadRooms();
+        },
+        error: (err) => {
+          this.snackBar.open('Error adding room', 'Close', { duration: 2000 });
+        },
       });
     } else {
       this.snackBar.open('Please fill in all required fields', 'Close', {
@@ -229,16 +129,20 @@ export class RoomsComponent implements OnInit {
 
   updateRoom(): void {
     if (this.addRoomForm.valid && this.selectedRoom) {
-      const updatedRoom: Room = this.addRoomForm.value;
-      const index = this.dataSource.data.indexOf(this.selectedRoom);
-      if (index > -1) {
-        this.dataSource.data[index] = updatedRoom;
-        this.dataSource.data = [...this.dataSource.data];
-        this.closeDialog();
-        this.snackBar.open('Room updated successfully', 'Close', {
-          duration: 2000,
-        });
-      }
+      const updatedRoom: Room = { ...this.addRoomForm.value, room_id: this.selectedRoom.room_id };
+  
+      this.roomService.updateRoom(updatedRoom).subscribe({
+        next: () => {
+          this.snackBar.open('Room updated successfully', 'Close', {
+            duration: 2000,
+          });
+          this.closeDialog();
+          this.loadRooms();
+        },
+        error: (err) => {
+          this.snackBar.open('Error updating room', 'Close', { duration: 2000 });
+        },
+      });
     } else {
       this.snackBar.open('Please fill in all required fields', 'Close', {
         duration: 2000,
@@ -247,13 +151,16 @@ export class RoomsComponent implements OnInit {
   }
 
   deleteRoom(room: Room): void {
-    const index = this.dataSource.data.indexOf(room);
-    if (index > -1) {
-      this.dataSource.data.splice(index, 1);
-      this.dataSource.data = [...this.dataSource.data];
-      this.snackBar.open('Room deleted successfully', 'Close', {
-        duration: 2000,
-      });
-    }
+    this.roomService.deleteRoom(room.room_id!).subscribe({
+      next: () => {
+        this.dataSource.data = this.dataSource.data.filter((r) => r.room_id !== room.room_id);
+        this.snackBar.open('Room deleted successfully', 'Close', {
+          duration: 2000,
+        });
+      },
+      error: (err) => {
+        this.snackBar.open('Error deleting room', 'Close', { duration: 2000 });
+      },
+    });
   }
 }
