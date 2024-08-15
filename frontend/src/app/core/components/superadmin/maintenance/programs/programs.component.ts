@@ -10,7 +10,7 @@ import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-
 import { CommonTableComponent } from '../../../../../shared/common-table/common-table.component';
 import { TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
 
-import { Program, ProgramService } from '../../../../services/superadmin/programs/programs.service';
+import { Program, ProgramsService } from '../../../../services/superadmin/programs/programs.service';
 
 @Component({
   selector: 'app-programs',
@@ -51,7 +51,7 @@ export class ProgramsComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private programService: ProgramService
+    private programService: ProgramsService
   ) {}
 
   ngOnInit() {
