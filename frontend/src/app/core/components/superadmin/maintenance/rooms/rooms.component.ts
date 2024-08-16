@@ -46,7 +46,7 @@ export class RoomsComponent implements OnInit {
     { key: 'index', label: '#' },
     { key: 'room_code', label: 'Room Code' },
     { key: 'location', label: 'Location' },
-    { key: 'floor', label: 'Floor' },
+    { key: 'floor', label: 'Floor Level' },
     { key: 'room_type', label: 'Room Type' },
     { key: 'capacity', label: 'Capacity' },
   ];
@@ -109,7 +109,7 @@ export class RoomsComponent implements OnInit {
           required: true,
         },
         {
-          label: 'Floor',
+          label: 'Floor Level',
           formControlName: 'floor',
           type: 'select',
           options: this.floors,
