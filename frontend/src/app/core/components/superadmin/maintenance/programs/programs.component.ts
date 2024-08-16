@@ -123,7 +123,7 @@ export class ProgramsComponent implements OnInit {
           required: true,
         },
       ],
-      initialValue: program || {},
+      initialValue: program || { program_status: 'Active' },
     };
   }
 
