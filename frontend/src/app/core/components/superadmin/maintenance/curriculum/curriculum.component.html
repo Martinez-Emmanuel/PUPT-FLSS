@@ -1,1 +1,24 @@
-<p>curriculum works!</p>
+<div class="curriculum-container">
+  <!-- Table Header -->
+  <div class="curriculum-header-container">
+    <app-table-header
+      [searchLabel]="'Search Curriculum'"
+      [addButtonLabel]="'Add Curriculum'"
+      (search)="onSearch($event)"
+      (add)="openAddCurriculumDialog()"
+    ></app-table-header>
+  </div>
+
+  <!-- Common Table -->
+  <div class="curriculum-table-container">
+    <app-table-generic
+      [columns]="columns"
+      [data]="curricula"
+      [displayedColumns]="displayedColumns"
+      [showViewButton]="true"
+      (view)="onViewCurriculum($event)"
+      (edit)="openEditCurriculumDialog($event)"
+      (delete)="deleteCurriculum($event)"
+    ></app-table-generic>
+  </div>
+</div>
