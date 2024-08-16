@@ -38,6 +38,7 @@ import {
 })
 export class ProgramsComponent implements OnInit {
   programStatuses = ['Active', 'Inactive'];
+  programYears = [1, 2, 3, 4, 5];
   isEdit = false;
   selectedProgramIndex: number | null = null;
 
@@ -48,6 +49,7 @@ export class ProgramsComponent implements OnInit {
     { key: 'program_title', label: 'Program Title' },
     { key: 'program_info', label: 'Program Info' },
     { key: 'program_status', label: 'Status' },
+    { key: 'number_of_years', label: 'Years' },
   ];
 
   displayedColumns: string[] = [
@@ -56,6 +58,7 @@ export class ProgramsComponent implements OnInit {
     'program_title',
     'program_info',
     'program_status',
+    'number_of_years',
   ];
 
   constructor(
@@ -122,8 +125,18 @@ export class ProgramsComponent implements OnInit {
           options: this.programStatuses,
           required: true,
         },
+        {
+          label: 'Years',
+          formControlName: 'number_of_years',
+          type: 'select',
+          options: this.programYears,
+          required: true,
+        },
       ],
-      initialValue: program || { program_status: 'Active' },
+      initialValue: program || {
+        program_status: 'Active',
+        number_of_years: '4',
+      },
     };
   }
 

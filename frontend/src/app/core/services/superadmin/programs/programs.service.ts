@@ -6,6 +6,7 @@ export interface Program {
   program_title: string;
   program_info: string;
   program_status: string;
+  number_of_years: number;
 }
 
 @Injectable({
@@ -19,6 +20,7 @@ export class ProgramsService {
       program_info:
         'This program focuses on financial accounting, management accounting, auditing, and taxation.',
       program_status: 'Active',
+      number_of_years: 4,
     },
     {
       program_code: 'BSEE-TG',
@@ -26,6 +28,7 @@ export class ProgramsService {
       program_info:
         'This program focuses on the design, development, and testing of electronic devices and systems.',
       program_status: 'Active',
+      number_of_years: 4,
     },
     {
       program_code: 'BSME-TG',
@@ -33,6 +36,7 @@ export class ProgramsService {
       program_info:
         'This program focuses on the design, manufacturing, and maintenance of mechanical systems.',
       program_status: 'Active',
+      number_of_years: 4,
     },
     {
       program_code: 'BSIT-TG',
@@ -40,6 +44,7 @@ export class ProgramsService {
       program_info:
         'This program focuses on computer science and information technology.',
       program_status: 'Active',
+      number_of_years: 4,
     },
     {
       program_code: 'BSBA-MM-TG',
@@ -48,6 +53,7 @@ export class ProgramsService {
       program_info:
         'This program focuses on marketing principles, consumer behavior, and market research.',
       program_status: 'Active',
+      number_of_years: 4,
     },
     {
       program_code: 'BSBA-HRM-TG',
@@ -56,6 +62,7 @@ export class ProgramsService {
       program_info:
         'This program focuses on employee recruitment, training, development, and performance management.',
       program_status: 'Active',
+      number_of_years: 4,
     },
     {
       program_code: 'BSED-ENG-TG',
@@ -64,6 +71,7 @@ export class ProgramsService {
       program_info:
         'This program focuses on teaching English language and literature to secondary level students.',
       program_status: 'Active',
+      number_of_years: 4,
     },
     {
       program_code: 'BSED-MATH-TG',
@@ -71,6 +79,7 @@ export class ProgramsService {
       program_info:
         'This program focuses on teaching mathematics to secondary level students.',
       program_status: 'Active',
+      number_of_years: 4,
     },
     {
       program_code: 'BSOA-LT-TG',
@@ -79,6 +88,7 @@ export class ProgramsService {
       program_info:
         'This program focuses on legal transcription, document formatting, and legal terminology.',
       program_status: 'Active',
+      number_of_years: 4,
     },
     {
       program_code: 'DOMT-LOM-TG',
@@ -87,6 +97,7 @@ export class ProgramsService {
       program_info:
         'This program focuses on legal office procedures, document management, and legal support services.',
       program_status: 'Active',
+      number_of_years: 4,
     },
     {
       program_code: 'DICT-TG',
@@ -94,6 +105,7 @@ export class ProgramsService {
       program_info:
         'This program focuses on computer networks, software applications, and digital communication.',
       program_status: 'Active',
+      number_of_years: 4,
     },
   ]);
 
