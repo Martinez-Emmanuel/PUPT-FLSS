@@ -15,7 +15,7 @@ export interface DialogFieldConfig {
   label: string;
   formControlName: string;
   type: 'text' | 'number' | 'select';
-  options?: string[];
+  options?: string[] | number[];
   maxLength?: number;
   required?: boolean;
   min?: number;
