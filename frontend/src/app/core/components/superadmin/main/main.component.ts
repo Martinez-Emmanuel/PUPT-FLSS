@@ -47,8 +47,8 @@ export class MainComponent implements OnInit {
     courses: 'Courses',
     curriculum: 'Curriculum',
     rooms: 'Rooms',
-    'manage-admin': 'Manage Admin',
-    'manage-faculty': 'Manage Faculty',
+    admin: 'Manage Admin',
+    faculty: 'Manage Faculty',
   };
 
   isHandset$: Observable<boolean> = this.breakpointObserver

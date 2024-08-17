@@ -20,6 +20,22 @@ export const SUPERADMIN_ROUTES: Routes = [
           data: { pageTitle: 'Dashboard' }
       },
       {
+        path: 'admin',
+        loadComponent: () =>
+          import('./management/admin/admin.component').then(
+            (m) => m.AdminComponent
+          ),
+          data: { pageTitle: 'Manage Admin' }
+      },
+      {
+        path: 'faculty',
+        loadComponent: () =>
+          import('./management/faculty/faculty.component').then(
+            (m) => m.FacultyComponent
+          ),
+          data: { pageTitle: 'Manage Faculty' }
+      },
+      {
         path: 'programs',
         loadComponent: () =>
           import('./maintenance/programs/programs.component').then(
