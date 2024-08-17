@@ -2,10 +2,12 @@
   <!--Table Header-->
   <div class="programs-header-container">
     <app-table-header
-      [searchLabel]="'Search Programs'"
+      [inputFields]="headerInputFields"
       [addButtonLabel]="'Add Program'"
-      (search)="onSearch($event)"
+      [showExportDialog]="true"
+      (inputChange)="onInputChange($event)"
       (add)="openAddProgramDialog()"
+      (export)="onExport($event)"
     ></app-table-header>
   </div>
 
