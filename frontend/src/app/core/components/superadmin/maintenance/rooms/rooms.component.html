@@ -1,12 +1,12 @@
 <div class="rooms-container">
-
   <!--Table Header-->
   <div class="rooms-header-container">
     <app-table-header
-      [searchLabel]="'Search Rooms'"
+      [inputFields]="headerInputFields"
       [addButtonLabel]="'Add Room'"
-      (search)="onSearch($event)"
+      (inputChange)="onInputChange($event)"
       (add)="openAddRoomDialog()"
+      (export)="onExport()"
     ></app-table-header>
   </div>
 

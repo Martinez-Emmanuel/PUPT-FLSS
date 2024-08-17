@@ -1,9 +1,4 @@
-import {
-  Component,
-  OnInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-} from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -12,16 +7,10 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
-import { TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
-import {
-  TableDialogComponent,
-  DialogConfig,
-} from '../../../../../shared/table-dialog/table-dialog.component';
+import { TableHeaderComponent,InputField } from '../../../../../shared/table-header/table-header.component';
+import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 
-import {
-  Room,
-  RoomService,
-} from '../../../../services/superadmin/rooms/rooms.service';
+import { Room, RoomService } from '../../../../services/superadmin/rooms/rooms.service';
 
 @Component({
   selector: 'app-rooms',
@@ -60,6 +49,14 @@ export class RoomsComponent implements OnInit {
     'capacity',
   ];
 
+  headerInputFields: InputField[] = [
+    {
+      type: 'text',
+      label: 'Search Rooms',
+      key: 'search'
+    }
+  ];
+
   constructor(
     private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
@@ -78,7 +75,13 @@ export class RoomsComponent implements OnInit {
     });
   }
 
-  onSearch(searchTerm: string) {
+  onInputChange(values: {[key: string]: any}) {
+    if (values['search'] !== undefined) {
+      this.onSearch(values['search']);
+    }
+  }
+
+  private onSearch(searchTerm: string) {
     this.roomService.getRooms().subscribe((rooms) => {
       this.rooms = rooms.filter(
         (room) =>
@@ -88,6 +91,11 @@ export class RoomsComponent implements OnInit {
       this.cdr.markForCheck();
     });
   }
+
+  onExport() {
+    console.log('Export functionality not implemented yet');
+  }
+
 
   private getDialogConfig(room?: Room): DialogConfig {
     return {
