@@ -3,13 +3,6 @@
 .header-container {
   @include flex-layout($align: stretch, $justify: space-between);
 
-  .search-field {
-    height: var(--font-size-3xxl);
-    margin-bottom: 0;
-
-    margin-right: var(--spacing-md);
-  }
-
   .button-container {
     @include flex-layout($align: flex-end, $justify: space-between);
     gap: var(--spacing-md);
