@@ -1,1 +1,23 @@
-<p>admin works!</p>
+<div class="admin-management-container">
+  <!-- Table Header -->
+  <div class="admin-header-container">
+    <app-table-header
+      [searchLabel]="'Search Admins'"
+      [addButtonLabel]="'Add Admin'"
+      (search)="onSearch($event)"
+      (add)="openAddAdminDialog()"
+    ></app-table-header>
+  </div>
+
+  <!-- Admin Management Table -->
+  <div class="admin-table-container">
+    <app-table-generic
+      [columns]="columns"
+      [data]="admins"
+      [displayedColumns]="displayedColumns"
+      [showViewButton]="false" 
+      (edit)="openEditAdminDialog($event)"
+      (delete)="deleteAdmin($event)"
+    ></app-table-generic>
+  </div>
+</div>
