@@ -2,11 +2,21 @@
 <div class="table-dialog-container">
   <!-- Dialog title -->
   <h2 mat-dialog-title class="table-dialog-title">
-    <span>{{ data.isEdit ? "Edit" : "Add New" }} {{ data.title }}</span>
+    <span>{{ isExportDialog ? "Export to PDF" : (data.isEdit ? "Edit" : "Add New") }} {{ data.title }}</span>
   </h2>
 
   <!-- Dialog content -->
   <div mat-dialog-content class="table-dialog-content">
+
+    @if (isExportDialog) {
+      <form [formGroup]="form" class="dialog-form">
+        <mat-radio-group formControlName="exportOption">
+          <mat-radio-button value="all">Export all</mat-radio-button>
+          <mat-radio-button value="current">Export this item only</mat-radio-button>
+        </mat-radio-group>
+      </form>
+    } @else {
+
     <!-- Form container -->
     <form [formGroup]="form" class="dialog-form">
       <!-- Dynamically generate form fields based on data.fields -->
@@ -51,23 +61,22 @@
       </mat-form-field>
       }
     </form>
+  }
   </div>
 
   <!-- Dialog action buttons -->
   <div mat-dialog-actions class="table-dialog-button">
-    <!-- Cancel button -->
     <button mat-button class="cancel-button" (click)="onCancel()">
       Cancel
     </button>
-    <!-- Save/Update button -->
-    <button
-      mat-flat-button
-      class="action-button"
-      color="primary"
-      [disabled]="form.invalid"
-      (click)="onSave()"
-    >
-      {{ data.isEdit ? "Update" : "Add" }}
-    </button>
+    @if (isExportDialog) {
+      <button mat-flat-button class="action-button" color="primary" [disabled]="form.invalid" (click)="onExport()">
+        Export
+      </button>
+    } @else {
+      <button mat-flat-button class="action-button" color="primary" [disabled]="form.invalid" (click)="onSave()">
+        {{ data.isEdit ? "Update" : "Add" }}
+      </button>
+    }
   </div>
 </div>

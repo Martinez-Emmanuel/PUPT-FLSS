@@ -1,15 +1,29 @@
-import { Component, Inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  Inject,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogRef,
+  MatDialogModule,
+} from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatRadioModule } from '@angular/material/radio';
 
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
-
 
 export interface DialogFieldConfig {
   label: string;
@@ -27,6 +41,7 @@ export interface DialogConfig {
   fields: DialogFieldConfig[];
   isEdit: boolean;
   initialValue?: any;
+  isExportDialog?: boolean;
 }
 
 @Component({
@@ -44,10 +59,12 @@ export interface DialogConfig {
     MatButtonModule,
     MatTooltipModule,
     MatDialogModule,
+    MatRadioModule,
   ],
 })
 export class TableDialogComponent {
   form: FormGroup;
+  isExportDialog: boolean;
 
   constructor(
     private fb: FormBuilder,
@@ -56,27 +73,34 @@ export class TableDialogComponent {
     @Inject(MAT_DIALOG_DATA) public data: DialogConfig
   ) {
     this.form = this.fb.group({});
+    this.isExportDialog = data.isExportDialog || false;
     this.initForm();
   }
 
   initForm() {
-    this.form.reset(); // Reset the form to ensure no residual data
-    this.data.fields.forEach((field) => {
-      const validators = [];
-      if (field.required) validators.push(Validators.required);
-      if (field.maxLength)
-        validators.push(Validators.maxLength(field.maxLength));
-      if (field.min !== undefined) validators.push(Validators.min(field.min));
-      if (field.max !== undefined) validators.push(Validators.max(field.max));
+    if (this.isExportDialog) {
+      this.form = this.fb.group({
+        exportOption: ['all', Validators.required],
+      });
+    } else {
+      this.form.reset();
+      this.data.fields.forEach((field) => {
+        const validators = [];
+        if (field.required) validators.push(Validators.required);
+        if (field.maxLength)
+          validators.push(Validators.maxLength(field.maxLength));
+        if (field.min !== undefined) validators.push(Validators.min(field.min));
+        if (field.max !== undefined) validators.push(Validators.max(field.max));
 
-      const initialValue = this.data.initialValue
-        ? this.data.initialValue[field.formControlName]
-        : '';
-      this.form.addControl(
-        field.formControlName,
-        this.fb.control(initialValue, validators)
-      );
-    });
+        const initialValue = this.data.initialValue
+          ? this.data.initialValue[field.formControlName]
+          : '';
+        this.form.addControl(
+          field.formControlName,
+          this.fb.control(initialValue, validators)
+        );
+      });
+    }
     this.cdr.markForCheck();
   }
 
@@ -95,7 +119,13 @@ export class TableDialogComponent {
     }
     return '';
   }
-  
+
+  onExport() {
+    if (this.form.valid) {
+      const exportOption = this.form.value.exportOption;
+      this.dialogRef.close(exportOption);
+    }
+  }
 
   onSave() {
     if (this.form.valid) {
