@@ -4,10 +4,9 @@
     <app-table-header
       [inputFields]="headerInputFields"
       [addButtonLabel]="'Add Program'"
-      [showExportDialog]="true"
       (inputChange)="onInputChange($event)"
       (add)="openAddProgramDialog()"
-      (export)="onExport($event)"
+      (export)="onExport()"
     ></app-table-header>
   </div>
 
