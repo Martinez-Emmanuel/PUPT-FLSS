@@ -43,6 +43,9 @@ export class TableHeaderComponent {
   @Input() showExportButton = true;
   @Input() showExportDialog = false;
   @Input() showAddButton = true;
+  @Input() selectedValues: { [key: string]: any } = {};
+  @Input() customExportOptions: { all: string; current: string } | null = null;
+
   @Output() inputChange = new EventEmitter<{ [key: string]: any }>();
   @Output() add = new EventEmitter<void>();
   @Output() export = new EventEmitter<'all' | 'current' | undefined>();
@@ -55,7 +58,7 @@ export class TableHeaderComponent {
 
   ngOnInit() {
     this.inputFields.forEach((field) => {
-      this.form.addControl(field.key, this.fb.control(''));
+      this.form.addControl(field.key, this.fb.control(this.selectedValues[field.key] || ''));
     });
     this.form.valueChanges.subscribe((value) => {
       this.inputChange.emit(value);
@@ -71,6 +74,7 @@ export class TableHeaderComponent {
       const dialogRef = this.dialog.open(TableDialogComponent, {
         data: {
           isExportDialog: true,
+          customExportOptions: this.customExportOptions
         },
         disableClose: true,
       });

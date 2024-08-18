@@ -1,6 +1,6 @@
 <div class="header-container">
   <!-- Search Input -->
-  <form [formGroup]="form">
+  <form [formGroup]="form" class="input-container">
     @for (field of inputFields; track field.key) { @if (field.type === 'text') {
     <mat-form-field
       appearance="fill"
@@ -18,7 +18,7 @@
     } @if (field.type === 'select') {
     <mat-form-field
       appearance="fill"
-      class="search-field"
+      class="select-field"
       subscriptSizing="dynamic"
     >
       <mat-label>{{ field.label }}</mat-label>
