@@ -1,15 +1,17 @@
 @import "../../../styles/mixins.scss";
 
 .table-heading {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
+  @include flex-layout($align: center, $justify: space-between);
   margin-bottom: 1rem;
 
-  h3 {
+  .heading-title {
+    color: var(--primary-one);
     font-weight: 500;
     margin: 0;
+  }
+
+  .heading-button {
+    color: var(--primary-text);
   }
 }
 

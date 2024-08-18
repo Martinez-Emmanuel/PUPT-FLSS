@@ -1,8 +1,15 @@
 <!-- Table Heading -->
 @if (showTableHeading) {
 <div class="table-heading">
-  <h3>{{ tableHeadingTitle }}</h3>
-  <button mat-button color="primary" (click)="onTableHeadingButtonClick()">
+  <h2 class="heading-title">{{ tableHeadingTitle }}</h2>
+  <button
+    mat-button
+    class="heading-button"
+    (click)="onTableHeadingButtonClick()"
+  >
+    @if (tableHeadingButtonIcon) {
+    <mat-icon>{{ tableHeadingButtonIcon }}</mat-icon>
+    }
     {{ tableHeadingButtonText }}
   </button>
 </div>
@@ -19,7 +26,10 @@
         *matHeaderCellDef
         mat-sort-header
         class="custom-header common"
-        [ngClass]="{ 'sticky': isHeaderSticky, 'top-left-radius': isFirstColumn(column.key) }"
+        [ngClass]="{
+          sticky: isHeaderSticky,
+          'top-left-radius': isFirstColumn(column.key)
+        }"
       >
         {{ column.label }}
       </th>
@@ -35,7 +45,14 @@
 
     <!-- Actions column -->
     <ng-container matColumnDef="action">
-      <th mat-header-cell *matHeaderCellDef class="custom-header action" [ngClass]="{ 'sticky': isHeaderSticky }">Actions</th>
+      <th
+        mat-header-cell
+        *matHeaderCellDef
+        class="custom-header action"
+        [ngClass]="{ sticky: isHeaderSticky }"
+      >
+        Actions
+      </th>
       <td mat-cell *matCellDef="let element" class="custom-cell action-cell">
         <div class="action-buttons">
           <!-- Optionally shows 'View' button-->

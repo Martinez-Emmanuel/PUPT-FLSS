@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, AfterViewInit, ViewChild, Output, EventEmitter, TemplateRef } from '@angular/core';
+import { Component, Input, OnInit, AfterViewInit, ViewChild, Output, EventEmitter, TemplateRef, ChangeDetectionStrategy } from '@angular/core';
 
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
@@ -46,6 +46,7 @@ export class TableGenericComponent<T> implements OnInit, AfterViewInit {
   @Input() showTableHeading: boolean = false;
   @Input() tableHeadingTitle: string = '';
   @Input() tableHeadingButtonText: string = '';
+  @Input() tableHeadingButtonIcon: string = '';
 
   @Output() edit = new EventEmitter<T>();
   @Output() delete = new EventEmitter<T>();
