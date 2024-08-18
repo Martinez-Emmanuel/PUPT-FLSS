@@ -77,14 +77,21 @@ export class MainComponent implements OnInit {
   private setPageTitle(): void {
     let child = this.route.firstChild;
     while (child) {
-      if (child.snapshot.data['title']) {
-        this.pageTitle = child.snapshot.data['title'];
+      if (child.firstChild) {
+        child = child.firstChild;
+      } else if (child.snapshot.data['pageTitle']) {
+        let title = child.snapshot.data['pageTitle'];
+        if (child.snapshot.data['curriculumYear']) {
+          title += ` ${child.snapshot.data['curriculumYear']}`;
+        }
+        this.pageTitle = title;
         return;
+      } else {
+        break;
       }
-      child = child.firstChild;
     }
 
-    // Set default title if no specific title is found in route data
+    // If no title is found in route data, fallback to URL-based title
     const urlSegments = this.router.url.split('/').filter((segment) => segment);
     const lastSegment = urlSegments[urlSegments.length - 1];
     this.pageTitle = this.routeTitleMap[lastSegment] || 'Dashboard';
