@@ -11,8 +11,12 @@
     @if (isExportDialog) {
       <form [formGroup]="form" class="dialog-form">
         <mat-radio-group formControlName="exportOption">
-          <mat-radio-button value="all">Export all</mat-radio-button>
-          <mat-radio-button value="current">Export this item only</mat-radio-button>
+          <mat-radio-button value="all">
+            {{ customExportOptions ? customExportOptions.all : 'Export all' }}
+          </mat-radio-button>
+          <mat-radio-button value="current">
+            {{ customExportOptions ? customExportOptions.current : 'Export this item only' }}
+          </mat-radio-button>
         </mat-radio-group>
       </form>
     } @else {
@@ -39,6 +43,7 @@
         <input
           matInput
           type="number"
+          appTwoDigitInput
           [formControlName]="field.formControlName"
           [min]="field.min ?? null"
           [max]="field.max ?? null"
