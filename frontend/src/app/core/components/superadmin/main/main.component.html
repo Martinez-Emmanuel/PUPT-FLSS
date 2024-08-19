@@ -17,7 +17,7 @@
       />
       <div class="header-name">
         <div class="university-name">PUP TAGUIG</div>
-        <div class="system-name">FACULTY LOADING<br>& SCHEDULING</div>
+        <div class="system-name">FACULTY LOADING<br />& SCHEDULING</div>
       </div>
     </div>
     <mat-nav-list class="navbar-list">
@@ -36,16 +36,20 @@
 
       <div class="group">
         <h4 class="list-subheader">Management</h4>
-        <a
-          mat-list-item
+        <a 
+          mat-list-item 
           class="list-item"
+          routerLink="/superadmin/admin"
+          routerLinkActive="active-link"
         >
           <span mat-symbol="admin_panel_settings" matListItemIcon></span>
           <span matListItemTitle>Manage Admin</span>
         </a>
-        <a
-          mat-list-item
+        <a 
+          mat-list-item 
           class="list-item"
+          routerLink="/superadmin/faculty"
+          routerLinkActive="active-link"
         >
           <span mat-symbol="groups" matListItemIcon></span>
           <span matListItemTitle>Manage Faculty</span>
@@ -57,12 +61,22 @@
         <a
           mat-list-item
           class="list-item"
+          routerLink="/superadmin/curriculum"
+          routerLinkActive="active-link"
+        >
+          <span mat-symbol="list_alt" matListItemIcon></span>
+          <span matListItemTitle>Curriculum</span>
+        </a>
+        <a
+          mat-list-item
+          class="list-item"
           routerLink="/superadmin/programs"
           routerLinkActive="active-link"
         >
           <span mat-symbol="school" matListItemIcon></span>
           <span matListItemTitle>Programs</span>
         </a>
+        <!--No longer displayed
         <a
           mat-list-item
           class="list-item"
@@ -72,15 +86,7 @@
           <span mat-symbol="book" matListItemIcon></span>
           <span matListItemTitle>Courses</span>
         </a>
-        <a
-          mat-list-item
-          class="list-item"
-          routerLink="/superadmin/curriculum"
-          routerLinkActive="active-link"
-        >
-          <span mat-symbol="list_alt" matListItemIcon></span>
-          <span matListItemTitle>Curriculum</span>
-        </a>
+        -->
         <a
           mat-list-item
           class="list-item"
@@ -117,7 +123,7 @@
       <header class="sidenav-header">
         <!--Page Title-->
         <div class="title-container">
-          <h2 class="page-title">{{pageTitle}}</h2>
+          <h2 class="page-title">{{ pageTitle }}</h2>
         </div>
 
         <!--Admin Account-->

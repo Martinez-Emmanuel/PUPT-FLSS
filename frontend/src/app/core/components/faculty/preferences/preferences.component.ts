@@ -1,6 +1,9 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
+
 import { Subscription } from 'rxjs';
+
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -8,10 +11,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MaterialComponents } from '../../../imports/material.component';
 import { ThemeService } from '../../../services/theme/theme.service';
 import { TimeFormatPipe } from '../../../pipes/time-format/time-format.pipe';
-import { TimeSelectionDialogComponent } from '../../../../shared/time-selection-dialog/time-selection-dialog.component';
-import { CourseService, Course } from '../../../services/course/courses.service';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
-import { CustomDialogComponent, DialogData } from '../../../../shared/custom-dialog/custom-dialog.component';
+
+import { DialogTimeComponent } from '../../../../shared/dialog-time/dialog-time.component';
+import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
+import { CourseService, Course } from '../../../services/course/courses.service';
 
 interface TableData extends Course {
   preferredDay: string;
@@ -24,7 +28,7 @@ interface TableData extends Course {
   imports: [
     MaterialComponents,
     CommonModule,
-    TimeSelectionDialogComponent,
+    DialogTimeComponent,
     TimeFormatPipe,
     MatSymbolDirective,
   ],
@@ -180,7 +184,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     ];
 
     this.dialog
-      .open(TimeSelectionDialogComponent, {
+      .open(DialogTimeComponent, {
         width: '300px',
         data: { startTime, endTime },
       })
@@ -233,7 +237,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     };
 
     this.dialog
-      .open(CustomDialogComponent, {
+      .open(DialogGenericComponent, {
         data: dialogData,
         disableClose: true,
       })

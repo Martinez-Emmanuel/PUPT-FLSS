@@ -3,221 +3,207 @@ import {
   OnInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  ViewChild,
-  TemplateRef,
 } from '@angular/core';
-import { MaterialComponents } from '../../../../imports/material.component';
-import { CommonModule } from '@angular/common';
-import { MatTableDataSource } from '@angular/material/table';
+
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatSymbolDirective } from '../../../../imports/mat-symbol.directive';
-import {
-  ReactiveFormsModule,
-  FormBuilder,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
 
-interface Program {
-  program_code: string;
-  program_title: string;
-  program_info: string;
-  program_status: string;
-}
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
+
+import {
+  TableDialogComponent,
+  DialogConfig,
+} from '../../../../../shared/table-dialog/table-dialog.component';
+import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
+import { TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
+
+import {
+  Program,
+  ProgramsService,
+} from '../../../../services/superadmin/programs/programs.service';
 
 @Component({
   selector: 'app-programs',
   standalone: true,
   imports: [
-    MaterialComponents,
     CommonModule,
-    MatSymbolDirective,
     ReactiveFormsModule,
+    TableGenericComponent,
+    TableHeaderComponent,
   ],
   templateUrl: './programs.component.html',
   styleUrls: ['./programs.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProgramsComponent implements OnInit {
-  @ViewChild('addEditProgramDialog') addEditProgramDialog!: TemplateRef<any>;
-  addProgramForm!: FormGroup;
   programStatuses = ['Active', 'Inactive'];
-  isAddProgramDialogOpen = false;
+  programYears = [1, 2, 3, 4, 5];
   isEdit = false;
   selectedProgramIndex: number | null = null;
 
-  programs: Program[] = [
-    {
-      program_code: 'BSA-TG',
-      program_title: 'Bachelor of Science in Accountancy',
-      program_info:
-        'This program focuses on financial accounting, management accounting, auditing, and taxation.',
-      program_status: 'Active',
-    },
-    {
-      program_code: 'BSEE-TG',
-      program_title: 'Bachelor of Science in Electronics Engineering',
-      program_info:
-        'This program focuses on the design, development, and testing of electronic devices and systems.',
-      program_status: 'Active',
-    },
-    {
-      program_code: 'BSME-TG',
-      program_title: 'Bachelor of Science in Mechanical Engineering',
-      program_info:
-        'This program focuses on the design, manufacturing, and maintenance of mechanical systems.',
-      program_status: 'Active',
-    },
-    {
-      program_code: 'BSIT-TG',
-      program_title: 'Bachelor of Science in Information Technology',
-      program_info:
-        'This program focuses on computer science and information technology.',
-      program_status: 'Active',
-    },
-    {
-      program_code: 'BSBA-MM-TG',
-      program_title:
-        'Bachelor of Science in Business Administration Major in Marketing Management',
-      program_info:
-        'This program focuses on marketing principles, consumer behavior, and market research.',
-      program_status: 'Active',
-    },
-    {
-      program_code: 'BSBA-HRM-TG',
-      program_title:
-        'Bachelor of Science in Business Administration Major in Human Resource Management',
-      program_info:
-        'This program focuses on employee recruitment, training, development, and performance management.',
-      program_status: 'Active',
-    },
-    {
-      program_code: 'BSED-ENG-TG',
-      program_title:
-        'Bachelor of Science in Secondary Education Major in English',
-      program_info:
-        'This program focuses on teaching English language and literature to secondary level students.',
-      program_status: 'Active',
-    },
-    {
-      program_code: 'BSED-MATH-TG',
-      program_title: 'Bachelor of Science in Secondary Education Major in Math',
-      program_info:
-        'This program focuses on teaching mathematics to secondary level students.',
-      program_status: 'Active',
-    },
-    {
-      program_code: 'BSOA-LT-TG',
-      program_title:
-        'Bachelor of Science in Office Administration Major in Legal Transcription',
-      program_info:
-        'This program focuses on legal transcription, document formatting, and legal terminology.',
-      program_status: 'Active',
-    },
-    {
-      program_code: 'DOMT-LOM-TG',
-      program_title:
-        'Diploma in Office Management Technology with Specialization in Legal Office Management',
-      program_info:
-        'This program focuses on legal office procedures, document management, and legal support services.',
-      program_status: 'Active',
-    },
-    {
-      program_code: 'DICT-TG',
-      program_title: 'Diploma in Communication Information Technology',
-      program_info:
-        'This program focuses on computer networks, software applications, and digital communication.',
-      program_status: 'Active',
-    },
+  programs: Program[] = [];
+  columns = [
+    { key: 'index', label: '#' },
+    { key: 'program_code', label: 'Program Code' },
+    { key: 'program_title', label: 'Program Title' },
+    { key: 'program_info', label: 'Program Info' },
+    { key: 'program_status', label: 'Status' },
+    { key: 'number_of_years', label: 'Years' },
   ];
 
-  dataSource = new MatTableDataSource<Program>([]);
   displayedColumns: string[] = [
-    'num',
+    'index',
     'program_code',
     'program_title',
     'program_info',
     'program_status',
-    'action',
+    'number_of_years',
   ];
 
   constructor(
     private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private formBuilder: FormBuilder
+    private programService: ProgramsService
   ) {}
 
   ngOnInit() {
-    this.initAddProgramForm();
-    this.dataSource.data = this.programs;
+    this.fetchPrograms();
   }
 
-  initAddProgramForm() {
-    this.addProgramForm = this.formBuilder.group({
-      program_code: ['', Validators.required],
-      program_title: ['', Validators.required],
-      program_info: ['', Validators.required],
-      program_status: ['Active', Validators.required],
+  fetchPrograms() {
+    this.programService.getPrograms().subscribe((programs) => {
+      this.programs = programs;
+      this.cdr.markForCheck();
     });
   }
 
+  onSearch(searchTerm: string) {
+    this.programService.getPrograms().subscribe((programs) => {
+      this.programs = programs.filter(
+        (program) =>
+          program.program_title
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          program.program_code.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      this.cdr.markForCheck();
+    });
+  }
+
+  private getDialogConfig(program?: Program): DialogConfig {
+    return {
+      title: 'Program',
+      isEdit: !!program,
+      fields: [
+        {
+          label: 'Program Code',
+          formControlName: 'program_code',
+          type: 'text',
+          maxLength: 15,
+          required: true,
+        },
+        {
+          label: 'Program Title',
+          formControlName: 'program_title',
+          type: 'text',
+          maxLength: 100,
+          required: true,
+        },
+        {
+          label: 'Program Info',
+          formControlName: 'program_info',
+          type: 'text',
+          maxLength: 255,
+          required: true,
+        },
+        {
+          label: 'Program Status',
+          formControlName: 'program_status',
+          type: 'select',
+          options: this.programStatuses,
+          required: true,
+        },
+        {
+          label: 'Years',
+          formControlName: 'number_of_years',
+          type: 'select',
+          options: this.programYears,
+          required: true,
+        },
+      ],
+      initialValue: program || {
+        program_status: 'Active',
+        number_of_years: '4',
+      },
+    };
+  }
+
   openAddProgramDialog() {
-    this.isEdit = false;
-    this.initAddProgramForm();
-    this.isAddProgramDialogOpen = true;
-    this.dialog.open(this.addEditProgramDialog, {
-      width: '250px',
+    const config = this.getDialogConfig();
+    const dialogRef = this.dialog.open(TableDialogComponent, {
+      data: config,
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.programService.addProgram(result).subscribe((programs) => {
+          this.programs = programs;
+          this.snackBar.open('Program added successfully', 'Close', {
+            duration: 3000,
+          });
+          this.cdr.markForCheck();
+        });
+      }
     });
   }
 
   openEditProgramDialog(program: Program) {
-    this.isEdit = true;
     this.selectedProgramIndex = this.programs.indexOf(program);
-    this.addProgramForm.patchValue(program);
-    this.isAddProgramDialogOpen = true;
-    this.dialog.open(this.addEditProgramDialog, {
-      width: '250px',
+    const config = this.getDialogConfig(program);
+
+    const dialogRef = this.dialog.open(TableDialogComponent, {
+      data: config,
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result && this.selectedProgramIndex !== null) {
+        this.updateProgram(result);
+      }
     });
   }
 
-  closeDialog() {
-    this.isAddProgramDialogOpen = false;
-    this.dialog.closeAll();
-  }
+  updateProgram(updatedProgram: any) {
+    if (this.selectedProgramIndex !== null) {
+      this.programs[this.selectedProgramIndex] = {
+        ...this.programs[this.selectedProgramIndex],
+        ...updatedProgram,
+      };
 
-  addProgram() {
-    if (this.addProgramForm.valid) {
-      const newProgram = this.addProgramForm.value;
-      this.programs.push(newProgram);
-      this.dataSource.data = this.programs;
-      this.closeDialog();
-      this.snackBar.open('Program added successfully', 'Close', {
-        duration: 3000,
-      });
-    }
-  }
-
-  updateProgram() {
-    if (this.addProgramForm.valid && this.selectedProgramIndex !== null) {
-      const updatedProgram = this.addProgramForm.value;
-      this.programs[this.selectedProgramIndex] = updatedProgram;
-      this.dataSource.data = this.programs;
-      this.closeDialog();
-      this.snackBar.open('Program updated successfully', 'Close', {
-        duration: 3000,
-      });
+      this.programService
+        .updateProgram(this.selectedProgramIndex, updatedProgram)
+        .subscribe((programs) => {
+          this.programs = programs;
+          this.snackBar.open('Program updated successfully', 'Close', {
+            duration: 3000,
+          });
+          this.cdr.markForCheck();
+        });
     }
   }
 
   deleteProgram(program: Program) {
     const index = this.programs.indexOf(program);
     if (index >= 0) {
-      this.programs.splice(index, 1);
-      this.dataSource.data = this.programs;
-      this.snackBar.open('Program deleted successfully', 'Close', {
-        duration: 3000,
+      this.programService.deleteProgram(index).subscribe((programs) => {
+        this.programs = programs;
+        this.snackBar.open('Program deleted successfully', 'Close', {
+          duration: 3000,
+        });
+        this.cdr.markForCheck();
       });
     }
   }

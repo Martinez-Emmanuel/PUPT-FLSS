@@ -3,15 +3,16 @@ import {
   OnInit,
   ChangeDetectionStrategy,
   ChangeDetectorRef,
-  ViewChild,
-  TemplateRef,
 } from '@angular/core';
-import { MaterialComponents } from '../../../../imports/material.component';
-import { CommonModule } from '@angular/common';
-import { MatTableDataSource } from '@angular/material/table';
+
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatSymbolDirective } from '../../../../imports/mat-symbol.directive';
+
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
+
+import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
+import { TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
 import {
   ReactiveFormsModule,
   FormBuilder,
@@ -19,30 +20,50 @@ import {
   Validators,
 } from '@angular/forms';
 import { RoomService, Room } from '../../../../services/room/room.service';
+  TableDialogComponent,
+  DialogConfig,
+} from '../../../../../shared/table-dialog/table-dialog.component';
+
+import {
+  Room,
+  RoomService,
+} from '../../../../services/superadmin/rooms/rooms.service';
 
 @Component({
   selector: 'app-rooms',
   standalone: true,
   imports: [
-    MaterialComponents,
     CommonModule,
-    MatSymbolDirective,
     ReactiveFormsModule,
+    TableGenericComponent,
+    TableHeaderComponent,
   ],
   templateUrl: './rooms.component.html',
   styleUrls: ['./rooms.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RoomsComponent implements OnInit {
-  @ViewChild('addEditRoomDialog') addEditRoomDialog!: TemplateRef<any>;
+  roomTypes = ['Lecture', 'Laboratory', 'Office'];
+  floors = ['1st', '2nd', '3rd', '4th', '5th'];
+  selectedRoomIndex: number | null = null;
+
+  rooms: Room[] = [];
+  columns = [
+    { key: 'index', label: '#' },
+    { key: 'room_code', label: 'Room Code' },
+    { key: 'location', label: 'Location' },
+    { key: 'floor', label: 'Floor Level' },
+    { key: 'room_type', label: 'Room Type' },
+    { key: 'capacity', label: 'Capacity' },
+  ];
 
   displayedColumns: string[] = [
-    'num',
+    'index',
     'room_code',
     'location',
+    'floor',
     'room_type',
     'capacity',
-    'action',
   ];
 
   dataSource = new MatTableDataSource<Room>([]);
@@ -51,6 +72,7 @@ export class RoomsComponent implements OnInit {
   selectedRoom: Room| null = null;
 
   constructor(
+    private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private fb: FormBuilder,
@@ -58,17 +80,14 @@ export class RoomsComponent implements OnInit {
     private roomService: RoomService
   ) {}
 
-  ngOnInit(): void {
-    this.initializeForm();
-    this.loadRooms();
+  ngOnInit() {
+    this.fetchRooms();
   }
 
-  initializeForm(): void {
-    this.addRoomForm = this.fb.group({
-      room_code: ['', Validators.required],
-      location: ['', Validators.required],
-      room_type: ['', Validators.required],
-      capacity: [0, Validators.required],
+  fetchRooms() {
+    this.roomService.getRooms().subscribe((rooms) => {
+      this.rooms = rooms;
+      this.cdr.markForCheck();
     });
   }
 
@@ -92,12 +111,10 @@ export class RoomsComponent implements OnInit {
     });
   }
 
-  openEditRoomDialog(room: Room): void {
-    this.isEdit = true;
-    this.selectedRoom = room;
-    this.addRoomForm.patchValue(room);
-    this.dialog.open(this.addEditRoomDialog, {
-      width: '250px',
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result && this.selectedRoomIndex !== null) {
+        this.updateRoom(result);
+      }
     });
   }
 

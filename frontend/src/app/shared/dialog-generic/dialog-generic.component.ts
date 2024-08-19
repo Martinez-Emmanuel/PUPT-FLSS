@@ -1,9 +1,11 @@
 import { Component, Inject } from '@angular/core';
+
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { CommonModule } from '@angular/common';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+
+import { CommonModule } from '@angular/common';
 
 export interface DialogData {
   title: string;
@@ -17,15 +19,20 @@ export interface DialogData {
 }
 
 @Component({
-  selector: 'app-custom-dialog',
+  selector: 'app-dialog-generic',
   standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, MatProgressBarModule],
-  templateUrl: './custom-dialog.component.html',
-  styleUrls: ['./custom-dialog.component.scss'],
+  imports: [
+    CommonModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatProgressBarModule,
+  ],
+  templateUrl: './dialog-generic.component.html',
+  styleUrls: ['./dialog-generic.component.scss'],
 })
-export class CustomDialogComponent {
+export class DialogGenericComponent {
   constructor(
-    public dialogRef: MatDialogRef<CustomDialogComponent>,
+    public dialogRef: MatDialogRef<DialogGenericComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData
   ) {}
 

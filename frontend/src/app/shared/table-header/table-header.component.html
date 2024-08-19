@@ -1,0 +1,35 @@
+<div class="header-container">
+  <!-- Search Input -->
+  <mat-form-field
+    appearance="fill"
+    class="search-field"
+    subscriptSizing="dynamic"
+  >
+    <mat-label>{{ searchLabel }}</mat-label>
+    <input matInput (input)="onSearch($event)" [placeholder]="placeholder" />
+    <mat-icon matPrefix>search</mat-icon>
+  </mat-form-field>
+
+  <div class="button-container">
+    <!-- Export to PDF Button -->
+    <button
+      mat-flat-button
+      class="custom-mat-button export-button"
+      (click)="onExport()"
+    >
+      <mat-icon>picture_as_pdf</mat-icon>
+      Export to PDF
+    </button>
+
+    <!-- Add Button -->
+    <button
+      mat-flat-button
+      class="custom-mat-button add-button"
+      [disabled]="buttonDisabled"
+      (click)="onAdd()"
+    >
+      <mat-icon>add</mat-icon>
+      {{ addButtonLabel }}
+    </button>
+  </div>
+</div>

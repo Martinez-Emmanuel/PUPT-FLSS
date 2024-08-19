@@ -1,0 +1,23 @@
+<div class="faculty-management-container">
+  <!-- Table Header -->
+  <div class="faculty-header-container">
+    <app-table-header
+      [searchLabel]="'Search Faculty'"
+      [addButtonLabel]="'Add Faculty'"
+      (search)="onSearch($event)"
+      (add)="openAddFacultyDialog()"
+    ></app-table-header>
+  </div>
+
+  <!-- Faculty Management Table -->
+  <div class="faculty-table-container">
+    <app-table-generic
+      [columns]="columns"
+      [data]="faculty"
+      [displayedColumns]="displayedColumns"
+      [showViewButton]="false"  
+      (edit)="openEditFacultyDialog($event)"
+      (delete)="deleteFaculty($event)"
+    ></app-table-generic>
+  </div>
+</div>
