@@ -14,7 +14,7 @@ import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
 import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
 
-import { CurriculumService, Curriculum } from '../../../../services/superadmin/curriculum/curriculum.service';
+import { CurriculumService, Curriculum, Program } from '../../../../services/superadmin/curriculum/curriculum.service';
 
 @Component({
   selector: 'app-curriculum',
@@ -35,6 +35,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
 
   curriculumStatuses = ['Active', 'Inactive'];
   curricula: Curriculum[] = [];
+  programs: Program[] = [];
   columns = [
     { key: 'index', label: '#' },
     { key: 'curriculum_year', label: 'Curriculum Year' },
@@ -61,6 +62,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.fetchCurricula();
+    this.fetchPredefinedPrograms();
   }
 
   ngOnDestroy() {
@@ -77,6 +79,12 @@ export class CurriculumComponent implements OnInit, OnDestroy {
         error: () =>
           this.showErrorMessage('Error fetching curricula. Please try again.'),
       });
+  }
+
+  private fetchPredefinedPrograms() {
+    this.curriculumService.getPredefinedPrograms().subscribe((programs) => {
+      this.programs = programs;
+    });
   }
 
   private onSearch(searchTerm: string) {
@@ -162,6 +170,17 @@ export class CurriculumComponent implements OnInit, OnDestroy {
   }
 
   private addCurriculum(newCurriculum: Curriculum) {
+    newCurriculum.programs = this.programs.map((program) => ({
+      ...program,
+      year_levels: program.year_levels.map((yearLevel) => ({
+        ...yearLevel,
+        semesters: yearLevel.semesters.map((semester) => ({
+          ...semester,
+          courses: [],
+        })),
+      })),
+    }));
+
     this.curriculumService.addCurriculum(newCurriculum).subscribe({
       next: (curricula) => {
         this.updateCurriculaList(curricula);

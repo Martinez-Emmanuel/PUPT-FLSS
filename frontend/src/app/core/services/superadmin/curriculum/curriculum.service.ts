@@ -39,6 +39,7 @@ export interface Curriculum {
 })
 export class CurriculumService {
   private curriculaSubject = new BehaviorSubject<Curriculum[]>([
+    // Sample mock data to simulate API response
     {
       curriculum_year: '2022',
       status: 'Active',
@@ -51,67 +52,121 @@ export class CurriculumService {
               year: 1,
               semesters: [
                 {
-                  semester: 1, // First Semester
+                  semester: 1,
                   courses: [
                     {
                       course_code: 'IT101',
-                      pre_req: '',
-                      co_req: '',
-                      course_title: 'Intro to Programming',
-                      lec_hours: 3,
-                      lab_hours: 1,
-                      units: 3,
-                      tuition_hours: 4,
-                    },
-                    {
-                      course_code: 'IT102',
-                      pre_req: '',
-                      co_req: '',
-                      course_title: 'Intro to Computing',
+                      course_title: 'Introduction to Information Technology',
                       lec_hours: 3,
                       lab_hours: 0,
                       units: 3,
                       tuition_hours: 3,
                     },
-                  ],
-                },
-                {
-                  semester: 2, // Second Semester
-                  courses: [
                     {
-                      course_code: 'IT201',
-                      pre_req: 'IT101',
-                      co_req: '',
-                      course_title: 'Web Development',
+                      course_code: 'CS101',
+                      course_title: 'Programming 1',
                       lec_hours: 2,
-                      lab_hours: 2,
+                      lab_hours: 3,
                       units: 3,
-                      tuition_hours: 4,
+                      tuition_hours: 5,
                     },
                     {
-                      course_code: 'IT202',
-                      pre_req: 'IT102',
-                      co_req: '',
-                      course_title: 'Data Structures & Algorithms',
+                      course_code: 'GE101',
+                      course_title: 'Mathematics in the Modern World',
                       lec_hours: 3,
-                      lab_hours: 1,
+                      lab_hours: 0,
                       units: 3,
-                      tuition_hours: 4,
+                      tuition_hours: 3,
+                    },
+                    {
+                      course_code: 'GE102',
+                      course_title: 'Understanding the Self',
+                      lec_hours: 3,
+                      lab_hours: 0,
+                      units: 3,
+                      tuition_hours: 3,
+                    },
+                    {
+                      course_code: 'PE101',
+                      course_title: 'Physical Education 1',
+                      lec_hours: 2,
+                      lab_hours: 0,
+                      units: 2,
+                      tuition_hours: 2,
                     },
                   ],
                 },
                 {
-                  semester: 3, // Summer Semester
+                  semester: 2,
                   courses: [
                     {
-                      course_code: 'IT203',
-                      pre_req: '',
-                      co_req: '',
-                      course_title: 'Introduction to Software Tools',
-                      lec_hours: 2,
-                      lab_hours: 2,
+                      course_code: 'IT102',
+                      course_title: 'Computer Organization',
+                      lec_hours: 3,
+                      lab_hours: 0,
                       units: 3,
-                      tuition_hours: 4,
+                      tuition_hours: 3,
+                    },
+                    {
+                      course_code: 'CS102',
+                      course_title: 'Programming 2',
+                      lec_hours: 2,
+                      lab_hours: 3,
+                      units: 3,
+                      tuition_hours: 5,
+                    },
+                    {
+                      course_code: 'GE103',
+                      course_title: 'Purposive Communication',
+                      lec_hours: 3,
+                      lab_hours: 0,
+                      units: 3,
+                      tuition_hours: 3,
+                    },
+                    {
+                      course_code: 'GE104',
+                      course_title: 'Art Appreciation',
+                      lec_hours: 3,
+                      lab_hours: 0,
+                      units: 3,
+                      tuition_hours: 3,
+                    },
+                    {
+                      course_code: 'PE102',
+                      course_title: 'Physical Education 2',
+                      lec_hours: 2,
+                      lab_hours: 0,
+                      units: 2,
+                      tuition_hours: 2,
+                    },
+                  ],
+                },
+                {
+                  semester: 3,
+                  courses: [
+                    {
+                      course_code: 'IT103',
+                      course_title: 'Introduction to Web Development',
+                      lec_hours: 2,
+                      lab_hours: 3,
+                      units: 3,
+                      tuition_hours: 5,
+                    },
+                    {
+                      course_code: 'CS103',
+                      course_title: 'Data Structures and Algorithms',
+                      lec_hours: 2,
+                      lab_hours: 3,
+                      units: 3,
+                      tuition_hours: 5,
+                    },
+                    {
+                      course_code: 'GE105',
+                      course_title: 'Science, Technology, and Society',
+                      lec_hours: 3,
+                      lab_hours: 0,
+                      units: 3,
+                      tuition_hours: 3,
                     },
                   ],
                 },
@@ -121,143 +176,82 @@ export class CurriculumService {
         },
         {
           name: 'BSA',
-          number_of_years: 4,
+          number_of_years: 5,
           year_levels: [
             {
               year: 1,
               semesters: [
                 {
-                  semester: 1, // First Semester
+                  semester: 1,
                   courses: [
                     {
-                      course_code: 'AC101',
-                      pre_req: '',
-                      co_req: '',
-                      course_title: 'Intro to Accounting',
+                      course_code: 'ACC101',
+                      course_title: 'Introduction to Accounting',
                       lec_hours: 3,
                       lab_hours: 0,
                       units: 3,
                       tuition_hours: 3,
                     },
                     {
-                      course_code: 'AC102',
-                      pre_req: '',
-                      co_req: '',
-                      course_title: 'Intro to Finances',
+                      course_code: 'GE101',
+                      course_title: 'Mathematics in the Modern World',
                       lec_hours: 3,
                       lab_hours: 0,
                       units: 3,
                       tuition_hours: 3,
+                    },
+                    {
+                      course_code: 'GE102',
+                      course_title: 'Understanding the Self',
+                      lec_hours: 3,
+                      lab_hours: 0,
+                      units: 3,
+                      tuition_hours: 3,
+                    },
+                    {
+                      course_code: 'PE101',
+                      course_title: 'Physical Education 1',
+                      lec_hours: 2,
+                      lab_hours: 0,
+                      units: 2,
+                      tuition_hours: 2,
                     },
                   ],
                 },
                 {
-                  semester: 2, // Second Semester
+                  semester: 2,
                   courses: [
                     {
-                      course_code: 'AC201',
-                      pre_req: 'AC101',
-                      co_req: '',
-                      course_title: 'Principles of Management',
+                      course_code: 'ACC102',
+                      course_title: 'Fundamentals of Financial Accounting',
                       lec_hours: 3,
                       lab_hours: 0,
                       units: 3,
                       tuition_hours: 3,
                     },
                     {
-                      course_code: 'AC202',
-                      pre_req: 'AC102',
-                      co_req: '',
-                      course_title: 'Accounting Principles',
-                      lec_hours: 3,
-                      lab_hours: 1,
-                      units: 3,
-                      tuition_hours: 4,
-                    },
-                  ],
-                },
-                {
-                  semester: 3, // Summer Semester
-                  courses: [
-                    {
-                      course_code: 'AC203',
-                      pre_req: '',
-                      co_req: '',
-                      course_title: 'Introduction to Business',
+                      course_code: 'GE103',
+                      course_title: 'Purposive Communication',
                       lec_hours: 3,
                       lab_hours: 0,
                       units: 3,
                       tuition_hours: 3,
                     },
-                  ],
-                },
-              ],
-            },
-            {
-              year: 2,
-              semesters: [
-                {
-                  semester: 1, // First Semester
-                  courses: [
                     {
-                      course_code: 'AC301',
-                      pre_req: 'AC202',
-                      co_req: '',
-                      course_title: 'Intermediate Accounting I',
-                      lec_hours: 3,
-                      lab_hours: 1,
-                      units: 3,
-                      tuition_hours: 4,
-                    },
-                    {
-                      course_code: 'AC302',
-                      pre_req: '',
-                      co_req: '',
-                      course_title: 'Business Law',
+                      course_code: 'GE104',
+                      course_title: 'Art Appreciation',
                       lec_hours: 3,
                       lab_hours: 0,
                       units: 3,
                       tuition_hours: 3,
                     },
-                  ],
-                },
-                {
-                  semester: 2, // Second Semester
-                  courses: [
                     {
-                      course_code: 'AC401',
-                      pre_req: 'AC301',
-                      co_req: '',
-                      course_title: 'Intermediate Accounting II',
-                      lec_hours: 3,
-                      lab_hours: 1,
-                      units: 3,
-                      tuition_hours: 4,
-                    },
-                    {
-                      course_code: 'AC402',
-                      pre_req: 'AC302',
-                      co_req: '',
-                      course_title: 'Taxation',
-                      lec_hours: 3,
+                      course_code: 'PE102',
+                      course_title: 'Physical Education 2',
+                      lec_hours: 2,
                       lab_hours: 0,
-                      units: 3,
-                      tuition_hours: 3,
-                    },
-                  ],
-                },
-                {
-                  semester: 3, // Summer Semester
-                  courses: [
-                    {
-                      course_code: 'AC403',
-                      pre_req: '',
-                      co_req: '',
-                      course_title: 'Business Ethics',
-                      lec_hours: 3,
-                      lab_hours: 0,
-                      units: 3,
-                      tuition_hours: 3,
+                      units: 2,
+                      tuition_hours: 2,
                     },
                   ],
                 },
@@ -268,6 +262,19 @@ export class CurriculumService {
       ],
     },
   ]);
+
+  private predefinedPrograms: Program[] = [
+    {
+      name: 'BSIT',
+      number_of_years: 4,
+      year_levels: this.generateYearLevels(4),
+    },
+    {
+      name: 'BSA',
+      number_of_years: 4,
+      year_levels: this.generateYearLevels(4),
+    },
+  ];
 
   getCurricula(): Observable<Curriculum[]> {
     return this.curriculaSubject.asObservable();
@@ -317,6 +324,21 @@ export class CurriculumService {
     return of(this.curriculaSubject.getValue());
   }
 
+  getPredefinedPrograms(): Observable<Program[]> {
+    return of(this.predefinedPrograms);
+  }
+
+  private generateYearLevels(years: number): YearLevel[] {
+    return Array.from({ length: years }, (_, i) => ({
+      year: i + 1,
+      semesters: [
+        { semester: 1, courses: [] },
+        { semester: 2, courses: [] },
+        { semester: 3, courses: [] },
+      ],
+    }));
+  }
+
   mapSemesterToEnum(semesterNumber: number): string {
     switch (semesterNumber) {
       case 1:
@@ -326,7 +348,7 @@ export class CurriculumService {
       case 3:
         return 'Summer Semester';
       default:
-        return `${semesterNumber}`;
+        return `Semester ${semesterNumber}`;
     }
   }
 }
