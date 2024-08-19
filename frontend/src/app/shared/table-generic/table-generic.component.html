@@ -16,7 +16,7 @@
 }
 
 <div class="table-container">
-  <!--Material Table-->
+  <!-- Material Table -->
   <table mat-table [dataSource]="dataSource" matSort class="custom-table">
     <!-- Dynamic columns -->
     @for (column of columns; track column.key) {
@@ -63,13 +63,13 @@
           </button>
           }
 
-          <!-- Edit Button-->
+          <!-- Edit Button -->
           <button mat-button class="edit-button" (click)="onEdit(element)">
             <mat-icon>edit</mat-icon>
             <span>Edit</span>
           </button>
 
-          <!-- Delete Button-->
+          <!-- Delete Button -->
           <button mat-button class="delete-button" (click)="onDelete(element)">
             <mat-icon>delete</mat-icon>
             <span>Delete</span>
@@ -78,12 +78,19 @@
       </td>
     </ng-container>
 
+    <!-- Display "No course added yet" when data is empty -->
+    <tr *matNoDataRow>
+      <td class="no-data-row" [attr.colspan]="displayedColumns.length">
+        No course added yet.
+      </td>
+    </tr>
+
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
   </table>
 
-  <!--Table Paginator-->
-  <div class="paginator-container">
+  <!-- Table Paginator -->
+  <div class="paginator-container" *ngIf="dataSource.data.length > 0">
     <mat-paginator
       class="custom-table-paginator"
       [length]="data.length"

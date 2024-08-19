@@ -1,4 +1,5 @@
 import { Component, Input, OnInit, AfterViewInit, ViewChild, Output, EventEmitter, TemplateRef, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
@@ -6,8 +7,6 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
-
-import { CommonModule } from '@angular/common';
 
 import { DialogGenericComponent } from '../dialog-generic/dialog-generic.component';
 

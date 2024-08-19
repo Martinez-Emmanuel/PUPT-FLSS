@@ -29,6 +29,14 @@
     border-radius: var(--border-radius-md);
   }
 
+  .no-data-row {
+    text-align: center;
+    padding: var(--spacing-md);
+    color: var(--neutral-base); 
+    border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+  }
+  
+
   .custom-header {
     text-wrap: nowrap;
     background-color: var(--primary-one);
