@@ -46,9 +46,14 @@ export class TableHeaderComponent {
   @Input() selectedValues: { [key: string]: any } = {};
   @Input() customExportOptions: { all: string; current: string } | null = null;
 
+  @Input() searchLabel = 'Search';   //temp
+
   @Output() inputChange = new EventEmitter<{ [key: string]: any }>();
   @Output() add = new EventEmitter<void>();
   @Output() export = new EventEmitter<'all' | 'current' | undefined>();
+
+  
+  @Output() search = new EventEmitter<string>(); //temp
 
   form: FormGroup;
 

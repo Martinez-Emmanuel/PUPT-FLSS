@@ -61,8 +61,6 @@ export class RoomsComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private fb: FormBuilder,
-    private cd: ChangeDetectorRef,
     private roomService: RoomService
   ) {}
 
@@ -181,66 +179,35 @@ export class RoomsComponent implements OnInit {
     });
   }
 
-  closeDialog(): void {
-    this.dialog.closeAll();
-  }
+  updateRoom(updatedRoom: any) {
+    if (this.selectedRoomIndex !== null) {
+      this.rooms[this.selectedRoomIndex] = {
+        ...this.rooms[this.selectedRoomIndex],
+        ...updatedRoom,
+      };
 
-  addRoom(): void {
-    if (this.addRoomForm.valid) {
-      const newRoom: Room = this.addRoomForm.value;
-      this.roomService.addRoom(newRoom).subscribe({
-        next: ( ) => {
-          this.closeDialog();
-          this.snackBar.open('Room added successfully', 'Close', {
-            duration: 2000,
-          });
-          this.loadRooms();
-        },
-        error: (err) => {
-          this.snackBar.open('Error adding room', 'Close', { duration: 2000 });
-        },
-      });
-    } else {
-      this.snackBar.open('Please fill in all required fields', 'Close', {
-        duration: 2000,
-      });
-    }
-  }
-
-  updateRoom(): void {
-    if (this.addRoomForm.valid && this.selectedRoom) {
-      const updatedRoom: Room = { ...this.addRoomForm.value, room_id: this.selectedRoom.room_id };
-  
-      this.roomService.updateRoom(updatedRoom).subscribe({
-        next: () => {
+      this.roomService
+        .updateRoom(this.selectedRoomIndex, updatedRoom)
+        .subscribe((rooms) => {
+          this.rooms = rooms;
           this.snackBar.open('Room updated successfully', 'Close', {
-            duration: 2000,
+            duration: 3000,
           });
-          this.closeDialog();
-          this.loadRooms();
-        },
-        error: (err) => {
-          this.snackBar.open('Error updating room', 'Close', { duration: 2000 });
-        },
-      });
-    } else {
-      this.snackBar.open('Please fill in all required fields', 'Close', {
-        duration: 2000,
-      });
+          this.cdr.markForCheck();
+        });
     }
   }
 
-  deleteRoom(room: Room): void {
-    this.roomService.deleteRoom(room.room_id!).subscribe({
-      next: () => {
-        this.dataSource.data = this.dataSource.data.filter((r) => r.room_id !== room.room_id);
+  deleteRoom(room: Room) {
+    const index = this.rooms.indexOf(room);
+    if (index >= 0) {
+      this.roomService.deleteRoom(index).subscribe((rooms) => {
+        this.rooms = rooms;
         this.snackBar.open('Room deleted successfully', 'Close', {
-          duration: 2000,
+          duration: 3000,
         });
-      },
-      error: (err) => {
-        this.snackBar.open('Error deleting room', 'Close', { duration: 2000 });
-      },
-    });
+        this.cdr.markForCheck();
+      });
+    }
   }
 }

@@ -17,13 +17,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { ThemeService } from '../../../services/theme/theme.service';
 import { MaterialComponents } from '../../../imports/material.component';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
-import { ActivatedRoute } from '@angular/router';
-import { CommonModule } from '@angular/common';
-import { filter } from 'rxjs/operators';
-import { RouterModule } from '@angular/router';
-import { AuthService } from '../../../services/auth/auth.service';
-import { MatDialog } from '@angular/material/dialog';
-import { CustomDialogComponent, DialogData } from '../../../../shared/custom-dialog/custom-dialog.component';
 
 @Component({
   selector: 'app-main',
@@ -54,8 +47,8 @@ export class MainComponent implements OnInit {
     courses: 'Courses',
     curriculum: 'Curriculum',
     rooms: 'Rooms',
-    admin: 'Manage Admin',
-    faculty: 'Manage Faculty',
+    'manage-admin': 'Manage Admin',
+    'manage-faculty': 'Manage Faculty',
   };
 
   isHandset$: Observable<boolean> = this.breakpointObserver
@@ -68,9 +61,7 @@ export class MainComponent implements OnInit {
   constructor(
     public themeService: ThemeService,
     private router: Router,
-    private route: ActivatedRoute,
-    private authService: AuthService,
-    private dialog: MatDialog
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
@@ -112,49 +103,5 @@ export class MainComponent implements OnInit {
 
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
-  }
-
-  //for logout 
-  logout() {
-    const confirmDialogRef = this.dialog.open(CustomDialogComponent, {
-      data: {
-        title: 'Log Out',
-        content: 'Are you sure you want to log out? This will end your current session.',
-        actionText: 'Log Out',
-        cancelText: 'Cancel',
-        action: 'Log Out',
-      } as DialogData,
-    });
-
-    confirmDialogRef.afterClosed().subscribe((result) => {
-      console.log('Dialog result:', result);
-      if (result === 'Log Out') {
-        const loadingDialogRef = this.dialog.open(CustomDialogComponent, {
-          data: {
-            title: 'Logging Out',
-            content: 'Currently logging you out...',
-            showProgressBar: true,
-          } as DialogData,
-          disableClose: true,
-        });
-
-        this.authService.logout().subscribe(
-          (response) => {
-            console.log('Logout successful', response);
-            sessionStorage.clear(); // Clear session storage
-            loadingDialogRef.close();
-            // Redirect to the login page
-            this.router.navigate(['/login']);
-          },
-          (error) => {
-            console.error('Logout failed', error);
-            // Handle logout error (e.g., show an error message or fallback)
-            loadingDialogRef.close();
-            sessionStorage.clear(); // Clear session storage even if the logout fails
-            this.router.navigate(['/login']); // Redirect to the login page
-          }
-        );
-      }
-    });
   }
 }
