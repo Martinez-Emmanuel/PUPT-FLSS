@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { ActivatedRouteSnapshot } from '@angular/router';
 
 export const SUPERADMIN_ROUTES: Routes = [
   {
@@ -17,7 +18,7 @@ export const SUPERADMIN_ROUTES: Routes = [
           import('./dashboard/dashboard.component').then(
             (m) => m.DashboardComponent
           ),
-          data: { pageTitle: 'Dashboard' }
+        data: { pageTitle: 'Dashboard' },
       },
       {
         path: 'admin',
@@ -41,7 +42,7 @@ export const SUPERADMIN_ROUTES: Routes = [
           import('./maintenance/programs/programs.component').then(
             (m) => m.ProgramsComponent
           ),
-          data: { pageTitle: 'Programs' }
+        data: { pageTitle: 'Programs' },
       },
       {
         path: 'courses',
@@ -49,7 +50,7 @@ export const SUPERADMIN_ROUTES: Routes = [
           import('./maintenance/courses/courses.component').then(
             (m) => m.CoursesComponent
           ),
-          data: { pageTitle: 'Courses' }
+        data: { pageTitle: 'Courses' },
       },
       {
         path: 'curriculum',
@@ -57,7 +58,18 @@ export const SUPERADMIN_ROUTES: Routes = [
           import('./maintenance/curriculum/curriculum.component').then(
             (m) => m.CurriculumComponent
           ),
-          data: { pageTitle: 'Curriculum' }
+        data: { pageTitle: 'Curriculum' },
+      },
+      {
+        path: 'curriculum/:year',
+        loadComponent: () =>
+          import('./maintenance/curriculum/curriculum-detail/curriculum-detail.component').then(
+            (m) => m.CurriculumDetailComponent
+          ),
+        data: { pageTitle: 'Curriculum' },
+        resolve: {
+          curriculumYear: (route: ActivatedRouteSnapshot) => route.paramMap.get('year')
+        }
       },
       {
         path: 'rooms',
@@ -65,7 +77,7 @@ export const SUPERADMIN_ROUTES: Routes = [
           import('./maintenance/rooms/rooms.component').then(
             (m) => m.RoomsComponent
           ),
-          data: { pageTitle: 'Rooms' }
+        data: { pageTitle: 'Rooms' },
       },
       {
         path: '**',

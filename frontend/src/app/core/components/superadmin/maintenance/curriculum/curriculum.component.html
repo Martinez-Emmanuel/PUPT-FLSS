@@ -2,10 +2,11 @@
   <!-- Table Header -->
   <div class="curriculum-header-container">
     <app-table-header
-      [searchLabel]="'Search Curriculum'"
+      [inputFields]="headerInputFields"
       [addButtonLabel]="'Add Curriculum'"
-      (search)="onSearch($event)"
+      (inputChange)="onInputChange($event)"
       (add)="openAddCurriculumDialog()"
+      (export)="onExport()"
     ></app-table-header>
   </div>
 

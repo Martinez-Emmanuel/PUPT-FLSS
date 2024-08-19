@@ -1,4 +1,5 @@
-import { Component, Input, OnInit, AfterViewInit, ViewChild, Output, EventEmitter, TemplateRef } from '@angular/core';
+import { Component, Input, OnInit, AfterViewInit, ViewChild, Output, EventEmitter, TemplateRef, ChangeDetectionStrategy } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
@@ -6,8 +7,6 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
-
-import { CommonModule } from '@angular/common';
 
 import { DialogGenericComponent } from '../dialog-generic/dialog-generic.component';
 
@@ -26,7 +25,6 @@ import { DialogGenericComponent } from '../dialog-generic/dialog-generic.compone
   styleUrls: ['./table-generic.component.scss'],
 })
 export class TableGenericComponent<T> implements OnInit, AfterViewInit {
-  // Updated class name
   @Input() columns: {
     key: string;
     label: string;
@@ -42,10 +40,17 @@ export class TableGenericComponent<T> implements OnInit, AfterViewInit {
   }
   @Input() displayedColumns: string[] = [];
   @Input() showViewButton: boolean = false;
+  @Input() isHeaderSticky: boolean = true;
+
+  @Input() showTableHeading: boolean = false;
+  @Input() tableHeadingTitle: string = '';
+  @Input() tableHeadingButtonText: string = '';
+  @Input() tableHeadingButtonIcon: string = '';
 
   @Output() edit = new EventEmitter<T>();
   @Output() delete = new EventEmitter<T>();
   @Output() view = new EventEmitter<T>();
+  @Output() tableHeadingButtonClick = new EventEmitter<void>();
 
   private _data: T[] = [];
   public dataSource = new MatTableDataSource<T>([]);
@@ -79,12 +84,20 @@ export class TableGenericComponent<T> implements OnInit, AfterViewInit {
     return index + 1;
   }
 
+  isFirstColumn(columnKey: string): boolean {
+    return this.columns.length > 0 && this.columns[0].key === columnKey;
+  }
+
   onEdit(item: T) {
     this.edit.emit(item);
   }
 
   onView(item: T) {
     this.view.emit(item);
+  }
+
+  onTableHeadingButtonClick() {
+    this.tableHeadingButtonClick.emit();
   }
 
   onDelete(item: T) {

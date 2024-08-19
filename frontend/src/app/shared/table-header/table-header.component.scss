@@ -2,12 +2,12 @@
 
 .header-container {
   @include flex-layout($align: stretch, $justify: space-between);
+  @include default-transition;
+  background-color: var(--main-bg);
+  padding-bottom: var(--spacing-lg);
 
-  .search-field {
-    height: var(--font-size-3xxl);
-    margin-bottom: 0;
-
-    margin-right: var(--spacing-md);
+  .input-container {
+    @include flex-layout($gap: var(--spacing-md));
   }
 
   .button-container {

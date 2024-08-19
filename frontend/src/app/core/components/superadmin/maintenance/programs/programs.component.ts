@@ -1,9 +1,4 @@
-import {
-  Component,
-  OnInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-} from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -11,17 +6,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 
-import {
-  TableDialogComponent,
-  DialogConfig,
-} from '../../../../../shared/table-dialog/table-dialog.component';
+import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
-import { TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
+import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
 
-import {
-  Program,
-  ProgramsService,
-} from '../../../../services/superadmin/programs/programs.service';
+import { Program, ProgramsService } from '../../../../services/superadmin/programs/programs.service';
 
 @Component({
   selector: 'app-programs',
@@ -61,6 +50,14 @@ export class ProgramsComponent implements OnInit {
     'number_of_years',
   ];
 
+  headerInputFields: InputField[] = [
+    {
+      type: 'text',
+      label: 'Search Programs',
+      key: 'search'
+    }
+  ];
+
   constructor(
     private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
@@ -79,6 +76,12 @@ export class ProgramsComponent implements OnInit {
     });
   }
 
+  onInputChange(values: {[key: string]: any}) {
+    if (values['search'] !== undefined) {
+      this.onSearch(values['search']);
+    }
+  }
+
   onSearch(searchTerm: string) {
     this.programService.getPrograms().subscribe((programs) => {
       this.programs = programs.filter(
@@ -90,6 +93,16 @@ export class ProgramsComponent implements OnInit {
       );
       this.cdr.markForCheck();
     });
+  }
+
+  onExport(exportOption?: 'all' | 'current') {
+    if (exportOption === 'current') {
+      console.log('Exporting this item only to PDF');
+      // TODO: Implement logic here
+    } else {
+      console.log('Exporting all to PDF');
+      // TODO: Implement logic here
+    }
   }
 
   private getDialogConfig(program?: Program): DialogConfig {

@@ -1,5 +1,22 @@
+<!-- Table Heading -->
+@if (showTableHeading) {
+<div class="table-heading">
+  <h2 class="heading-title">{{ tableHeadingTitle }}</h2>
+  <button
+    mat-button
+    class="heading-button"
+    (click)="onTableHeadingButtonClick()"
+  >
+    @if (tableHeadingButtonIcon) {
+    <mat-icon>{{ tableHeadingButtonIcon }}</mat-icon>
+    }
+    {{ tableHeadingButtonText }}
+  </button>
+</div>
+}
+
 <div class="table-container">
-  <!--Material Table-->
+  <!-- Material Table -->
   <table mat-table [dataSource]="dataSource" matSort class="custom-table">
     <!-- Dynamic columns -->
     @for (column of columns; track column.key) {
@@ -8,7 +25,11 @@
         mat-header-cell
         *matHeaderCellDef
         mat-sort-header
-        class="custom-header"
+        class="custom-header common"
+        [ngClass]="{
+          sticky: isHeaderSticky,
+          'top-left-radius': isFirstColumn(column.key)
+        }"
       >
         {{ column.label }}
       </th>
@@ -24,7 +45,14 @@
 
     <!-- Actions column -->
     <ng-container matColumnDef="action">
-      <th mat-header-cell *matHeaderCellDef class="custom-header">Actions</th>
+      <th
+        mat-header-cell
+        *matHeaderCellDef
+        class="custom-header action"
+        [ngClass]="{ sticky: isHeaderSticky }"
+      >
+        Actions
+      </th>
       <td mat-cell *matCellDef="let element" class="custom-cell action-cell">
         <div class="action-buttons">
           <!-- Optionally shows 'View' button-->
@@ -35,13 +63,13 @@
           </button>
           }
 
-          <!-- Edit Button-->
+          <!-- Edit Button -->
           <button mat-button class="edit-button" (click)="onEdit(element)">
             <mat-icon>edit</mat-icon>
             <span>Edit</span>
           </button>
 
-          <!-- Delete Button-->
+          <!-- Delete Button -->
           <button mat-button class="delete-button" (click)="onDelete(element)">
             <mat-icon>delete</mat-icon>
             <span>Delete</span>
@@ -50,12 +78,19 @@
       </td>
     </ng-container>
 
+    <!-- Display "No course added yet" when data is empty -->
+    <tr *matNoDataRow>
+      <td class="no-data-row" [attr.colspan]="displayedColumns.length">
+        No course added yet.
+      </td>
+    </tr>
+
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
     <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
   </table>
 
-  <!--Table Paginator-->
-  <div class="paginator-container">
+  <!-- Table Paginator -->
+  <div class="paginator-container" *ngIf="dataSource.data.length > 0">
     <mat-paginator
       class="custom-table-paginator"
       [length]="data.length"

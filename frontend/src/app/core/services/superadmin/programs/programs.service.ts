@@ -97,7 +97,7 @@ export class ProgramsService {
       program_info:
         'This program focuses on legal office procedures, document management, and legal support services.',
       program_status: 'Active',
-      number_of_years: 4,
+      number_of_years: 3,
     },
     {
       program_code: 'DICT-TG',
@@ -105,7 +105,7 @@ export class ProgramsService {
       program_info:
         'This program focuses on computer networks, software applications, and digital communication.',
       program_status: 'Active',
-      number_of_years: 4,
+      number_of_years: 3,
     },
   ]);
 
