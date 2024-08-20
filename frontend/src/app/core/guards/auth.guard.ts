@@ -19,26 +19,27 @@ export class AuthGuard implements CanActivate {
     const expectedRole = next.data['role']; // Accessing 'role' using bracket notation
 
     if (token) {
-      if (!expectedRole || this.isLoginRoute(next)) {
-        // If no specific role is expected or trying to access the login page, redirect to dashboard
-        this.redirectToDashboard(userRole);
-        return false; // Prevent navigation to login or other non-dashboard routes
+      // User is authenticated
+
+      if (this.isLoginRoute(next)) {
+        // If authenticated and trying to access login page, redirect to unauthenticated page
+        return this.redirectToUnauthenticated();
       }
 
-      if (userRole !== expectedRole) {
-        console.log(`Role mismatch! User role is ${userRole}, but expected role is ${expectedRole}. Redirecting accordingly.`);
-        this.redirectToDashboard(userRole);
-        return false;
+      if (expectedRole && userRole !== expectedRole) {
+        // If role does not match the expected role, redirect to unauthenticated page
+        return this.redirectToUnauthenticated();
       }
 
+      // Role matches or no role restriction
       console.log('Role match or no role restriction. Access granted.');
       return true;
 
     } else {
+      // User is not authenticated
       console.log('No token found. Redirecting to login.');
       // Redirect to login if the user is not authenticated
-      this.router.navigate(['/login']);
-      return false;
+      return this.router.createUrlTree(['/login']);
     }
   }
 
@@ -46,16 +47,8 @@ export class AuthGuard implements CanActivate {
     return route.routeConfig?.path === 'login'; // Adjust the 'login' path as per your routing configuration
   }
 
-  private redirectToDashboard(userRole: string): void {
-    // Redirection logic based on role
-    if (userRole === 'faculty') {
-      this.router.navigate(['/faculty']);
-    } else if (userRole === 'admin') {
-      this.router.navigate(['/admin']);
-    } else if (userRole === 'superadmin') {
-      this.router.navigate(['/superadmin']);
-    } else {
-      this.router.navigate(['/dashboard']); // Default fallback to a general dashboard
-    }
+  private redirectToUnauthenticated(): UrlTree {
+    console.log('Redirecting to unauthenticated page.');
+    return this.router.createUrlTree(['/unauthenticated']);
   }
 }
