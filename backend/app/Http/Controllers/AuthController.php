@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Cookie; // Add this import
 use App\Models\User;
 use Carbon\Carbon;
 
@@ -25,35 +26,38 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid Credentials'], 401);
         }
 
-        // Create token and login the user
         $tokenResult = $user->createToken('user-token');
         $token = $tokenResult->plainTextToken;
         $expiration = Carbon::now()->addHours(24);
 
+        $faculty = $user->faculty;  
 
-        // Optionally, include faculty details if available
-        $faculty = $user->faculty;  // Assuming the relationship exists in the User model
+        // Prepare user data to be stored in the cookie
+        $userData = json_encode([
+            'id' => $user->id,
+            'name' => $user->name,
+            'code' => $user->code,
+            'role' => $user->role,
+            'faculty' => $faculty ? [
+                'faculty_id' => $faculty->id, 
+                'faculty_email' => $faculty->faculty_email,
+                'faculty_type' => $faculty->faculty_type,
+                'faculty_unit' => $faculty->faculty_unit,
+            ] : null,
+        ]);
+
+        // Store the token and user info in cookies
+        Cookie::queue(Cookie::make('user_token', $token, 1440, null, null, true, true)); 
+        Cookie::queue(Cookie::make('user_info', $userData, 1440)); 
 
         return response()->json([
             'message' => 'Login successful',
             'token' => $token,
             'expires_at' => $expiration,
-            'user' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'code' => $user->code,
-                'role' => $user->role,
-                'faculty' => $faculty ? [
-                    'faculty_id' => $faculty->id, // Include faculty_id here
-                    'faculty_email' => $faculty->faculty_email,
-                    'faculty_type' => $faculty->faculty_type,
-                    'faculty_unit' => $faculty->faculty_unit,
-                ] : null,
-            ]
+            'user' => json_decode($userData, true)
         ]);
     }
 
-    // Logout function
     // Logout function
     public function logout(Request $request)
     {
@@ -62,10 +66,14 @@ class AuthController extends Controller
         if ($user) {
             // Revoke the token that was used to authenticate the current request
             $request->user()->currentAccessToken()->delete();
+            
+            // Clear the cookies
+            Cookie::queue(Cookie::forget('user_token'));
+            Cookie::queue(Cookie::forget('user_info'));
+
             return response()->json(['message' => 'Logged out successfully.'], 200);
         }
 
         return response()->json(['message' => 'Unauthenticated.'], 401);
     }
-
 }
