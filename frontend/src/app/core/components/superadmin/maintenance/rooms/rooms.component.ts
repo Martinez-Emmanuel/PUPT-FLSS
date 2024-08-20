@@ -35,7 +35,7 @@ export class RoomsComponent implements OnInit {
     { key: 'index', label: '#' },
     { key: 'room_code', label: 'Room Code' },
     { key: 'location', label: 'Location' },
-    { key: 'floor', label: 'Floor Level' },
+    { key: 'floor_level', label: 'Floor Level' },
     { key: 'room_type', label: 'Room Type' },
     { key: 'capacity', label: 'Capacity' },
   ];
@@ -44,7 +44,7 @@ export class RoomsComponent implements OnInit {
     'index',
     'room_code',
     'location',
-    'floor',
+    'floor_level',
     'room_type',
     'capacity',
   ];
@@ -99,7 +99,7 @@ export class RoomsComponent implements OnInit {
 
   private getDialogConfig(room?: Room): DialogConfig {
     return {
-      title: 'Room',
+      title: room ? 'Edit Room' : 'Add Room',
       isEdit: !!room,
       fields: [
         {
@@ -118,7 +118,7 @@ export class RoomsComponent implements OnInit {
         },
         {
           label: 'Floor Level',
-          formControlName: 'floor',
+          formControlName: 'floor_level',
           type: 'select',
           options: this.floors,
           required: true,
@@ -152,11 +152,12 @@ export class RoomsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.roomService.addRoom(result).subscribe((rooms) => {
-          this.rooms = rooms;
+        this.roomService.addRoom(result).subscribe((newRoom) => {
+          this.rooms.push(newRoom);
           this.snackBar.open('Room added successfully', 'Close', {
             duration: 3000,
           });
+          this.fetchRooms();
           this.cdr.markForCheck();
         });
       }
@@ -174,40 +175,49 @@ export class RoomsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result && this.selectedRoomIndex !== null) {
+        if (!result.room_id) {
+            result.room_id = room.room_id;  // Reassign room_id if it's missing
+        }
         this.updateRoom(result);
-      }
-    });
+    } else {
+        console.error('Dialog result is null or no room selected');
+    }
+  });
   }
 
-  updateRoom(updatedRoom: any) {
-    if (this.selectedRoomIndex !== null) {
-      this.rooms[this.selectedRoomIndex] = {
-        ...this.rooms[this.selectedRoomIndex],
-        ...updatedRoom,
-      };
+  updateRoom(room: Room) {
+    const roomId = room.room_id;
 
-      this.roomService
-        .updateRoom(this.selectedRoomIndex, updatedRoom)
-        .subscribe((rooms) => {
-          this.rooms = rooms;
-          this.snackBar.open('Room updated successfully', 'Close', {
-            duration: 3000,
-          });
-          this.cdr.markForCheck();
-        });
+    if (roomId !== undefined) {
+
+      this.roomService.updateRoom(roomId, room).subscribe((updated) => {
+        const index = this.rooms.findIndex(r => r.room_id === roomId);
+          if (index >= 0) {
+            this.rooms[index] = updated;
+                this.snackBar.open('Room updated successfully', 'Close', {
+                    duration: 3000,
+                });
+              this.fetchRooms();
+              this.cdr.markForCheck();
+            }
+      });
     }
   }
 
   deleteRoom(room: Room) {
-    const index = this.rooms.indexOf(room);
-    if (index >= 0) {
-      this.roomService.deleteRoom(index).subscribe((rooms) => {
-        this.rooms = rooms;
-        this.snackBar.open('Room deleted successfully', 'Close', {
-          duration: 3000,
-        });
-        this.cdr.markForCheck();
+    const roomId = room.room_id;
+    if (roomId !== undefined) {
+      this.roomService.deleteRoom(roomId).subscribe(() => {
+        const index = this.rooms.findIndex(r => r.room_id === roomId);
+        if (index >= 0) {
+          this.rooms.splice(index, 1);
+          this.snackBar.open('Room deleted successfully', 'Close', {
+            duration: 3000,
+          });
+          this.fetchRooms();
+          this.cdr.markForCheck();
+        }
       });
     }
-  }
+  }  
 }

@@ -21,6 +21,7 @@ class RoomController extends Controller
         $validated = $request->validate([
             'room_code' => 'required|string|max:255',
             'location' => 'required|string|max:255',
+            'floor_level' => 'required|string|max:255',
             'room_type' => 'required|string|max:255',
             'capacity' => 'required|integer',
         ]);
@@ -29,6 +30,7 @@ class RoomController extends Controller
         $room = Room::create([
             'room_code' => $validated['room_code'],
             'location' => $validated['location'],
+            'floor_level' => $validated['floor_level'],
             'room_type' => $validated['room_type'],
             'capacity' => $validated['capacity'],
         ]);
@@ -49,6 +51,7 @@ class RoomController extends Controller
         $validatedData = $request->validate([
             'room_code' => 'required|string|unique:rooms,room_code,' . $room->room_id . ',room_id',
             'location' => 'required|string',
+            'floor_level' => 'required|string',
             'room_type' => 'required|string',
             'capacity' => 'required|integer',
         ]);

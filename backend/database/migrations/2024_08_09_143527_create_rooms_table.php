@@ -14,6 +14,7 @@ return new class extends Migration {
             $table->bigIncrements('room_id');
             $table->string('room_code');
             $table->string('location');
+            $table->string('floor_level');
             $table->string('room_type');
             $table->integer('capacity');
             $table->timestamps();
