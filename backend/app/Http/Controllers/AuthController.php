@@ -5,86 +5,67 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use App\Models\Faculty;
+use App\Models\User;
 use Carbon\Carbon;
 
 class AuthController extends Controller
 {
-    /**
-     * Handle login request.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
+    // Login function
     public function login(Request $request)
     {
-        // Validate incoming request
         $loginUserData = $request->validate([
-            'faculty_code' => 'required|string',
-            'faculty_password' => 'required|string'
+            'code' => 'required|string',
+            'password' => 'required|string'
         ]);
 
-        // Find the faculty by faculty_code
-        $faculty = Faculty::where('faculty_code', $loginUserData['faculty_code'])->first();
+        // Check if the user exists and the password is correct
+        $user = User::where('code', $loginUserData['code'])->first();
 
-        // Check if faculty exists and password matches
-        if (!$faculty || !Hash::check($loginUserData['faculty_password'], $faculty->faculty_password)) {
-            return response()->json([
-                'message' => 'Invalid Credentials'
-            ], 401);
+        if (!$user || !Hash::check($loginUserData['password'], $user->password)) {
+            return response()->json(['message' => 'Invalid Credentials'], 401);
         }
 
-        // Authenticate the user
-        Auth::login($faculty);
-
-        // Create a new Sanctum token with an expiration time
-        $tokenResult = $faculty->createToken('faculty-token');
+        // Create token and login the user
+        $tokenResult = $user->createToken('user-token');
         $token = $tokenResult->plainTextToken;
+        $expiration = Carbon::now()->addHours(24);
 
-        // Set token expiration (e.g., 1 hour from now)
-        $expiration = Carbon::now()->addMinutes(60);
 
-        // Update the token's expires_at attribute
-        $tokenResult->accessToken->expires_at = $expiration;
-        $tokenResult->accessToken->save();
+        // Optionally, include faculty details if available
+        $faculty = $user->faculty;  // Assuming the relationship exists in the User model
 
         return response()->json([
             'message' => 'Login successful',
             'token' => $token,
             'expires_at' => $expiration,
-            'faculty' => [
-                'faculty_id' => $faculty->faculty_id,
-                'faculty_name' => $faculty->faculty_name,
-                'faculty_code' => $faculty->faculty_code,
-                'faculty_email' => $faculty->faculty_email,
-                'faculty_type' => $faculty->faculty_type,
-                'faculty_units' => $faculty->faculty_units
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'code' => $user->code,
+                'role' => $user->role,
+                'faculty' => $faculty ? [
+                    'faculty_id' => $faculty->id, // Include faculty_id here
+                    'faculty_email' => $faculty->faculty_email,
+                    'faculty_type' => $faculty->faculty_type,
+                    'faculty_unit' => $faculty->faculty_unit,
+                ] : null,
             ]
         ]);
     }
 
-
-
-    /**
-     * Handle logout request.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\JsonResponse
-     */
+    // Logout function
+    // Logout function
     public function logout(Request $request)
     {
-        // Ensure the user is authenticated
-        if ($request->user()) {
+        $user = $request->user();
+
+        if ($user) {
             // Revoke the token that was used to authenticate the current request
             $request->user()->currentAccessToken()->delete();
-
-            return response()->json([
-                'message' => 'Logged out successfully.'
-            ], 200);
+            return response()->json(['message' => 'Logged out successfully.'], 200);
         }
 
-        return response()->json([
-            'message' => 'Unauthenticated.'
-        ], 401);
+        return response()->json(['message' => 'Unauthenticated.'], 401);
     }
+
 }

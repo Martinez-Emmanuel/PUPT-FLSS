@@ -1,25 +1,28 @@
 import { Component, Inject } from '@angular/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
+import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MaterialComponents } from '../../core/imports/material.component';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 @Component({
-  selector: 'app-time-selection-dialog',
+  selector: 'app-dialog-time',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialComponents,MatSymbolDirective],
-  templateUrl: './time-selection-dialog.component.html',
-  styleUrls: ['./time-selection-dialog.component.scss'],
+  imports: [CommonModule, FormsModule, MaterialComponents, MatSymbolDirective],
+  templateUrl: './dialog-time.component.html',
+  styleUrls: ['./dialog-time.component.scss'],
 })
-export class TimeSelectionDialogComponent {
+export class DialogTimeComponent {
+  // Updated class name
   startTime: string = '';
   endTime: string = '';
   timeOptions: string[] = [];
   endTimeOptions: string[] = [];
 
   constructor(
-    public dialogRef: MatDialogRef<TimeSelectionDialogComponent>,
+    public dialogRef: MatDialogRef<DialogTimeComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     dialogRef.disableClose = true;

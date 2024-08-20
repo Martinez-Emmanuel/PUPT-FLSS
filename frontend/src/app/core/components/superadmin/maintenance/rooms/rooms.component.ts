@@ -1,259 +1,223 @@
-import {
-  Component,
-  OnInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  ViewChild,
-  TemplateRef,
-} from '@angular/core';
-import { MaterialComponents } from '../../../../imports/material.component';
-import { CommonModule } from '@angular/common';
-import { MatTableDataSource } from '@angular/material/table';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatSymbolDirective } from '../../../../imports/mat-symbol.directive';
-import {
-  ReactiveFormsModule,
-  FormBuilder,
-  FormGroup,
-  Validators,
-} from '@angular/forms';
 
-interface Room {
-  room_code: string;
-  location: string;
-  room_type: string;
-  capacity: number;
-}
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
+
+import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
+import { TableHeaderComponent,InputField } from '../../../../../shared/table-header/table-header.component';
+import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
+
+import { Room, RoomService } from '../../../../services/superadmin/rooms/rooms.service';
 
 @Component({
   selector: 'app-rooms',
   standalone: true,
   imports: [
-    MaterialComponents,
     CommonModule,
-    MatSymbolDirective,
     ReactiveFormsModule,
+    TableGenericComponent,
+    TableHeaderComponent,
   ],
   templateUrl: './rooms.component.html',
   styleUrls: ['./rooms.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RoomsComponent implements OnInit {
-  @ViewChild('addEditRoomDialog') addEditRoomDialog!: TemplateRef<any>;
+  roomTypes = ['Lecture', 'Laboratory', 'Office'];
+  floors = ['1st', '2nd', '3rd', '4th', '5th'];
+  selectedRoomIndex: number | null = null;
 
-  displayedColumns: string[] = [
-    'num',
-    'room_code',
-    'location',
-    'room_type',
-    'capacity',
-    'action',
+  rooms: Room[] = [];
+  columns = [
+    { key: 'index', label: '#' },
+    { key: 'room_code', label: 'Room Code' },
+    { key: 'location', label: 'Location' },
+    { key: 'floor_level', label: 'Floor Level' },
+    { key: 'room_type', label: 'Room Type' },
+    { key: 'capacity', label: 'Capacity' },
   ];
 
-  dataSource = new MatTableDataSource<Room>([]);
-  addRoomForm!: FormGroup;
-  isEdit = false;
-  selectedRoom: Room | null = null;
+  displayedColumns: string[] = [
+    'index',
+    'room_code',
+    'location',
+    'floor_level',
+    'room_type',
+    'capacity',
+  ];
+
+  headerInputFields: InputField[] = [
+    {
+      type: 'text',
+      label: 'Search Rooms',
+      key: 'search'
+    }
+  ];
 
   constructor(
+    private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private fb: FormBuilder,
-    private cd: ChangeDetectorRef
+    private roomService: RoomService
   ) {}
 
-  ngOnInit(): void {
-    this.initializeForm();
-    this.loadRooms();
+  ngOnInit() {
+    this.fetchRooms();
   }
 
-  initializeForm(): void {
-    this.addRoomForm = this.fb.group({
-      room_code: ['', Validators.required],
-      location: ['', Validators.required],
-      room_type: ['', Validators.required],
-      capacity: [0, Validators.required],
+  fetchRooms() {
+    this.roomService.getRooms().subscribe((rooms) => {
+      this.rooms = rooms;
+      this.cdr.markForCheck();
     });
   }
 
-  loadRooms(): void {
-    const rooms: Room[] = [
-      {
-        room_code: 'A201',
-        location: 'Building A',
-        room_type: 'Lecture',
-        capacity: 50,
-      },
-      {
-        room_code: 'A202',
-        location: 'Building A',
-        room_type: 'Lecture',
-        capacity: 50,
-      },
-      {
-        room_code: 'A203',
-        location: 'Building A',
-        room_type: 'Lecture',
-        capacity: 50,
-      },
-      {
-        room_code: 'A204',
-        location: 'Building A',
-        room_type: 'Lecture',
-        capacity: 50,
-      },
-      {
-        room_code: 'A205',
-        location: 'Building A',
-        room_type: 'Lecture',
-        capacity: 50,
-      },
-      {
-        room_code: 'DOSTLAB',
-        location: 'Building A',
-        room_type: 'Lab',
-        capacity: 60,
-      },
-      {
-        room_code: 'ABOITIZLAB',
-        location: 'Building A',
-        room_type: 'Lab',
-        capacity: 60,
-      },
-      {
-        room_code: 'B302',
-        location: 'Building B',
-        room_type: 'Lab',
-        capacity: 30,
-      },
-      {
-        room_code: 'B303',
-        location: 'Building B',
-        room_type: 'Lab',
-        capacity: 30,
-      },
-      {
-        room_code: 'B304',
-        location: 'Building B',
-        room_type: 'Lab',
-        capacity: 30,
-      },
-      {
-        room_code: 'B305',
-        location: 'Building B',
-        room_type: 'Lab',
-        capacity: 30,
-      },
-      {
-        room_code: 'B306',
-        location: 'Building B',
-        room_type: 'Lab',
-        capacity: 30,
-      },
-      {
-        room_code: 'C101',
-        location: 'Building C',
-        room_type: 'Lecture',
-        capacity: 100,
-      },
-      {
-        room_code: 'ENG101',
-        location: 'Engineering Building',
-        room_type: 'Lecture',
-        capacity: 50,
-      },
-      {
-        room_code: 'ENG102',
-        location: 'Engineering Building',
-        room_type: 'Lab',
-        capacity: 60,
-      },
-      {
-        room_code: 'ENG103',
-        location: 'Engineering Building',
-        room_type: 'Lecture',
-        capacity: 50,
-      },
-      {
-        room_code: 'ENG104',
-        location: 'Engineering Building',
-        room_type: 'Lab',
-        capacity: 60,
-      },
-      {
-        room_code: 'ENG105',
-        location: 'Engineering Building',
-        room_type: 'Lecture',
-        capacity: 50,
-      },
-    ];    
-    this.dataSource.data = rooms;
-  }
-
-  openAddRoomDialog(): void {
-    this.isEdit = false;
-    this.addRoomForm.reset();
-    this.dialog.open(this.addEditRoomDialog, {
-      width: '250px',
-    });
-  }
-
-  openEditRoomDialog(room: Room): void {
-    this.isEdit = true;
-    this.selectedRoom = room;
-    this.addRoomForm.patchValue(room);
-    this.dialog.open(this.addEditRoomDialog, {
-      width: '250px',
-    });
-  }
-
-  closeDialog(): void {
-    this.dialog.closeAll();
-  }
-
-  addRoom(): void {
-    if (this.addRoomForm.valid) {
-      const newRoom: Room = this.addRoomForm.value;
-      this.dataSource.data = [...this.dataSource.data, newRoom];
-      this.closeDialog();
-      this.snackBar.open('Room added successfully', 'Close', {
-        duration: 2000,
-      });
-    } else {
-      this.snackBar.open('Please fill in all required fields', 'Close', {
-        duration: 2000,
-      });
+  onInputChange(values: {[key: string]: any}) {
+    if (values['search'] !== undefined) {
+      this.onSearch(values['search']);
     }
   }
 
-  updateRoom(): void {
-    if (this.addRoomForm.valid && this.selectedRoom) {
-      const updatedRoom: Room = this.addRoomForm.value;
-      const index = this.dataSource.data.indexOf(this.selectedRoom);
-      if (index > -1) {
-        this.dataSource.data[index] = updatedRoom;
-        this.dataSource.data = [...this.dataSource.data];
-        this.closeDialog();
-        this.snackBar.open('Room updated successfully', 'Close', {
-          duration: 2000,
+  private onSearch(searchTerm: string) {
+    this.roomService.getRooms().subscribe((rooms) => {
+      this.rooms = rooms.filter(
+        (room) =>
+          room.room_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          room.location.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      this.cdr.markForCheck();
+    });
+  }
+
+  onExport() {
+    console.log('Export functionality not implemented yet');
+  }
+
+
+  private getDialogConfig(room?: Room): DialogConfig {
+    return {
+      title: room ? 'Edit Room' : 'Add Room',
+      isEdit: !!room,
+      fields: [
+        {
+          label: 'Room Code',
+          formControlName: 'room_code',
+          type: 'text',
+          maxLength: 15,
+          required: true,
+        },
+        {
+          label: 'Location',
+          formControlName: 'location',
+          type: 'text',
+          maxLength: 25,
+          required: true,
+        },
+        {
+          label: 'Floor Level',
+          formControlName: 'floor_level',
+          type: 'select',
+          options: this.floors,
+          required: true,
+        },
+        {
+          label: 'Room Type',
+          formControlName: 'room_type',
+          type: 'select',
+          options: this.roomTypes,
+          required: true,
+        },
+        {
+          label: 'Capacity',
+          formControlName: 'capacity',
+          type: 'number',
+          min: 1,
+          max: 999,
+          required: true,
+        },
+      ],
+      initialValue: room || {},
+    };
+  }
+
+  openAddRoomDialog() {
+    const config = this.getDialogConfig();
+    const dialogRef = this.dialog.open(TableDialogComponent, {
+      data: config,
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.roomService.addRoom(result).subscribe((newRoom) => {
+          this.rooms.push(newRoom);
+          this.snackBar.open('Room added successfully', 'Close', {
+            duration: 3000,
+          });
+          this.fetchRooms();
+          this.cdr.markForCheck();
         });
       }
+    });
+  }
+
+  openEditRoomDialog(room: Room) {
+    this.selectedRoomIndex = this.rooms.indexOf(room);
+    const config = this.getDialogConfig(room);
+
+    const dialogRef = this.dialog.open(TableDialogComponent, {
+      data: config,
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result && this.selectedRoomIndex !== null) {
+        if (!result.room_id) {
+            result.room_id = room.room_id;  // Reassign room_id if it's missing
+        }
+        this.updateRoom(result);
     } else {
-      this.snackBar.open('Please fill in all required fields', 'Close', {
-        duration: 2000,
+        console.error('Dialog result is null or no room selected');
+    }
+  });
+  }
+
+  updateRoom(room: Room) {
+    const roomId = room.room_id;
+
+    if (roomId !== undefined) {
+
+      this.roomService.updateRoom(roomId, room).subscribe((updated) => {
+        const index = this.rooms.findIndex(r => r.room_id === roomId);
+          if (index >= 0) {
+            this.rooms[index] = updated;
+                this.snackBar.open('Room updated successfully', 'Close', {
+                    duration: 3000,
+                });
+              this.fetchRooms();
+              this.cdr.markForCheck();
+            }
       });
     }
   }
 
-  deleteRoom(room: Room): void {
-    const index = this.dataSource.data.indexOf(room);
-    if (index > -1) {
-      this.dataSource.data.splice(index, 1);
-      this.dataSource.data = [...this.dataSource.data];
-      this.snackBar.open('Room deleted successfully', 'Close', {
-        duration: 2000,
+  deleteRoom(room: Room) {
+    const roomId = room.room_id;
+    if (roomId !== undefined) {
+      this.roomService.deleteRoom(roomId).subscribe(() => {
+        const index = this.rooms.findIndex(r => r.room_id === roomId);
+        if (index >= 0) {
+          this.rooms.splice(index, 1);
+          this.snackBar.open('Room deleted successfully', 'Close', {
+            duration: 3000,
+          });
+          this.fetchRooms();
+          this.cdr.markForCheck();
+        }
       });
     }
-  }
+  }  
 }

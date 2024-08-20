@@ -3,43 +3,29 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Illuminate\Support\Facades\DB;
 
-return new class extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
     public function up(): void
     {
-        Schema::create('faculties', function (Blueprint $table) {
-            $table->id('faculty_id'); // This creates an auto-incrementing primary key
-            $table->string('faculty_name');
-            $table->string('faculty_code', 15);
-            $table->string('faculty_password');
-            $table->string('faculty_email');
-            $table->string('faculty_type', 50);
-            $table->integer('faculty_units')->default(0);
-            $table->timestamps();
+        Schema::create('faculty', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id');
+            $table->string('faculty_email', 50)->unique();
+            $table->enum('faculty_type', ['full-time', 'part-time', 'regular']);
+            $table->string('faculty_unit');  // Added the faculty_unit column
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
-
-        DB::statement('
-            CREATE TRIGGER before_faculty_insert 
-            BEFORE INSERT ON faculties 
-            FOR EACH ROW 
-            BEGIN 
-                IF NEW.faculty_code NOT REGEXP \'^FA[0-9]{4}TG2024$\' THEN 
-                    SIGNAL SQLSTATE \'45000\' SET MESSAGE_TEXT = \'Invalid faculty_code format\'; 
-                END IF; 
-            END
-        ');
     }
 
     /**
-     * Reverse the migrations
+     * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('faculties');
+        Schema::dropIfExists('faculty');
     }
 };
-

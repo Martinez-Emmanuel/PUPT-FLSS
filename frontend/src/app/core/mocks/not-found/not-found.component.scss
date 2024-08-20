@@ -1,0 +1,8 @@
+.not-found {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full viewport height */
+    text-align: center;
+    flex-direction: column; /* If you want to add more content below the heading */
+}

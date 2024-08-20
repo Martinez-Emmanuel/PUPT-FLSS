@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CustomDialogComponent } from './custom-dialog.component';
+import { TableHeaderComponent } from './table-header.component';
 
-describe('CustomDialogComponent', () => {
-  let component: CustomDialogComponent;
-  let fixture: ComponentFixture<CustomDialogComponent>;
+describe('TableHeaderComponent', () => {
+  let component: TableHeaderComponent;
+  let fixture: ComponentFixture<TableHeaderComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CustomDialogComponent]
+      imports: [TableHeaderComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(CustomDialogComponent);
+    fixture = TestBed.createComponent(TableHeaderComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -1,0 +1,23 @@
+@import "../../../../../../../styles/mixins";
+
+.curriculum-detail-container {
+  @include default-transition;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  height: 100%;
+}
+
+.curriculum-header-container {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+.semester-container {
+  @include flex-layout($direction: column, $align: none, $justify: none);
+  @include hide-scrollbar;
+  flex: 1;
+  position: relative;
+  border-radius: var(--border-radius-md);
+}

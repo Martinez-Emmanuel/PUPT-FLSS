@@ -23,7 +23,7 @@
       <!-- Form Header -->
       <div id="form_header">
         <h1>Log In</h1>
-        <p>Enter your username and password to start your session.</p>
+        <p>Enter your code and password to start your session.</p>
       </div>
 
       <!-- Form Fields -->
@@ -33,27 +33,27 @@
             <span mat-symbol="person" class="input-icon"></span>
             <input
               type="text"
-              placeholder="Username"
+              placeholder="Code"
               class="login-input"
-              id="username"
-              formControlName="username"
+              id="code"
+              formControlName="code"
               autocomplete="username"
               minlength="12"
               maxlength="12"
             />
           </div>
-          @if (username && username.invalid && (username.dirty ||
-          username.touched)) {
+          @if (code && code.invalid && (code.dirty ||
+          code.touched)) {
           <div
             class="error-message slide-down"
-            [ngClass]="{ show: username.invalid }"
+            [ngClass]="{ show: code.invalid }"
           >
             <span mat-symbol="error"></span>
-            @if (username.errors?.['required']) {
-            <span>Username is required.</span>
-            } @if (username.errors?.['minlength'] ||
-            username.errors?.['maxlength']) {
-            <span>Username must be exactly 12 characters.</span>
+            @if (code.errors?.['required']) {
+            <span>Code is required.</span>
+            } @if (code.errors?.['minlength'] ||
+            code.errors?.['maxlength']) {
+            <span>Code must be exactly 12 characters.</span>
             }
           </div>
           }

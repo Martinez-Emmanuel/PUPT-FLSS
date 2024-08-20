@@ -1,0 +1,25 @@
+@import "../../../styles/mixins.scss";
+
+.header-container {
+  @include flex-layout($align: stretch, $justify: space-between);
+  @include default-transition;
+  background-color: var(--main-bg);
+  padding-bottom: var(--spacing-lg);
+
+  .input-container {
+    @include flex-layout($gap: var(--spacing-md));
+  }
+
+  .button-container {
+    @include flex-layout($align: flex-end, $justify: space-between);
+    gap: var(--spacing-md);
+  }
+
+  .custom-mat-button {
+    color: white;
+  }
+
+  .export-button {
+    background-color: var(--neutral-button);
+  }
+}

@@ -98,12 +98,13 @@ mat-sidenav-content {
     $justify: none,
     $gap: var(--spacing-md)
   );
-  padding: var(--spacing-xl);
+  padding: var(--spacing-2xl);
+  height: 100%;
 
   .main-toolbar {
     position: sticky;
     top: 0;
-    z-index: 3;
+    z-index: 4;
     background: none;
     padding: 0;
 
@@ -208,6 +209,7 @@ mat-sidenav-content {
   }
 
   .sidenav-main {
+    @include hide-scrollbar;
     height: inherit;
     overflow: auto;
   }

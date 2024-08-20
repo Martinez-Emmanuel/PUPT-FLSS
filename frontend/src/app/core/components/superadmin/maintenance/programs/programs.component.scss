@@ -8,109 +8,11 @@
   height: 100%;
 }
 
-.programs-header {
-  @include flex-layout($justify: flex-start);
-
-  h1 {
-    @include gradient-primary(315deg);
-    font-size: var(--font-size-2xxl);
-    font-weight: 700;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-  }
-
-  .custom-mat-button {
-    color: white;
-  }
-}
-
 .programs-table-container {
+  @include flex-layout($direction: column, $align: none, $justify: none);
+  @include hide-scrollbar;
   flex: 1;
   overflow: auto;
   position: relative;
-  background-color: var(--neutral-light);
-  @include hide-scrollbar;
-  display: flex;
-  flex-direction: column;
   border-radius: var(--border-radius-md);
-
-  .custom-table {
-    border-radius: var(--border-radius-md);
-  }
-
-  .mat-mdc-table {
-    width: 100%;
-    background-color: var(--neutral-light);
-    transition: none !important;
-    table-layout: fixed;
-  }
-
-  .mat-mdc-header-cell {
-    background-color: var(--primary-one);
-    color: white;
-    font-weight: 500;
-    font-size: var(--font-size-md);
-    text-align: center;
-    position: sticky;
-    top: 0;
-    z-index: 2;
-  }
-
-  .mat-mdc-cell {
-    padding: var(--spacing-sm);
-    text-align: center;
-    text-wrap: wrap;
-
-    button {
-      &.edit-button {
-        color: rgb(153, 124, 60);
-        cursor: pointer;
-        transition: color 0.3s ease;
-
-        &:hover {
-          background-color: rgba(153, 124, 60, 0.106);
-        }
-      }
-
-      &.delete-button {
-        color: var(--primary-text);
-        cursor: pointer;
-        transition: color 0.3s ease;
-      }
-
-      mat-icon {
-        margin-right: var(--spacing-sm);
-      }
-    }
-  }
-
-  @mixin column-width($width) {
-    width: $width;
-    min-width: $width;
-    max-width: $width;
-  }
-
-  .mat-column-num {
-    @include column-width(50px);
-  }
-  .mat-column-program_code,
-  .mat-column-program_title,
-  .mat-column-program_info,
-  .mat-column-program_status {
-    @include column-width(200px);
-  }
-  .mat-column-action {
-    @include column-width(250px);
-  }
-}
-
-.custom-dialog {
-  .dialog-form {
-    padding: var(--spacing-sm);
-  }
-}
-
-.action-button {
-  color: white !important;
 }
