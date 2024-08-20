@@ -1,21 +1,17 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-
 import { CommonModule } from '@angular/common';
-
 import { Subscription } from 'rxjs';
-
 import { MatTableDataSource } from '@angular/material/table';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-
 import { MaterialComponents } from '../../../imports/material.component';
 import { ThemeService } from '../../../services/theme/theme.service';
 import { TimeFormatPipe } from '../../../pipes/time-format/time-format.pipe';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
-
 import { DialogTimeComponent } from '../../../../shared/dialog-time/dialog-time.component';
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
 import { CourseService, Course } from '../../../services/course/courses.service';
+import { CookieService } from 'ngx-cookie-service';  // <-- Import CookieService
 
 interface TableData extends Course {
   preferredDay: string;
@@ -74,7 +70,8 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     private readonly cdr: ChangeDetectorRef,
     private readonly dialog: MatDialog,
     private readonly courseService: CourseService,
-    private readonly snackBar: MatSnackBar
+    private readonly snackBar: MatSnackBar,
+    private readonly cookieService: CookieService  // <-- Inject CookieService
   ) {}
 
   ngOnInit() {
@@ -198,7 +195,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   }
 
   submitPreferences() {
-    const facultyId = sessionStorage.getItem('faculty_id');
+    const facultyId = this.cookieService.get('faculty_id'); // <-- Use CookieService to get faculty_id
     if (!facultyId) {
       this.showSnackBar('Error: Faculty ID not found.');
       return;
@@ -214,7 +211,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     });
   }
 
-  private prepareSubmissionData(facultyId: string | null) {
+  private prepareSubmissionData(facultyId: string) {
     return {
       faculty_id: facultyId,
       preferences: this.dataSource.data.map(
