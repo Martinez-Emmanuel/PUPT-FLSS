@@ -1,0 +1,57 @@
+<div class="material-dialog-container">
+  <!--Dialog Title-->
+  <h2 mat-dialog-title class="dialog-title">
+    <span mat-symbol="schedule"></span>
+    <span id="title_text">Select Time</span>
+  </h2>
+  <!--Dialog fields-->
+  <mat-dialog-content>
+    <mat-form-field appearance="fill" class="dialog-field">
+      <mat-label>Start Time</mat-label>
+      <mat-select
+        [(ngModel)]="startTime"
+        (selectionChange)="onStartTimeChange()"
+      >
+        @for (time of timeOptions; track time) {
+        <mat-option [value]="time">
+          {{ time }}
+        </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="fill" class="dialog-field">
+      <mat-label>End Time</mat-label>
+      <mat-select [(ngModel)]="endTime">
+        @for (time of endTimeOptions; track time) {
+        <mat-option [value]="time">
+          {{ time }}
+        </mat-option>
+        }
+      </mat-select>
+      @if (!isEndTimeValid()) {
+      <mat-error>End time must be after start time</mat-error>
+      }
+    </mat-form-field>
+  </mat-dialog-content>
+  <!--Dialog buttons-->
+  <mat-dialog-actions class="dialog-actions">
+    <!--Cancel button-->
+    <button mat-button class="cancel" (click)="onCancel()">
+      <span>Cancel</span>
+    </button>
+    <!--Confirm button-->
+    <button
+      mat-flat-button
+      class="confirm"
+      (click)="onConfirm()"
+      [ngClass]="{
+        'button-enabled': isEndTimeValid(),
+        'button-disabled': !isEndTimeValid()
+      }"
+      [disabled]="!isEndTimeValid()"
+    >
+      <span>Confirm</span>
+    </button>
+  </mat-dialog-actions>
+</div>

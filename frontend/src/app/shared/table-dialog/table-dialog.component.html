@@ -1,0 +1,87 @@
+<!-- Main container for the dialog -->
+<div class="table-dialog-container">
+  <!-- Dialog title -->
+  <h2 mat-dialog-title class="table-dialog-title">
+    <span>{{ isExportDialog ? "Export to PDF" : (data.isEdit ? "Edit" : "Add New") }} {{ data.title }}</span>
+  </h2>
+
+  <!-- Dialog content -->
+  <div mat-dialog-content class="table-dialog-content">
+
+    @if (isExportDialog) {
+      <form [formGroup]="form" class="dialog-form">
+        <mat-radio-group formControlName="exportOption">
+          <mat-radio-button value="all">
+            {{ customExportOptions ? customExportOptions.all : 'Export all' }}
+          </mat-radio-button>
+          <mat-radio-button value="current">
+            {{ customExportOptions ? customExportOptions.current : 'Export this item only' }}
+          </mat-radio-button>
+        </mat-radio-group>
+      </form>
+    } @else {
+
+    <!-- Form container -->
+    <form [formGroup]="form" class="dialog-form">
+      <!-- Dynamically generate form fields based on data.fields -->
+      @for (field of data.fields; track field) {
+      <!-- Individual form field container -->
+      <mat-form-field class="form-field" appearance="fill">
+        <!-- Field label -->
+        <mat-label>{{ field.label }}</mat-label>
+
+        <!-- Switch between different input types based on field.type -->
+        @switch (field.type) { @case ('text') {
+        <!-- Text input -->
+        <input
+          matInput
+          [formControlName]="field.formControlName"
+          [maxlength]="field.maxLength ?? null"
+        />
+        } @case ('number') {
+        <!-- Number input -->
+        <input
+          matInput
+          type="number"
+          appTwoDigitInput
+          [formControlName]="field.formControlName"
+          [min]="field.min ?? null"
+          [max]="field.max ?? null"
+        />
+        } @case ('select') {
+        <!-- Dropdown select input -->
+        <mat-select [formControlName]="field.formControlName">
+          @for (option of field.options; track option) {
+          <mat-option [value]="option">
+            {{ option }}
+          </mat-option>
+          }
+        </mat-select>
+        } }
+
+        <!-- Error message display -->
+        <mat-error>{{
+          getErrorMessage(field.formControlName, field.label)
+        }}</mat-error>
+      </mat-form-field>
+      }
+    </form>
+  }
+  </div>
+
+  <!-- Dialog action buttons -->
+  <div mat-dialog-actions class="table-dialog-button">
+    <button mat-button class="cancel-button" (click)="onCancel()">
+      Cancel
+    </button>
+    @if (isExportDialog) {
+      <button mat-flat-button class="action-button" color="primary" [disabled]="form.invalid" (click)="onExport()">
+        Export
+      </button>
+    } @else {
+      <button mat-flat-button class="action-button" color="primary" [disabled]="form.invalid" (click)="onSave()">
+        {{ data.isEdit ? "Update" : "Add" }}
+      </button>
+    }
+  </div>
+</div>

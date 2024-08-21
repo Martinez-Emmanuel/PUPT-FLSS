@@ -1,8 +1,7 @@
-// Custom Theming for Angular Material
-// For more information: https://material.angular.io/guide/theming
 @use "@angular/material" as mat;
 @import "styles/m3-theme.scss";
 @import "styles/theme";
+@import "styles/mixins";
 
 @include mat.core();
 
@@ -17,20 +16,23 @@
   }
 
   // Typography
-  --font-family: "Inter Tight",
-  "Helvetica Neue",
-  sans-serif;
-  --font-size-base: 16px;
+  --font-base: "Inter Tight", "Helvetica Neue", sans-serif;
+  --font-header: "Trajan Pro", serif;
+
+  --font-size-xs: 0.65rem;
   --font-size-sm: 0.875rem;
   --font-size-md: 1rem;
   --font-size-lg: 1.25rem;
   --font-size-xl: 1.5rem;
-  --font-size-xxl: 2rem;
-  --font-size-xxxl: 2.5rem;
+  --font-size-2xl: 2rem;
+  --font-size-2xxl: 2.5rem;
+  --font-size-3xl: 3rem;
+  --font-size-3xxl: 3.5rem;
+  --font-size-4xl: 4rem;
 
   // Line heights
   --line-height-base: 1.5;
-  --line-height-headings: 1.2;
+  --line-height-normal: 1.25;
 
   // Spacing
   --spacing-xxs: 0.25rem;
@@ -39,26 +41,27 @@
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
-  --spacing-xxl: 2.5rem;
-  --spacing-xxxl: 3rem;
+  --spacing-2xl: 2.5rem;
+  --spacing-3xl: 3rem;
+  --spacing-4xl: 4rem;
 
   // Border radius
-  --border-radius-sm: 0.25rem;
-  --border-radius-md: 0.5rem;
+  --border-radius-base: 0.25rem;
+  --border-radius-xs: 0.3rem;
+  --border-radius-sm: 0.5rem;
+  --border-radius-md: 0.75rem;
   --border-radius-lg: 1rem;
   --border-radius-xl: 2rem;
 
   // Box Shadow
-  --shadow-level-1: 0 1px 3px rgba(0, 0, 0, 0.12),
-  0 1px 2px rgba(0, 0, 0, 0.24);
-  --shadow-level-2: 0 3px 6px rgba(0, 0, 0, 0.16),
-  0 3px 6px rgba(0, 0, 0, 0.23);
+  --shadow-level-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow-level-2: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   --shadow-level-3: 0 10px 20px rgba(0, 0, 0, 0.19),
-  0 6px 6px rgba(0, 0, 0, 0.23);
+    0 6px 6px rgba(0, 0, 0, 0.23);
   --shadow-level-4: 0 14px 28px rgba(0, 0, 0, 0.25),
-  0 10px 10px rgba(0, 0, 0, 0.22);
+    0 10px 10px rgba(0, 0, 0, 0.22);
   --shadow-level-5: 0 19px 38px rgba(0, 0, 0, 0.3),
-  0 15px 12px rgba(0, 0, 0, 0.22);
+    0 15px 12px rgba(0, 0, 0, 0.22);
 
   // Opacity
   --opacity-transparent: 0;
@@ -66,6 +69,17 @@
   --opacity-half: 0.5;
   --opacity-semi-opaque: 0.75;
   --opacity-opaque: 1;
+
+  // Transitions Duration
+  --duration-instant: 0.1s;
+  --duration-short: 0.2s;
+  --duration-medium: 0.3s;
+  --duration-long: 0.5s;
+  --duration-extra-long: 0.7s;
+
+  // Dialog Sizes
+  --dialog-base: 20rem;
+  --dialog-medium: 30rem;
 
   // Breakpoints
   --breakpoint-sm: 576px;
@@ -87,11 +101,26 @@ body {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+  background: var(--main-bg);
+  color: var(--neutral-base);
+  transition: background-color 0.5s ease;
 }
 
 * {
-  color: var(--neutral-base);
-  transition: background-color 0.75s ease, color 0.75s ease;
-  font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+  font-family: var(--font-base);
+  @include custom-scrollbar;
+}
+
+.mdc-text-field--filled {
+  // when appearance="fill"
+  border-top-left-radius: 10px !important;
+  border-top-right-radius: 10px !important;
+}
+
+.mdc-list-item__primary-text {
+  font-family: var(--font-base) !important;
+}
+
+[mat-flat-button] {
+  color: white !important;
 }

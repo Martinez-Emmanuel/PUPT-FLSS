@@ -1,0 +1,195 @@
+<div class="faculty-preferences-container">
+  <!--Preferences first row-->
+  <div class="preferences-row-one">
+    <!--Preferences title-->
+    <div id="preferences_title">
+      <h1>Set Preferences</h1>
+      <p>
+        Submit your preferred subjects and schedule for the upcoming semester.
+      </p>
+    </div>
+
+    <!--Display Max & Selected Units -->
+    <div id="units_container">
+      <div class="units max">
+        <h2>{{ maxUnits }}</h2>
+        <span>Max. Units Allowed</span>
+      </div>
+      <div class="units total">
+        <h2>{{ totalUnits }}</h2>
+        <span>Total Units Selected</span>
+      </div>
+    </div>
+  </div>
+
+  <!--Preferences second row-->
+  <div class="preferences-row-two">
+    <!--Subjects Container-->
+    <div id="subjects_container">
+      <!--Subjects Search-->
+      <div id="subjects_search">
+        <mat-form-field appearance="fill" class="custom-mat-search">
+          <mat-label>Search</mat-label>
+          <input matInput />
+          <span mat-symbol="search" matPrefix></span>
+        </mat-form-field>
+      </div>
+      <!--Subjects List-->
+      <div id="subjects_list">
+        <div class="subjects-scroll-container">
+          <!-- Display spinner while loading -->
+          @if (loading) {
+          <div class="progress-wrapper">
+            <mat-spinner diameter="40"></mat-spinner>
+          </div>
+          }
+          <!-- Display subjects when loaded -->
+          @if (!loading) {
+          <!-- Ensure the properties match the Course interface -->
+          @for (subject of subjects; track subject.subject_code) {
+          <div class="subject-card">
+            <div class="subject-info">
+              <span class="subject-code">{{ subject.subject_code }}</span>
+              <span class="subject-title">{{ subject.subject_title }}</span>
+            </div>
+            <button
+              mat-icon-button
+              class="add-button"
+              (click)="addSubjectToTable(subject)"
+            >
+              <span mat-symbol="add" variant="outlined" size="20px"></span>
+            </button>
+          </div>
+          } }
+        </div>
+      </div>
+    </div>
+
+    <!--Preferences Table-->
+    <div id="table_container">
+      <table mat-table [dataSource]="dataSource" class="mat-elevation-z0">
+        <!-- Action Column -->
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let element">
+            <button
+              mat-icon-button
+              class="custom-mat-button"
+              (click)="removeSubject(element.subject_code)"
+            >
+              <span mat-symbol="do_not_disturb_on" variant="outlined"></span>
+            </button>
+          </td>
+        </ng-container>
+        <!-- # Column -->
+        <ng-container matColumnDef="num">
+          <th mat-header-cell *matHeaderCellDef>#</th>
+          <td mat-cell *matCellDef="let element; let i = index">{{ i + 1 }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="subject_code">
+          <th mat-header-cell *matHeaderCellDef>Subject Code</th>
+          <td mat-cell *matCellDef="let element">{{ element.subject_code }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="subject_title">
+          <th mat-header-cell *matHeaderCellDef>Subject Title</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.subject_title }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="lec_hours">
+          <th mat-header-cell *matHeaderCellDef>Lec</th>
+          <td mat-cell *matCellDef="let element">{{ element.lec_hours }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="lab_hours">
+          <th mat-header-cell *matHeaderCellDef>Lab</th>
+          <td mat-cell *matCellDef="let element">{{ element.lab_hours }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="total_units">
+          <th mat-header-cell *matHeaderCellDef>Units</th>
+          <td mat-cell *matCellDef="let element">{{ element.total_units }}</td>
+        </ng-container>
+
+        <!-- Preferred Day Column -->
+        <ng-container matColumnDef="preferredDay">
+          <th mat-header-cell *matHeaderCellDef>Preferred Day</th>
+          <td mat-cell *matCellDef="let element">
+            <select
+              class="preferred-day-dropdown"
+              [(ngModel)]="element.preferredDay"
+              (change)="onDayChange(element, $event)"
+              name="preferredDay"
+            >
+              <option value="" disabled selected>Select day</option>
+              @for (day of daysOfWeek; track day) {
+              <option [value]="day">
+                {{ day }}
+              </option>
+              }
+            </select>
+          </td>
+        </ng-container>
+
+        <!-- Preferred Time Column -->
+        <ng-container matColumnDef="preferredTime">
+          <th mat-header-cell *matHeaderCellDef>Preferred Time</th>
+          <td mat-cell *matCellDef="let element">
+            <button
+              mat-button
+              (click)="openTimeDialog(element)"
+              class="preferred-time-button"
+            >
+              {{
+                element.preferredTime
+                  ? (element.preferredTime | timeFormat)
+                  : "Select time"
+              }}
+            </button>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+        <!-- No data row -->
+        <tr class="mat-row no-data-row" *matNoDataRow>
+          <td class="mat-cell" colspan="9">
+            No preferences have been added yet.
+          </td>
+        </tr>
+      </table>
+      <div class="table-footer">
+        <!-- Remove All Button -->
+        <div
+          class="button-container"
+          (click)="!isRemoveDisabled && removeAllSubjects()"
+          [matTooltip]="
+            isRemoveDisabled ? 'You must select at least one course.' : ''
+          "
+          [class.disabled]="isRemoveDisabled"
+        >
+          <span mat-symbol="delete_sweep"></span>
+          <span class="button-text remove">Remove all</span>
+        </div>
+
+        <!-- Submit Preferences Button -->
+        <div
+          class="button-container"
+          (click)="!isSubmitDisabled && submitPreferences()"
+          [matTooltip]="
+            isSubmitDisabled
+              ? 'Select one or more course with all having preferred day and time.'
+              : ''
+          "
+          [class.disabled]="isSubmitDisabled"
+        >
+          <span class="button-text send">Submit Preferences</span>
+          <span mat-symbol="send"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

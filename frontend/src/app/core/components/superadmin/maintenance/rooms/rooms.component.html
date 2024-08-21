@@ -1,0 +1,23 @@
+<div class="rooms-container">
+  <!--Table Header-->
+  <div class="rooms-header-container">
+    <app-table-header
+      [inputFields]="headerInputFields"
+      [addButtonLabel]="'Add Room'"
+      (inputChange)="onInputChange($event)"
+      (add)="openAddRoomDialog()"
+      (export)="onExport()"
+    ></app-table-header>
+  </div>
+
+  <!-- Common Table -->
+  <div class="rooms-table-container">
+    <app-table-generic
+      [columns]="columns"
+      [data]="rooms"
+      [displayedColumns]="displayedColumns"
+      (edit)="openEditRoomDialog($event)"
+      (delete)="deleteRoom($event)"
+    ></app-table-generic>
+  </div>
+</div>

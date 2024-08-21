@@ -1,0 +1,95 @@
+@import "../../../../../styles/mixins";
+* {
+  @include reset-styles;
+  @include default-transition;
+}
+
+.faculty-home-container {
+  height: 100%;
+}
+
+.home-row-one {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+
+  #home_greetings {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+
+    h1 {
+      @include reset-styles;
+      width: max-content;
+      font-size: var(--font-size-2xxl);
+      font-weight: 700;
+
+      @include gradient-primary(315deg);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p {
+      @include reset-styles;
+      width: max-content;
+      font-size: var(--font-size-lg);
+    }
+  }
+
+  #active_semester {
+    background-color: var(--neutral-light);
+    padding: var(--spacing-md);
+    border-radius: var(--border-radius-md);
+
+    #semester_text {
+      display: flex;
+      gap: var(--spacing-md);
+      font-size: var(--font-size-lg);
+      font-weight: 500;
+
+      mat-icon {
+        width: max-content;
+        height: max-content;
+      }
+
+      mat-icon,
+      span {
+        color: var(--primary-one);
+      }
+    }
+
+    #semester_bar {
+      position: relative;
+      height: var(--font-size-xs);
+      background-color: var(--neutral-bar);
+      border-radius: var(--border-radius-sm);
+      margin-top: var(--spacing-md);
+
+      #progress_base {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: var(--border-radius-sm);
+        background-color: var(--neutral-bar);
+      }
+
+      #progress_fill {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        border-radius: var(--border-radius-sm);
+        background: linear-gradient(
+          90deg,
+          var(--primary-one) 0%,
+          var(--primary-two) 100%
+        );
+        width: 69%;
+        z-index: 1;
+      }
+    }
+  }
+}

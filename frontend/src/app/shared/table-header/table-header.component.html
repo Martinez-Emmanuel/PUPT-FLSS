@@ -1,0 +1,62 @@
+<div class="header-container">
+  <!-- Search Input -->
+  <form [formGroup]="form" class="input-container">
+    @for (field of inputFields; track field.key) { @if (field.type === 'text') {
+    <mat-form-field
+      appearance="fill"
+      class="search-field"
+      subscriptSizing="dynamic"
+    >
+      <mat-label>{{ field.label }}</mat-label>
+      <input
+        matInput
+        [formControlName]="field.key"
+        [placeholder]="field.placeholder || ''"
+      />
+      <mat-icon matPrefix>search</mat-icon>
+    </mat-form-field>
+    } @if (field.type === 'select') {
+    <mat-form-field
+      appearance="fill"
+      class="select-field"
+      subscriptSizing="dynamic"
+    >
+      <mat-label>{{ field.label }}</mat-label>
+      <mat-select [formControlName]="field.key">
+        @for (option of field.options; track option) {
+        <mat-option [value]="option">
+          {{ option }}
+        </mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+    }
+    <!-- We can add more form field types here -->
+    }
+  </form>
+  <div class="button-container">
+    <!-- Export to PDF Button -->
+    @if (showExportButton) {
+    <button
+      mat-flat-button
+      class="custom-mat-button export-button"
+      (click)="onExport()"
+    >
+      <mat-icon>picture_as_pdf</mat-icon>
+      Export to PDF
+    </button>
+    }
+    <!-- Add Button -->
+    @if (showAddButton) {
+    <button
+      mat-flat-button
+      class="custom-mat-button add-button"
+      [disabled]="buttonDisabled"
+      (click)="onAdd()"
+    >
+      <mat-icon>add</mat-icon>
+      {{ addButtonLabel }}
+    </button>
+    }
+  </div>
+</div>

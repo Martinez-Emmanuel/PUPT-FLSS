@@ -1,0 +1,23 @@
+<div class="programs-container">
+  <!--Table Header-->
+  <div class="programs-header-container">
+    <app-table-header
+      [inputFields]="headerInputFields"
+      [addButtonLabel]="'Add Program'"
+      (inputChange)="onInputChange($event)"
+      (add)="openAddProgramDialog()"
+      (export)="onExport()"
+    ></app-table-header>
+  </div>
+
+  <!--Common Table-->
+  <div class="programs-table-container">
+    <app-table-generic
+      [columns]="columns"
+      [data]="programs"
+      [displayedColumns]="displayedColumns"
+      (edit)="openEditProgramDialog($event)"
+      (delete)="deleteProgram($event)"
+    ></app-table-generic>
+  </div>
+</div>

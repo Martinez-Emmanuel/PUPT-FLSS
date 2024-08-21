@@ -1,0 +1,97 @@
+@import "../../../styles/mixins.scss";
+
+.table-heading {
+  @include flex-layout($align: center, $justify: space-between);
+  margin-bottom: 1rem;
+
+  .heading-title {
+    color: var(--primary-one);
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .heading-button {
+    color: var(--primary-text);
+  }
+}
+
+.table-container {
+  @include hide-scrollbar;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--neutral-light);
+  border-radius: var(--border-radius-md);
+  max-height: 50rem;
+
+  .custom-table {
+    @include default-transition;
+    background-color: var(--neutral-light);
+    border-radius: var(--border-radius-md);
+  }
+
+  .no-data-row {
+    text-align: center;
+    padding: var(--spacing-md);
+    color: var(--neutral-base); 
+    border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+  }
+  
+
+  .custom-header {
+    text-wrap: nowrap;
+    background-color: var(--primary-one);
+    color: white;
+    font-weight: 500;
+    text-align: center;
+
+    &.sticky {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+
+    &.action {
+      border-top-right-radius: var(--border-radius-md);
+    }
+
+    &.top-left-radius {
+      border-top-left-radius: var(--border-radius-md);
+    }
+  }
+
+  .custom-cell {
+    padding: var(--spacing-sm);
+  }
+
+  .action-buttons {
+    @include flex-layout($direction: row, $align: flex-start);
+    /* Note: For smaller screens in media query, changed the direction to 
+      COLUMN for better viewing.*/
+
+    .view-button {
+      color: var(--neutral-button-lighter);
+      &:hover {
+        background-color: var(--neutral-option);
+      }
+    }
+
+    .edit-button {
+      color: var(--secondary-text);
+
+      &:hover {
+        background-color: var(--secondary-hover);
+      }
+    }
+
+    .delete-button {
+      color: var(--primary-text);
+    }
+  }
+
+  .custom-table-paginator {
+    @include default-transition;
+    padding: var(--spacing-md);
+    background-color: var(--neutral-light);
+    border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
+  }
+}
