@@ -20,6 +20,7 @@ import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { AuthService } from '../../../services/auth/auth.service';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
+import { CookieService } from 'ngx-cookie-service'; 
 
 @Component({
   selector: 'app-main',
@@ -43,6 +44,8 @@ export class MainComponent implements OnInit {
   private breakpointObserver = inject(BreakpointObserver);
   public isDropdownOpen = false;
   public pageTitle!: string;
+  public accountName: string | null = '';  
+  public accountRole: string | null = ''; 
 
   private routeTitleMap: { [key: string]: string } = {
     dashboard: 'Dashboard',
@@ -66,7 +69,8 @@ export class MainComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private cookieService: CookieService  
   ) {}
 
   ngOnInit(): void {
@@ -77,6 +81,9 @@ export class MainComponent implements OnInit {
       });
 
     this.setPageTitle();
+
+    this.accountName = this.cookieService.get('user_name');
+    this.accountRole = this.cookieService.get('user_role');
   }
 
   private setPageTitle(): void {
@@ -96,7 +103,6 @@ export class MainComponent implements OnInit {
       }
     }
 
-    // If no title is found in route data, fallback to URL-based title
     const urlSegments = this.router.url.split('/').filter((segment) => segment);
     const lastSegment = urlSegments[urlSegments.length - 1];
     this.pageTitle = this.routeTitleMap[lastSegment] || 'Dashboard';
@@ -109,7 +115,7 @@ export class MainComponent implements OnInit {
   toggleDropdown() {
     this.isDropdownOpen = !this.isDropdownOpen;
   }
-  //for logout
+
   logout() {
     const confirmDialogRef = this.dialog.open(DialogGenericComponent, {
       data: {
@@ -120,7 +126,7 @@ export class MainComponent implements OnInit {
         action: 'Log Out',
       } as DialogData,
     });
-  
+
     confirmDialogRef.afterClosed().subscribe((result) => {
       console.log('Dialog result:', result);
       if (result === 'Log Out') {
@@ -132,19 +138,21 @@ export class MainComponent implements OnInit {
           } as DialogData,
           disableClose: true,
         });
-  
-        this.authService.logout().subscribe(
-          (response) => {
+
+        this.authService.logout().subscribe({
+          next: (response) => {
             console.log('Logout successful', response);
-            sessionStorage.clear();
+
+            this.cookieService.deleteAll('/');
+
             loadingDialogRef.close();
             this.router.navigate(['/login']);
           },
-          (error) => {
+          error: (error) => {
             console.error('Logout failed', error);
             loadingDialogRef.close();
           }
-        );
+        });
       }
     });
   }

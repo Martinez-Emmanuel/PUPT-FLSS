@@ -9,7 +9,7 @@ import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { AuthService } from '../../../services/auth/auth.service';
 import { MatDialog } from '@angular/material/dialog';
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
-
+import { CookieService } from 'ngx-cookie-service';
 @Component({
   selector: 'app-main',
   templateUrl: './main.component.html',
@@ -30,7 +30,8 @@ export class MainComponent implements AfterViewInit, OnDestroy {
     private ngZone: NgZone,
     public themeService: ThemeService,
     private authService: AuthService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private cookieService: CookieService
   ) {}
 
   ngAfterViewInit() {
@@ -152,19 +153,24 @@ export class MainComponent implements AfterViewInit, OnDestroy {
           disableClose: true,
         });
   
-        this.authService.logout().subscribe(
-          (response) => {
+        this.authService.logout().subscribe({
+          next: (response) => {
             console.log('Logout successful', response);
-            sessionStorage.clear();
+            
+            this.authService.clearCookies();
+
             loadingDialogRef.close();
             this.router.navigate(['/login']);
           },
-          (error) => {
+          error: (error) => {
             console.error('Logout failed', error);
             loadingDialogRef.close();
           }
-        );
+        });
       }
     });
   }
+  
+  
+  
 }
