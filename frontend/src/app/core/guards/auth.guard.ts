@@ -25,18 +25,18 @@ export class AuthGuard implements CanActivate {
     const expectedRole = next.data['role'];
 
     if (token) {
-      if (this.isLoginRoute(next)) {
-        return this.roleService.getHomeUrlForRole(userRole);
-      }
-
       if (
         expectedRole &&
         !this.roleService.hasRequiredRole(userRole, expectedRole)
       ) {
-        return this.router.createUrlTree(['/unauthenticated']);
+        return this.router.createUrlTree(['/forbidden']);
       }
 
-      return true;
+      if (!this.isLoginRoute(next)) {
+        return true;
+      }
+
+      return this.roleService.getHomeUrlForRole(userRole);
     } else {
       if (this.isLoginRoute(next)) {
         return true;
@@ -49,4 +49,3 @@ export class AuthGuard implements CanActivate {
     return route.routeConfig?.path === 'login';
   }
 }
-
