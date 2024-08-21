@@ -1,20 +1,13 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
 
-export const routes: Routes = [
-  {
-    path: 'login',
-    loadComponent: () =>
-      import('./auth/login/login.component').then((m) => m.LoginComponent),
-    canActivate: [AuthGuard],
-  },
+const authenticatedRoutes: Routes = [
   {
     path: 'faculty',
     loadChildren: () =>
       import('./core/components/faculty/faculty.routes').then(
         (m) => m.FACULTY_ROUTES
       ),
-    canActivate: [AuthGuard],
     data: { role: 'faculty' },
   },
   {
@@ -23,7 +16,6 @@ export const routes: Routes = [
       import('./core/components/admin/admin.routes').then(
         (m) => m.ADMIN_ROUTES
       ),
-    canActivate: [AuthGuard],
     data: { role: 'admin' },
   },
   {
@@ -32,14 +24,33 @@ export const routes: Routes = [
       import('./core/components/superadmin/superadmin.routes').then(
         (m) => m.SUPERADMIN_ROUTES
       ),
-    canActivate: [AuthGuard],
     data: { role: 'superadmin' },
   },
+];
+
+export const routes: Routes = [
   {
-    path: 'unauthenticated',
+    path: 'login',
     loadComponent: () =>
-      import('./shared/unauthenticated/unauthenticated.component').then(
-        (m) => m.UnauthenticatedComponent
+      import('./auth/login/login.component').then((m) => m.LoginComponent),
+    canActivate: [AuthGuard],
+  },
+  ...authenticatedRoutes.map((route) => ({
+    ...route,
+    canActivate: [AuthGuard],
+  })),
+  {
+    path: 'forbidden',
+    loadComponent: () =>
+      import('./shared/forbidden/forbidden.component').then(
+        (m) => m.ForbiddenComponent
+      ),
+  },
+  {
+    path: 'not-found',
+    loadComponent: () =>
+      import('./shared/not-found/not-found.component').then(
+        (m) => m.NotFoundComponent
       ),
   },
   {
@@ -49,6 +60,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: '/unauthenticated',
+    redirectTo: '/not-found',
   },
 ];
