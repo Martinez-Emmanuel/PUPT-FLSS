@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,15 +12,24 @@ class Course extends Model
     protected $primaryKey = 'course_id';
 
     protected $fillable = [
-        'subject_code',
-        'subject_title',
+        'course_code',
+        'course_title',
         'lec_hours',
         'lab_hours',
-        'total_units',
+        'units',
+        'semester_id',
+        'tuition_hours',
     ];
 
-    public function preferences()
+    // Relationship with CourseRequirement
+    public function requirements()
     {
-        return $this->hasMany(Preference::class);
+        return $this->hasMany(CourseRequirement::class, 'course_id', 'course_id');
+    }
+
+    // Relationship with Semester
+    public function semester()
+    {
+        return $this->belongsTo(Semester::class, 'semester_id', 'semester_id');
     }
 }
