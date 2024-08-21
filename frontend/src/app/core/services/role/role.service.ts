@@ -5,22 +5,19 @@ import { Router, UrlTree } from '@angular/router';
   providedIn: 'root',
 })
 export class RoleService {
+  private roleHomeMap: { [key: string]: string } = {
+    faculty: '/faculty',
+    admin: '/admin',
+    superadmin: '/superadmin',
+  };
+
   constructor(private router: Router) {}
 
   hasRequiredRole(userRole: string, requiredRole: string): boolean {
-    return userRole === requiredRole;
+    return !requiredRole || userRole === requiredRole;
   }
 
   getHomeUrlForRole(userRole: string): UrlTree {
-    switch (userRole) {
-      case 'faculty':
-        return this.router.createUrlTree(['/faculty']);
-      case 'admin':
-        return this.router.createUrlTree(['/admin']);
-      case 'superadmin':
-        return this.router.createUrlTree(['/superadmin']);
-      default:
-        return this.router.createUrlTree(['/home']);
-    }
+    return this.router.createUrlTree([this.roleHomeMap[userRole] || '/home']);
   }
 }
