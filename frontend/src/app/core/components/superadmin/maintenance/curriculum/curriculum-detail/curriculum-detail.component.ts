@@ -12,6 +12,8 @@ import { TableGenericComponent } from '../../../../../../shared/table-generic/ta
 import { TableHeaderComponent, InputField } from '../../../../../../shared/table-header/table-header.component';
 import { TableDialogComponent, DialogConfig } from '../../../../../../shared/table-dialog/table-dialog.component';
 import { DialogGenericComponent } from '../../../../../../shared/dialog-generic/dialog-generic.component';
+import { fadeAnimation, pageFloatUpAnimation } from '../../../../../animations/animations';
+
 import {
   CurriculumService,
   Curriculum,
@@ -32,6 +34,7 @@ import {
   ],
   templateUrl: './curriculum-detail.component.html',
   styleUrls: ['./curriculum-detail.component.scss'],
+  animations: [fadeAnimation, pageFloatUpAnimation],
 })
 export class CurriculumDetailComponent implements OnInit {
   public curriculum: Curriculum | undefined;
