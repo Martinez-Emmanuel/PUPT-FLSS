@@ -1,5 +1,6 @@
-import { trigger, transition, style, animate, state } from '@angular/animations';
+import { trigger, transition, style, animate, state, query, stagger } from '@angular/animations';
 
+// Anmation 1: Simple Fade - used in route transitions
 export const fadeAnimation = trigger('fadeAnimation', [
   transition('* <=> *', [
     style({ opacity: 0 }),
@@ -7,6 +8,7 @@ export const fadeAnimation = trigger('fadeAnimation', [
   ]),
 ]);
 
+// Animation 2: Slide In - used in mat sidenav
 export const slideInAnimation = trigger('slideInAnimation', [
   state(
     'void',
@@ -26,3 +28,21 @@ export const slideInAnimation = trigger('slideInAnimation', [
   transition('* => void', animate('750ms cubic-bezier(0.7, 0, 0.84, 0)')),
 ]);
 
+// Animation 3: Card Entrance - used for cards
+export const cardEntranceAnimation = trigger('cardEntranceAnimation', [
+  transition('* <=> *', [
+    query(
+      ':enter',
+      [
+        style({ opacity: 0, transform: 'translateY(15px)' }),
+        stagger('50ms', [
+          animate(
+            '300ms ease-out',
+            style({ opacity: 1, transform: 'translateY(0)' })
+          ),
+        ]),
+      ],
+      { optional: true }
+    ),
+  ]),
+]);
