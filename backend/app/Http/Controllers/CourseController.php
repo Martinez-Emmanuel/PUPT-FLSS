@@ -5,12 +5,11 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Course;
 use App\Models\CourseRequirement;
-use App\Models\CourseAssignment; // Ensure this is included
+use App\Models\CourseAssignment;
 use Illuminate\Support\Facades\DB;
 
 class CourseController extends Controller
 {
-
     public function index()
     {
         // Eager load assignments and requirements
@@ -32,10 +31,10 @@ class CourseController extends Controller
                 'units' => 'required|integer',
                 'tuition_hours' => 'required|integer',
                 'semester_id' => 'nullable|integer|exists:semesters,semester_id',
-                'program_id' => 'required|integer|exists:programs,program_id', // Ensure program_id is included
+                'program_id' => 'required|integer|exists:programs,program_id',
                 'requirements' => 'array',
-                'requirements.*.requirement_type' => 'required|in:pre,co',
-                'requirements.*.required_course_id' => 'required|integer|exists:courses,course_id',
+                'requirements.*.requirement_type' => 'nullable|in:pre,co',
+                'requirements.*.required_course_id' => 'nullable|integer|exists:courses,course_id',
             ]);
 
             // Create the course
@@ -53,11 +52,13 @@ class CourseController extends Controller
             // Handle course requirements if any
             if (isset($validatedData['requirements'])) {
                 foreach ($validatedData['requirements'] as $requirement) {
-                    CourseRequirement::create([
-                        'course_id' => $course->course_id,
-                        'requirement_type' => $requirement['requirement_type'],
-                        'required_course_id' => $requirement['required_course_id'],
-                    ]);
+                    if (!empty($requirement['requirement_type']) && !empty($requirement['required_course_id'])) {
+                        CourseRequirement::create([
+                            'course_id' => $course->course_id,
+                            'requirement_type' => $requirement['requirement_type'],
+                            'required_course_id' => $requirement['required_course_id'],
+                        ]);
+                    }
                 }
             }
 
@@ -89,10 +90,10 @@ class CourseController extends Controller
                 'units' => 'required|integer',
                 'tuition_hours' => 'required|integer',
                 'semester_id' => 'nullable|integer|exists:semesters,semester_id',
-                'program_id' => 'required|integer|exists:programs,program_id', // Ensure program_id is included
+                'program_id' => 'required|integer|exists:programs,program_id',
                 'requirements' => 'array',
-                'requirements.*.requirement_type' => 'required|in:pre,co',
-                'requirements.*.required_course_id' => 'required|integer|exists:courses,course_id',
+                'requirements.*.requirement_type' => 'nullable|in:pre,co',
+                'requirements.*.required_course_id' => 'nullable|integer|exists:courses,course_id',
             ]);
     
             // Update the course
@@ -118,11 +119,13 @@ class CourseController extends Controller
     
                 // Add new requirements
                 foreach ($validatedData['requirements'] as $requirement) {
-                    CourseRequirement::create([
-                        'course_id' => $course->course_id,
-                        'requirement_type' => $requirement['requirement_type'],
-                        'required_course_id' => $requirement['required_course_id'],
-                    ]);
+                    if (!empty($requirement['requirement_type']) && !empty($requirement['required_course_id'])) {
+                        CourseRequirement::create([
+                            'course_id' => $course->course_id,
+                            'requirement_type' => $requirement['requirement_type'],
+                            'required_course_id' => $requirement['required_course_id'],
+                        ]);
+                    }
                 }
             }
     
