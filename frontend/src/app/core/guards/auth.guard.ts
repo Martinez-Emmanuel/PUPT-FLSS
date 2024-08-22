@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router } from '@angular/router';
-
 import { CookieService } from 'ngx-cookie-service';
 import { AuthService } from '../services/auth/auth.service';
 import { RoleService } from '../services/role/role.service';
@@ -16,33 +15,30 @@ export class AuthGuard implements CanActivate {
     private roleService: RoleService
   ) {}
 
-  async canActivate(
+  canActivate(
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot
-  ): Promise<boolean | UrlTree> {
+  ): boolean | UrlTree {
     const token = this.authService.getToken();
-    const userRole = this.cookieService.get('user_role');
-    const expectedRole = next.data['role'];
+    const userRole = this.cookieService.get('user_role') || '';
+    const expectedRole = next.data['role'] as string;
 
-    if (token) {
-      if (
-        expectedRole &&
-        !this.roleService.hasRequiredRole(userRole, expectedRole)
-      ) {
-        return this.router.createUrlTree(['/forbidden']);
-      }
-
-      if (!this.isLoginRoute(next)) {
-        return true;
-      }
-
-      return this.roleService.getHomeUrlForRole(userRole);
-    } else {
-      if (this.isLoginRoute(next)) {
-        return true;
-      }
-      return this.router.createUrlTree(['/login']);
+    if (!token) {
+      return this.isLoginRoute(next)
+        ? true
+        : this.router.createUrlTree(['/login']);
     }
+
+    if (
+      expectedRole &&
+      !this.roleService.hasRequiredRole(userRole, expectedRole)
+    ) {
+      return this.router.createUrlTree(['/forbidden']);
+    }
+
+    return this.isLoginRoute(next)
+      ? this.roleService.getHomeUrlForRole(userRole)
+      : true;
   }
 
   private isLoginRoute(route: ActivatedRouteSnapshot): boolean {
