@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { MatTableDataSource } from '@angular/material/table';
@@ -12,6 +12,7 @@ import { DialogTimeComponent } from '../../../../shared/dialog-time/dialog-time.
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
 import { CourseService, Course } from '../../../services/course/courses.service';
 import { CookieService } from 'ngx-cookie-service';  // <-- Import CookieService
+import { fadeAnimation, cardEntranceAnimation } from '../../../animations/animations';
 
 interface TableData extends Course {
   preferredDay: string;
@@ -32,13 +33,15 @@ interface TableData extends Course {
   styleUrl: './preferences.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [CourseService],
+  animations: [fadeAnimation, cardEntranceAnimation]
 })
-export class PreferencesComponent implements OnInit, OnDestroy {
+export class PreferencesComponent implements OnInit, OnDestroy, AfterViewInit {
   subjects: Course[] = [];
   totalUnits = 0;
   maxUnits = 25;
   loading = true;
   isDarkMode = false;
+  public showSidenav = false;
 
   readonly displayedColumns: string[] = [
     'action',
@@ -77,6 +80,10 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.subscribeToThemeChanges();
     this.loadCourses();
+  }
+
+  ngAfterViewInit() {
+    setTimeout(() => (this.showSidenav = true), 0);
   }
 
   ngOnDestroy() {
