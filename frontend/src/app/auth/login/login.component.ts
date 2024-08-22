@@ -2,16 +2,21 @@ import { Component, OnInit, OnDestroy, Renderer2, ElementRef } from '@angular/co
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+
 import { Observable, Subscription, timer } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
+import { MatIcon } from '@angular/material/icon';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatButton } from '@angular/material/button';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+
 import { SlideshowComponent } from '../../shared/slideshow/slideshow.component';
-import { MaterialComponents } from '../../core/imports/material.component';
+import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
+
 import { ThemeService } from '../../core/services/theme/theme.service';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { RoleService } from '../../core/services/role/role.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 @Component({
   selector: 'app-login',
@@ -23,7 +28,9 @@ import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
     SlideshowComponent,
     ReactiveFormsModule,
     MatSymbolDirective,
-    MaterialComponents,
+    MatIcon,
+    MatButton,
+    MatProgressSpinner,
   ],
   providers: [AuthService],
 })
@@ -149,11 +156,26 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   private handleLoginError(error: any) {
     console.error('Login failed', error);
-    this.errorMessage =
-      error.status === 401 && error.error.message === 'Invalid Credentials'
-        ? 'Invalid username or password. Please try again.'
-        : 'An error occurred during login. Please try again later.';
-    this.showErrorSnackbar(this.errorMessage);
+    let errorMessage: string;
+
+    if (error.status === 401) {
+      if (error.error.message === 'Invalid Credentials') {
+        errorMessage = 'Invalid username or password. Please try again.';
+      } else {
+        errorMessage = 'Unauthorized access. Please check your credentials.';
+      }
+    } else if (error.status === 403) {
+      errorMessage = 'Access forbidden. You may not have the necessary permissions.';
+    } else if (error.status === 404) {
+      errorMessage = 'User not found. Please check your username.';
+    } else if (error.status === 0) {
+      errorMessage = 'Unable to connect to the server. Please check your internet connection.';
+    } else {
+      errorMessage = 'An unexpected error occurred. Please try again later.';
+    }
+
+    this.showErrorSnackbar(errorMessage);
+    this.isLoading = false;
   }
 
   showErrorSnackbar(message: string) {
@@ -191,4 +213,5 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
     this.router.navigate(['/login']);
   }
+  
 }
