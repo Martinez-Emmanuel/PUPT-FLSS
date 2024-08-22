@@ -11,7 +11,7 @@ import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { DialogTimeComponent } from '../../../../shared/dialog-time/dialog-time.component';
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
 import { CourseService, Course } from '../../../services/course/courses.service';
-import { CookieService } from 'ngx-cookie-service';  // <-- Import CookieService
+import { CookieService } from 'ngx-cookie-service';
 
 interface TableData extends Course {
   preferredDay: string;
@@ -29,13 +29,13 @@ interface TableData extends Course {
     MatSymbolDirective,
   ],
   templateUrl: './preferences.component.html',
-  styleUrl: './preferences.component.scss',
+  styleUrls: ['./preferences.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [CourseService],
 })
 export class PreferencesComponent implements OnInit, OnDestroy {
-  subjects: Course[] = [];
-  totalUnits = 0;
+  courses: Course[] = [];
+  units = 0;  // Renamed from totalUnits to units
   maxUnits = 25;
   loading = true;
   isDarkMode = false;
@@ -43,11 +43,11 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   readonly displayedColumns: string[] = [
     'action',
     'num',
-    'subject_code',
-    'subject_title',
+    'course_code',
+    'course_title',
     'lec_hours',
     'lab_hours',
-    'total_units',
+    'units',  // Make sure this matches with the HTML
     'preferredDay',
     'preferredTime',
   ];
@@ -71,7 +71,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     private readonly dialog: MatDialog,
     private readonly courseService: CourseService,
     private readonly snackBar: MatSnackBar,
-    private readonly cookieService: CookieService  // <-- Inject CookieService
+    private readonly cookieService: CookieService
   ) {}
 
   ngOnInit() {
@@ -96,7 +96,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.courseService.getCourses().subscribe({
       next: (courses) => {
-        this.subjects = courses;
+        this.courses = courses;
         this.loading = false;
         this.cdr.markForCheck();
       },
@@ -116,12 +116,12 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     return (
       this.isRemoveDisabled ||
       this.dataSource.data.some(
-        (subject) => !subject.preferredDay || !subject.preferredTime
+        (course) => !course.preferredDay || !course.preferredTime
       )
     );
   }
 
-  addSubjectToTable(course: Course) {
+  addCourseToTable(course: Course) {
     if (this.isCourseAlreadyAdded(course) || this.isMaxUnitsExceeded(course)) {
       return;
     }
@@ -136,7 +136,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   private isCourseAlreadyAdded(course: Course): boolean {
     if (
       this.dataSource.data.some(
-        (subject) => subject.subject_code === course.subject_code
+        (subject) => subject.course_code === course.course_code
       )
     ) {
       this.showSnackBar('This course has already been selected.');
@@ -146,16 +146,16 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   }
 
   private isMaxUnitsExceeded(course: Course): boolean {
-    if (this.totalUnits + course.total_units > this.maxUnits) {
+    if (this.units + course.units > this.maxUnits) {  // Updated from this.totalUnits to this.units
       this.showSnackBar('Maximum units have been reached.');
       return true;
     }
     return false;
   }
 
-  removeSubject(subject_code: string) {
+  removeCourse(course_code: string) {
     this.dataSource.data = this.dataSource.data.filter(
-      (subject) => subject.subject_code !== subject_code
+      (course) => course.course_code !== course_code
     );
     this.updateTotalUnits();
   }
@@ -167,10 +167,10 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   }
 
   private updateTotalUnits() {
-    this.totalUnits = this.dataSource.data.reduce(
-      (total, subject) => total + subject.total_units,
+    this.units = this.dataSource.data.reduce(
+      (total, course) => total + course.units,
       0
-    );
+    );  // Updated from this.totalUnits to this.units
     this.cdr.markForCheck();
   }
 
@@ -194,8 +194,9 @@ export class PreferencesComponent implements OnInit, OnDestroy {
       });
   }
 
+  
   submitPreferences() {
-    const facultyId = this.cookieService.get('faculty_id'); // <-- Use CookieService to get faculty_id
+    const facultyId = this.cookieService.get('faculty_id');
     if (!facultyId) {
       this.showSnackBar('Error: Faculty ID not found.');
       return;
@@ -224,7 +225,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     };
   }
 
-  removeAllSubjects() {
+  removeAllCourses() {
     const dialogData: DialogData = {
       title: 'Remove All Courses',
       content: 'Are you sure you want to remove all your selected courses?',

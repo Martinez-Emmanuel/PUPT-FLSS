@@ -25,4 +25,10 @@ class Course extends Model
     {
         return $this->hasMany(CourseAssignment::class, 'course_id', 'course_id');
     }
+
+    // Relationship with Requirement
+    public function requirements()
+    {
+        return $this->hasMany(CourseRequirement::class, 'course_id', 'course_id');
+    }
 }
