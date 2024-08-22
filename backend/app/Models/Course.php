@@ -17,19 +17,12 @@ class Course extends Model
         'lec_hours',
         'lab_hours',
         'units',
-        'semester_id',
         'tuition_hours',
     ];
 
-    // Relationship with CourseRequirement
-    public function requirements()
+    // Relationship with CourseAssignment
+    public function assignments()
     {
-        return $this->hasMany(CourseRequirement::class, 'course_id', 'course_id');
-    }
-
-    // Relationship with Semester
-    public function semester()
-    {
-        return $this->belongsTo(Semester::class, 'semester_id', 'semester_id');
+        return $this->hasMany(CourseAssignment::class, 'course_id', 'course_id');
     }
 }
