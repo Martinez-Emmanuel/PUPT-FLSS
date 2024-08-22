@@ -5,7 +5,7 @@ import { Router, UrlTree } from '@angular/router';
   providedIn: 'root',
 })
 export class RoleService {
-  private roleHomeMap: { [key: string]: string } = {
+  private readonly roleHomeMap: Record<string, string> = {
     faculty: '/faculty',
     admin: '/admin',
     superadmin: '/superadmin',
