@@ -12,11 +12,10 @@ class CoursesTableSeeder extends Seeder
     {{
         $currentTimestamp = Carbon::now();
 
-// Inserting data into courses
+        // Inserting data into courses
         DB::table('courses')->insert([
             [
                 'course_id' => 1,
-                'semester_id' => 1,
                 'course_code' => 'CS101',
                 'course_title' => 'Introduction to Programming',
                 'lec_hours' => 3,
@@ -28,7 +27,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 2,
-                'semester_id' => 1,
                 'course_code' => 'IT101',
                 'course_title' => 'Information Technology Fundamentals',
                 'lec_hours' => 3,
@@ -40,7 +38,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 3,
-                'semester_id' => 2,
                 'course_code' => 'CS102',
                 'course_title' => 'Data Structures',
                 'lec_hours' => 3,
@@ -52,7 +49,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 4,
-                'semester_id' => 2,
                 'course_code' => 'IT102',
                 'course_title' => 'Networking Fundamentals',
                 'lec_hours' => 3,
@@ -64,7 +60,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 5,
-                'semester_id' => 3,
                 'course_code' => 'CS103',
                 'course_title' => 'Object-Oriented Programming',
                 'lec_hours' => 3,
@@ -76,7 +71,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 6,
-                'semester_id' => 4,
                 'course_code' => 'CS201',
                 'course_title' => 'Database Systems',
                 'lec_hours' => 3,
@@ -88,7 +82,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 7,
-                'semester_id' => 4,
                 'course_code' => 'IT201',
                 'course_title' => 'Web Development',
                 'lec_hours' => 3,
@@ -100,7 +93,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 8,
-                'semester_id' => 5,
                 'course_code' => 'CS202',
                 'course_title' => 'Algorithms',
                 'lec_hours' => 3,
@@ -112,7 +104,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 9,
-                'semester_id' => 5,
                 'course_code' => 'IT202',
                 'course_title' => 'System Analysis and Design',
                 'lec_hours' => 3,
@@ -124,7 +115,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 10,
-                'semester_id' => 6,
                 'course_code' => 'CS203',
                 'course_title' => 'Software Engineering',
                 'lec_hours' => 3,
@@ -136,7 +126,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 11,
-                'semester_id' => 7,
                 'course_code' => 'CS301',
                 'course_title' => 'Operating Systems',
                 'lec_hours' => 3,
@@ -148,7 +137,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 12,
-                'semester_id' => 7,
                 'course_code' => 'IT301',
                 'course_title' => 'Mobile Application Development',
                 'lec_hours' => 3,
@@ -160,7 +148,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 13,
-                'semester_id' => 8,
                 'course_code' => 'CS302',
                 'course_title' => 'Artificial Intelligence',
                 'lec_hours' => 3,
@@ -172,7 +159,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 14,
-                'semester_id' => 8,
                 'course_code' => 'IT302',
                 'course_title' => 'Cloud Computing',
                 'lec_hours' => 3,
@@ -184,7 +170,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 15,
-                'semester_id' => 9,
                 'course_code' => 'CS303',
                 'course_title' => 'Network Security',
                 'lec_hours' => 3,
@@ -196,7 +181,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 16,
-                'semester_id' => 10,
                 'course_code' => 'CS401',
                 'course_title' => 'Capstone Project I',
                 'lec_hours' => 1,
@@ -208,7 +192,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 17,
-                'semester_id' => 10,
                 'course_code' => 'IT401',
                 'course_title' => 'IT Elective I',
                 'lec_hours' => 3,
@@ -220,7 +203,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 18,
-                'semester_id' => 11,
                 'course_code' => 'CS402',
                 'course_title' => 'Capstone Project II',
                 'lec_hours' => 1,
@@ -232,7 +214,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 19,
-                'semester_id' => 11,
                 'course_code' => 'IT402',
                 'course_title' => 'IT Elective II',
                 'lec_hours' => 3,
@@ -244,7 +225,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 20,
-                'semester_id' => 12,
                 'course_code' => 'CS403',
                 'course_title' => 'Internship',
                 'lec_hours' => 0,
@@ -256,7 +236,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 21,
-                'semester_id' => 13,
                 'course_code' => 'ACC101',
                 'course_title' => 'Introduction to Accounting',
                 'lec_hours' => 3,
@@ -268,7 +247,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 22,
-                'semester_id' => 13,
                 'course_code' => 'MATH101',
                 'course_title' => 'Business Mathematics',
                 'lec_hours' => 3,
@@ -280,7 +258,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 23,
-                'semester_id' => 14,
                 'course_code' => 'ACC102',
                 'course_title' => 'Financial Accounting',
                 'lec_hours' => 3,
@@ -292,7 +269,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 24,
-                'semester_id' => 14,
                 'course_code' => 'LAW101',
                 'course_title' => 'Business Law',
                 'lec_hours' => 3,
@@ -304,7 +280,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 25,
-                'semester_id' => 15,
                 'course_code' => 'ACC103',
                 'course_title' => 'Managerial Accounting',
                 'lec_hours' => 3,
@@ -316,7 +291,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 26,
-                'semester_id' => 16,
                 'course_code' => 'ACC201',
                 'course_title' => 'Intermediate Accounting I',
                 'lec_hours' => 3,
@@ -328,7 +302,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 27,
-                'semester_id' => 16,
                 'course_code' => 'MATH201',
                 'course_title' => 'Statistics',
                 'lec_hours' => 3,
@@ -340,7 +313,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 28,
-                'semester_id' => 17,
                 'course_code' => 'ACC202',
                 'course_title' => 'Intermediate Accounting II',
                 'lec_hours' => 3,
@@ -352,7 +324,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 29,
-                'semester_id' => 17,
                 'course_code' => 'LAW201',
                 'course_title' => 'Taxation',
                 'lec_hours' => 3,
@@ -364,7 +335,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 30,
-                'semester_id' => 18,
                 'course_code' => 'ACC203',
                 'course_title' => 'Cost Accounting',
                 'lec_hours' => 3,
@@ -376,7 +346,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 31,
-                'semester_id' => 19,
                 'course_code' => 'ACC301',
                 'course_title' => 'Advanced Accounting',
                 'lec_hours' => 3,
@@ -388,7 +357,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 32,
-                'semester_id' => 19,
                 'course_code' => 'LAW301',
                 'course_title' => 'Advanced Taxation',
                 'lec_hours' => 3,
@@ -400,7 +368,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 33,
-                'semester_id' => 20,
                 'course_code' => 'ACC302',
                 'course_title' => 'Auditing I',
                 'lec_hours' => 3,
@@ -412,7 +379,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 34,
-                'semester_id' => 20,
                 'course_code' => 'MATH301',
                 'course_title' => 'Quantitative Techniques',
                 'lec_hours' => 3,
@@ -424,7 +390,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 35,
-                'semester_id' => 21,
                 'course_code' => 'ACC303',
                 'course_title' => 'Auditing II',
                 'lec_hours' => 3,
@@ -436,7 +401,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 36,
-                'semester_id' => 22,
                 'course_code' => 'ACC401',
                 'course_title' => 'Capstone Project I',
                 'lec_hours' => 1,
@@ -448,7 +412,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 37,
-                'semester_id' => 22,
                 'course_code' => 'ACC402',
                 'course_title' => 'Accounting Elective I',
                 'lec_hours' => 3,
@@ -460,7 +423,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 38,
-                'semester_id' => 23,
                 'course_code' => 'ACC403',
                 'course_title' => 'Capstone Project II',
                 'lec_hours' => 1,
@@ -472,7 +434,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 39,
-                'semester_id' => 23,
                 'course_code' => 'ACC404',
                 'course_title' => 'Accounting Elective II',
                 'lec_hours' => 3,
@@ -484,7 +445,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 40,
-                'semester_id' => 24,
                 'course_code' => 'ACC405',
                 'course_title' => 'Internship',
                 'lec_hours' => 0,
@@ -496,7 +456,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 41,
-                'semester_id' => 25,
                 'course_code' => 'CS101',
                 'course_title' => 'Introduction to Programming',
                 'lec_hours' => 3,
@@ -508,7 +467,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 42,
-                'semester_id' => 25,
                 'course_code' => 'IT101',
                 'course_title' => 'Information Technology Fundamentals',
                 'lec_hours' => 3,
@@ -520,7 +478,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 43,
-                'semester_id' => 26,
                 'course_code' => 'CS104',
                 'course_title' => 'Data Structures and Algorithms',
                 'lec_hours' => 3,
@@ -532,7 +489,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 44,
-                'semester_id' => 26,
                 'course_code' => 'IT102',
                 'course_title' => 'Networking Fundamentals',
                 'lec_hours' => 3,
@@ -544,7 +500,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 45,
-                'semester_id' => 27,
                 'course_code' => 'CS105',
                 'course_title' => 'Advanced Programming',
                 'lec_hours' => 3,
@@ -556,7 +511,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 46,
-                'semester_id' => 28,
                 'course_code' => 'CS204',
                 'course_title' => 'Database Systems and Applications',
                 'lec_hours' => 3,
@@ -568,7 +522,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 47,
-                'semester_id' => 28,
                 'course_code' => 'IT201',
                 'course_title' => 'Web and Mobile Development',
                 'lec_hours' => 3,
@@ -580,7 +533,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 48,
-                'semester_id' => 29,
                 'course_code' => 'CS205',
                 'course_title' => 'Advanced Algorithms',
                 'lec_hours' => 3,
@@ -592,7 +544,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 49,
-                'semester_id' => 29,
                 'course_code' => 'IT203',
                 'course_title' => 'Advanced Networking',
                 'lec_hours' => 3,
@@ -604,7 +555,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 50,
-                'semester_id' => 30,
                 'course_code' => 'CS206',
                 'course_title' => 'Software Engineering Principles',
                 'lec_hours' => 3,
@@ -616,7 +566,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 51,
-                'semester_id' => 31,
                 'course_code' => 'CS307',
                 'course_title' => 'Operating Systems and Virtualization',
                 'lec_hours' => 3,
@@ -628,7 +577,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 52,
-                'semester_id' => 31,
                 'course_code' => 'IT301',
                 'course_title' => 'Advanced Mobile Development',
                 'lec_hours' => 3,
@@ -640,7 +588,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 53,
-                'semester_id' => 32,
                 'course_code' => 'CS308',
                 'course_title' => 'Machine Learning',
                 'lec_hours' => 3,
@@ -652,7 +599,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 54,
-                'semester_id' => 32,
                 'course_code' => 'IT302',
                 'course_title' => 'Cloud Services and Infrastructure',
                 'lec_hours' => 3,
@@ -664,7 +610,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 55,
-                'semester_id' => 33,
                 'course_code' => 'CS309',
                 'course_title' => 'Cybersecurity Essentials',
                 'lec_hours' => 3,
@@ -676,7 +621,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 56,
-                'semester_id' => 34,
                 'course_code' => 'CS410',
                 'course_title' => 'Capstone Project I',
                 'lec_hours' => 1,
@@ -688,7 +632,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 57,
-                'semester_id' => 34,
                 'course_code' => 'IT410',
                 'course_title' => 'IT Elective I',
                 'lec_hours' => 3,
@@ -700,7 +643,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 58,
-                'semester_id' => 35,
                 'course_code' => 'CS411',
                 'course_title' => 'Capstone Project II',
                 'lec_hours' => 1,
@@ -712,7 +654,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 59,
-                'semester_id' => 35,
                 'course_code' => 'IT411',
                 'course_title' => 'IT Elective II',
                 'lec_hours' => 3,
@@ -724,7 +665,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 60,
-                'semester_id' => 36,
                 'course_code' => 'CS412',
                 'course_title' => 'Internship',
                 'lec_hours' => 0,
@@ -736,7 +676,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 61,
-                'semester_id' => 37,
                 'course_code' => 'ACC101',
                 'course_title' => 'Introduction to Accounting',
                 'lec_hours' => 3,
@@ -748,7 +687,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 62,
-                'semester_id' => 37,
                 'course_code' => 'MATH102',
                 'course_title' => 'Business Mathematics with Analytics',
                 'lec_hours' => 3,
@@ -760,7 +698,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 63,
-                'semester_id' => 38,
                 'course_code' => 'ACC104',
                 'course_title' => 'Financial Reporting',
                 'lec_hours' => 3,
@@ -772,7 +709,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 64,
-                'semester_id' => 38,
                 'course_code' => 'LAW102',
                 'course_title' => 'Business Law and Ethics',
                 'lec_hours' => 3,
@@ -784,7 +720,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 65,
-                'semester_id' => 39,
                 'course_code' => 'ACC105',
                 'course_title' => 'Managerial Accounting and Control',
                 'lec_hours' => 3,
@@ -796,7 +731,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 66,
-                'semester_id' => 40,
                 'course_code' => 'ACC206',
                 'course_title' => 'Intermediate Accounting I',
                 'lec_hours' => 3,
@@ -808,7 +742,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 67,
-                'semester_id' => 40,
                 'course_code' => 'MATH202',
                 'course_title' => 'Statistics and Analytics',
                 'lec_hours' => 3,
@@ -820,7 +753,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 68,
-                'semester_id' => 41,
                 'course_code' => 'ACC207',
                 'course_title' => 'Intermediate Accounting II',
                 'lec_hours' => 3,
@@ -832,7 +764,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 69,
-                'semester_id' => 41,
                 'course_code' => 'LAW202',
                 'course_title' => 'Taxation and Compliance',
                 'lec_hours' => 3,
@@ -844,7 +775,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 70,
-                'semester_id' => 42,
                 'course_code' => 'ACC208',
                 'course_title' => 'Cost and Management Accounting',
                 'lec_hours' => 3,
@@ -856,7 +786,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 71,
-                'semester_id' => 43,
                 'course_code' => 'ACC309',
                 'course_title' => 'Advanced Financial Accounting',
                 'lec_hours' => 3,
@@ -868,7 +797,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 72,
-                'semester_id' => 43,
                 'course_code' => 'LAW303',
                 'course_title' => 'Corporate Taxation',
                 'lec_hours' => 3,
@@ -880,7 +808,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 73,
-                'semester_id' => 44,
                 'course_code' => 'ACC310',
                 'course_title' => 'Auditing Theory and Practice',
                 'lec_hours' => 3,
@@ -892,7 +819,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 74,
-                'semester_id' => 44,
                 'course_code' => 'MATH303',
                 'course_title' => 'Quantitative Methods',
                 'lec_hours' => 3,
@@ -904,7 +830,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 75,
-                'semester_id' => 45,
                 'course_code' => 'ACC311',
                 'course_title' => 'Advanced Auditing',
                 'lec_hours' => 3,
@@ -916,7 +841,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 76,
-                'semester_id' => 46,
                 'course_code' => 'ACC412',
                 'course_title' => 'Capstone Project I',
                 'lec_hours' => 1,
@@ -928,7 +852,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 77,
-                'semester_id' => 46,
                 'course_code' => 'ACC413',
                 'course_title' => 'Accounting Elective I',
                 'lec_hours' => 3,
@@ -940,7 +863,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 78,
-                'semester_id' => 47,
                 'course_code' => 'ACC414',
                 'course_title' => 'Capstone Project II',
                 'lec_hours' => 1,
@@ -952,7 +874,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 79,
-                'semester_id' => 47,
                 'course_code' => 'ACC415',
                 'course_title' => 'Accounting Elective II',
                 'lec_hours' => 3,
@@ -964,7 +885,6 @@ class CoursesTableSeeder extends Seeder
             ],
             [
                 'course_id' => 80,
-                'semester_id' => 48,
                 'course_code' => 'ACC416',
                 'course_title' => 'Internship',
                 'lec_hours' => 0,
