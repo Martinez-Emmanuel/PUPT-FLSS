@@ -2,7 +2,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { catchError, throwError } from 'rxjs';
-import { CookieService } from 'ngx-cookie-service';  // Import CookieService
+import { CookieService } from 'ngx-cookie-service';
+import { environment } from '../../../../environments/environment.dev';
+
 
 export interface Course {
   course_id: number; 
@@ -17,7 +19,7 @@ export interface Course {
   providedIn: 'root',
 })
 export class CourseService {
-  private baseUrl = 'http://127.0.0.1:8000/api';
+  private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient, private cookieService: CookieService) {} 
 

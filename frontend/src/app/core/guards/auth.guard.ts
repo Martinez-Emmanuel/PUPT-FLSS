@@ -1,54 +1,47 @@
 import { Injectable } from '@angular/core';
 import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router } from '@angular/router';
-import { Observable } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
+import { AuthService } from '../services/auth/auth.service';
+import { RoleService } from '../services/role/role.service';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class AuthGuard implements CanActivate {
-  constructor(private router: Router, private cookieService: CookieService) {}
+  constructor(
+    private router: Router,
+    private cookieService: CookieService,
+    private authService: AuthService,
+    private roleService: RoleService
+  ) {}
 
   canActivate(
     next: ActivatedRouteSnapshot,
-    state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
+    state: RouterStateSnapshot
+  ): boolean | UrlTree {
+    const token = this.authService.getToken();
+    const userRole = this.cookieService.get('user_role') || '';
+    const expectedRole = next.data['role'] as string;
 
-    // Retrieve the token and user role from cookies
-    const token = this.cookieService.get('token');
-    const userRole = this.cookieService.get('user_role'); // Retrieve the user's role from cookies
-    const expectedRole = next.data['role']; // Accessing 'role' using bracket notation
-
-    if (token) {
-      // User is authenticated
-
-      if (this.isLoginRoute(next)) {
-        // If authenticated and trying to access login page, redirect to unauthenticated page
-        return this.redirectToUnauthenticated();
-      }
-
-      if (expectedRole && userRole !== expectedRole) {
-        // If role does not match the expected role, redirect to unauthenticated page
-        return this.redirectToUnauthenticated();
-      }
-
-      // Role matches or no role restriction
-      console.log('Role match or no role restriction. Access granted.');
-      return true;
-
-    } else {
-      // User is not authenticated
-      console.log('No token found. Redirecting to login.');
-      // Redirect to login if the user is not authenticated
-      return this.router.createUrlTree(['/login']);
+    if (!token) {
+      return this.isLoginRoute(next)
+        ? true
+        : this.router.createUrlTree(['/login']);
     }
+
+    if (
+      expectedRole &&
+      !this.roleService.hasRequiredRole(userRole, expectedRole)
+    ) {
+      return this.router.createUrlTree(['/forbidden']);
+    }
+
+    return this.isLoginRoute(next)
+      ? this.roleService.getHomeUrlForRole(userRole)
+      : true;
   }
 
   private isLoginRoute(route: ActivatedRouteSnapshot): boolean {
-    return route.routeConfig?.path === 'login'; // Adjust the 'login' path as per your routing configuration
-  }
-
-  private redirectToUnauthenticated(): UrlTree {
-    console.log('Redirecting to unauthenticated page.');
-    return this.router.createUrlTree(['/unauthenticated']);
+    return route.routeConfig?.path === 'login';
   }
 }
