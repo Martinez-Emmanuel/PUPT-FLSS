@@ -2,11 +2,23 @@
 
 <mat-sidenav-container class="sidenav-container">
   <!--Side Nav Bar (Left Side)-->
-  <mat-sidenav #drawer class="sidenav-bar" fixedInViewport [@slideInAnimation] *ngIf="showSidenav"
-    [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'" [mode]="(isHandset$ | async) ? 'push' : 'side'"
-    [opened]="(isHandset$ | async) === false">
+  @if (showSidenav) {
+
+  <mat-sidenav
+    #drawer
+    class="sidenav-bar"
+    fixedInViewport
+    [@slideInAnimation]
+    [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
+    [mode]="(isHandset$ | async) ? 'push' : 'side'"
+    [opened]="(isHandset$ | async) === false"
+  >
     <div class="side-toolbar">
-      <img src="../../../../../assets/images/pup_taguig_logo.svg" alt="PUP Taguig Logo" class="side-toolbar-img" />
+      <img
+        src="../../../../../assets/images/pup_taguig_logo.svg"
+        alt="PUP Taguig Logo"
+        class="side-toolbar-img"
+      />
       <div class="header-name">
         <div class="university-name">PUP TAGUIG</div>
         <div class="system-name">FACULTY LOADING<br />& SCHEDULING</div>
@@ -15,7 +27,12 @@
     <mat-nav-list class="navbar-list">
       <div class="group">
         <h4 class="list-subheader">Dashboard</h4>
-        <a mat-list-item class="list-item" routerLink="/superadmin/dashboard" routerLinkActive="active-link">
+        <a
+          mat-list-item
+          class="list-item"
+          routerLink="/superadmin/dashboard"
+          routerLinkActive="active-link"
+        >
           <span mat-symbol="dashboard" matListItemIcon></span>
           <span matListItemTitle>Dashboard</span>
         </a>
@@ -23,11 +40,21 @@
 
       <div class="group">
         <h4 class="list-subheader">Management</h4>
-        <a mat-list-item class="list-item" routerLink="/superadmin/admin" routerLinkActive="active-link">
+        <a
+          mat-list-item
+          class="list-item"
+          routerLink="/superadmin/admin"
+          routerLinkActive="active-link"
+        >
           <span mat-symbol="admin_panel_settings" matListItemIcon></span>
           <span matListItemTitle>Manage Admin</span>
         </a>
-        <a mat-list-item class="list-item" routerLink="/superadmin/faculty" routerLinkActive="active-link">
+        <a
+          mat-list-item
+          class="list-item"
+          routerLink="/superadmin/faculty"
+          routerLinkActive="active-link"
+        >
           <span mat-symbol="groups" matListItemIcon></span>
           <span matListItemTitle>Manage Faculty</span>
         </a>
@@ -35,11 +62,21 @@
 
       <div class="group">
         <h4 class="list-subheader">Maintenance</h4>
-        <a mat-list-item class="list-item" routerLink="/superadmin/curriculum" routerLinkActive="active-link">
+        <a
+          mat-list-item
+          class="list-item"
+          routerLink="/superadmin/curriculum"
+          routerLinkActive="active-link"
+        >
           <span mat-symbol="list_alt" matListItemIcon></span>
           <span matListItemTitle>Curriculum</span>
         </a>
-        <a mat-list-item class="list-item" routerLink="/superadmin/programs" routerLinkActive="active-link">
+        <a
+          mat-list-item
+          class="list-item"
+          routerLink="/superadmin/programs"
+          routerLinkActive="active-link"
+        >
           <span mat-symbol="school" matListItemIcon></span>
           <span matListItemTitle>Programs</span>
         </a>
@@ -54,13 +91,19 @@
           <span matListItemTitle>Courses</span>
         </a>
         -->
-        <a mat-list-item class="list-item" routerLink="/superadmin/rooms" routerLinkActive="active-link">
+        <a
+          mat-list-item
+          class="list-item"
+          routerLink="/superadmin/rooms"
+          routerLinkActive="active-link"
+        >
           <span mat-symbol="meeting_room" matListItemIcon></span>
           <span matListItemTitle>Rooms</span>
         </a>
       </div>
     </mat-nav-list>
   </mat-sidenav>
+  }
 
   <!--Side Nav Content (Right Side)-->
   <mat-sidenav-content class="sidenav-content">
@@ -69,8 +112,13 @@
       <!--Displays toggle sidenav button-->
       @if (isHandset$ | async) {
       <div class="toggle-button-container">
-        <button type="button" aria-label="Toggle sidenav" mat-icon-button (click)="drawer.toggle()"
-          class="toggle-button">
+        <button
+          type="button"
+          aria-label="Toggle sidenav"
+          mat-icon-button
+          (click)="drawer.toggle()"
+          class="toggle-button"
+        >
           <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
         </button>
       </div>
@@ -90,16 +138,24 @@
             <div class="account-role">PUPT-FLSS {{ accountRole }}</div>
           </div>
           <div class="profile-dropdown">
-            <img src="assets/images/default_superadmin_icon.png" alt="Profile Icon" class="profile-icon"
-              (click)="toggleDropdown()" matTooltip="Click to open settings" matTooltipPosition="below" />
+            <img
+              src="assets/images/default_superadmin_icon.png"
+              alt="Profile Icon"
+              class="profile-icon"
+              (click)="toggleDropdown()"
+              matTooltip="Click to open settings"
+              matTooltipPosition="below"
+            />
             @if (isDropdownOpen) {
             <div class="dropdown-menu">
               <span class="dropdown-item" (click)="toggleTheme()">
-                <span [mat-symbol]="
+                <span
+                  [mat-symbol]="
                     (themeService.isDarkTheme$ | async)
                       ? 'light_mode'
                       : 'dark_mode'
-                  "></span>
+                  "
+                ></span>
 
                 Switch Theme
               </span>
