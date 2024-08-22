@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Course;
 use App\Models\CourseRequirement;
+use App\Models\CourseAssignment; // Ensure this is included
 use Illuminate\Support\Facades\DB;
 
 class CourseController extends Controller
@@ -12,7 +13,8 @@ class CourseController extends Controller
 
     public function index()
     {
-        $courses = Course::with('requirements')->get(); // Eager load requirements
+        // Eager load assignments and requirements
+        $courses = Course::with(['assignments', 'requirements'])->get(); 
         return response()->json($courses);
     }
 
@@ -28,8 +30,9 @@ class CourseController extends Controller
                 'lec_hours' => 'required|integer',
                 'lab_hours' => 'required|integer',
                 'units' => 'required|integer',
-                'semester_id' => 'nullable|integer',
                 'tuition_hours' => 'required|integer',
+                'semester_id' => 'nullable|integer|exists:semesters,semester_id',
+                'program_id' => 'required|integer|exists:programs,program_id', // Ensure program_id is included
                 'requirements' => 'array',
                 'requirements.*.requirement_type' => 'required|in:pre,co',
                 'requirements.*.required_course_id' => 'required|integer|exists:courses,course_id',
@@ -37,6 +40,15 @@ class CourseController extends Controller
 
             // Create the course
             $course = Course::create($validatedData);
+
+            // Handle course assignments if a semester is provided
+            if (!empty($validatedData['semester_id'])) {
+                CourseAssignment::create([
+                    'program_id' => $validatedData['program_id'],
+                    'semester_id' => $validatedData['semester_id'],
+                    'course_id' => $course->course_id,
+                ]);
+            }
 
             // Handle course requirements if any
             if (isset($validatedData['requirements'])) {
@@ -75,8 +87,9 @@ class CourseController extends Controller
                 'lec_hours' => 'required|integer',
                 'lab_hours' => 'required|integer',
                 'units' => 'required|integer',
-                'semester_id' => 'nullable|integer',
                 'tuition_hours' => 'required|integer',
+                'semester_id' => 'nullable|integer|exists:semesters,semester_id',
+                'program_id' => 'required|integer|exists:programs,program_id', // Ensure program_id is included
                 'requirements' => 'array',
                 'requirements.*.requirement_type' => 'required|in:pre,co',
                 'requirements.*.required_course_id' => 'required|integer|exists:courses,course_id',
@@ -84,6 +97,19 @@ class CourseController extends Controller
     
             // Update the course
             $course->update($validatedData);
+
+            // Handle course assignments
+            if (!empty($validatedData['semester_id'])) {
+                // Delete existing assignment
+                CourseAssignment::where('course_id', $course->course_id)->delete();
+
+                // Add new assignment
+                CourseAssignment::create([
+                    'program_id' => $validatedData['program_id'],
+                    'semester_id' => $validatedData['semester_id'],
+                    'course_id' => $course->course_id,
+                ]);
+            }
     
             // Handle course requirements
             if (isset($validatedData['requirements'])) {
@@ -112,8 +138,6 @@ class CourseController extends Controller
             return response()->json(['message' => 'Failed to update course', 'error' => $e->getMessage()], 500);
         }
     }
-    
-    
 
     public function deleteCourse($id)
     {
@@ -121,6 +145,9 @@ class CourseController extends Controller
 
         try {
             $course = Course::findOrFail($id);
+
+            // Delete associated course assignments
+            CourseAssignment::where('course_id', $course->course_id)->delete();
 
             // Delete associated course requirements
             CourseRequirement::where('course_id', $course->course_id)->delete();
