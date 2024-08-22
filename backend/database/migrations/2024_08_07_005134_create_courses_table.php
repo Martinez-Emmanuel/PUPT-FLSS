@@ -10,7 +10,6 @@ class CreateCoursesTable extends Migration
     {
         Schema::create('courses', function (Blueprint $table) {
             $table->increments('course_id');
-            $table->unsignedInteger('semester_id')->nullable(); 
             $table->string('course_code', 10);
             $table->string('course_title', 100);
             $table->integer('lec_hours');
@@ -18,11 +17,6 @@ class CreateCoursesTable extends Migration
             $table->integer('units');
             $table->integer('tuition_hours');
             $table->timestamps();
-
-            $table->foreign('semester_id')
-                  ->references('semester_id')
-                  ->on('semesters')
-                  ->onDelete('set null');
         });
     }
 
@@ -31,4 +25,3 @@ class CreateCoursesTable extends Migration
         Schema::dropIfExists('courses');
     }
 }
-
