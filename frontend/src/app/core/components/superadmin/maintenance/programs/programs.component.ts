@@ -26,7 +26,7 @@ import { Program, ProgramsService } from '../../../../services/superadmin/progra
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProgramsComponent implements OnInit {
-  programStatuses = ['Active', 'Inactive'];
+  programStatuses = ['active', 'inactive'];
   programYears = [1, 2, 3, 4, 5];
   isEdit = false;
   selectedProgramIndex: number | null = null;
@@ -37,7 +37,7 @@ export class ProgramsComponent implements OnInit {
     { key: 'program_code', label: 'Program Code' },
     { key: 'program_title', label: 'Program Title' },
     { key: 'program_info', label: 'Program Info' },
-    { key: 'program_status', label: 'Status' },
+    { key: 'status', label: 'Status' },
     { key: 'number_of_years', label: 'Years' },
   ];
 
@@ -46,7 +46,7 @@ export class ProgramsComponent implements OnInit {
     'program_code',
     'program_title',
     'program_info',
-    'program_status',
+    'status',
     'number_of_years',
   ];
 
@@ -72,6 +72,7 @@ export class ProgramsComponent implements OnInit {
   fetchPrograms() {
     this.programService.getPrograms().subscribe((programs) => {
       this.programs = programs;
+      console.log(this.programs);
       this.cdr.markForCheck();
     });
   }
@@ -133,7 +134,7 @@ export class ProgramsComponent implements OnInit {
         },
         {
           label: 'Program Status',
-          formControlName: 'program_status',
+          formControlName: 'status',
           type: 'select',
           options: this.programStatuses,
           required: true,
@@ -147,7 +148,7 @@ export class ProgramsComponent implements OnInit {
         },
       ],
       initialValue: program || {
-        program_status: 'Active',
+        status: 'Active',
         number_of_years: '4',
       },
     };
@@ -162,12 +163,13 @@ export class ProgramsComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.programService.addProgram(result).subscribe((programs) => {
-          this.programs = programs;
+        this.programService.addProgram(result).subscribe((newProgram) => {
+          this.programs.push(newProgram);
           this.snackBar.open('Program added successfully', 'Close', {
             duration: 3000,
           });
           this.cdr.markForCheck();
+          this.fetchPrograms();
         });
       }
     });
@@ -191,19 +193,16 @@ export class ProgramsComponent implements OnInit {
 
   updateProgram(updatedProgram: any) {
     if (this.selectedProgramIndex !== null) {
-      this.programs[this.selectedProgramIndex] = {
-        ...this.programs[this.selectedProgramIndex],
-        ...updatedProgram,
-      };
-
+      const selectedProgram = this.programs[this.selectedProgramIndex];
       this.programService
-        .updateProgram(this.selectedProgramIndex, updatedProgram)
-        .subscribe((programs) => {
-          this.programs = programs;
+        .updateProgram(selectedProgram.program_id, updatedProgram)
+        .subscribe((program) => {
+          this.programs[this.selectedProgramIndex!] = program;  // Use non-null assertion operator
           this.snackBar.open('Program updated successfully', 'Close', {
             duration: 3000,
           });
           this.cdr.markForCheck();
+          this.fetchPrograms();
         });
     }
   }
@@ -211,12 +210,13 @@ export class ProgramsComponent implements OnInit {
   deleteProgram(program: Program) {
     const index = this.programs.indexOf(program);
     if (index >= 0) {
-      this.programService.deleteProgram(index).subscribe((programs) => {
-        this.programs = programs;
+      this.programService.deleteProgram(program.program_id).subscribe(() => {
+        this.programs.splice(index, 1);
         this.snackBar.open('Program deleted successfully', 'Close', {
           duration: 3000,
         });
         this.cdr.markForCheck();
+        this.fetchPrograms();
       });
     }
   }
