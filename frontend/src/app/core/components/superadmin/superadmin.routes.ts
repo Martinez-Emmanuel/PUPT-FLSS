@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { ActivatedRouteSnapshot } from '@angular/router';
 
 export const SUPERADMIN_ROUTES: Routes = [
   {
@@ -7,11 +6,7 @@ export const SUPERADMIN_ROUTES: Routes = [
     loadComponent: () =>
       import('./main/main.component').then((m) => m.MainComponent),
     children: [
-      {
-        path: '',
-        redirectTo: 'dashboard',
-        pathMatch: 'full',
-      },
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       {
         path: 'dashboard',
         loadComponent: () =>
@@ -26,7 +21,7 @@ export const SUPERADMIN_ROUTES: Routes = [
           import('./management/admin/admin.component').then(
             (m) => m.AdminComponent
           ),
-          data: { pageTitle: 'Manage Admin' }
+        data: { pageTitle: 'Manage Admin' },
       },
       {
         path: 'faculty',
@@ -34,7 +29,7 @@ export const SUPERADMIN_ROUTES: Routes = [
           import('./management/faculty/faculty.component').then(
             (m) => m.FacultyComponent
           ),
-          data: { pageTitle: 'Manage Faculty' }
+        data: { pageTitle: 'Manage Faculty' },
       },
       {
         path: 'programs',
@@ -63,13 +58,15 @@ export const SUPERADMIN_ROUTES: Routes = [
       {
         path: 'curriculum/:year',
         loadComponent: () =>
-          import('./maintenance/curriculum/curriculum-detail/curriculum-detail.component').then(
-            (m) => m.CurriculumDetailComponent
-          ),
+          import(
+            './maintenance/curriculum/curriculum-detail/curriculum-detail.component'
+          ).then((m) => m.CurriculumDetailComponent),
         data: { pageTitle: 'Curriculum' },
         resolve: {
-          curriculumYear: (route: ActivatedRouteSnapshot) => route.paramMap.get('year')
-        }
+          curriculumYear: (route: {
+            paramMap: { get: (arg0: string) => any };
+          }) => route.paramMap.get('year'),
+        },
       },
       {
         path: 'rooms',
@@ -79,10 +76,7 @@ export const SUPERADMIN_ROUTES: Routes = [
           ),
         data: { pageTitle: 'Rooms' },
       },
-      {
-        path: '**',
-        redirectTo: 'dashboard',
-      },
+      { path: '**', redirectTo: 'dashboard' },
     ],
   },
 ];
