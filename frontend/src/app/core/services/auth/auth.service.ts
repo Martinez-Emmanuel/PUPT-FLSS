@@ -8,7 +8,7 @@ import { environment } from '../../../../environments/environment.dev';
   providedIn: 'root',
 })
 export class AuthService {
-  private apiUrl = environment.apiUrl;
+  private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient, private cookieService: CookieService) {}
 
@@ -17,7 +17,7 @@ export class AuthService {
       code: code,
       password: password,
     };
-    return this.http.post(`${this.apiUrl}/login`, loginData);
+    return this.http.post(`${this.baseUrl}/login`, loginData);
   }
 
   logout(): Observable<any> {
@@ -26,7 +26,7 @@ export class AuthService {
       Authorization: `Bearer ${token}`,
     });
 
-    return this.http.post(`${this.apiUrl}/logout`, {}, { headers });
+    return this.http.post(`${this.baseUrl}/logout`, {}, { headers });
   }
 
   setToken(token: string, expiresAt: string): void {
