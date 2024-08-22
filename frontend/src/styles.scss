@@ -120,3 +120,7 @@ body {
 .mdc-list-item__primary-text {
   font-family: var(--font-base) !important;
 }
+
+[mat-flat-button] {
+  color: white !important;
+}

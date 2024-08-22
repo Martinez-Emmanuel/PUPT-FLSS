@@ -81,9 +81,15 @@ export class MainComponent implements OnInit {
       });
 
     this.setPageTitle();
+    
+    const userRole = this.cookieService.get('user_role');
 
     this.accountName = this.cookieService.get('user_name');
-    this.accountRole = this.cookieService.get('user_role');
+    this.accountRole = this.toTitleCase(userRole);
+  }
+
+  private toTitleCase(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
   private setPageTitle(): void {
