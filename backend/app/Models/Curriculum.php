@@ -9,7 +9,6 @@ class Curriculum extends Model
 {
     use HasFactory;
 
-    // Use default primary key 'id' or specify if different
     // protected $primaryKey = 'curriculum_id';
 
     // Fillable attributes for mass assignment
@@ -21,6 +20,6 @@ class Curriculum extends Model
     // Define the relationship to the Program model
     public function programs()
     {
-        return $this->hasMany(Program::class);
+        return $this->belongsToMany(Program::class, 'curricula_program', 'curriculum_id', 'program_id');
     }
 }
