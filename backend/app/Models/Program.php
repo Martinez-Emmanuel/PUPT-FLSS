@@ -34,4 +34,8 @@ class Program extends Model
     {
         return $this->hasMany(CourseAssignment::class, 'program_id', 'program_id');
     }
+    public function curricula()
+    {
+        return $this->belongsToMany(Curriculum::class, 'curricula_program', 'program_id', 'curriculum_id');
+    }
 }
