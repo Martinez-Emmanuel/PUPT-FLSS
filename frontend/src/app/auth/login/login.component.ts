@@ -3,8 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
-import { interval, Observable, Subscription, timer } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Subject, Observable, takeUntil } from 'rxjs';
 
 import { MatIcon } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -35,6 +34,8 @@ import { RoleService } from '../../core/services/role/role.service';
   providers: [AuthService],
 })
 export class LoginComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+
   readonly backgroundImages = [
     'assets/images/pup_img_2.jpg',
     'assets/images/pup_img_4.jpg',
@@ -45,13 +46,12 @@ export class LoginComponent implements OnInit, OnDestroy {
     (img) => `assets/images/slideshow/${img.split('/').pop()}`
   );
 
-  currentIndex = 0;
+  currentBackgroundImage: string;
+
   isDarkTheme$: Observable<boolean>;
   isLoading = false;
-  loginForm: FormGroup;
+  loginForm!: FormGroup;
   errorMessage = '';
-
-  private slideInterval: Subscription | null = null;
 
   constructor(
     private renderer: Renderer2,
@@ -64,6 +64,21 @@ export class LoginComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar
   ) {
     this.isDarkTheme$ = this.themeService.isDarkTheme$;
+    this.currentBackgroundImage = `url(${this.backgroundImages[0]})`;
+    this.initForm();
+  }
+
+  ngOnInit(): void {
+    this.updateBackgroundImage(0);
+    this.isDarkTheme$.pipe(takeUntil(this.destroy$)).subscribe();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private initForm(): void {
     this.loginForm = this.formBuilder.group({
       code: [
         '',
@@ -84,40 +99,23 @@ export class LoginComponent implements OnInit, OnDestroy {
     });
   }
 
-  ngOnInit() {
-    this.startSlideshow();
-  }
-
-  ngOnDestroy() {
-    this.slideInterval?.unsubscribe();
-  }
-
-  toggleTheme() {
+  toggleTheme(): void {
     this.themeService.toggleTheme();
   }
 
-  startSlideshow() {
-    this.slideInterval = interval(5000)
-      .pipe(takeUntil(this.loginForm.statusChanges))
-      .subscribe(() => {
-        this.currentIndex =
-          (this.currentIndex + 1) % this.backgroundImages.length;
-        this.updateBackgroundImage();
-      });
+  onSlideChange(index: number): void {
+    this.updateBackgroundImage(index);
   }
 
-  getBackgroundImage(): string {
-    return `url(${this.backgroundImages[this.currentIndex]})`;
-  }
-
-  updateBackgroundImage() {
+  private updateBackgroundImage(index: number): void {
+    this.currentBackgroundImage = `url(${this.backgroundImages[index]})`;
     const loginContainer =
       this.elementRef.nativeElement.querySelector('.login-container');
     if (loginContainer) {
       this.renderer.setStyle(
         loginContainer,
         'background-image',
-        this.getBackgroundImage()
+        this.currentBackgroundImage
       );
     }
   }
@@ -130,7 +128,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     return this.loginForm.get('password');
   }
 
-  onSubmit() {
+  onSubmit(): void {
     if (this.loginForm.valid) {
       this.isLoading = true;
       const { code, password } = this.loginForm.value;
@@ -142,7 +140,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
   }
 
-  private handleLoginSuccess(response: any) {
+  private handleLoginSuccess(response: any): void {
     console.log('Login successful', response);
     this.authService.setToken(response.token, response.expires_at);
     this.authService.setUserInfo(response.user, response.expires_at);
@@ -154,33 +152,30 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.router.navigateByUrl(redirectUrl, { replaceUrl: true });
   }
 
-  private handleLoginError(error: any) {
+  private handleLoginError(error: any): void {
     console.error('Login failed', error);
-    let errorMessage: string;
-
-    if (error.status === 401) {
-      if (error.error.message === 'Invalid Credentials') {
-        errorMessage = 'Invalid username or password. Please try again.';
-      } else {
-        errorMessage = 'Unauthorized access. Please check your credentials.';
-      }
-    } else if (error.status === 403) {
-      errorMessage =
-        'Access forbidden. You may not have the necessary permissions.';
-    } else if (error.status === 404) {
-      errorMessage = 'User not found. Please check your username.';
-    } else if (error.status === 0) {
-      errorMessage =
-        'Unable to connect to the server. Please check your internet connection.';
-    } else {
-      errorMessage = 'An unexpected error occurred. Please try again later.';
-    }
-
+    const errorMessage = this.getErrorMessage(error);
     this.showErrorSnackbar(errorMessage);
     this.isLoading = false;
   }
 
-  showErrorSnackbar(message: string) {
+  private getErrorMessage(error: any): string {
+    if (error.status === 401) {
+      return error.error.message === 'Invalid Credentials'
+        ? 'Invalid username or password. Please try again.'
+        : 'Unauthorized access. Please check your credentials.';
+    } else if (error.status === 403) {
+      return 'Access forbidden. You may not have the necessary permissions.';
+    } else if (error.status === 404) {
+      return 'User not found. Please check your username.';
+    } else if (error.status === 0) {
+      return 'Unable to connect to the server. Please check your internet connection.';
+    } else {
+      return 'An unexpected error occurred. Please try again later.';
+    }
+  }
+
+  private showErrorSnackbar(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 3000,
       horizontalPosition: 'center',
@@ -188,7 +183,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     });
   }
 
-  onAutoLogout() {
+  onAutoLogout(): void {
     if (this.authService.getToken()) {
       this.authService.logout().subscribe({
         next: () =>
@@ -201,14 +196,14 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
   }
 
-  onLogout() {
+  onLogout(): void {
     this.authService.logout().subscribe({
       next: () => this.handleLogoutSuccess(),
       error: (error) => console.error('Logout failed', error),
     });
   }
 
-  private handleLogoutSuccess(message?: string) {
+  private handleLogoutSuccess(message?: string): void {
     this.authService.clearCookies();
     if (message) {
       alert(message);
