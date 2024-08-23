@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -8,33 +8,16 @@ import { CommonModule } from '@angular/common';
   standalone: true,
   imports: [CommonModule],
 })
-export class SlideshowComponent implements OnInit, OnDestroy {
+export class SlideshowComponent implements OnChanges {
   @Input() images: string[] = [];
+  @Input() currentIndex = 0;
 
-  currentIndex = 0;
-  private intervalId: any;
-
-  ngOnInit() {
-    this.startSlideshow();
-  }
-
-  ngOnDestroy() {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['currentIndex']) {
     }
-  }
-
-  startSlideshow() {
-    this.intervalId = setInterval(() => {
-      this.currentIndex = (this.currentIndex + 1) % this.images.length;
-    }, 5000);
   }
 
   goToSlide(index: number) {
     this.currentIndex = index;
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-      this.startSlideshow(); // Restart the slideshow timer when manually navigating
-    }
   }
 }

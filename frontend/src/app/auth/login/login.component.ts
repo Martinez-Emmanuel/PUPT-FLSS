@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
-import { Observable, Subscription, timer } from 'rxjs';
+import { interval, Observable, Subscription, timer } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { MatIcon } from '@angular/material/icon';
@@ -45,13 +45,13 @@ export class LoginComponent implements OnInit, OnDestroy {
     (img) => `assets/images/slideshow/${img.split('/').pop()}`
   );
 
-  currentBackgroundIndex = 0;
+  currentIndex = 0;
   isDarkTheme$: Observable<boolean>;
   isLoading = false;
   loginForm: FormGroup;
   errorMessage = '';
 
-  private backgroundInterval: Subscription | null = null;
+  private slideInterval: Subscription | null = null;
 
   constructor(
     private renderer: Renderer2,
@@ -85,29 +85,29 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.startBackgroundSlideshow();
+    this.startSlideshow();
   }
 
   ngOnDestroy() {
-    this.backgroundInterval?.unsubscribe();
+    this.slideInterval?.unsubscribe();
   }
 
   toggleTheme() {
     this.themeService.toggleTheme();
   }
 
-  startBackgroundSlideshow() {
-    this.backgroundInterval = timer(0, 5000)
+  startSlideshow() {
+    this.slideInterval = interval(5000)
       .pipe(takeUntil(this.loginForm.statusChanges))
       .subscribe(() => {
-        this.currentBackgroundIndex =
-          (this.currentBackgroundIndex + 1) % this.backgroundImages.length;
+        this.currentIndex =
+          (this.currentIndex + 1) % this.backgroundImages.length;
         this.updateBackgroundImage();
       });
   }
 
   getBackgroundImage(): string {
-    return `url(${this.backgroundImages[this.currentBackgroundIndex]})`;
+    return `url(${this.backgroundImages[this.currentIndex]})`;
   }
 
   updateBackgroundImage() {
@@ -165,11 +165,13 @@ export class LoginComponent implements OnInit, OnDestroy {
         errorMessage = 'Unauthorized access. Please check your credentials.';
       }
     } else if (error.status === 403) {
-      errorMessage = 'Access forbidden. You may not have the necessary permissions.';
+      errorMessage =
+        'Access forbidden. You may not have the necessary permissions.';
     } else if (error.status === 404) {
       errorMessage = 'User not found. Please check your username.';
     } else if (error.status === 0) {
-      errorMessage = 'Unable to connect to the server. Please check your internet connection.';
+      errorMessage =
+        'Unable to connect to the server. Please check your internet connection.';
     } else {
       errorMessage = 'An unexpected error occurred. Please try again later.';
     }
@@ -213,5 +215,4 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
     this.router.navigate(['/login']);
   }
-  
 }
