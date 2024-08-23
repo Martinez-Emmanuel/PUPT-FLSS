@@ -1,26 +1,21 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  Renderer2,
-  ElementRef,
-} from '@angular/core';
-import {
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { Component, OnInit, OnDestroy, Renderer2, ElementRef } from '@angular/core';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Observable } from 'rxjs';
 import { Router } from '@angular/router';
 
+import { Subject, Observable, takeUntil } from 'rxjs';
+
+import { MatIcon } from '@angular/material/icon';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatButton } from '@angular/material/button';
+import { MatProgressSpinner } from '@angular/material/progress-spinner';
+
 import { SlideshowComponent } from '../../shared/slideshow/slideshow.component';
-import { MaterialComponents } from '../../core/imports/material.component';
+import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
+
 import { ThemeService } from '../../core/services/theme/theme.service';
 import { AuthService } from '../../core/services/auth/auth.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
+import { RoleService } from '../../core/services/role/role.service';
 
 @Component({
   selector: 'app-login',
@@ -32,30 +27,31 @@ import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
     SlideshowComponent,
     ReactiveFormsModule,
     MatSymbolDirective,
-    MaterialComponents,
-    ReactiveFormsModule
+    MatIcon,
+    MatButton,
+    MatProgressSpinner,
   ],
-
   providers: [AuthService],
 })
 export class LoginComponent implements OnInit, OnDestroy {
-  backgroundImages: string[] = [
+  private destroy$ = new Subject<void>();
+
+  readonly backgroundImages = [
     'assets/images/pup_img_2.jpg',
     'assets/images/pup_img_4.jpg',
     'assets/images/pup_img_5.jpg',
   ];
 
-  slideshowImages: string[] = [
-    'assets/images/slideshow/pup_img_2.jpg',
-    'assets/images/slideshow/pup_img_4.jpg',
-    'assets/images/slideshow/pup_img_5.jpg',
-  ];
+  readonly slideshowImages = this.backgroundImages.map(
+    (img) => `assets/images/slideshow/${img.split('/').pop()}`
+  );
 
-  private intervalId: any;
-  currentBackgroundIndex = 0;
+  currentBackgroundImage: string;
+
   isDarkTheme$: Observable<boolean>;
   isLoading = false;
-  loginForm: FormGroup;
+  loginForm!: FormGroup;
+  errorMessage = '';
 
   constructor(
     private renderer: Renderer2,
@@ -63,10 +59,26 @@ export class LoginComponent implements OnInit, OnDestroy {
     private themeService: ThemeService,
     private formBuilder: FormBuilder,
     private authService: AuthService,
+    private roleService: RoleService,
     private router: Router,
     private snackBar: MatSnackBar
   ) {
     this.isDarkTheme$ = this.themeService.isDarkTheme$;
+    this.currentBackgroundImage = `url(${this.backgroundImages[0]})`;
+    this.initForm();
+  }
+
+  ngOnInit(): void {
+    this.updateBackgroundImage(0);
+    this.isDarkTheme$.pipe(takeUntil(this.destroy$)).subscribe();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  private initForm(): void {
     this.loginForm = this.formBuilder.group({
       code: [
         '',
@@ -87,43 +99,23 @@ export class LoginComponent implements OnInit, OnDestroy {
     });
   }
 
-  errorMessage: string = '';
-
-  ngOnInit() {
-    this.startBackgroundSlideshow();
-  }
-
-  ngOnDestroy() {
-    if (this.intervalId) {
-      clearInterval(this.intervalId);
-    }
-  }
-
-  toggleTheme() {
+  toggleTheme(): void {
     this.themeService.toggleTheme();
   }
 
-  startBackgroundSlideshow() {
-    this.intervalId = setInterval(() => {
-      this.currentBackgroundIndex =
-        (this.currentBackgroundIndex + 1) % this.backgroundImages.length;
-      this.updateBackgroundImage();
-    }, 5000);
+  onSlideChange(index: number): void {
+    this.updateBackgroundImage(index);
   }
 
-  getBackgroundImage(): string {
-    return `url(${this.backgroundImages[this.currentBackgroundIndex]})`;
-  }
-
-  updateBackgroundImage() {
-    const backgroundImage = this.getBackgroundImage();
+  private updateBackgroundImage(index: number): void {
+    this.currentBackgroundImage = `url(${this.backgroundImages[index]})`;
     const loginContainer =
       this.elementRef.nativeElement.querySelector('.login-container');
     if (loginContainer) {
       this.renderer.setStyle(
         loginContainer,
         'background-image',
-        backgroundImage
+        this.currentBackgroundImage
       );
     }
   }
@@ -131,63 +123,59 @@ export class LoginComponent implements OnInit, OnDestroy {
   get code() {
     return this.loginForm.get('code');
   }
+
   get password() {
     return this.loginForm.get('password');
   }
 
-  onSubmit() {
+  onSubmit(): void {
     if (this.loginForm.valid) {
       this.isLoading = true;
-      this.authService
-        .login(this.loginForm.value.code, this.loginForm.value.password)
-        .subscribe(
-          (response) => {
-            console.log('Login successful', response);
-  
-            // Save the token and user data in cookies
-            this.authService.setToken(response.token, response.expires_at);
-            this.authService.setUserInfo(response.user, response.expires_at);
-  
-            const expirationTime = new Date(response.expires_at).getTime() - new Date().getTime();
-            setTimeout(() => {
-              this.onAutoLogout();
-            }, expirationTime);
-  
-            // Role-based redirection
-            const role = response.user.role;
-            let redirectUrl = '/dashboard'; // Default to a general dashboard
-  
-            if (role === 'faculty') {
-              redirectUrl = '/faculty';
-            } else if (role === 'admin') {
-              redirectUrl = '/admin';
-            } else if (role === 'superadmin') {
-              redirectUrl = '/superadmin';
-            }
-  
-            // Replace the current history state with the dashboard
-            this.router.navigateByUrl(redirectUrl, { replaceUrl: true });
-  
-            this.isLoading = false;
-  
-          },
-          (error) => {
-            console.error('Login failed', error);
-            this.isLoading = false;
-  
-            if (error.status === 401 && error.error.message === 'Invalid Credentials') {
-              this.errorMessage = 'Invalid username or password. Please try again.';
-            } else {
-              this.errorMessage = 'An error occurred during login. Please try again later.';
-            }
-            console.log(this.errorMessage);
-          }
-        );
+      const { code, password } = this.loginForm.value;
+      this.authService.login(code, password).subscribe({
+        next: (response) => this.handleLoginSuccess(response),
+        error: (error) => this.handleLoginError(error),
+        complete: () => (this.isLoading = false),
+      });
     }
   }
-  
 
-  showErrorSnackbar(message: string) {
+  private handleLoginSuccess(response: any): void {
+    console.log('Login successful', response);
+    this.authService.setToken(response.token, response.expires_at);
+    this.authService.setUserInfo(response.user, response.expires_at);
+
+    const expirationTime = new Date(response.expires_at).getTime() - Date.now();
+    setTimeout(() => this.onAutoLogout(), expirationTime);
+
+    const redirectUrl = this.roleService.getHomeUrlForRole(response.user.role);
+    this.router.navigateByUrl(redirectUrl, { replaceUrl: true });
+  }
+
+  private handleLoginError(error: any): void {
+    console.error('Login failed', error);
+    const errorMessage = this.getErrorMessage(error);
+    this.showErrorSnackbar(errorMessage);
+    this.isLoading = false;
+  }
+
+  private getErrorMessage(error: any): string {
+    if (error.status === 401) {
+      return error.error.message === 'Invalid Credentials'
+        ? 'Invalid username or password. Please try again.'
+        : 'Unauthorized access. Please check your credentials.';
+    } else if (error.status === 403) {
+      return 'Access forbidden. You may not have the necessary permissions.';
+    } else if (error.status === 404) {
+      return 'User not found. Please check your username.';
+    } else if (error.status === 0) {
+      return 'Unable to connect to the server. Please check your internet connection.';
+    } else {
+      return 'An unexpected error occurred. Please try again later.';
+    }
+  }
+
+  private showErrorSnackbar(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 3000,
       horizontalPosition: 'center',
@@ -195,47 +183,31 @@ export class LoginComponent implements OnInit, OnDestroy {
     });
   }
 
-  onAutoLogout() {
-    // Check if the token is present
+  onAutoLogout(): void {
     if (this.authService.getToken()) {
-      this.authService.logout().subscribe(
-        (response) => {
-          console.log('Logout successful', response);
-          this.authService.clearCookies();
-
-          // Show alert message
-          alert('Session expired. Please log in again.');
-          this.router.navigate(['/login']); // Redirect to login page
-        },
-        (error) => {
-          console.error('Logout failed', error);
-          // Clear cookies and show alert message even if logout request fails
-          this.authService.clearCookies();
-          alert('Session expired. Please log in again.');
-          this.router.navigate(['/login']); // Redirect to login page
-        }
-      );
+      this.authService.logout().subscribe({
+        next: () =>
+          this.handleLogoutSuccess('Session expired. Please log in again.'),
+        error: () =>
+          this.handleLogoutSuccess('Session expired. Please log in again.'),
+      });
     } else {
-      // If no token is present, clear cookies and show alert message
-      this.authService.clearCookies();
-      alert('Session expired. Please log in again.');
-      this.router.navigate(['/login']); // Redirect to login page
+      this.handleLogoutSuccess('Session expired. Please log in again.');
     }
   }
 
-  onLogout() {
-    this.authService.logout().subscribe(
-      (response) => {
-        console.log('Logout successful', response);
-        this.authService.clearCookies();
+  onLogout(): void {
+    this.authService.logout().subscribe({
+      next: () => this.handleLogoutSuccess(),
+      error: (error) => console.error('Logout failed', error),
+    });
+  }
 
-        // Redirect to login page
-        this.router.navigate(['/login']);
-      },
-      (error) => {
-        console.error('Logout failed', error);
-        // Handle logout error (e.g., show an error message)
-      }
-    );
+  private handleLogoutSuccess(message?: string): void {
+    this.authService.clearCookies();
+    if (message) {
+      alert(message);
+    }
+    this.router.navigate(['/login']);
   }
 }

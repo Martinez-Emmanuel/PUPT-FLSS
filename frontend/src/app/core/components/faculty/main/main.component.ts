@@ -1,21 +1,26 @@
 import { Component, AfterViewInit, ElementRef, Renderer2, OnDestroy, NgZone } from '@angular/core';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
-import { filter, takeUntil } from 'rxjs/operators';
-import { Subject, fromEvent } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { MaterialComponents } from '../../../imports/material.component';
-import { ThemeService } from '../../../services/theme/theme.service';
-import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
-import { AuthService } from '../../../services/auth/auth.service';
+
 import { MatDialog } from '@angular/material/dialog';
+
+import { Subject, fromEvent } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
+
+import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
+
+import { ThemeService } from '../../../services/theme/theme.service';
+import { AuthService } from '../../../services/auth/auth.service';
 import { CookieService } from 'ngx-cookie-service';
+
+
 @Component({
   selector: 'app-main',
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
   standalone: true,
-  imports: [RouterModule, CommonModule, MatSymbolDirective, MaterialComponents],
+  imports: [RouterModule, CommonModule, MatSymbolDirective],
 })
 export class MainComponent implements AfterViewInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -170,7 +175,4 @@ export class MainComponent implements AfterViewInit, OnDestroy {
       }
     });
   }
-  
-  
-  
 }

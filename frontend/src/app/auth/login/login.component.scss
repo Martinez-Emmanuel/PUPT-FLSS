@@ -211,7 +211,7 @@
       }
 
       a {
-        color: var(--primary-one);
+        color: var(--primary-text);
         text-decoration: none;
       }
     }
@@ -222,10 +222,10 @@
       justify-content: flex-end;
 
       #switch_theme {
-        color: var(--primary-one);
+        color: var(--primary-text);
 
         span {
-          color: var(--primary-one);
+          color: var(--primary-text);
         }
       }
     }
@@ -247,7 +247,7 @@
     }
 
     span {
-      color: var(--error-base);
+      color: var(--primary-text);
       font-weight: 500;
     }
 

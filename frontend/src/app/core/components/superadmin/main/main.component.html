@@ -1,10 +1,14 @@
 <!--Page Container-->
+
 <mat-sidenav-container class="sidenav-container">
   <!--Side Nav Bar (Left Side)-->
+  @if (showSidenav) {
+
   <mat-sidenav
     #drawer
     class="sidenav-bar"
     fixedInViewport
+    [@slideInAnimation]
     [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
     [mode]="(isHandset$ | async) ? 'push' : 'side'"
     [opened]="(isHandset$ | async) === false"
@@ -36,8 +40,8 @@
 
       <div class="group">
         <h4 class="list-subheader">Management</h4>
-        <a 
-          mat-list-item 
+        <a
+          mat-list-item
           class="list-item"
           routerLink="/superadmin/admin"
           routerLinkActive="active-link"
@@ -45,8 +49,8 @@
           <span mat-symbol="admin_panel_settings" matListItemIcon></span>
           <span matListItemTitle>Manage Admin</span>
         </a>
-        <a 
-          mat-list-item 
+        <a
+          mat-list-item
           class="list-item"
           routerLink="/superadmin/faculty"
           routerLinkActive="active-link"
@@ -99,6 +103,7 @@
       </div>
     </mat-nav-list>
   </mat-sidenav>
+  }
 
   <!--Side Nav Content (Right Side)-->
   <mat-sidenav-content class="sidenav-content">
@@ -126,12 +131,12 @@
           <h2 class="page-title">{{ pageTitle }}</h2>
         </div>
 
-          <!-- Admin Account -->
-          <div class="header-account">
-            <div class="account-text">
-              <div class="account-name">{{ accountName }}</div>
-              <div class="account-role">PUPT-FLSS {{ accountRole }}</div>
-            </div>
+        <!-- Admin Account -->
+        <div class="header-account">
+          <div class="account-text">
+            <div class="account-name">{{ accountName }}</div>
+            <div class="account-role">PUPT-FLSS {{ accountRole }}</div>
+          </div>
           <div class="profile-dropdown">
             <img
               src="assets/images/default_superadmin_icon.png"

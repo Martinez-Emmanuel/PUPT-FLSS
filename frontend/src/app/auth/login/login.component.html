@@ -1,6 +1,11 @@
-<div class="login-container" [style.background-image]="getBackgroundImage()">
+<div class="login-container" [style.background-image]="currentBackgroundImage">
   <div class="login-image-section">
-    <app-slideshow [images]="slideshowImages"></app-slideshow>
+    <app-slideshow
+      [images]="slideshowImages"
+      [interval]="5000"
+      (slideChange)="onSlideChange($event)"
+    >
+    </app-slideshow>
   </div>
   <div class="login-form-section">
     <!-- Login Header -->
@@ -23,7 +28,7 @@
       <!-- Form Header -->
       <div id="form_header">
         <h1>Log In</h1>
-        <p>Enter your code and password to start your session.</p>
+        <p>Enter your account code and password to start your session.</p>
       </div>
 
       <!-- Form Fields -->
@@ -33,7 +38,7 @@
             <span mat-symbol="person" class="input-icon"></span>
             <input
               type="text"
-              placeholder="Code"
+              placeholder="Account Code"
               class="login-input"
               id="code"
               formControlName="code"
@@ -42,18 +47,16 @@
               maxlength="12"
             />
           </div>
-          @if (code && code.invalid && (code.dirty ||
-          code.touched)) {
+          @if (code && code.invalid && (code.dirty || code.touched)) {
           <div
             class="error-message slide-down"
             [ngClass]="{ show: code.invalid }"
           >
             <span mat-symbol="error"></span>
             @if (code.errors?.['required']) {
-            <span>Code is required.</span>
-            } @if (code.errors?.['minlength'] ||
-            code.errors?.['maxlength']) {
-            <span>Code must be exactly 12 characters.</span>
+            <span>Account Code is required.</span>
+            } @if (code.errors?.['minlength'] || code.errors?.['maxlength']) {
+            <span>Account Code must be exactly 12 characters.</span>
             }
           </div>
           }
@@ -80,7 +83,7 @@
             class="error-message slide-down"
             [ngClass]="{ show: password.invalid }"
           >
-          <span mat-symbol="error"></span>
+            <span mat-symbol="error"></span>
             @if (password.errors?.['required']) {
             <span>Password is required.</span>
             } @if (password.errors?.['minlength']) {

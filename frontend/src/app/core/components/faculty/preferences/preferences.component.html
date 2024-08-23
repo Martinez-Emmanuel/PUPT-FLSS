@@ -1,4 +1,4 @@
-<div class="faculty-preferences-container">
+<div class="faculty-preferences-container" [@fadeAnimation]>
   <!--Preferences first row-->
   <div class="preferences-row-one">
     <!--Preferences title-->
@@ -45,22 +45,26 @@
           }
           <!-- Display subjects when loaded -->
           @if (!loading) {
-          <!-- Ensure the properties match the Course interface -->
-          @for (subject of subjects; track subject.subject_code) {
-          <div class="subject-card">
-            <div class="subject-info">
-              <span class="subject-code">{{ subject.subject_code }}</span>
-              <span class="subject-title">{{ subject.subject_title }}</span>
+          <div [@cardEntranceAnimation]="subjects.length">
+            <!-- Ensure the properties match the Course interface -->
+            @for (subject of subjects; track subject.subject_code) {
+            <div class="subject-card">
+              <div class="subject-info">
+                <span class="subject-code">{{ subject.subject_code }}</span>
+                <span class="subject-title">{{ subject.subject_title }}</span>
+              </div>
+              <button
+                mat-icon-button
+                class="add-button"
+                (click)="addSubjectToTable(subject)"
+              >
+                <span mat-symbol="add" variant="outlined" size="20px"></span>
+              </button>
             </div>
-            <button
-              mat-icon-button
-              class="add-button"
-              (click)="addSubjectToTable(subject)"
-            >
-              <span mat-symbol="add" variant="outlined" size="20px"></span>
-            </button>
+
+            }
           </div>
-          } }
+          }
         </div>
       </div>
     </div>
