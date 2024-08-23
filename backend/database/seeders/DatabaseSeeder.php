@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             CoursesTableSeeder::class,
             CourseReqTableSeeder::class,
             CourseAssignmentSeeder::class,
+            CurriculaProgramsTableSeeder::class,
         ]);
     }
 }
