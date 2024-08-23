@@ -114,7 +114,8 @@
       gap: var(--spacing-xs);
 
       h1 {
-        color: var(--primary-one);
+        @include gradient-primary-text(315deg);
+        width: fit-content;
         font-size: var(--font-size-3xl);
         margin: 0;
       }
