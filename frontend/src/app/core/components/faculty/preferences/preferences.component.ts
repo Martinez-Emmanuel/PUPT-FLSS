@@ -116,17 +116,17 @@ export class PreferencesComponent implements OnInit, OnDestroy {
 
   private loadCourses() {
     this.loading = true;
-    this.courseService.getCourses().subscribe({
-      next: (courses) => {
-        this.courses = courses;
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
-      error: (error) => {
-        console.error('Error loading courses:', error);
-        this.loading = false;
-        this.cdr.markForCheck();
-      },
+      this.courseService.getCourses().subscribe({
+        next: (courses) => {
+          this.courses = courses;
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          console.error('Error loading courses:', error);
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
     });
   }
 
@@ -146,6 +146,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   addCourseToTable(course: Course) {
     if (this.isCourseAlreadyAdded(course) || this.isMaxUnitsExceeded(course)) {
       return;
+    }
 
     this.dataSource.data = [
       ...this.dataSource.data,
@@ -214,9 +215,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
       });
   }
 
-  
   submitPreferences() {
-    const facultyId = this.cookieService.get('faculty_id');
     const facultyId = this.cookieService.get('faculty_id');
     if (!facultyId) {
       this.showSnackBar('Error: Faculty ID not found.');
@@ -279,70 +278,15 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     );
   }
 
-  private loadCourses() {
-    this.loading = true;
-    this.subscriptions.add(
-      this.courseService.getCourses().subscribe({
-        next: (courses) => {
-          this.subjects = courses;
-          this.loading = false;
-          this.cdr.markForCheck();
-        },
-        error: (error) => {
-          console.error('Error loading courses:', error);
-          this.loading = false;
-          this.cdr.markForCheck();
-        },
-      })
-    );
-  }
-
-  private isCourseAlreadyAdded(course: Course): boolean {
-    if (
-      this.dataSource.data.some(
-        (subject) => subject.subject_code === course.subject_code
-      )
-    ) {
-      this.showSnackBar('This course has already been selected.');
-      return true;
-    }
-    return false;
-  }
-
-  private isMaxUnitsExceeded(course: Course): boolean {
-    if (this.totalUnits + course.total_units > this.maxUnits) {
-      this.showSnackBar('Maximum units have been reached.');
-      return true;
-    }
-    return false;
-  }
-
-  private updateTotalUnits() {
-    this.totalUnits = this.dataSource.data.reduce(
-      (total, subject) => total + subject.total_units,
-      0
-    );
-    this.cdr.markForCheck();
-  }
-
-  private prepareSubmissionData(facultyId: string) {
-    return {
-      faculty_id: facultyId,
-      preferences: this.dataSource.data.map(
-        ({ course_id, preferredDay, preferredTime }) => ({
-          course_id,
-          preferred_day: preferredDay,
-          preferred_time: preferredTime,
-        })
-      ),
-    };
-  }
-
   private showSnackBar(message: string) {
     this.snackBar.open(message, 'Close', {
       duration: 3000,
       horizontalPosition: 'center',
       verticalPosition: 'bottom',
     });
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 }

@@ -38,7 +38,7 @@
           }
           <!-- Display courses when loaded -->
           @if (!loading) {
-            <div [@cardEntranceAnimation]="subjects.length">
+            <div [@cardEntranceAnimation]="courses.length">
             @for (course of courses; track course.course_id) { 
               <div class="course-card">
                 <div class="course-info">
