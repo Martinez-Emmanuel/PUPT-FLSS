@@ -5,14 +5,13 @@ import { catchError, throwError } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
 import { environment } from '../../../../environments/environment.dev';
 
-
 export interface Course {
   course_id: number; 
-  subject_code: string;
-  subject_title: string;
+  course_code: string;
+  course_title: string;
   lec_hours: number;
   lab_hours: number;
-  total_units: number;
+  units: number;  // Changed to match your backend
 }
 
 @Injectable({
