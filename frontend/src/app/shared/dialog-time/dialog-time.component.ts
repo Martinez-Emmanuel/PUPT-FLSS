@@ -1,16 +1,31 @@
 import { Component, Inject } from '@angular/core';
-
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { MaterialComponents } from '../../core/imports/material.component';
+// Angular Material Imports
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { MatOptionModule } from '@angular/material/core';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 @Component({
   selector: 'app-dialog-time',
   standalone: true,
-  imports: [CommonModule, FormsModule, MaterialComponents, MatSymbolDirective],
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatButtonModule,
+    MatIconModule,
+    MatSymbolDirective
+  ],
   templateUrl: './dialog-time.component.html',
   styleUrls: ['./dialog-time.component.scss'],
 })

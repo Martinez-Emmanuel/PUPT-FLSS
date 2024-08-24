@@ -1,5 +1,5 @@
 <!-- Table Header -->
-<div class="curriculum-header-container">
+<div class="curriculum-header-container" [@fadeAnimation]>
     <app-table-header
     [inputFields]="headerInputFields"
     [showAddButton]="false"
@@ -11,7 +11,7 @@
   ></app-table-header>
 </div>
 
-<div class="curriculum-detail-container">
+<div class="curriculum-detail-container" [@pageFloatUpAnimation]>
   @for (semester of selectedSemesters; track semester.semester; let i = $index)
   {
   <div class="semester-container">

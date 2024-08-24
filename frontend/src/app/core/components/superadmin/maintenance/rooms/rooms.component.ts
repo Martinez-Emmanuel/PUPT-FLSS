@@ -9,6 +9,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
 import { TableHeaderComponent,InputField } from '../../../../../shared/table-header/table-header.component';
 import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
+import { fadeAnimation } from '../../../../animations/animations';
 
 import { Room, RoomService } from '../../../../services/superadmin/rooms/rooms.service';
 
@@ -23,6 +24,7 @@ import { Room, RoomService } from '../../../../services/superadmin/rooms/rooms.s
   ],
   templateUrl: './rooms.component.html',
   styleUrls: ['./rooms.component.scss'],
+  animations: [fadeAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RoomsComponent implements OnInit {

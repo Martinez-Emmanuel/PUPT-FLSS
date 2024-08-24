@@ -9,6 +9,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
 import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
+import { fadeAnimation} from '../../../../animations/animations';
 
 import { Program, ProgramsService } from '../../../../services/superadmin/programs/programs.service';
 
@@ -23,6 +24,7 @@ import { Program, ProgramsService } from '../../../../services/superadmin/progra
   ],
   templateUrl: './programs.component.html',
   styleUrls: ['./programs.component.scss'],
+  animations: [fadeAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProgramsComponent implements OnInit {

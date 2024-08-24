@@ -1,11 +1,10 @@
-import { ApplicationConfig, importProvidersFrom,provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { MAT_RIPPLE_GLOBAL_OPTIONS, RippleGlobalOptions } from '@angular/material/core';
 
 import { routes } from './app.routes';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-
 import { AuthGuard } from './core/guards/auth.guard';
 
 const globalRippleConfig: RippleGlobalOptions = {
@@ -18,10 +17,15 @@ const globalRippleConfig: RippleGlobalOptions = {
 export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
+
     provideRouter(routes),
+
     provideAnimationsAsync(),
+
     provideHttpClient(),
+
     AuthGuard,
+
     { provide: MAT_RIPPLE_GLOBAL_OPTIONS, useValue: globalRippleConfig },
   ],
 };

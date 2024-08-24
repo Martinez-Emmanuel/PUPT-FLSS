@@ -1,5 +1,5 @@
-<div class="faculty-preferences-container">
-  <!-- Preferences first row -->
+<div class="faculty-preferences-container" [@fadeAnimation]>
+  <!--Preferences first row-->
   <div class="preferences-row-one">
     <div id="preferences_title">
       <h1>Set Preferences</h1>
@@ -38,6 +38,7 @@
           }
           <!-- Display courses when loaded -->
           @if (!loading) {
+            <div [@cardEntranceAnimation]="subjects.length">
             @for (course of courses; track course.course_id) { 
               <div class="course-card">
                 <div class="course-info">
@@ -53,6 +54,7 @@
                 </button>
               </div>
             } 
+            </div>
           }
         </div>
       </div>
