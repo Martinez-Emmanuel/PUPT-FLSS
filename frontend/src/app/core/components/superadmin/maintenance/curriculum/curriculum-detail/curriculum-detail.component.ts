@@ -1,6 +1,7 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { FormBuilder, FormGroup } from '@angular/forms';
 
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -14,14 +15,7 @@ import { TableDialogComponent, DialogConfig } from '../../../../../../shared/tab
 import { DialogGenericComponent } from '../../../../../../shared/dialog-generic/dialog-generic.component';
 import { fadeAnimation, pageFloatUpAnimation } from '../../../../../animations/animations';
 
-import {
-  CurriculumService,
-  Curriculum,
-  Program,
-  YearLevel,
-  Semester,
-  Course,
-} from '../../../../../services/superadmin/curriculum/curriculum.service';
+import { CurriculumService, Curriculum, Program, YearLevel, Semester, Course } from '../../../../../services/superadmin/curriculum/curriculum.service';
 
 @Component({
   selector: 'app-curriculum-detail',
@@ -37,9 +31,11 @@ import {
   animations: [fadeAnimation, pageFloatUpAnimation],
 })
 export class CurriculumDetailComponent implements OnInit {
+  @ViewChild(TableHeaderComponent) tableHeaderComponent!: TableHeaderComponent;
   public curriculum: Curriculum | undefined;
   public selectedProgram: string = '';
   public selectedYear: number = 1;
+  public selectedSections: number = 1;
   public selectedSemesters: Semester[] = [];
   public customExportOptions: { all: string; current: string } | null = null;
   private destroy$ = new Subject<void>();
@@ -89,7 +85,8 @@ export class CurriculumDetailComponent implements OnInit {
     private curriculumService: CurriculumService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private fb: FormBuilder
   ) {}
 
   ngOnInit() {
@@ -159,7 +156,15 @@ export class CurriculumDetailComponent implements OnInit {
         key: 'yearLevel',
         options: yearLevelOptions,
       },
+      {
+        type: 'section',
+        label: 'Sections',
+        key: 'sections',
+      },
     ];
+
+    const currentYearLevel = this.getYearLevel(this.getProgram());
+    this.selectedSections = currentYearLevel?.sections ?? 1;
   }
 
   updateCustomExportOptions() {
@@ -186,15 +191,47 @@ export class CurriculumDetailComponent implements OnInit {
   }
 
   onInputChange(values: { [key: string]: any }) {
-    if (values['program'] !== undefined) {
+    let programChanged = false;
+    let yearLevelChanged = false;
+
+    if (
+      values['program'] !== undefined &&
+      values['program'] !== this.selectedProgram
+    ) {
       this.selectedProgram = values['program'];
+      programChanged = true;
     }
-    if (values['yearLevel'] !== undefined) {
+    if (
+      values['yearLevel'] !== undefined &&
+      values['yearLevel'] !== this.selectedYear
+    ) {
       this.selectedYear = values['yearLevel'];
+      yearLevelChanged = true;
     }
+
+    if (programChanged || yearLevelChanged) {
+      // Reset sections to the current value for the selected program and year level
+      const currentYearLevel = this.getYearLevel(this.getProgram());
+      this.selectedSections = currentYearLevel?.sections ?? 1;
+
+      // Update the form control value for sections
+      const sectionsControl = this.getHeaderFormControl('sections');
+      if (sectionsControl) {
+        sectionsControl.setValue(this.selectedSections);
+      }
+    } else if (values['sections'] !== undefined) {
+      this.selectedSections = values['sections'] || 1;
+      this.updateSections(this.selectedSections);
+    }
+
     this.updateHeaderInputFields();
     this.updateSelectedSemesters();
     this.updateCustomExportOptions();
+  }
+
+  onSectionChange(sections: number) {
+    this.selectedSections = sections;
+    this.updateSections(sections);
   }
 
   onEditCourse(course: Course) {
@@ -215,11 +252,11 @@ export class CurriculumDetailComponent implements OnInit {
 
   onManagePrograms() {
     if (!this.curriculum) return;
-  
+
     const dialogConfig: DialogConfig = {
       title: 'Manage Programs',
       isEdit: false,
-      fields: this.curriculum.programs.map(program => ({
+      fields: this.curriculum.programs.map((program) => ({
         label: program.name,
         formControlName: program.name,
         type: 'checkbox' as 'text' | 'number' | 'select' | 'checkbox',
@@ -228,35 +265,79 @@ export class CurriculumDetailComponent implements OnInit {
       initialValue: this.curriculum.programs.reduce((acc, program) => {
         acc[program.name] = true;
         return acc;
-      }, {} as {[key: string]: boolean}),
+      }, {} as { [key: string]: boolean }),
     };
-  
+
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: dialogConfig,
     });
-  
-    dialogRef.afterClosed().subscribe(result => {
+
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.updateCurriculumPrograms(result);
       }
     });
   }
-  
-  private updateCurriculumPrograms(selectedPrograms: {[key: string]: boolean}) {
+
+  private getHeaderFormControl(key: string): any {
+    const headerComponent = this.tableHeaderComponent;
+    if (headerComponent && headerComponent.form) {
+      return headerComponent.form.get(key);
+    }
+    return null;
+  }
+
+  private updateSections(sections: number) {
+    if (this.curriculum && this.selectedProgram && this.selectedYear) {
+      this.curriculumService
+        .updateSections(
+          this.curriculum.curriculum_year,
+          this.selectedProgram,
+          this.selectedYear,
+          sections
+        )
+        .subscribe(
+          (updatedCurriculum) => {
+            this.curriculum = updatedCurriculum;
+            this.updateSelectedSemesters();
+            this.snackBar.open('Sections updated successfully', 'Close', {
+              duration: 3000,
+            });
+            this.cdr.detectChanges();
+          },
+          (error) => {
+            this.snackBar.open('Error updating sections', 'Close', {
+              duration: 3000,
+            });
+            console.error('Error updating sections:', error);
+          }
+        );
+    }
+  }
+
+  private updateCurriculumPrograms(selectedPrograms: {
+    [key: string]: boolean;
+  }) {
     if (!this.curriculum) return;
-  
-    this.curriculum.programs = this.curriculum.programs.filter(program => selectedPrograms[program.name]);
-  
+
+    this.curriculum.programs = this.curriculum.programs.filter(
+      (program) => selectedPrograms[program.name]
+    );
+
     this.curriculumService.updateEntireCurriculum(this.curriculum).subscribe(
-      updatedCurriculum => {
+      (updatedCurriculum) => {
         this.curriculum = updatedCurriculum;
         this.updateHeaderInputFields();
         this.updateSelectedSemesters();
-        this.snackBar.open('Programs updated successfully', 'Close', { duration: 3000 });
+        this.snackBar.open('Programs updated successfully', 'Close', {
+          duration: 3000,
+        });
         this.cdr.detectChanges();
       },
-      error => {
-        this.snackBar.open('Error updating programs', 'Close', { duration: 3000 });
+      (error) => {
+        this.snackBar.open('Error updating programs', 'Close', {
+          duration: 3000,
+        });
         console.error('Error updating programs:', error);
       }
     );
@@ -435,7 +516,7 @@ export class CurriculumDetailComponent implements OnInit {
     );
   }
 
-  private getYearLevel(program: Program): YearLevel | undefined {
+  private getYearLevel(program: Program | undefined): YearLevel | undefined {
     return program?.year_levels.find((y) => y.year === this.selectedYear);
   }
 

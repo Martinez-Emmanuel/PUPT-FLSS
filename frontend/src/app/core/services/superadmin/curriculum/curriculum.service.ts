@@ -20,6 +20,7 @@ export interface Semester {
 export interface YearLevel {
   year: number;
   semesters: Semester[];
+  sections: number;
 }
 
 export interface Program {
@@ -171,6 +172,7 @@ export class CurriculumService {
                   ],
                 },
               ],
+              sections: 1,
             },
             {
               year: 2,
@@ -279,6 +281,7 @@ export class CurriculumService {
                   ],
                 },
               ],
+              sections: 1,
             },
             {
               year: 3,
@@ -379,6 +382,7 @@ export class CurriculumService {
                   ],
                 },
               ],
+              sections: 1,
             },
             {
               year: 4,
@@ -442,6 +446,7 @@ export class CurriculumService {
                   ],
                 },
               ],
+              sections: 1,
             },
           ],
         },
@@ -527,6 +532,7 @@ export class CurriculumService {
                   ],
                 },
               ],
+              sections: 1,
             },
             {
               year: 2,
@@ -606,6 +612,7 @@ export class CurriculumService {
                   ],
                 },
               ],
+              sections: 1,
             },
             {
               year: 3,
@@ -662,6 +669,7 @@ export class CurriculumService {
                   ],
                 },
               ],
+              sections: 1,
             },
             {
               year: 4,
@@ -709,6 +717,7 @@ export class CurriculumService {
                   ],
                 },
               ],
+              sections: 1,
             },
             {
               year: 5,
@@ -740,6 +749,7 @@ export class CurriculumService {
                   ],
                 },
               ],
+              sections: 1,
             },
           ],
         },
@@ -764,7 +774,8 @@ export class CurriculumService {
                   semester: 2,
                   courses: []
                 }
-              ]
+              ],
+              sections: 1,
             },
             {
               year: 2,
@@ -777,7 +788,8 @@ export class CurriculumService {
                   semester: 2,
                   courses: []
                 }
-              ]
+              ],
+              sections: 1,
             },
             {
               year: 3,
@@ -790,7 +802,8 @@ export class CurriculumService {
                   semester: 2,
                   courses: []
                 }
-              ]
+              ],
+              sections: 1,
             },
             {
               year: 4,
@@ -803,7 +816,8 @@ export class CurriculumService {
                   semester: 2,
                   courses: []
                 }
-              ]
+              ],
+              sections: 1,
             }
           ]
         },
@@ -896,6 +910,7 @@ export class CurriculumService {
         { semester: 2, courses: [] },
         { semester: 3, courses: [] },
       ],
+      sections: 1,
     }));
   }
 
@@ -904,6 +919,27 @@ export class CurriculumService {
       .getValue()
       .map((curriculum) => curriculum.curriculum_year);
     return of(curriculaYears);
+  }
+
+  updateSections(curriculumYear: string, programName: string, yearLevel: number, sections: number): Observable<Curriculum> {
+    const curricula = this.curriculaSubject.getValue();
+    const curriculumIndex = curricula.findIndex(c => c.curriculum_year === curriculumYear);
+    
+    if (curriculumIndex !== -1) {
+      const programIndex = curricula[curriculumIndex].programs.findIndex(p => p.name === programName);
+      
+      if (programIndex !== -1) {
+        const yearLevelIndex = curricula[curriculumIndex].programs[programIndex].year_levels.findIndex(y => y.year === yearLevel);
+        
+        if (yearLevelIndex !== -1) {
+          curricula[curriculumIndex].programs[programIndex].year_levels[yearLevelIndex].sections = sections;
+          this.curriculaSubject.next([...curricula]);
+          return of(curricula[curriculumIndex]);
+        }
+      }
+    }
+    
+    return throwError(() => new Error('Curriculum, program, or year level not found'));
   }
 
   mapSemesterToEnum(semesterNumber: number): string {
