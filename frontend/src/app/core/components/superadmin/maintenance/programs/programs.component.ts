@@ -110,7 +110,7 @@ export class ProgramsComponent implements OnInit {
 
   private getDialogConfig(program?: Program): DialogConfig {
     return {
-      title: 'Program',
+      title: program ? 'Edit Program' : 'Add Program',
       isEdit: !!program,
       fields: [
         {
