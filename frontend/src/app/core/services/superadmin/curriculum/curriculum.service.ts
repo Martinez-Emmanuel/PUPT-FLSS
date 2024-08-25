@@ -45,7 +45,7 @@ export class CurriculumService {
       status: 'Active',
       programs: [
         {
-          name: 'BSIT',
+          name: 'BSIT - Bachelor of Science In Information Technology',
           number_of_years: 4,
           year_levels: [
             {
@@ -446,7 +446,7 @@ export class CurriculumService {
           ],
         },
         {
-          name: 'BSA',
+          name: 'BSA - Bachelor of Science In Accountancy',
           number_of_years: 5,
           year_levels: [
             {
@@ -745,15 +745,89 @@ export class CurriculumService {
         },
       ],
     },
+    {
+      curriculum_year: '2018',
+      status: 'Active',
+      programs: [
+        {
+          name: 'BSIT - Bachelor of Science In Information Technology',
+          number_of_years: 4,
+          year_levels: [
+            {
+              year: 1,
+              semesters: [
+                {
+                  semester: 1,
+                  courses: []
+                },
+                {
+                  semester: 2,
+                  courses: []
+                }
+              ]
+            },
+            {
+              year: 2,
+              semesters: [
+                {
+                  semester: 1,
+                  courses: []
+                },
+                {
+                  semester: 2,
+                  courses: []
+                }
+              ]
+            },
+            {
+              year: 3,
+              semesters: [
+                {
+                  semester: 1,
+                  courses: []
+                },
+                {
+                  semester: 2,
+                  courses: []
+                }
+              ]
+            },
+            {
+              year: 4,
+              semesters: [
+                {
+                  semester: 1,
+                  courses: []
+                },
+                {
+                  semester: 2,
+                  courses: []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          name: 'BSA - Bachelor of Science In Accountancy',
+          number_of_years: 4,
+          year_levels: []
+        },
+        {
+          name: 'BSME - Bachelor of Science in Mechanical Engineering',
+          number_of_years: 4,
+          year_levels: []
+        },
+      ]
+    },
   ]);
 
   private predefinedPrograms: Omit<Program, 'year_levels'>[] = [
     {
-      name: 'BSIT',
+      name: 'BSIT - Bachelor of Science In Information Technology',
       number_of_years: 4,
     },
     {
-      name: 'BSA',
+      name: 'BSA - Bachelor of Science In Accountancy',
       number_of_years: 5,
     },
   ];
@@ -823,6 +897,13 @@ export class CurriculumService {
         { semester: 3, courses: [] },
       ],
     }));
+  }
+
+  getAvailableCurriculumYears(): Observable<string[]> {
+    const curriculaYears = this.curriculaSubject
+      .getValue()
+      .map((curriculum) => curriculum.curriculum_year);
+    return of(curriculaYears);
   }
 
   mapSemesterToEnum(semesterNumber: number): string {
