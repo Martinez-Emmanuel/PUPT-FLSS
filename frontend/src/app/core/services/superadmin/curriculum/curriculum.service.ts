@@ -20,7 +20,6 @@ export interface Semester {
 export interface YearLevel {
   year: number;
   semesters: Semester[];
-  sections: number;
 }
 
 export interface Program {
@@ -40,13 +39,12 @@ export interface Curriculum {
 })
 export class CurriculumService {
   private curriculaSubject = new BehaviorSubject<Curriculum[]>([
-    // Sample mock data to simulate API response
     {
       curriculum_year: '2022',
       status: 'Active',
       programs: [
         {
-          name: 'BSIT - Bachelor of Science In Information Technology',
+          name: 'BSIT',
           number_of_years: 4,
           year_levels: [
             {
@@ -172,7 +170,6 @@ export class CurriculumService {
                   ],
                 },
               ],
-              sections: 1,
             },
             {
               year: 2,
@@ -281,7 +278,6 @@ export class CurriculumService {
                   ],
                 },
               ],
-              sections: 1,
             },
             {
               year: 3,
@@ -382,7 +378,6 @@ export class CurriculumService {
                   ],
                 },
               ],
-              sections: 1,
             },
             {
               year: 4,
@@ -446,12 +441,11 @@ export class CurriculumService {
                   ],
                 },
               ],
-              sections: 1,
             },
           ],
         },
         {
-          name: 'BSA - Bachelor of Science In Accountancy',
+          name: 'BSA',
           number_of_years: 5,
           year_levels: [
             {
@@ -532,7 +526,6 @@ export class CurriculumService {
                   ],
                 },
               ],
-              sections: 1,
             },
             {
               year: 2,
@@ -612,7 +605,6 @@ export class CurriculumService {
                   ],
                 },
               ],
-              sections: 1,
             },
             {
               year: 3,
@@ -669,7 +661,6 @@ export class CurriculumService {
                   ],
                 },
               ],
-              sections: 1,
             },
             {
               year: 4,
@@ -717,7 +708,6 @@ export class CurriculumService {
                   ],
                 },
               ],
-              sections: 1,
             },
             {
               year: 5,
@@ -749,99 +739,21 @@ export class CurriculumService {
                   ],
                 },
               ],
-              sections: 1,
             },
           ],
         },
       ],
     },
-    {
-      curriculum_year: '2018',
-      status: 'Active',
-      programs: [
-        {
-          name: 'BSIT - Bachelor of Science In Information Technology',
-          number_of_years: 4,
-          year_levels: [
-            {
-              year: 1,
-              semesters: [
-                {
-                  semester: 1,
-                  courses: []
-                },
-                {
-                  semester: 2,
-                  courses: []
-                }
-              ],
-              sections: 1,
-            },
-            {
-              year: 2,
-              semesters: [
-                {
-                  semester: 1,
-                  courses: []
-                },
-                {
-                  semester: 2,
-                  courses: []
-                }
-              ],
-              sections: 1,
-            },
-            {
-              year: 3,
-              semesters: [
-                {
-                  semester: 1,
-                  courses: []
-                },
-                {
-                  semester: 2,
-                  courses: []
-                }
-              ],
-              sections: 1,
-            },
-            {
-              year: 4,
-              semesters: [
-                {
-                  semester: 1,
-                  courses: []
-                },
-                {
-                  semester: 2,
-                  courses: []
-                }
-              ],
-              sections: 1,
-            }
-          ]
-        },
-        {
-          name: 'BSA - Bachelor of Science In Accountancy',
-          number_of_years: 4,
-          year_levels: []
-        },
-        {
-          name: 'BSME - Bachelor of Science in Mechanical Engineering',
-          number_of_years: 4,
-          year_levels: []
-        },
-      ]
-    },
+
   ]);
 
   private predefinedPrograms: Omit<Program, 'year_levels'>[] = [
     {
-      name: 'BSIT - Bachelor of Science In Information Technology',
+      name: 'BSIT',
       number_of_years: 4,
     },
     {
-      name: 'BSA - Bachelor of Science In Accountancy',
+      name: 'BSA',
       number_of_years: 5,
     },
   ];
@@ -910,7 +822,6 @@ export class CurriculumService {
         { semester: 2, courses: [] },
         { semester: 3, courses: [] },
       ],
-      sections: 1,
     }));
   }
 
@@ -919,27 +830,6 @@ export class CurriculumService {
       .getValue()
       .map((curriculum) => curriculum.curriculum_year);
     return of(curriculaYears);
-  }
-
-  updateSections(curriculumYear: string, programName: string, yearLevel: number, sections: number): Observable<Curriculum> {
-    const curricula = this.curriculaSubject.getValue();
-    const curriculumIndex = curricula.findIndex(c => c.curriculum_year === curriculumYear);
-    
-    if (curriculumIndex !== -1) {
-      const programIndex = curricula[curriculumIndex].programs.findIndex(p => p.name === programName);
-      
-      if (programIndex !== -1) {
-        const yearLevelIndex = curricula[curriculumIndex].programs[programIndex].year_levels.findIndex(y => y.year === yearLevel);
-        
-        if (yearLevelIndex !== -1) {
-          curricula[curriculumIndex].programs[programIndex].year_levels[yearLevelIndex].sections = sections;
-          this.curriculaSubject.next([...curricula]);
-          return of(curricula[curriculumIndex]);
-        }
-      }
-    }
-    
-    return throwError(() => new Error('Curriculum, program, or year level not found'));
   }
 
   mapSemesterToEnum(semesterNumber: number): string {
