@@ -61,9 +61,9 @@ interface TableData extends Course {
   providers: [CourseService],
   animations: [fadeAnimation, cardEntranceAnimation],
 })
-export class PreferencesComponent implements OnInit, OnDestroy, AfterViewInit {
-  subjects: Course[] = [];
-  totalUnits = 0;
+export class PreferencesComponent implements OnInit, OnDestroy {
+  courses: Course[] = [];
+  units = 0;  // Renamed from totalUnits to units
   readonly maxUnits = 25;
   loading = true;
   isDarkMode = false;
@@ -72,11 +72,11 @@ export class PreferencesComponent implements OnInit, OnDestroy, AfterViewInit {
   readonly displayedColumns: string[] = [
     'action',
     'num',
-    'subject_code',
-    'subject_title',
+    'course_code',
+    'course_title',
     'lec_hours',
     'lab_hours',
-    'total_units',
+    'units',  // Make sure this matches with the HTML
     'preferredDay',
     'preferredTime',
   ];
@@ -114,8 +114,20 @@ export class PreferencesComponent implements OnInit, OnDestroy, AfterViewInit {
     }, 0);
   }
 
-  ngOnDestroy() {
-    this.subscriptions.unsubscribe();
+  private loadCourses() {
+    this.loading = true;
+      this.courseService.getCourses().subscribe({
+        next: (courses) => {
+          this.courses = courses;
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          console.error('Error loading courses:', error);
+          this.loading = false;
+          this.cdr.markForCheck();
+        },
+    });
   }
 
   get isRemoveDisabled(): boolean {
@@ -126,14 +138,15 @@ export class PreferencesComponent implements OnInit, OnDestroy, AfterViewInit {
     return (
       this.isRemoveDisabled ||
       this.dataSource.data.some(
-        (subject) => !subject.preferredDay || !subject.preferredTime
+        (course) => !course.preferredDay || !course.preferredTime
       )
     );
   }
 
-  addSubjectToTable(course: Course) {
-    if (this.isCourseAlreadyAdded(course) || this.isMaxUnitsExceeded(course))
+  addCourseToTable(course: Course) {
+    if (this.isCourseAlreadyAdded(course) || this.isMaxUnitsExceeded(course)) {
       return;
+    }
 
     this.dataSource.data = [
       ...this.dataSource.data,
@@ -142,15 +155,44 @@ export class PreferencesComponent implements OnInit, OnDestroy, AfterViewInit {
     this.updateTotalUnits();
   }
 
-  removeSubject(subject_code: string) {
+  private isCourseAlreadyAdded(course: Course): boolean {
+    if (
+      this.dataSource.data.some(
+        (subject) => subject.course_code === course.course_code
+      )
+    ) {
+      this.showSnackBar('This course has already been selected.');
+      return true;
+    }
+    return false;
+  }
+
+  private isMaxUnitsExceeded(course: Course): boolean {
+    if (this.units + course.units > this.maxUnits) {  // Updated from this.totalUnits to this.units
+      this.showSnackBar('Maximum units have been reached.');
+      return true;
+    }
+    return false;
+  }
+
+  removeCourse(course_code: string) {
     this.dataSource.data = this.dataSource.data.filter(
-      (subject) => subject.subject_code !== subject_code
+      (course) => course.course_code !== course_code
     );
     this.updateTotalUnits();
   }
 
   onDayChange(element: TableData, event: Event) {
-    element.preferredDay = (event.target as HTMLSelectElement).value;
+    const newDay = (event.target as HTMLSelectElement).value;
+    element.preferredDay = newDay;
+    this.cdr.markForCheck();
+  }
+
+  private updateTotalUnits() {
+    this.units = this.dataSource.data.reduce(
+      (total, course) => total + course.units,
+      0
+    );  // Updated from this.totalUnits to this.units
     this.cdr.markForCheck();
   }
 
@@ -190,7 +232,20 @@ export class PreferencesComponent implements OnInit, OnDestroy, AfterViewInit {
     });
   }
 
-  removeAllSubjects() {
+  private prepareSubmissionData(facultyId: string) {
+    return {
+      faculty_id: facultyId,
+      preferences: this.dataSource.data.map(
+        ({ course_id, preferredDay, preferredTime }) => ({
+          course_id,
+          preferred_day: preferredDay,
+          preferred_time: preferredTime,
+        })
+      ),
+    };
+  }
+
+  removeAllCourses() {
     const dialogData: DialogData = {
       title: 'Remove All Courses',
       content: 'Are you sure you want to remove all your selected courses?',
@@ -223,70 +278,15 @@ export class PreferencesComponent implements OnInit, OnDestroy, AfterViewInit {
     );
   }
 
-  private loadCourses() {
-    this.loading = true;
-    this.subscriptions.add(
-      this.courseService.getCourses().subscribe({
-        next: (courses) => {
-          this.subjects = courses;
-          this.loading = false;
-          this.cdr.markForCheck();
-        },
-        error: (error) => {
-          console.error('Error loading courses:', error);
-          this.loading = false;
-          this.cdr.markForCheck();
-        },
-      })
-    );
-  }
-
-  private isCourseAlreadyAdded(course: Course): boolean {
-    if (
-      this.dataSource.data.some(
-        (subject) => subject.subject_code === course.subject_code
-      )
-    ) {
-      this.showSnackBar('This course has already been selected.');
-      return true;
-    }
-    return false;
-  }
-
-  private isMaxUnitsExceeded(course: Course): boolean {
-    if (this.totalUnits + course.total_units > this.maxUnits) {
-      this.showSnackBar('Maximum units have been reached.');
-      return true;
-    }
-    return false;
-  }
-
-  private updateTotalUnits() {
-    this.totalUnits = this.dataSource.data.reduce(
-      (total, subject) => total + subject.total_units,
-      0
-    );
-    this.cdr.markForCheck();
-  }
-
-  private prepareSubmissionData(facultyId: string) {
-    return {
-      faculty_id: facultyId,
-      preferences: this.dataSource.data.map(
-        ({ course_id, preferredDay, preferredTime }) => ({
-          course_id,
-          preferred_day: preferredDay,
-          preferred_time: preferredTime,
-        })
-      ),
-    };
-  }
-
   private showSnackBar(message: string) {
     this.snackBar.open(message, 'Close', {
       duration: 3000,
       horizontalPosition: 'center',
       verticalPosition: 'bottom',
     });
+  }
+
+  ngOnDestroy() {
+    this.subscriptions.unsubscribe();
   }
 }

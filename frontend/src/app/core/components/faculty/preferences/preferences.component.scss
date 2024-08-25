@@ -82,14 +82,14 @@
   display: flex;
   gap: var(--spacing-lg);
 
-  #subjects_container,
+  #courses_container,
   #table_container {
     border-radius: var(--border-radius-md);
     height: 100%;
   }
 }
 
-#subjects_container {
+#courses_container {
   flex: 3;
   display: flex;
   flex-direction: column;
@@ -104,13 +104,13 @@
   }
 }
 
-#subjects_list {
+#courses_list {
   flex: 1;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 
-  .subjects-scroll-container {
+  .courses-scroll-container {
     @include custom-scrollbar;
     flex: 1;
     overflow-y: auto;
@@ -123,7 +123,7 @@
   }
 }
 
-.subject-card {
+.course-card {
   @include default-transition;
   @include gradient-soft-secondary(30deg);
   display: flex;
@@ -133,23 +133,23 @@
   margin-bottom: var(--spacing-xs);
   border-radius: var(--border-radius-sm);
 
-  .subject-info {
+  .course-info {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xxs);
   }
 
-  .subject-code,
-  .subject-title {
+  .course-code,
+  .course-title {
     color: var(--neutral-base);
   }
 
-  .subject-code {
+  .course-code {
     font-weight: 700;
     font-size: var(--font-size-sm);
   }
 
-  .subject-title {
+  .course-title {
     font-weight: 400;
     font-size: var(--font-size-md);
   }
