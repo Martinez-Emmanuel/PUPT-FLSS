@@ -19,6 +19,11 @@
     <mat-form-field
       appearance="fill"
       class="select-field"
+      [ngClass]="{
+        'program-field': field.key === 'program',
+        'year-level-field': field.key === 'yearLevel',
+        'sections-field': field.key === 'sections'
+      }"
       subscriptSizing="dynamic"
     >
       <mat-label>{{ field.label }}</mat-label>
@@ -29,6 +34,18 @@
         </mat-option>
         }
       </mat-select>
+    </mat-form-field>
+    } @else if (field.type === 'section') {
+    <mat-form-field
+      appearance="fill"
+      class="section-field"
+      [ngClass]="{ 'sections-field': field.key === 'sections' }"
+      subscriptSizing="dynamic"
+    >
+      <mat-label>{{ field.label }}</mat-label>
+      <mat-icon matPrefix (click)="decrementSection(field)">remove</mat-icon>
+      <input matInput [formControlName]="field.key" readonly />
+      <mat-icon matSuffix (click)="incrementSection(field)">add</mat-icon>
     </mat-form-field>
     }
     <!-- We can add more form field types here -->
@@ -54,7 +71,7 @@
       [disabled]="buttonDisabled"
       (click)="onAdd()"
     >
-      <mat-icon>{{addIconName}}</mat-icon>
+      <mat-icon>{{ addIconName }}</mat-icon>
       {{ addButtonLabel }}
     </button>
     }
