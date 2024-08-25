@@ -46,6 +46,7 @@ export class TableGenericComponent<T> implements OnInit, AfterViewInit {
   @Input() tableHeadingTitle: string = '';
   @Input() tableHeadingButtonText: string = '';
   @Input() tableHeadingButtonIcon: string = '';
+  @Input() tableName: string = '';
 
   @Output() edit = new EventEmitter<T>();
   @Output() delete = new EventEmitter<T>();
