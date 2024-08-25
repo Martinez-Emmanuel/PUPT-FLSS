@@ -1,5 +1,5 @@
 import { Component, Inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
@@ -9,18 +9,20 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 import { TwoDigitInputDirective } from '../../core/imports/two-digit-input.directive';
 
 export interface DialogFieldConfig {
   label: string;
   formControlName: string;
-  type: 'text' | 'number' | 'select';
+  type: 'text' | 'number' | 'select' | 'checkbox';
   options?: string[] | number[];
   maxLength?: number;
   required?: boolean;
   min?: number;
   max?: number;
+  hint?: string;
 }
 
 export interface DialogConfig {
@@ -48,6 +50,7 @@ export interface DialogConfig {
     MatTooltipModule,
     MatDialogModule,
     MatRadioModule,
+    MatCheckboxModule,
     TwoDigitInputDirective,
   ],
 })
