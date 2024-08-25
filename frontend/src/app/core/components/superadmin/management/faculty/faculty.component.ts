@@ -49,7 +49,7 @@ export class FacultyComponent implements OnInit {
     { key: 'email', label: 'Email' },
     { key: 'type', label: 'Type' }, // Part-Time, Full-Time, Regular
     { key: 'unitsAssigned', label: 'Units Assigned' },
-    { key: 'status', label: 'Status' }, // Active, Inactive
+    { key: 'status', label: 'Status' }, 
   ];
 
   displayedColumns: string[] = ['index', 'facultyId', 'name', 'email', 'type', 'unitsAssigned', 'status', 'action'];
@@ -95,6 +95,7 @@ export class FacultyComponent implements OnInit {
           type: 'text',
           maxLength: 12,
           required: true,
+          disabled:!!faculty,
         },
         {
           label: 'Name',

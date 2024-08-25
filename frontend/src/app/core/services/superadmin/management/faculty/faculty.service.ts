@@ -58,7 +58,19 @@ export class FacultyService {
   ]);
 
   getFaculty(): Observable<Faculty[]> {
-    return this.facultySubject.asObservable();
+    const facultyWithMaskedEmails = this.facultySubject.getValue().map(faculty => ({
+      ...faculty,
+      email: this.maskEmail(faculty.email),
+    }));
+    return of(facultyWithMaskedEmails);
+  }
+
+  private maskEmail(email: string): string {
+    const [localPart, domain] = email.split('@');
+    if (localPart.length > 2) {
+      return `${localPart[0]}${'*'.repeat(localPart.length - 2)}${localPart[localPart.length - 1]}@${domain}`;
+    }
+    return email; // Fallback if email is too short
   }
 
   addFaculty(
