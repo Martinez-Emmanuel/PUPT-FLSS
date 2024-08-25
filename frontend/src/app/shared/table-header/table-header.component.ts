@@ -1,6 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
 
@@ -39,6 +38,7 @@ export interface InputField {
 export class TableHeaderComponent {
   @Input() inputFields: InputField[] = [];
   @Input() addButtonLabel = 'Add';
+  @Input() addIconName = 'add';
   @Input() buttonDisabled = false;
   @Input() showExportButton = true;
   @Input() showExportDialog = false;
@@ -46,13 +46,12 @@ export class TableHeaderComponent {
   @Input() selectedValues: { [key: string]: any } = {};
   @Input() customExportOptions: { all: string; current: string } | null = null;
 
-  @Input() searchLabel = 'Search';   //temp
+  @Input() searchLabel = 'Search'; //temp
 
   @Output() inputChange = new EventEmitter<{ [key: string]: any }>();
   @Output() add = new EventEmitter<void>();
   @Output() export = new EventEmitter<'all' | 'current' | undefined>();
 
-  
   @Output() search = new EventEmitter<string>(); //temp
 
   form: FormGroup;
@@ -63,7 +62,10 @@ export class TableHeaderComponent {
 
   ngOnInit() {
     this.inputFields.forEach((field) => {
-      this.form.addControl(field.key, this.fb.control(this.selectedValues[field.key] || ''));
+      this.form.addControl(
+        field.key,
+        this.fb.control(this.selectedValues[field.key] || '')
+      );
     });
     this.form.valueChanges.subscribe((value) => {
       this.inputChange.emit(value);
@@ -79,7 +81,7 @@ export class TableHeaderComponent {
       const dialogRef = this.dialog.open(TableDialogComponent, {
         data: {
           isExportDialog: true,
-          customExportOptions: this.customExportOptions
+          customExportOptions: this.customExportOptions,
         },
         disableClose: true,
       });
