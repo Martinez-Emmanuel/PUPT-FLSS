@@ -31,4 +31,11 @@
   .cancel-button {
     color: var(--primary-text) !important;
   }
+
+  .action-button {
+    &:disabled {
+      color: var(--neutral-base) !important;
+      opacity: var(--opacity-semi-opaque);
+    }
+  }
 }
