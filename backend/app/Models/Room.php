@@ -18,5 +18,6 @@ class Room extends Model
         'floor_level',
         'room_type',
         'capacity',
+        'status',
     ];
 }
