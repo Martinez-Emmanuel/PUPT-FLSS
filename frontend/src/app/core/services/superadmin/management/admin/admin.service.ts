@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable, of } from 'rxjs';
 export interface Admin {
   adminId: string;
   name: string;
+  password: string;
   email: string;
   role: string;
   status: string;
@@ -17,6 +18,7 @@ export class AdminService {
     {
       adminId: 'SPA11234TG',
       name: 'John Doe',
+      password: 'password123',
       email: 'john.doe@example.com',
       role: 'Super Admin',
       status: 'Active',
@@ -24,6 +26,7 @@ export class AdminService {
     {
       adminId: 'ADM55678TG',
       name: 'Jane Smith',
+      password: 'pass456',
       email: 'jane.smith@example.com',
       role: 'Admin',
       status: 'Inactive',
@@ -31,6 +34,7 @@ export class AdminService {
     {
       adminId: 'ADM78910TG',
       name: 'Adrian Naoe',
+      password: 'mysecuredpwd',
       email: 'naoe.adrianb@gmail.com',
       role: 'Admin',
       status: 'Active',
@@ -38,6 +42,7 @@ export class AdminService {
     {
       adminId: 'SPA47910TG',
       name: 'Kyla Malaluan',
+      password: 'admin_014',
       email: 'malaluankyla@gmail.com',
       role: 'Super Admin',
       status: 'Active',
@@ -45,15 +50,20 @@ export class AdminService {
     {
       adminId: 'ADM00765TG',
       name: 'Alice Guo',
+      password: 'alicepwd456',
       email: 'alice123@gmail.com',
       role: 'Admin',
       status: 'Inactive',
     },
   ]);
 
-  getAdmins(): Observable<Admin[]> {
-    return this.adminsSubject.asObservable();
-  }
+  getAdmins(maskPasswords: boolean = true): Observable<Admin[]> {
+    const admins = this.adminsSubject.getValue().map(admin => ({
+      ...admin,
+      password: maskPasswords ? '*****' : admin.password, // Mask or reveal based on flag
+    }));
+    return of(admins);
+  }  
 
   addAdmin(admin: Admin): Observable<Admin[]> {
     const admins = this.adminsSubject.getValue();

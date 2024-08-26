@@ -45,6 +45,7 @@ export class AdminComponent implements OnInit {
     { key: 'index', label: '#' },
     { key: 'adminId', label: 'Admin ID' },
     { key: 'name', label: 'Name' },
+    { key: 'password', label: 'Password'},
     { key: 'email', label: 'Email' },
     { key: 'role', label: 'Role' },
     { key: 'status', label: 'Status' },
@@ -54,6 +55,7 @@ export class AdminComponent implements OnInit {
     'index', 
     'adminId', 
     'name', 
+    'password',
     'email', 
     'role', 
     'status', 
@@ -107,6 +109,12 @@ export class AdminComponent implements OnInit {
           formControlName: 'name',
           type: 'text',
           maxLength: 50,
+          required: true,
+        },
+        {
+          label: 'Password',
+          formControlName: 'password',
+          type: 'text',
           required: true,
         },
         {

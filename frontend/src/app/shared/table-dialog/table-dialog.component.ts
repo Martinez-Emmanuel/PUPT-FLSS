@@ -23,6 +23,7 @@ export interface DialogFieldConfig {
   min?: number;
   max?: number;
   hint?: string;
+  disabled?: boolean;
 }
 
 export interface DialogConfig {
@@ -92,13 +93,17 @@ export class TableDialogComponent {
         const initialValue = this.data.initialValue
           ? this.data.initialValue[field.formControlName]
           : '';
-        this.form.addControl(
-          field.formControlName,
-          this.fb.control(initialValue, validators)
-        );
-      });
-    }
-    this.cdr.markForCheck();
+          const control = this.fb.control(initialValue, validators);
+
+          // Set the control as disabled if specified
+          if (field.disabled) {
+            control.disable();
+          }
+    
+          this.form.addControl(field.formControlName, control);
+        });
+      }
+      this.cdr.markForCheck();
   }
 
   noWhitespaceValidator(control: AbstractControl): ValidationErrors | null {
