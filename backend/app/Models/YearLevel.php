@@ -13,11 +13,21 @@ class YearLevel extends Model
 
     protected $fillable = [
         'year',
-        'program_id',  
+        'curricula_program_id',
     ];
 
     public function semesters()
     {
         return $this->hasMany(Semester::class, 'year_level_id', 'year_level_id');
+    }
+
+    public function sections()
+    {
+        return $this->hasMany(Section::class, 'year_level_id', 'year_level_id');
+    }
+
+    public function curriculaProgram()
+    {
+        return $this->belongsTo(CurriculaProgram::class, 'curricula_program_id', 'curricula_program_id');
     }
 }
