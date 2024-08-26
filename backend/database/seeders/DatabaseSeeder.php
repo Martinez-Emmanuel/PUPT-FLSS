@@ -21,6 +21,9 @@ class DatabaseSeeder extends Seeder
             CourseReqTableSeeder::class,
             CourseAssignmentSeeder::class,
             CurriculaProgramsTableSeeder::class,
+            AcademicYearsTableSeeder::class,
+            SectionTableSeeder::class,
+            ActiveSemesterTableSeeder::class,
         ]);
     }
 }

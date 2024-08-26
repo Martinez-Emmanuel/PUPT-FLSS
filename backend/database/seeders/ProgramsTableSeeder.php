@@ -12,7 +12,7 @@ class ProgramsTableSeeder extends Seeder
     {{
         $currentTimestamp = Carbon::now();
 
-// Inserting data into programs
+
         DB::table('programs')->insert([
             [
                 'program_id' => 1,
