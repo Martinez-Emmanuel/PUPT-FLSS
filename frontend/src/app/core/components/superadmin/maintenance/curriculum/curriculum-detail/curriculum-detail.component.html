@@ -2,11 +2,13 @@
 <div class="curriculum-header-container" [@fadeAnimation]>
     <app-table-header
     [inputFields]="headerInputFields"
-    [showAddButton]="false"
+    [addButtonLabel]="'Manage Programs'"
+    [addIconName]="'apps'"
     [showExportDialog]="true"
     [customExportOptions]="customExportOptions"
     (inputChange)="onInputChange($event)"
     (export)="onExport()"
+    (add)="onManagePrograms()"
     [selectedValues]="{ program: selectedProgram, yearLevel: selectedYear }"
   ></app-table-header>
 </div>
@@ -18,6 +20,7 @@
     <app-table-generic
       [columns]="columns"
       [data]="semester.courses"
+      [tableName]="'course/s'"
       [displayedColumns]="displayedColumns"
       [showTableHeading]="true"
       [tableHeadingTitle]="getSemesterDisplay(semester.semester)"

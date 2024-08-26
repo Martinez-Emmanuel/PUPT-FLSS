@@ -39,7 +39,6 @@ export interface Curriculum {
 })
 export class CurriculumService {
   private curriculaSubject = new BehaviorSubject<Curriculum[]>([
-    // Sample mock data to simulate API response
     {
       curriculum_year: '2022',
       status: 'Active',
@@ -745,6 +744,7 @@ export class CurriculumService {
         },
       ],
     },
+
   ]);
 
   private predefinedPrograms: Omit<Program, 'year_levels'>[] = [
@@ -823,6 +823,13 @@ export class CurriculumService {
         { semester: 3, courses: [] },
       ],
     }));
+  }
+
+  getAvailableCurriculumYears(): Observable<string[]> {
+    const curriculaYears = this.curriculaSubject
+      .getValue()
+      .map((curriculum) => curriculum.curriculum_year);
+    return of(curriculaYears);
   }
 
   mapSemesterToEnum(semesterNumber: number): string {

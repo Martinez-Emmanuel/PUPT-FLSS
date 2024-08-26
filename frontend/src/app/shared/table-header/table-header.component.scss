@@ -8,6 +8,22 @@
 
   .input-container {
     @include flex-layout($gap: var(--spacing-md));
+
+    .program-field {
+      width: 15rem;
+    }
+  
+    .year-level-field {
+      width: 8rem;
+    }
+  
+    .sections-field {
+      width: 10rem;
+  
+      mat-icon {
+        cursor: pointer;
+      }
+    }
   }
 
   .button-container {

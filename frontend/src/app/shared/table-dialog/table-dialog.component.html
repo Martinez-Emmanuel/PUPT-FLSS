@@ -2,29 +2,36 @@
 <div class="table-dialog-container">
   <!-- Dialog title -->
   <h2 mat-dialog-title class="table-dialog-title">
-    <span>{{ isExportDialog ? "Export to PDF" : (data.isEdit ? "Edit" : "Add New") }} {{ data.title }}</span>
+    <span>{{ isExportDialog ? "Export to PDF" : data.title }}</span>
   </h2>
 
   <!-- Dialog content -->
   <div mat-dialog-content class="table-dialog-content">
-
     @if (isExportDialog) {
-      <form [formGroup]="form" class="dialog-form">
-        <mat-radio-group formControlName="exportOption">
-          <mat-radio-button value="all">
-            {{ customExportOptions ? customExportOptions.all : 'Export all' }}
-          </mat-radio-button>
-          <mat-radio-button value="current">
-            {{ customExportOptions ? customExportOptions.current : 'Export this item only' }}
-          </mat-radio-button>
-        </mat-radio-group>
-      </form>
+    <form [formGroup]="form" class="dialog-form">
+      <mat-radio-group formControlName="exportOption">
+        <mat-radio-button value="all">
+          {{ customExportOptions ? customExportOptions.all : "Export all" }}
+        </mat-radio-button>
+        <mat-radio-button value="current">
+          {{
+            customExportOptions
+              ? customExportOptions.current
+              : "Export this item only"
+          }}
+        </mat-radio-button>
+      </mat-radio-group>
+    </form>
     } @else {
-
     <!-- Form container -->
     <form [formGroup]="form" class="dialog-form">
       <!-- Dynamically generate form fields based on data.fields -->
-      @for (field of data.fields; track field) {
+      @for (field of data.fields; track field) { @if (field.type === 'checkbox')
+      {
+      <mat-checkbox [formControlName]="field.formControlName" class="checkbox">
+        {{ field.label }}
+      </mat-checkbox>
+      } @else {
       <!-- Individual form field container -->
       <mat-form-field class="form-field" appearance="fill">
         <!-- Field label -->
@@ -63,10 +70,15 @@
         <mat-error>{{
           getErrorMessage(field.formControlName, field.label)
         }}</mat-error>
+
+        <!-- Optional hint message -->
+        @if (field.hint) {
+        <mat-hint>{{ field.hint }}</mat-hint>
+        }
       </mat-form-field>
-      }
+      } }
     </form>
-  }
+    }
   </div>
 
   <!-- Dialog action buttons -->
@@ -75,13 +87,25 @@
       Cancel
     </button>
     @if (isExportDialog) {
-      <button mat-flat-button class="action-button" color="primary" [disabled]="form.invalid" (click)="onExport()">
-        Export
-      </button>
+    <button
+      mat-flat-button
+      class="action-button"
+      color="primary"
+      [disabled]="form.invalid"
+      (click)="onExport()"
+    >
+      Export
+    </button>
     } @else {
-      <button mat-flat-button class="action-button" color="primary" [disabled]="form.invalid" (click)="onSave()">
-        {{ data.isEdit ? "Update" : "Add" }}
-      </button>
+    <button
+      mat-flat-button
+      class="action-button"
+      color="primary"
+      [disabled]="form.invalid"
+      (click)="onSave()"
+    >
+      {{ data.isEdit ? "Update" : "Confirm" }}
+    </button>
     }
   </div>
 </div>

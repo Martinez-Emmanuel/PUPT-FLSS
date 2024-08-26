@@ -15,6 +15,7 @@
     <app-table-generic
       [columns]="columns"
       [data]="programs"
+      [tableName]="'programs'"
       [displayedColumns]="displayedColumns"
       (edit)="openEditProgramDialog($event)"
       (delete)="deleteProgram($event)"

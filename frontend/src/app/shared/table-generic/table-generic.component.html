@@ -81,7 +81,7 @@
     <!-- Display "No course added yet" when data is empty -->
     <tr *matNoDataRow>
       <td class="no-data-row" [attr.colspan]="displayedColumns.length">
-        No course added yet.
+        No {{tableName}} added yet.
       </td>
     </tr>
 
@@ -90,13 +90,15 @@
   </table>
 
   <!-- Table Paginator -->
-  <div class="paginator-container" *ngIf="dataSource.data.length > 0">
-    <mat-paginator
-      class="custom-table-paginator"
-      [length]="data.length"
-      [pageSize]="25"
-      [pageSizeOptions]="[5, 10, 25, 50]"
-      [showFirstLastButtons]="showFirstLastButtons"
-    ></mat-paginator>
-  </div>
+   @if(dataSource.data.length) {
+    <div class="paginator-container">
+      <mat-paginator
+        class="custom-table-paginator"
+        [length]="data.length"
+        [pageSize]="25"
+        [pageSizeOptions]="[5, 10, 25, 50]"
+        [showFirstLastButtons]="showFirstLastButtons"
+      ></mat-paginator>
+    </div>
+   }
 </div>

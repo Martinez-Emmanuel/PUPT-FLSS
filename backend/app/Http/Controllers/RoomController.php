@@ -24,6 +24,7 @@ class RoomController extends Controller
             'floor_level' => 'required|string|max:255',
             'room_type' => 'required|string|max:255',
             'capacity' => 'required|integer',
+            'status' => 'required|string|max:255',
         ]);
 
         // Create a new room
@@ -33,6 +34,7 @@ class RoomController extends Controller
             'floor_level' => $validated['floor_level'],
             'room_type' => $validated['room_type'],
             'capacity' => $validated['capacity'],
+            'status' => $validated['status'],
         ]);
 
         // Return a JSON response
@@ -54,6 +56,7 @@ class RoomController extends Controller
             'floor_level' => 'required|string',
             'room_type' => 'required|string',
             'capacity' => 'required|integer',
+            'status' => 'required|string',
         ]);
 
         $room->update($validatedData);

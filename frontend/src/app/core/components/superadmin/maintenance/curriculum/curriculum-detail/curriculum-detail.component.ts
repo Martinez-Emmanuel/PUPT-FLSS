@@ -213,6 +213,55 @@ export class CurriculumDetailComponent implements OnInit {
     alert('Export functionality not implemented yet');
   }
 
+  onManagePrograms() {
+    if (!this.curriculum) return;
+  
+    const dialogConfig: DialogConfig = {
+      title: 'Manage Programs',
+      isEdit: false,
+      fields: this.curriculum.programs.map(program => ({
+        label: program.name,
+        formControlName: program.name,
+        type: 'checkbox' as 'text' | 'number' | 'select' | 'checkbox',
+        required: false,
+      })),
+      initialValue: this.curriculum.programs.reduce((acc, program) => {
+        acc[program.name] = true;
+        return acc;
+      }, {} as {[key: string]: boolean}),
+    };
+  
+    const dialogRef = this.dialog.open(TableDialogComponent, {
+      data: dialogConfig,
+    });
+  
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.updateCurriculumPrograms(result);
+      }
+    });
+  }
+  
+  private updateCurriculumPrograms(selectedPrograms: {[key: string]: boolean}) {
+    if (!this.curriculum) return;
+  
+    this.curriculum.programs = this.curriculum.programs.filter(program => selectedPrograms[program.name]);
+  
+    this.curriculumService.updateEntireCurriculum(this.curriculum).subscribe(
+      updatedCurriculum => {
+        this.curriculum = updatedCurriculum;
+        this.updateHeaderInputFields();
+        this.updateSelectedSemesters();
+        this.snackBar.open('Programs updated successfully', 'Close', { duration: 3000 });
+        this.cdr.detectChanges();
+      },
+      error => {
+        this.snackBar.open('Error updating programs', 'Close', { duration: 3000 });
+        console.error('Error updating programs:', error);
+      }
+    );
+  }
+
   private getCourseDialogConfig(
     course?: Course,
     semester?: number
