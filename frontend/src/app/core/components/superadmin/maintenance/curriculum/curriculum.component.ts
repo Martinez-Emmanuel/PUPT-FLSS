@@ -1,14 +1,13 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
 
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
 
 import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
@@ -38,6 +37,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
   curriculumStatuses = ['Active', 'Inactive'];
   curricula: Curriculum[] = [];
   programs: Program[] = [];
+  availableCurriculumYears: string[] = [];
   columns = [
     { key: 'index', label: '#' },
     { key: 'curriculum_year', label: 'Curriculum Year' },
@@ -65,11 +65,22 @@ export class CurriculumComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.fetchCurricula();
     this.fetchPredefinedPrograms();
+    this.fetchAvailableCurriculumYears();
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private fetchAvailableCurriculumYears() {
+    this.curriculumService
+      .getAvailableCurriculumYears()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((years) => {
+        this.availableCurriculumYears = years;
+        this.cdr.markForCheck();
+      });
   }
 
   private fetchCurricula() {
@@ -134,6 +145,11 @@ export class CurriculumComponent implements OnInit, OnDestroy {
   }
 
   private getDialogConfig(curriculum?: Curriculum): DialogConfig {
+    const copyFromOptions = [
+      'None',
+      ...this.availableCurriculumYears.map((year) => `${year} Curriculum`),
+    ];
+
     return {
       title: 'Curriculum',
       isEdit: !!curriculum,
@@ -152,8 +168,21 @@ export class CurriculumComponent implements OnInit, OnDestroy {
           options: this.curriculumStatuses,
           required: true,
         },
+        {
+          label: 'Copy a curriculum',
+          formControlName: 'copy_from',
+          type: 'select',
+          hint: `Copy from another curriculum. 
+            You can still adjust the copied curriculum later.`,
+          options: copyFromOptions,
+          required: false,
+        },
       ],
-      initialValue: curriculum || { status: 'Active' },
+      initialValue: {
+        ...curriculum,
+        copy_from: 'None',
+        status: curriculum?.status || 'Active',
+      },
     };
   }
 

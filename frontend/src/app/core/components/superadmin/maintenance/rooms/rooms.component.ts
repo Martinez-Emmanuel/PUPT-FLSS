@@ -40,6 +40,7 @@ export class RoomsComponent implements OnInit {
     { key: 'floor_level', label: 'Floor Level' },
     { key: 'room_type', label: 'Room Type' },
     { key: 'capacity', label: 'Capacity' },
+    { key: 'status', label: 'Status'},
   ];
 
   displayedColumns: string[] = [
@@ -49,6 +50,7 @@ export class RoomsComponent implements OnInit {
     'floor_level',
     'room_type',
     'capacity',
+    'status',
   ];
 
   headerInputFields: InputField[] = [
@@ -140,6 +142,13 @@ export class RoomsComponent implements OnInit {
           max: 999,
           required: true,
         },
+        {
+          label: 'Status',
+          formControlName: 'status',
+          type: 'select',
+          options: ['Active', 'Inactive'],
+          required: true,
+        },
       ],
       initialValue: room || {},
     };
@@ -178,7 +187,7 @@ export class RoomsComponent implements OnInit {
     dialogRef.afterClosed().subscribe((result) => {
       if (result && this.selectedRoomIndex !== null) {
         if (!result.room_id) {
-            result.room_id = room.room_id;  // Reassign room_id if it's missing
+            result.room_id = room.room_id;
         }
         this.updateRoom(result);
     } else {

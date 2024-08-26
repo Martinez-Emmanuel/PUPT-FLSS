@@ -15,6 +15,7 @@
     <app-table-generic
       [columns]="columns"
       [data]="rooms"
+      [tableName]="'room/s'"
       [displayedColumns]="displayedColumns"
       (edit)="openEditRoomDialog($event)"
       (delete)="deleteRoom($event)"

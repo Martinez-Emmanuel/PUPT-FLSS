@@ -10,6 +10,11 @@
       width: 100%;
       padding: var(--spacing-xxs) 0;
     }
+
+    .checkbox {
+      display: block;
+      margin-bottom: var(--spacing-md);
+    }
   }
 }
 
@@ -28,8 +33,6 @@
   }
 
   .action-button {
-    color: white !important;
-
     &:disabled {
       color: var(--neutral-base) !important;
       opacity: var(--opacity-semi-opaque);

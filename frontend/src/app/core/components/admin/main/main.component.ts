@@ -1,13 +1,170 @@
-import { Component } from '@angular/core';
-import { RouterModule } from '@angular/router';
+import { Component, inject, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import { CommonModule, AsyncPipe } from '@angular/common';
+import { RouterModule, Router, NavigationEnd, ActivatedRoute } from '@angular/router';
+import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 
+import { Observable } from 'rxjs';
+import { map, shareReplay, filter } from 'rxjs/operators';
+
+import { MatSidenav, MatSidenavModule } from '@angular/material/sidenav';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatListModule } from '@angular/material/list';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDialog } from '@angular/material/dialog';
+
+import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
+import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
+import { slideInAnimation, fadeAnimation } from '../../../animations/animations';
+
+import { AuthService } from '../../../services/auth/auth.service';
+import { ThemeService } from '../../../services/theme/theme.service';
+import { CookieService } from 'ngx-cookie-service';
 @Component({
   selector: 'app-main',
-  standalone: true,
-  imports: [RouterModule],
   templateUrl: './main.component.html',
-  styleUrl: './main.component.scss'
+  styleUrls: ['./main.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    RouterModule,
+    AsyncPipe,
+    MatToolbarModule,
+    MatButtonModule,
+    MatSidenavModule,
+    MatListModule,
+    MatIconModule,
+    MatSymbolDirective,
+  ],
+  animations: [fadeAnimation, slideInAnimation],
 })
-export class MainComponent {
+export class MainComponent implements OnInit, AfterViewInit {
+  @ViewChild('drawer') drawer!: MatSidenav;
 
+  private breakpointObserver = inject(BreakpointObserver);
+  public showSidenav = false;
+  public isDropdownOpen = false;
+  public pageTitle = 'Dashboard';
+  public accountName: string;
+  public accountRole: string;
+
+  private routeTitleMap: Record<string, string> = {
+    dashboard: 'Dashboard',
+    programs: 'Programs',
+    courses: 'Courses',
+    curriculum: 'Curriculum',
+    rooms: 'Rooms',
+  };
+
+  isHandset$: Observable<boolean> = this.breakpointObserver
+    .observe(Breakpoints.Handset)
+    .pipe(
+      map((result) => result.matches),
+      shareReplay()
+    );
+
+  constructor(
+    public themeService: ThemeService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private authService: AuthService,
+    private dialog: MatDialog,
+    private cookieService: CookieService
+  ) {
+    this.accountName = this.cookieService.get('user_name');
+    this.accountRole = this.toTitleCase(this.cookieService.get('user_role'));
+  }
+
+  ngOnInit(): void {
+    this.router.events
+      .pipe(
+        filter(
+          (event): event is NavigationEnd => event instanceof NavigationEnd
+        )
+      )
+      .subscribe(() => this.setPageTitle());
+
+    this.setPageTitle();
+  }
+
+  ngAfterViewInit() {
+    setTimeout(() => (this.showSidenav = true), 0);
+  }
+
+  toggleTheme() {
+    this.themeService.toggleTheme();
+  }
+
+  toggleDropdown() {
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  private toTitleCase(str: string): string {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+  }
+
+  private setPageTitle(): void {
+    const childRoute = this.findDeepestChild(this.route);
+    const pageTitle =
+      childRoute?.snapshot.data['pageTitle'] ||
+      this.routeTitleMap[this.router.url.split('/').pop() || ''] ||
+      'Dashboard';
+    this.pageTitle = childRoute?.snapshot.data['curriculumYear']
+      ? `${pageTitle} ${childRoute.snapshot.data['curriculumYear']}`
+      : pageTitle;
+  }
+
+  private findDeepestChild(route: ActivatedRoute): ActivatedRoute | null {
+    let child = route.firstChild;
+    while (child?.firstChild) {
+      child = child.firstChild;
+    }
+    return child;
+  }
+
+  public logout() {
+    const confirmDialogRef = this.dialog.open<
+      DialogGenericComponent,
+      DialogData,
+      string
+    >(DialogGenericComponent, {
+      data: {
+        title: 'Log Out',
+        content:
+          'Are you sure you want to log out? This will end your current session.',
+        actionText: 'Log Out',
+        cancelText: 'Cancel',
+        action: 'Log Out',
+      },
+    });
+
+    confirmDialogRef.afterClosed().subscribe((result) => {
+      if (result === 'Log Out') {
+        this.showLoadingAndLogout();
+      }
+    });
+  }
+
+  private showLoadingAndLogout() {
+    const loadingDialogRef = this.dialog.open(DialogGenericComponent, {
+      data: {
+        title: 'Logging Out',
+        content: 'Currently logging you out...',
+        showProgressBar: true,
+      },
+      disableClose: true,
+    });
+
+    this.authService.logout().subscribe({
+      next: () => {
+        this.cookieService.deleteAll('/');
+        loadingDialogRef.close();
+        this.router.navigate(['/login']);
+      },
+      error: (error) => {
+        console.error('Logout failed', error);
+        loadingDialogRef.close();
+      },
+    });
+  }
 }

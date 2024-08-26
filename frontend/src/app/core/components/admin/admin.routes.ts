@@ -17,6 +17,33 @@ export const ADMIN_ROUTES: Routes = [
           import('./overview/overview.component').then(
             (m) => m.OverviewComponent
           ),
+        data: { pageTitle: 'Overview' },
+      },
+      {
+        path: 'faculty',
+        loadComponent: () =>
+          import('./faculty/faculty.component').then((m) => m.FacultyComponent),
+        data: { pageTitle: 'Faculty' },
+      },
+      {
+        path: 'scheduling',
+        loadComponent: () =>
+          import('./scheduling/scheduling.component').then(
+            (m) => m.SchedulingComponent
+          ),
+        data: { pageTitle: 'Scheduling' },
+      },
+      {
+        path: 'reports',
+        loadComponent: () =>
+          import('./reports/reports.component').then((m) => m.ReportsComponent),
+        data: { pageTitle: 'Reports' },
+      },
+      {
+        path: 'help',
+        loadComponent: () =>
+          import('./help/help.component').then((m) => m.HelpComponent),
+        data: { pageTitle: 'Help' },
       },
       {
         path: '**',

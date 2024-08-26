@@ -17,6 +17,7 @@ return new class extends Migration {
             $table->string('floor_level');
             $table->string('room_type');
             $table->integer('capacity');
+            $table->string('status');
             $table->timestamps();
         });
     }
