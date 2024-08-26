@@ -158,17 +158,22 @@ export class FacultyComponent implements OnInit {
 
   openEditFacultyDialog(faculty: Faculty) {
     this.selectedFacultyIndex = this.faculty.indexOf(faculty);
-    const config = this.getDialogConfig(faculty);
-
-    const dialogRef = this.dialog.open(TableDialogComponent, {
-      data: config,
-      disableClose: true,
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result && this.selectedFacultyIndex !== null) {
-        this.updateFaculty(result);
-      }
+    
+    // Pass true to indicate editing mode
+    this.facultyService.getFaculty(true).subscribe((fullFacultyList) => {
+      const fullFaculty = fullFacultyList.find(f => f.facultyId === faculty.facultyId);
+      const config = this.getDialogConfig(fullFaculty);
+  
+      const dialogRef = this.dialog.open(TableDialogComponent, {
+        data: config,
+        disableClose: true,
+      });
+  
+      dialogRef.afterClosed().subscribe((result) => {
+        if (result && this.selectedFacultyIndex !== null) {
+          this.updateFaculty(result);
+        }
+      });
     });
   }
 

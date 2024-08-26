@@ -50,14 +50,17 @@ export class FacultyService {
     {
       facultyId: 'FA0369TG2024',
       name: 'Kyla Malaluan',
-      email: 'emmanmartinez@gmail.com',
+      email: 'kyla.malaluan@gmail.com',
       type: 'Part-Time',
       unitsAssigned: 20,
       status: 'Inactive',
     },
   ]);
 
-  getFaculty(): Observable<Faculty[]> {
+  getFaculty(isEditMode: boolean = false): Observable<Faculty[]> {
+    if (isEditMode) {
+      return of(this.facultySubject.getValue()); // Return full email for editing
+    }
     const facultyWithMaskedEmails = this.facultySubject.getValue().map(faculty => ({
       ...faculty,
       email: this.maskEmail(faculty.email),
