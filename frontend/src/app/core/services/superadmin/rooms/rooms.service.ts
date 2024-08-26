@@ -9,9 +9,10 @@ export interface Room {
   room_id?: number;
   room_code: string;
   location: string;
-  floor: string;
+  floor_level: string;
   room_type: string;
   capacity: number;
+  status: string;
 }
 
 @Injectable({
