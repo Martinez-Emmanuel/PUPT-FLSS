@@ -59,4 +59,10 @@ class Program extends Model
     {
         return $this->hasMany(YearLevel::class, 'program_id', 'program_id');
     }
+
+    public function courseAssignments()
+    {
+        return $this->hasMany(CourseAssignment::class, 'program_id', 'program_id');
+    }
+
 }
