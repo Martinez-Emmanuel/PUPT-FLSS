@@ -20,12 +20,6 @@ class CurriculaProgramsTableSeeder extends Seeder
                 'updated_at' => $now,
             ],
             [
-                'curriculum_id' => 2,
-                'program_id' => 2,
-                'created_at' => $now,
-                'updated_at' => $now,
-            ],
-            [
                 'curriculum_id' => 1,
                 'program_id' => 2,
                 'created_at' => $now,
@@ -34,6 +28,12 @@ class CurriculaProgramsTableSeeder extends Seeder
             [
                 'curriculum_id' => 2,
                 'program_id' => 1,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
+            [
+                'curriculum_id' => 2,
+                'program_id' => 2,
                 'created_at' => $now,
                 'updated_at' => $now,
             ],

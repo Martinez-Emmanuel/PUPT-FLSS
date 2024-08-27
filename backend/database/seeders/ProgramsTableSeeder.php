@@ -16,7 +16,6 @@ class ProgramsTableSeeder extends Seeder
         DB::table('programs')->insert([
             [
                 'program_id' => 1,
-                'curriculum_id' => 1,
                 'program_code' => 'BSIT',
                 'program_title' => 'Bachelor of Science in Information Technology',
                 'program_info' => 'Focuses on IT and software development.',
@@ -27,7 +26,6 @@ class ProgramsTableSeeder extends Seeder
             ],
             [
                 'program_id' => 2,
-                'curriculum_id' => 1,
                 'program_code' => 'BSA',
                 'program_title' => 'Bachelor of Science in Accountancy',
                 'program_info' => 'Focuses on accounting principles and practices.',
