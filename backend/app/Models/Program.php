@@ -50,6 +50,11 @@ class Program extends Model
         'number_of_years',
     ];
 
+    public function curriculum()
+    {
+        return $this->belongsTo(Curriculum::class, 'curriculum_id', 'curriculum_id');
+    }
+
     public function curricula()
     {
         return $this->belongsToMany(Curriculum::class, 'curricula_program', 'program_id', 'curriculum_id');

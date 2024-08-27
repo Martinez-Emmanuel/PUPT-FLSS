@@ -13,6 +13,9 @@ import { fadeAnimation} from '../../../../animations/animations';
 
 import { Program, ProgramsService } from '../../../../services/superadmin/programs/programs.service';
 
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+
 @Component({
   selector: 'app-programs',
   standalone: true,
@@ -59,6 +62,8 @@ export class ProgramsComponent implements OnInit {
       key: 'search'
     }
   ];
+  
+  showPreview = false; 
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -74,7 +79,6 @@ export class ProgramsComponent implements OnInit {
   fetchPrograms() {
     this.programService.getPrograms().subscribe((programs) => {
       this.programs = programs;
-      console.log(this.programs);
       this.cdr.markForCheck();
     });
   }
@@ -98,14 +102,106 @@ export class ProgramsComponent implements OnInit {
     });
   }
 
-  onExport(exportOption?: 'all' | 'current') {
-    if (exportOption === 'current') {
-      console.log('Exporting this item only to PDF');
-      // TODO: Implement logic here
-    } else {
-      console.log('Exporting all to PDF');
-      // TODO: Implement logic here
-    }
+  public generatePDF(showPreview: boolean = false): void {
+    const doc = new jsPDF('p', 'mm', 'legal') as any;
+    const pageWidth = doc.internal.pageSize.width;
+    const margin = 10;
+    const logoSize = 22;
+    const topMargin = 15;
+    let currentY = topMargin;
+
+    // Add the left logo
+    const leftLogoUrl = 'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png'; 
+    doc.addImage(leftLogoUrl, 'PNG', margin, 10, logoSize, logoSize); 
+
+    // Add the header text with different styles
+    doc.setFontSize(12);
+    doc.setFont('times', 'bold');
+    doc.text('POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH', pageWidth / 2, currentY, { align: 'center' });
+    currentY += 5;
+
+    doc.setFontSize(12);
+    doc.text('Gen. Santos Ave. Upper Bicutan, Taguig City', pageWidth / 2, currentY, { align: 'center' });
+    currentY += 10;
+
+    doc.setFontSize(15);
+    doc.setTextColor(0, 0, 0);
+    doc.text('Program Report', pageWidth / 2, currentY, { align: 'center' });
+    currentY += 8;
+
+    // Add the horizontal line below the header
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.line(margin, currentY, pageWidth - margin, currentY);
+
+    currentY += 7; // Move down after the header and line
+
+    const bodyData = this.programs.map((program, index) => [
+        (index + 1).toString(),
+        program.program_code,
+        program.program_title,
+        program.program_info,
+        program.status,
+        program.number_of_years.toString(),
+    ]);
+
+    doc.autoTable({
+        startY: currentY,
+        head: [['#', 'Program Code', 'Program Title', 'Program Info', 'Status', 'Years']],
+        body: bodyData,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [128, 0, 0],
+          textColor: [255, 255, 255],
+          fontSize: 9,
+        },
+        bodyStyles: {
+            fontSize: 8, 
+            textColor: [0, 0, 0],
+        },
+        styles: {
+            lineWidth: 0.1,
+            overflow: 'linebreak',
+            cellPadding: 2,
+        },
+        columnStyles: { 
+            0: { cellWidth: 15 },  // # (index)
+            1: { cellWidth: 30 },  // Program Code
+            2: { cellWidth: 50 },  // Program Title
+            3: { cellWidth: 55 },  // Program Info
+            4: { cellWidth: 25 },  // Status
+            5: { cellWidth: 20 },  // Years
+        },
+        margin: { left: margin, right: margin },
+        didDrawPage: (data: any) => {
+            currentY = data.cursor.y + 10;
+        },
+    });
+
+    // Create the blob and generate the URL before setting the iframe source
+    const pdfBlob = doc.output('blob');
+    const blobUrl = URL.createObjectURL(pdfBlob);
+
+    if (showPreview) {
+      this.showPreview = true; 
+      setTimeout(() => {
+          const iframe = document.getElementById('pdfPreview') as HTMLIFrameElement;
+
+          if (iframe) {
+              iframe.src = blobUrl;
+          }
+      }, 0); 
+  } else {
+      doc.save('programs_report.pdf');
+  }
+}
+
+  onExport() {
+    this.generatePDF(true);  // Trigger PDF generation with preview
+  }
+
+  cancelPreview() {
+    this.showPreview = false;  // Hide the preview section
   }
 
   private getDialogConfig(program?: Program): DialogConfig {
