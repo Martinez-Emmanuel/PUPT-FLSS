@@ -66,6 +66,20 @@
   font-family: "Inter Tight", "Helvetica Neue", sans-serif;
 }
 
+/* Primary Gradient Border */
+@mixin gradient-border-primary($width: 2px, $degree: 90deg) {
+  border: $width solid transparent;
+  background-clip: padding-box, border-box;
+  background-origin: padding-box, border-box;
+  background-image: 
+    linear-gradient(to bottom, var(--neutral-light), var(--neutral-light)), 
+    linear-gradient(
+      $degree,
+      var(--gradient-light-start) 0%,
+      var(--gradient-light-end) 100%
+    );
+}
+
 /* Custom-color material spinner */
 @mixin custom-spinner($color: var(--primary-one)) {
   .custom-spinner {

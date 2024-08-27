@@ -137,7 +137,8 @@
         border-radius: 50%;
         cursor: pointer;
         transition: all 0.3s ease;
-
+        @include gradient-border-primary(3px);
+      
         &:hover {
           box-shadow: 0 0 0 3px var(--neutral-hover);
         }
