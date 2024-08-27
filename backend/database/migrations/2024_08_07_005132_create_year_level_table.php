@@ -1,5 +1,4 @@
 <?php
-
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -13,11 +12,16 @@ return new class extends Migration
     {
         Schema::create('year_levels', function (Blueprint $table) {
             $table->increments('year_level_id'); 
-            $table->unsignedInteger('program_id')->nullable(); 
+            $table->unsignedInteger('curricula_program_id')->nullable(); 
             $table->integer('year'); 
             $table->timestamps();
 
-            $table->foreign('program_id')->references('program_id')->on('programs')->onDelete('cascade');
+            // Foreign key to curricula_program table
+            $table->foreign('curricula_program_id')
+                  ->references('curricula_program_id')
+                  ->on('curricula_program')
+                  ->onDelete('cascade')
+                  ->onUpdate('restrict');
         });
     }
 

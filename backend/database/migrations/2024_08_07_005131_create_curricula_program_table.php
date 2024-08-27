@@ -12,8 +12,18 @@ return new class extends Migration {
             $table->integer('curriculum_id')->unsigned()->nullable();
             $table->integer('program_id')->unsigned()->nullable();
 
-            $table->foreign('curriculum_id')->references('curriculum_id')->on('curricula')->onDelete('cascade');
-            $table->foreign('program_id')->references('program_id')->on('programs')->onDelete('cascade');
+            // Adding foreign key constraints
+            $table->foreign('curriculum_id')
+                  ->references('curriculum_id')
+                  ->on('curricula')
+                  ->onDelete('cascade')
+                  ->onUpdate('restrict');
+
+            $table->foreign('program_id')
+                  ->references('program_id')
+                  ->on('programs')
+                  ->onDelete('cascade')
+                  ->onUpdate('restrict');
 
             $table->timestamps();
         });
