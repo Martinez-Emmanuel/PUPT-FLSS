@@ -35,5 +35,6 @@ class Curriculum extends Model
     {
         return $this->belongsToMany(Program::class, 'curricula_program', 'curriculum_id', 'program_id');
     }
+    
 }
 

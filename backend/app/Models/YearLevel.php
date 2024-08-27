@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -19,11 +18,6 @@ class YearLevel extends Model
     public function semesters()
     {
         return $this->hasMany(Semester::class, 'year_level_id', 'year_level_id');
-    }
-
-    public function sections()
-    {
-        return $this->hasMany(Section::class, 'year_level_id', 'year_level_id');
     }
 
     public function curriculaProgram()
