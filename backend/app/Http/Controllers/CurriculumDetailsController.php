@@ -1,10 +1,9 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Curriculum;
-use App\Models\CurriculaProgram;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class CurriculumDetailsController extends Controller
 {
@@ -15,46 +14,27 @@ class CurriculumDetailsController extends Controller
             ->where('status', 'active')
             ->firstOrFail();
 
-        Log::info("Retrieved Curriculum: ", ['curriculum' => $curriculum]);
-
         // Get all CurriculaPrograms for this curriculum
-        $curriculaPrograms = CurriculaProgram::where('curriculum_id', $curriculum->curriculum_id)
-            ->with([
-                'program',
-                'yearLevels.semesters.courses.requirements.requiredCourse'
-            ])
-            ->get();
-
-        Log::info("Curricula Programs Retrieved: ", ['curriculaPrograms' => $curriculaPrograms]);
-
-        if ($curriculaPrograms->isEmpty()) {
-            Log::warning("No Curricula Programs found for curriculum_id: {$curriculum->curriculum_id}");
-        }
+        $curriculaPrograms = $curriculum->programs()->with([
+            'yearLevels.semesters.courses.requirements.requiredCourse'
+        ])->get();
 
         // Format the data as needed
         $result = [
             'curriculum_year' => $curriculum->curriculum_year,
             'status' => ucfirst($curriculum->status),
-            'programs' => $curriculaPrograms->map(function($curriculaProgram) {
-                $program = $curriculaProgram->program;
-                Log::info("Processing Program: ", ['program' => $program]);
-
+            'programs' => $curriculaPrograms->map(function($program) {
                 return [
                     'name' => $program->program_code,
                     'number_of_years' => $program->number_of_years,
-                    'year_levels' => $curriculaProgram->yearLevels->map(function($yearLevel) {
-                        Log::info("Processing Year Level: ", ['yearLevel' => $yearLevel]);
-
+                    'year_levels' => $program->yearLevels->map(function($yearLevel) {
                         return [
                             'year' => $yearLevel->year,
                             'semesters' => $yearLevel->semesters->map(function($semester) {
-                                // Log debugging information
-                                Log::info("Fetching courses for semester_id: {$semester->semester_id}");
-                                Log::info("Number of courses found: " . $semester->courses->count());
-
                                 return [
                                     'semester' => $semester->semester,
                                     'courses' => $semester->courses->map(function($course) {
+                                        // Get prerequisites and corequisites
                                         $prereqs = $course->requirements->where('requirement_type', 'pre');
                                         $coreqs = $course->requirements->where('requirement_type', 'co');
                                         
@@ -69,13 +49,13 @@ class CurriculumDetailsController extends Controller
                                                 return $prereq->requiredCourse ? [
                                                     'course_code' => $prereq->requiredCourse->course_code,
                                                     'course_title' => $prereq->requiredCourse->course_title,
-                                                ] : [];
+                                                ] : null;
                                             })->filter()->values(),
                                             'corequisites' => $coreqs->map(function($coreq) {
                                                 return $coreq->requiredCourse ? [
                                                     'course_code' => $coreq->requiredCourse->course_code,
                                                     'course_title' => $coreq->requiredCourse->course_title,
-                                                ] : [];
+                                                ] : null;
                                             })->filter()->values(),
                                         ];
                                     }),
@@ -86,8 +66,6 @@ class CurriculumDetailsController extends Controller
                 ];
             }),
         ];
-
-        Log::info("Final Result: ", ['result' => $result]);
 
         return response()->json($result);
     }

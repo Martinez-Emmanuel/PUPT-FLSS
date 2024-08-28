@@ -13,17 +13,19 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             FacultySeeder::class,
-            CurriculaTableSeeder::class,
-            ProgramsTableSeeder::class,
-            CurriculaProgramsTableSeeder::class,
-            YearLevelSeeder::class,
-            SemestersTableSeeder::class,
-            CoursesTableSeeder::class,
-            CourseReqTableSeeder::class,
-            CourseAssignmentSeeder::class,
-            AcademicYearsTableSeeder::class,
-            SectionsTableSeeder::class,
-            ActiveSemestersTableSeeder::class,
+            // CurriculaTableSeeder::class,
+            // ProgramsTableSeeder::class,
+            // CurriculaProgramsTableSeeder::class,
+            // YearLevelSeeder::class,
+            // SemestersTableSeeder::class,
+            // CoursesTableSeeder::class,
+            // CourseReqTableSeeder::class,
+            // CourseAssignmentSeeder::class,
+            // AcademicYearsTableSeeder::class,
+            // SectionsTableSeeder::class,
+            // ActiveSemestersTableSeeder::class,
+            RoomsSeeder::class,
+            CurriculumProgramSeeder::class,
         ]);
     }
 }
