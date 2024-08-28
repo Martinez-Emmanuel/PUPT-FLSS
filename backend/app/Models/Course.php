@@ -20,15 +20,25 @@ class Course extends Model
         'tuition_hours',
     ];
 
-    // Relationship with CourseAssignment
     public function assignments()
     {
         return $this->hasMany(CourseAssignment::class, 'course_id', 'course_id');
     }
 
-    // Relationship with Requirement
     public function requirements()
     {
         return $this->hasMany(CourseRequirement::class, 'course_id', 'course_id');
+    }
+
+    public function prerequisiteCourses()
+    {
+        return $this->hasMany(CourseRequirement::class, 'course_id', 'course_id')
+            ->where('requirement_type', 'pre');
+    }
+
+    public function corequisiteCourses()
+    {
+        return $this->hasMany(CourseRequirement::class, 'course_id', 'course_id')
+            ->where('requirement_type', 'co');
     }
 }
