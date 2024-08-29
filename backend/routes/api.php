@@ -12,11 +12,14 @@ use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\YearLevelController;
 use App\Http\Controllers\CurriculumDetailsController;
+use App\Http\Controllers\ProgramFetchController;
 // Public routes
 Route::post('login', [AuthController::class, 'login'])->name('login');
 Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
 
 Route::get('/curricula-details/{curriculumYear}/', [CurriculumDetailsController::class, 'getCurriculumDetails']);
+
+Route::get('/curriculum/{curriculum_id}', [ProgramFetchController::class, 'getCoursesForCurriculum']);
 
 // Curriculum routes
 Route::get('/curricula', [CurriculumController::class, 'index']);
