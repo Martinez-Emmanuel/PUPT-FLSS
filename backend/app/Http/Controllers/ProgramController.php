@@ -10,7 +10,7 @@ class ProgramController extends Controller
     // List all programs
     public function index()
     {
-        $programs = Program::with('curriculum', 'yearLevels')->get(); 
+        $programs = Program::with('curricula', 'yearLevels')->get();
         return response()->json($programs);
     }
 
@@ -37,7 +37,7 @@ class ProgramController extends Controller
     // Show a specific program
     public function show($id)
     {
-        $program = Program::with('curriculum', 'yearLevels')->findOrFail($id);
+        $program = Program::with('curricula', 'yearLevels')->findOrFail($id);
         return response()->json($program);
     }
 
