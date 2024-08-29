@@ -15,12 +15,17 @@ class DatabaseSeeder extends Seeder
             FacultySeeder::class,
             CurriculaTableSeeder::class,
             ProgramsTableSeeder::class,
+            CurriculaProgramsTableSeeder::class,
             YearLevelSeeder::class,
             SemestersTableSeeder::class,
             CoursesTableSeeder::class,
-            CourseReqTableSeeder::class,
+            // CourseReqTableSeeder::class,
             CourseAssignmentSeeder::class,
-            CurriculaProgramsTableSeeder::class,
+            // AcademicYearsTableSeeder::class,
+            // SectionsTableSeeder::class,
+            // ActiveSemestersTableSeeder::class,
+            RoomSeeder::class,
+            // CurriculumProgramSeeder::class,
         ]);
     }
 }

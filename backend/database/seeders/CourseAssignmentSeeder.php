@@ -1,138 +1,76 @@
 <?php
-
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Carbon\Carbon;
+use App\Models\CourseAssignment;
+use App\Models\Course;
+use App\Models\Semester;
+use App\Models\CurriculaProgram;
 
 class CourseAssignmentSeeder extends Seeder
 {
     public function run()
     {
-        $currentTimestamp = Carbon::now();
+        $bsitCurriculaProgram2018 = CurriculaProgram::where('curriculum_id', 1)->where('program_id', 1)->first();
+        $bsaCurriculaProgram2018 = CurriculaProgram::where('curriculum_id', 1)->where('program_id', 2)->first();
+        $bsitCurriculaProgram2022 = CurriculaProgram::where('curriculum_id', 2)->where('program_id', 1)->first();
+        $bsaCurriculaProgram2022 = CurriculaProgram::where('curriculum_id', 2)->where('program_id', 2)->first();
 
-        DB::table('course_assignments')->insert([
-            [
-                'course_assignment_id' => 1,
-                'program_id' => 1,
-                'semester_id' => 1,
-                'course_id' => 1,
-                'created_at' => $currentTimestamp,
-                'updated_at' => $currentTimestamp,
-            ],
-            [
-                'course_assignment_id' => 2,
-                'program_id' => 1,
-                'semester_id' => 1,
-                'course_id' => 2,
-                'created_at' => $currentTimestamp,
-                'updated_at' => $currentTimestamp,
-            ],
-            [
-                'course_assignment_id' => 3,
-                'program_id' => 1,
-                'semester_id' => 1,
-                'course_id' => 7,
-                'created_at' => $currentTimestamp,
-                'updated_at' => $currentTimestamp,
-            ],
-            [
-                'course_assignment_id' => 4,
-                'program_id' => 1,
-                'semester_id' => 2,
-                'course_id' => 3,
-                'created_at' => $currentTimestamp,
-                'updated_at' => $currentTimestamp,
-            ],
-            [
-                'course_assignment_id' => 5,
-                'program_id' => 1,
-                'semester_id' => 2,
-                'course_id' => 4,
-                'created_at' => $currentTimestamp,
-                'updated_at' => $currentTimestamp,
-            ],
-            [
-                'course_assignment_id' => 6,
-                'program_id' => 1,
-                'semester_id' => 2,
-                'course_id' => 8,
-                'created_at' => $currentTimestamp,
-                'updated_at' => $currentTimestamp,
-            ],
-            [
-                'course_assignment_id' => 7,
-                'program_id' => 1,
-                'semester_id' => 3,
-                'course_id' => 5,
-                'created_at' => $currentTimestamp,
-                'updated_at' => $currentTimestamp,
-            ],
-            [
-                'course_assignment_id' => 8,
-                'program_id' => 1,
-                'semester_id' => 3,
-                'course_id' => 10,
-                'created_at' => $currentTimestamp,
-                'updated_at' => $currentTimestamp,
-            ],
-            [
-                'course_assignment_id' => 9,
-                'program_id' => 1,
-                'semester_id' => 4,
-                'course_id' => 11,
-                'created_at' => $currentTimestamp,
-                'updated_at' => $currentTimestamp,
-            ],
-            [
-                'course_assignment_id' => 10,
-                'program_id' => 1,
-                'semester_id' => 4,
-                'course_id' => 12,
-                'created_at' => $currentTimestamp,
-                'updated_at' => $currentTimestamp,
-            ],
-            [
-                'course_assignment_id' => 11,
-                'program_id' => 1,
-                'semester_id' => 4,
-                'course_id' => 4,
-                'created_at' => $currentTimestamp,
-                'updated_at' => $currentTimestamp,
-            ],
-            [
-                'course_assignment_id' => 12,
-                'program_id' => 1,
-                'semester_id' => 5,
-                'course_id' => 13,
-                'created_at' => $currentTimestamp,
-                'updated_at' => $currentTimestamp,
-            ],
-            [
-                'course_assignment_id' => 13,
-                'program_id' => 1,
-                'semester_id' => 5,
-                'course_id' => 3,
-                'created_at' => $currentTimestamp,
-                'updated_at' => $currentTimestamp,
-            ],
-            [
-                'course_assignment_id' => 14,
-                'program_id' => 1,
-                'semester_id' => 5,
-                'course_id' => 14,
-                'created_at' => $currentTimestamp,
-                'updated_at' => $currentTimestamp,
-            ],
-            [
-                'course_assignment_id' => 15,
-                'program_id' => 1,
-                'semester_id' => 6,
-                'course_id' => 15,
-                'created_at' => $currentTimestamp,
-                'updated_at' => $currentTimestamp,
-            ],
+        $semester1BSIT2018 = Semester::where('year_level_id', 1)->first();
+        $semester1BSA2018 = Semester::where('year_level_id', 2)->first();
+        $semester1BSIT2022 = Semester::where('year_level_id', 3)->first();
+        $semester1BSA2022 = Semester::where('year_level_id', 4)->first();
+
+        // Assign Courses to Semesters for BSIT 2018 Curriculum
+        CourseAssignment::create([
+            'curricula_program_id' => $bsitCurriculaProgram2018->curricula_program_id,
+            'semester_id' => $semester1BSIT2018->semester_id,
+            'course_id' => Course::where('course_code', 'IT101')->first()->course_id
+        ]);
+
+        CourseAssignment::create([
+            'curricula_program_id' => $bsitCurriculaProgram2018->curricula_program_id,
+            'semester_id' => $semester1BSIT2018->semester_id,
+            'course_id' => Course::where('course_code', 'CS101')->first()->course_id
+        ]);
+
+        // Assign Courses to Semesters for BSA 2018 Curriculum
+        CourseAssignment::create([
+            'curricula_program_id' => $bsaCurriculaProgram2018->curricula_program_id,
+            'semester_id' => $semester1BSA2018->semester_id,
+            'course_id' => Course::where('course_code', 'ACC101')->first()->course_id
+        ]);
+
+        CourseAssignment::create([
+            'curricula_program_id' => $bsaCurriculaProgram2018->curricula_program_id,
+            'semester_id' => $semester1BSA2018->semester_id,
+            'course_id' => Course::where('course_code', 'GE101')->first()->course_id
+        ]);
+
+        // Assign Courses to Semesters for BSIT 2022 Curriculum
+        CourseAssignment::create([
+            'curricula_program_id' => $bsitCurriculaProgram2022->curricula_program_id,
+            'semester_id' => $semester1BSIT2022->semester_id,
+            'course_id' => Course::where('course_code', 'IT102')->first()->course_id
+        ]);
+
+        CourseAssignment::create([
+            'curricula_program_id' => $bsitCurriculaProgram2022->curricula_program_id,
+            'semester_id' => $semester1BSIT2022->semester_id,
+            'course_id' => Course::where('course_code', 'CS102')->first()->course_id
+        ]);
+
+        // Assign Courses to Semesters for BSA 2022 Curriculum
+        CourseAssignment::create([
+            'curricula_program_id' => $bsaCurriculaProgram2022->curricula_program_id,
+            'semester_id' => $semester1BSA2022->semester_id,
+            'course_id' => Course::where('course_code', 'ACC102')->first()->course_id
+        ]);
+
+        CourseAssignment::create([
+            'curricula_program_id' => $bsaCurriculaProgram2022->curricula_program_id,
+            'semester_id' => $semester1BSA2022->semester_id,
+            'course_id' => Course::where('course_code', 'GE102')->first()->course_id
         ]);
     }
 }
