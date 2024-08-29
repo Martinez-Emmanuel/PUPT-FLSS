@@ -9,6 +9,7 @@ import { takeUntil } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
+// Commented out components that are not yet necessary
 import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
 import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
@@ -22,8 +23,8 @@ import { CurriculumService, Curriculum, Program } from '../../../../services/sup
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    TableGenericComponent,
-    TableHeaderComponent,
+    TableGenericComponent, // Commented out for now
+    TableHeaderComponent,  // Commented out for now
   ],
   templateUrl: './curriculum.component.html',
   styleUrls: ['./curriculum.component.scss'],
@@ -38,6 +39,8 @@ export class CurriculumComponent implements OnInit, OnDestroy {
   curricula: Curriculum[] = [];
   programs: Program[] = [];
   availableCurriculumYears: string[] = [];
+  
+  // Commented out columns and displayedColumns until necessary
   columns = [
     { key: 'index', label: '#' },
     { key: 'curriculum_year', label: 'Curriculum Year' },
@@ -46,6 +49,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
 
   displayedColumns: string[] = ['index', 'curriculum_year', 'status'];
 
+  // Commented out headerInputFields until necessary
   headerInputFields: InputField[] = [
     {
       type: 'text',
@@ -64,8 +68,8 @@ export class CurriculumComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.fetchCurricula();
-    this.fetchPredefinedPrograms();
-    this.fetchAvailableCurriculumYears();
+    // this.fetchPredefinedPrograms(); // Commented out until necessary
+    // this.fetchAvailableCurriculumYears(); // Commented out until necessary
   }
 
   ngOnDestroy() {
@@ -73,15 +77,16 @@ export class CurriculumComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private fetchAvailableCurriculumYears() {
-    this.curriculumService
-      .getAvailableCurriculumYears()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((years) => {
-        this.availableCurriculumYears = years;
-        this.cdr.markForCheck();
-      });
-  }
+  // Commented out fetchAvailableCurriculumYears until necessary
+  // private fetchAvailableCurriculumYears() {
+  //   this.curriculumService
+  //     .getAvailableCurriculumYears()
+  //     .pipe(takeUntil(this.destroy$))
+  //     .subscribe((years) => {
+  //       this.availableCurriculumYears = years;
+  //       this.cdr.markForCheck();
+  //     });
+  // }
 
   private fetchCurricula() {
     this.curriculumService
@@ -94,12 +99,14 @@ export class CurriculumComponent implements OnInit, OnDestroy {
       });
   }
 
-  private fetchPredefinedPrograms() {
-    this.curriculumService.getPredefinedPrograms().subscribe((programs) => {
-      this.programs = programs;
-    });
-  }
+  // Commented out fetchPredefinedPrograms until necessary
+  // private fetchPredefinedPrograms() {
+  //   this.curriculumService.getPredefinedPrograms().subscribe((programs) => {
+  //     this.programs = programs;
+  //   });
+  // }
 
+  // Commented out onSearch until necessary
   private onSearch(searchTerm: string) {
     this.curriculumService
       .getCurricula()
@@ -118,12 +125,14 @@ export class CurriculumComponent implements OnInit, OnDestroy {
       });
   }
 
+  // Commented out onInputChange until necessary
   public onInputChange(values: { [key: string]: any }) {
     if (values['search'] !== undefined) {
       this.onSearch(values['search']);
     }
   }
 
+  // Commented out onExport until necessary
   onExport() {
     alert('Export functionality not implemented yet');
   }
@@ -135,6 +144,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
     ]);
   }
 
+  // Commented out dialog functions until necessary
   openAddCurriculumDialog() {
     this.openCurriculumDialog();
   }
@@ -192,65 +202,67 @@ export class CurriculumComponent implements OnInit, OnDestroy {
       data: config,
       disableClose: true,
     });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        curriculum ? this.updateCurriculum(result) : this.addCurriculum(result);
-      }
-    });
   }
 
-  private addCurriculum(newCurriculum: Curriculum) {
-    newCurriculum.programs = this.programs.map((program) => ({
-      ...program,
-      year_levels: program.year_levels.map((yearLevel) => ({
-        ...yearLevel,
-        semesters: yearLevel.semesters.map((semester) => ({
-          ...semester,
-          courses: [],
-        })),
-      })),
-    }));
+  //   dialogRef.afterClosed().subscribe((result) => {
+  //     if (result) {
+  //       curriculum ? this.updateCurriculum(result) : this.addCurriculum(result);
+  //     }
+  //   });
+  // }
 
-    this.curriculumService.addCurriculum(newCurriculum).subscribe({
-      next: (curricula) => {
-        this.updateCurriculaList(curricula);
-        this.showSuccessMessage('Curriculum added successfully');
-      },
-      error: () =>
-        this.showErrorMessage('Error adding curriculum. Please try again.'),
-    });
-  }
+  // Commented out addCurriculum and updateCurriculum until necessary
+  // private addCurriculum(newCurriculum: Curriculum) {
+  //   newCurriculum.programs = this.programs.map((program) => ({
+  //     ...program,
+  //     year_levels: program.year_levels.map((yearLevel) => ({
+  //       ...yearLevel,
+  //       semesters: yearLevel.semesters.map((semester) => ({
+  //         ...semester,
+  //         courses: [],
+  //       })),
+  //     })),
+  //   }));
 
-  private updateCurriculum(updatedCurriculum: Curriculum) {
-    if (this.selectedCurriculumIndex !== null) {
-      this.curriculumService
-        .updateCurriculum(this.selectedCurriculumIndex, updatedCurriculum)
-        .subscribe({
-          next: (curricula) => {
-            this.updateCurriculaList(curricula);
-            this.showSuccessMessage('Curriculum updated successfully');
-          },
-          error: () =>
-            this.showErrorMessage(
-              'Error updating curriculum. Please try again.'
-            ),
-        });
-    }
-  }
+  //   this.curriculumService.addCurriculum(newCurriculum).subscribe({
+  //     next: (curricula) => {
+  //       this.updateCurriculaList(curricula);
+  //       this.showSuccessMessage('Curriculum added successfully');
+  //     },
+  //     error: () =>
+  //       this.showErrorMessage('Error adding curriculum. Please try again.'),
+  //   });
+  // }
+
+  // private updateCurriculum(updatedCurriculum: Curriculum) {
+  //   if (this.selectedCurriculumIndex !== null) {
+  //     this.curriculumService
+  //       .updateCurriculum(this.selectedCurriculumIndex, updatedCurriculum)
+  //       .subscribe({
+  //         next: (curricula) => {
+  //           this.updateCurriculaList(curricula);
+  //           this.showSuccessMessage('Curriculum updated successfully');
+  //         },
+  //         error: () =>
+  //           this.showErrorMessage(
+  //             'Error updating curriculum. Please try again.'
+  //           ),
+  //       });
+  //   }
+  // }
 
   deleteCurriculum(curriculum: Curriculum) {
-    const index = this.curricula.indexOf(curriculum);
-    if (index >= 0) {
-      this.curriculumService.deleteCurriculum(index).subscribe({
-        next: (curricula) => {
-          this.updateCurriculaList(curricula);
-          this.showSuccessMessage('Curriculum deleted successfully');
-        },
-        error: () =>
-          this.showErrorMessage('Error deleting curriculum. Please try again.'),
-      });
-    }
+    // const index = this.curricula.indexOf(curriculum);
+    // if (index >= 0) {
+    //   this.curriculumService.deleteCurriculum(index).subscribe({
+    //     next: (curricula) => {
+    //       this.updateCurriculaList(curricula);
+    //       this.showSuccessMessage('Curriculum deleted successfully');
+    //     },
+    //     error: () =>
+    //       this.showErrorMessage('Error deleting curriculum. Please try again.'),
+    //   });
+    // }
   }
 
   private updateCurriculaList(curricula: Curriculum[]) {
