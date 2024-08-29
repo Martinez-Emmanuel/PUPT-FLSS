@@ -10,14 +10,38 @@ class SemestersTableSeeder extends Seeder
 {
     public function run()
     {
-        $yearLevel1BSIT2018 = YearLevel::where('curricula_program_id', 1)->first();
-        $yearLevel1BSA2018 = YearLevel::where('curricula_program_id', 2)->first();
-        $yearLevel1BSIT2022 = YearLevel::where('curricula_program_id', 3)->first();
-        $yearLevel1BSA2022 = YearLevel::where('curricula_program_id', 4)->first();
+        // Fetch all Year Levels
+        $bsitYearLevels2018 = YearLevel::where('curricula_program_id', 1)->get();
+        $bsaYearLevels2018 = YearLevel::where('curricula_program_id', 2)->get();
+        $bsitYearLevels2022 = YearLevel::where('curricula_program_id', 3)->get();
+        $bsaYearLevels2022 = YearLevel::where('curricula_program_id', 4)->get();
 
-        Semester::create(['year_level_id' => $yearLevel1BSIT2018->year_level_id, 'semester' => 1]);
-        Semester::create(['year_level_id' => $yearLevel1BSA2018->year_level_id, 'semester' => 1]);
-        Semester::create(['year_level_id' => $yearLevel1BSIT2022->year_level_id, 'semester' => 1]);
-        Semester::create(['year_level_id' => $yearLevel1BSA2022->year_level_id, 'semester' => 1]);
+        // Create Semesters for each Year Level in BSIT 2018
+        foreach ($bsitYearLevels2018 as $yearLevel) {
+            for ($semester = 1; $semester <= 3; $semester++) {
+                Semester::create(['year_level_id' => $yearLevel->year_level_id, 'semester' => $semester]);
+            }
+        }
+
+        // Create Semesters for each Year Level in BSA 2018
+        foreach ($bsaYearLevels2018 as $yearLevel) {
+            for ($semester = 1; $semester <= 3; $semester++) {
+                Semester::create(['year_level_id' => $yearLevel->year_level_id, 'semester' => $semester]);
+            }
+        }
+
+        // Create Semesters for each Year Level in BSIT 2022
+        foreach ($bsitYearLevels2022 as $yearLevel) {
+            for ($semester = 1; $semester <= 2; $semester++) {
+                Semester::create(['year_level_id' => $yearLevel->year_level_id, 'semester' => $semester]);
+            }
+        }
+
+        // Create Semesters for each Year Level in BSA 2022
+        foreach ($bsaYearLevels2022 as $yearLevel) {
+            for ($semester = 1; $semester <= 2; $semester++) {
+                Semester::create(['year_level_id' => $yearLevel->year_level_id, 'semester' => $semester]);
+            }
+        }
     }
 }

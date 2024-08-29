@@ -15,9 +15,12 @@ class YearLevelSeeder extends Seeder
         $bsitCurriculaProgram2022 = CurriculaProgram::where('curriculum_id', 2)->where('program_id', 1)->first();
         $bsaCurriculaProgram2022 = CurriculaProgram::where('curriculum_id', 2)->where('program_id', 2)->first();
 
-        YearLevel::create(['year' => 1, 'curricula_program_id' => $bsitCurriculaProgram2018->curricula_program_id]);
-        YearLevel::create(['year' => 1, 'curricula_program_id' => $bsaCurriculaProgram2018->curricula_program_id]);
-        YearLevel::create(['year' => 1, 'curricula_program_id' => $bsitCurriculaProgram2022->curricula_program_id]);
-        YearLevel::create(['year' => 1, 'curricula_program_id' => $bsaCurriculaProgram2022->curricula_program_id]);
+        for ($year = 1; $year <= 4; $year++) {
+            YearLevel::create(['year' => $year, 'curricula_program_id' => $bsitCurriculaProgram2018->curricula_program_id]);
+            YearLevel::create(['year' => $year, 'curricula_program_id' => $bsaCurriculaProgram2018->curricula_program_id]);
+            YearLevel::create(['year' => $year, 'curricula_program_id' => $bsitCurriculaProgram2022->curricula_program_id]);
+            YearLevel::create(['year' => $year, 'curricula_program_id' => $bsaCurriculaProgram2022->curricula_program_id]);
+        }
+        
     }
 }
