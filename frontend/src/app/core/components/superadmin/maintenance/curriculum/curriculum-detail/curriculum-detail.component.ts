@@ -369,8 +369,8 @@ export class CurriculumDetailComponent implements OnInit {
         if (field.key === 'program') {
             return {
                 ...field,
-                options: selectedProgramNames, // Update the options with the selected program names
-                disabled: selectedProgramNames.length === 0 // Disable dropdown if no options
+                options: selectedProgramNames, // Update the options with all fetched programs
+                disabled: false // Ensure dropdown is always enabled
             };
         }
         return field;
@@ -378,6 +378,8 @@ export class CurriculumDetailComponent implements OnInit {
 
     this.cdr.markForCheck(); // Ensure that the view is updated
   }
+
+
 
   
   // Commented out until needed
