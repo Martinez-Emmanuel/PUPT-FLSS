@@ -47,16 +47,16 @@ class CourseController extends Controller
     
             // Handle course assignments if a semester, year level, and curricula_program_id are provided
             if (!empty($validatedData['semester_id']) && !empty($validatedData['curricula_program_id'])) {
-                // Check if an assignment with the same curricula_program_id, course_id, and semester_id already exists
+    
+                // Check if the course is already assigned to any semester under the same program
                 $existingAssignment = CourseAssignment::where([
                     ['curricula_program_id', $validatedData['curricula_program_id']],
                     ['course_id', $course->course_id],
-                    ['semester_id', $validatedData['semester_id']],
                 ])->first();
     
                 if ($existingAssignment) {
                     return response()->json([
-                        'message' => 'This course is already assigned to this program and semester. It cannot be assigned again.'
+                        'message' => 'This course is already assigned under this program in a semester. It cannot be assigned again.'
                     ], 409); // 409 Conflict
                 }
     
@@ -101,7 +101,6 @@ class CourseController extends Controller
             return response()->json(['message' => 'Failed to add course', 'error' => $e->getMessage()], 500);
         }
     }
-    
     
 
 
