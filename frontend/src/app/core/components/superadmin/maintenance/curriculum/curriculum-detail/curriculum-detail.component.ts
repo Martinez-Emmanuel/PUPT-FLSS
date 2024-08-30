@@ -268,11 +268,8 @@ export class CurriculumDetailComponent implements OnInit {
 
   // Commented out until needed
   onManagePrograms() {
-    if (!this.curriculum) return;
-
-    // Fetch programs based on the selected curriculum year
-    this.curriculumService.getProgramsByCurriculumYear(this.curriculum.curriculum_year).subscribe(programs => {
-        const selectedPrograms = this.curriculum!.programs.map(p => p.name);
+    this.curriculumService.getAllPrograms().subscribe(programs => {
+        const selectedPrograms = this.curriculum?.programs.map(p => p.name) || [];
 
         const dialogConfig: DialogConfig = {
             title: 'Manage Programs',
@@ -285,7 +282,7 @@ export class CurriculumDetailComponent implements OnInit {
                 checked: selectedPrograms.includes(program.program_code),
             })),
             initialValue: programs.reduce((acc, program) => {
-                acc[program.name] = selectedPrograms.includes(program.program_code);
+                acc[program.program_code] = selectedPrograms.includes(program.program_code);
                 return acc;
             }, {} as { [key: string]: boolean }),
         };
@@ -314,6 +311,7 @@ export class CurriculumDetailComponent implements OnInit {
         });
     });
   }
+
 
 
 
