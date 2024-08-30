@@ -35,7 +35,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private selectedCurriculumIndex: number | null = null;
 
-  curriculumStatuses = ['Active', 'Inactive'];
+  curriculumStatuses = ['active', 'inactive'];
   curricula: Curriculum[] = [];
   programs: Program[] = [];
   availableCurriculumYears: string[] = [];
@@ -146,13 +146,43 @@ export class CurriculumComponent implements OnInit, OnDestroy {
 
   // Commented out dialog functions until necessary
   openAddCurriculumDialog() {
-    this.openCurriculumDialog();
+    const dialogConfig = this.getDialogConfig();
+  
+    const dialogRef = this.dialog.open(TableDialogComponent, {
+      data: dialogConfig,
+      disableClose: true,
+    });
+  
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.addCurriculum(result);
+      }
+    });
   }
+
+  private addCurriculum(newCurriculum: Curriculum) {
+    this.curriculumService.addCurriculum(newCurriculum).subscribe({
+      next: (addedCurricula) => {
+        if (Array.isArray(addedCurricula)) {
+          this.curricula.push(...addedCurricula);  // Spread operator to add all items in the array
+        } else {
+          this.curricula.push(addedCurricula);  // In case only one curriculum is returned
+        }
+        this.updateCurriculaList(this.curricula);  // Update the curricula list
+        this.showSuccessMessage('Curriculum added successfully');
+        this.cdr.markForCheck(); // Ensure the view is updated
+        this.fetchCurricula();
+      },
+      error: () => this.showErrorMessage('Error adding curriculum. Please try again.'),
+    });
+  }
+  
 
   openEditCurriculumDialog(curriculum: Curriculum) {
     this.selectedCurriculumIndex = this.curricula.indexOf(curriculum);
     this.openCurriculumDialog(curriculum);
   }
+  
 
   private getDialogConfig(curriculum?: Curriculum): DialogConfig {
     const copyFromOptions = [
@@ -199,10 +229,16 @@ export class CurriculumComponent implements OnInit, OnDestroy {
   private openCurriculumDialog(curriculum?: Curriculum) {
     const config = this.getDialogConfig(curriculum);
     const dialogRef = this.dialog.open(TableDialogComponent, {
-      data: config,
-      disableClose: true,
+       data: config,
+       disableClose: true,
     });
-  }
+ 
+    dialogRef.afterClosed().subscribe((result) => {
+       if (result) {
+          this.updateCurriculum({ ...curriculum, ...result });  // Ensure curriculum_id is passed
+       }
+    });
+ }
 
   //   dialogRef.afterClosed().subscribe((result) => {
   //     if (result) {
@@ -211,59 +247,35 @@ export class CurriculumComponent implements OnInit, OnDestroy {
   //   });
   // }
 
-  // Commented out addCurriculum and updateCurriculum until necessary
-  // private addCurriculum(newCurriculum: Curriculum) {
-  //   newCurriculum.programs = this.programs.map((program) => ({
-  //     ...program,
-  //     year_levels: program.year_levels.map((yearLevel) => ({
-  //       ...yearLevel,
-  //       semesters: yearLevel.semesters.map((semester) => ({
-  //         ...semester,
-  //         courses: [],
-  //       })),
-  //     })),
-  //   }));
-
-  //   this.curriculumService.addCurriculum(newCurriculum).subscribe({
-  //     next: (curricula) => {
-  //       this.updateCurriculaList(curricula);
-  //       this.showSuccessMessage('Curriculum added successfully');
-  //     },
-  //     error: () =>
-  //       this.showErrorMessage('Error adding curriculum. Please try again.'),
-  //   });
-  // }
-
-  // private updateCurriculum(updatedCurriculum: Curriculum) {
-  //   if (this.selectedCurriculumIndex !== null) {
-  //     this.curriculumService
-  //       .updateCurriculum(this.selectedCurriculumIndex, updatedCurriculum)
-  //       .subscribe({
-  //         next: (curricula) => {
-  //           this.updateCurriculaList(curricula);
-  //           this.showSuccessMessage('Curriculum updated successfully');
-  //         },
-  //         error: () =>
-  //           this.showErrorMessage(
-  //             'Error updating curriculum. Please try again.'
-  //           ),
-  //       });
-  //   }
-  // }
+  private updateCurriculum(updatedCurriculum: Curriculum) {
+    console.log('Updating Curriculum ID:', updatedCurriculum.curriculum_id);
+    this.curriculumService.updateCurriculum(updatedCurriculum).subscribe({
+        next: (updatedCurriculum) => {
+            // Update the local curriculum list with the updated curriculum data
+            const index = this.curricula.findIndex(c => c.curriculum_id === updatedCurriculum.curriculum_id);
+            if (index !== -1) {
+                this.curricula[index] = updatedCurriculum;
+            }
+            this.updateCurriculaList(this.curricula);
+            this.showSuccessMessage('Curriculum updated successfully');
+            this.fetchCurricula();
+        },
+        error: () => this.showErrorMessage('Error updating curriculum. Please try again.'),
+    });
+  }
 
   deleteCurriculum(curriculum: Curriculum) {
-    // const index = this.curricula.indexOf(curriculum);
-    // if (index >= 0) {
-    //   this.curriculumService.deleteCurriculum(index).subscribe({
-    //     next: (curricula) => {
-    //       this.updateCurriculaList(curricula);
-    //       this.showSuccessMessage('Curriculum deleted successfully');
-    //     },
-    //     error: () =>
-    //       this.showErrorMessage('Error deleting curriculum. Please try again.'),
-    //   });
-    // }
-  }
+    this.curriculumService.deleteCurriculum(curriculum.curriculum_id!).subscribe({
+        next: () => {
+            this.curricula = this.curricula.filter(c => c.curriculum_id !== curriculum.curriculum_id);
+            this.updateCurriculaList(this.curricula);
+            this.showSuccessMessage('Curriculum deleted successfully');
+        },
+        error: () => this.showErrorMessage('Error deleting curriculum. Please try again.'),
+    });
+  } 
+
+
 
   private updateCurriculaList(curricula: Curriculum[]) {
     this.curricula = curricula;

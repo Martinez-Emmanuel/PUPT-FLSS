@@ -61,21 +61,21 @@ export class CurriculumService {
   }
 
 
-  updateCurriculum(updatedCurriculum: Curriculum): Observable<Curriculum> {
-    const curricula = this.curriculaSubject.getValue();
-    const index = curricula.findIndex(
-        (c) => c.curriculum_year === updatedCurriculum.curriculum_year
-    );
+  // updateCurriculum(updatedCurriculum: Curriculum): Observable<Curriculum> {
+  //   const curricula = this.curriculaSubject.getValue();
+  //   const index = curricula.findIndex(
+  //       (c) => c.curriculum_year === updatedCurriculum.curriculum_year
+  //   );
     
-    if (index !== -1) {
-        curricula[index] = updatedCurriculum;
-        this.curriculaSubject.next([...curricula]);
-        return of(updatedCurriculum);
-    } else {
-        console.error('Curriculum not found for year:', updatedCurriculum.curriculum_year);
-        return throwError(() => new Error('Curriculum not found'));
-    }
-  }
+  //   if (index !== -1) {
+  //       curricula[index] = updatedCurriculum;
+  //       this.curriculaSubject.next([...curricula]);
+  //       return of(updatedCurriculum);
+  //   } else {
+  //       console.error('Curriculum not found for year:', updatedCurriculum.curriculum_year);
+  //       return throwError(() => new Error('Curriculum not found'));
+  //   }
+  // }
 
   getAllPrograms(): Observable<Program[]> {
     return this.http.get<Program[]>(`${this.baseUrl}/programs`); // Adjust the API endpoint according to your backend
@@ -97,4 +97,20 @@ export class CurriculumService {
   updateCurriculaSubject(curricula: Curriculum[]): void {
     this.curriculaSubject.next(curricula);
   }
+
+  //for curriculum component
+  addCurriculum(curriculum: Curriculum): Observable<Curriculum[]> {
+    return this.http.post<Curriculum[]>(`${this.baseUrl}/addCurriculum`, curriculum);
+  }
+  
+  updateCurriculum(curriculum: Curriculum): Observable<Curriculum> {
+    return this.http.put<Curriculum>(`${this.baseUrl}/updateCurriculum/${curriculum.curriculum_id}`, curriculum);
+  }
+
+  // curriculum.service.ts
+deleteCurriculum(id: number): Observable<any> {
+  return this.http.delete(`${this.baseUrl}/deleteCurriculum/${id}`);
+}
+
+  
 }
