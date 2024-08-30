@@ -33,7 +33,7 @@ export interface Program {
 }
 
 export interface Curriculum {
-  curriculum_id?: number;
+  curriculum_id: number;
   curriculum_year: string;
   status: string;
   programs: Program[];

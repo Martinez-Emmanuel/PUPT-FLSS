@@ -146,19 +146,50 @@ export class CurriculumComponent implements OnInit, OnDestroy {
 
   // Commented out dialog functions until necessary
   openAddCurriculumDialog() {
-    const dialogConfig = this.getDialogConfig();
-  
-    const dialogRef = this.dialog.open(TableDialogComponent, {
-      data: dialogConfig,
-      disableClose: true,
-    });
-  
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.addCurriculum(result);
-      }
+    this.curriculumService.getCurricula().subscribe({
+        next: (availableCurricula) => {
+            // Convert curriculum_id to a number
+            availableCurricula = availableCurricula.map(curriculum => ({
+                ...curriculum,
+                curriculum_id: Number(curriculum.curriculum_id)  // Convert string to number
+            }));
+
+            const dialogConfig = this.getDialogConfig();
+
+            if (dialogConfig.fields) {
+                const copyField = dialogConfig.fields.find(field => field.formControlName === 'copy_from');
+                if (copyField) {
+                    copyField.options = [
+                        'None', // Default option
+                        ...availableCurricula.map(curriculum => `${curriculum.curriculum_year} Curriculum `)
+                    ];
+                }
+            }
+
+            const dialogRef = this.dialog.open(TableDialogComponent, {
+                data: dialogConfig,
+                disableClose: true,
+            });
+
+            dialogRef.afterClosed().subscribe(result => {
+                if (result) {
+                    this.addCurriculum(result);
+                }
+            });
+        },
+        error: () => this.showErrorMessage('Error fetching available curricula. Please try again.')
     });
   }
+
+
+
+
+
+
+
+
+  
+  
 
   private addCurriculum(newCurriculum: Curriculum) {
     this.curriculumService.addCurriculum(newCurriculum).subscribe({
@@ -185,46 +216,43 @@ export class CurriculumComponent implements OnInit, OnDestroy {
   
 
   private getDialogConfig(curriculum?: Curriculum): DialogConfig {
-    const copyFromOptions = [
-      'None',
-      ...this.availableCurriculumYears.map((year) => `${year} Curriculum`),
-    ];
-
     return {
-      title: 'Curriculum',
-      isEdit: !!curriculum,
-      fields: [
-        {
-          label: 'Curriculum Year',
-          formControlName: 'curriculum_year',
-          type: 'text',
-          maxLength: 4,
-          required: true,
+        title: 'Curriculum',
+        isEdit: !!curriculum,
+        fields: [
+            {
+                label: 'Curriculum Year',
+                formControlName: 'curriculum_year',
+                type: 'text',
+                maxLength: 4,
+                required: true,
+            },
+            {
+                label: 'Status',
+                formControlName: 'status',
+                type: 'select',
+                options: this.curriculumStatuses,
+                required: true,
+            },
+            {
+                label: 'Copy a curriculum',
+                formControlName: 'copy_from',
+                type: 'select',
+                hint: `Copy from another curriculum. 
+                       You can still adjust the copied curriculum later.`,
+                options: [], // Will be populated dynamically in `openAddCurriculumDialog`
+                required: false,
+            },
+        ],
+        initialValue: {
+            ...curriculum,
+            copy_from: 'None',
+            status: curriculum?.status || 'Active',
         },
-        {
-          label: 'Status',
-          formControlName: 'status',
-          type: 'select',
-          options: this.curriculumStatuses,
-          required: true,
-        },
-        {
-          label: 'Copy a curriculum',
-          formControlName: 'copy_from',
-          type: 'select',
-          hint: `Copy from another curriculum. 
-            You can still adjust the copied curriculum later.`,
-          options: copyFromOptions,
-          required: false,
-        },
-      ],
-      initialValue: {
-        ...curriculum,
-        copy_from: 'None',
-        status: curriculum?.status || 'Active',
-      },
     };
   }
+
+  
 
   private openCurriculumDialog(curriculum?: Curriculum) {
     const config = this.getDialogConfig(curriculum);
