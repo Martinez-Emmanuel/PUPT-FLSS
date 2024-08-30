@@ -46,6 +46,8 @@ Route::get('/programs/{id}', [ProgramController::class, 'show']);
 Route::put('/updateProgram/{id}', [ProgramController::class, 'update']);
 Route::delete('/deleteProgram/{id}', [ProgramController::class, 'destroy']);
 
+Route::get('/programs-by-curriculum-year/{curriculumYear}', [ProgramController::class, 'getProgramsByCurriculumYear']);
+
 Route::get('/courses', [CourseController::class, 'index']);
 Route::post('/addCourse', [CourseController::class, 'addCourse']);
 Route::put('/courses/{id}', [CourseController::class, 'updateCourse']);

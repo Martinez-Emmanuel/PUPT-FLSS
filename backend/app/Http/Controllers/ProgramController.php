@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Program;
+use App\Models\Curriculum;
 
 class ProgramController extends Controller
 {
@@ -72,5 +73,17 @@ class ProgramController extends Controller
         return response()->json([
             'message' => 'Program deleted successfully'
         ], 200);
+    }
+
+
+    public function getProgramsByCurriculumYear($curriculumYear)
+    {
+        // Fetch the curriculum by year
+        $curriculum = Curriculum::where('curriculum_year', $curriculumYear)->firstOrFail();
+
+        // Fetch programs associated with this curriculum
+        $programs = $curriculum->programs;
+
+        return response()->json($programs);
     }
 }
