@@ -9,38 +9,105 @@ use Illuminate\Http\Request;
 
 class ProgramFetchController extends Controller
 {
-    // public function getCoursesForCurriculum(Request $request)
-    // {
-    //     $curriculumId = $request->input('curriculum_id', 2);
-    //     $yearLevel = $request->input('year_level', 4);
-    //     $semesterNumber = $request->input('semester', 1);
+    public function getCoursesForProgram(Request $request)
+    {
+        $programId = $request->input('program_id');
+        $yearLevel = $request->input('year_level');
+        $semesterNumber = $request->input('semester');
 
-    //     $yearLevelId = YearLevel::where('curricula_program_id', $curriculumId)
-    //         ->where('year', $yearLevel)
-    //         ->value('year_level_id');
+        if (!$programId) {
+            return response()->json(['error' => 'Program ID is required'], 400);
+        }
 
-    //     if (!$yearLevelId) {
-    //         return response()->json(['error' => 'Year level not found for the given curriculum'], 404);
-    //     }
+        // Fetch all active curricula_program records for the given program_id
+        $curriculaPrograms = \DB::table('curricula_program')
+            ->join('curricula', 'curricula_program.curriculum_id', '=', 'curricula.curriculum_id')
+            ->where('curricula_program.program_id', $programId)
+            ->where('curricula.status', 'active')
+            ->get();
 
-    //     $semesterId = Semester::where('year_level_id', $yearLevelId)
-    //         ->where('semester', $semesterNumber)
-    //         ->value('semester_id');
+        if ($curriculaPrograms->isEmpty()) {
+            return response()->json(['error' => 'No active curricula found for the given program'], 404);
+        }
 
-    //     if (!$semesterId) {
-    //         return response()->json(['error' => 'Semester not found for the given year level'], 404);
-    //     }
+        $coursesCollection = collect();
 
-    //     $courses = Course::whereHas('assignments', function ($query) use ($semesterId) {
-    //         $query->where('semester_id', $semesterId);
-    //     })
-    //     ->with(['assignments' => function ($query) use ($semesterId) {
-    //         $query->where('semester_id', $semesterId);
-    //     }])
-    //     ->get(['course_code', 'course_title']);
+        foreach ($curriculaPrograms as $curriculaProgram) {
+            // Get all year levels associated with the curricula_program_id
+            $yearLevelsQuery = YearLevel::where('curricula_program_id', $curriculaProgram->curricula_program_id)
+                ->with(['semesters.courses.assignments', 'semesters.courses.requirements.requiredCourse']);
 
-    //     return response()->json($courses);
-    // }
+            // Apply year level filter if provided
+            if ($yearLevel) {
+                $yearLevelsQuery->where('year', $yearLevel);
+            }
 
-    
+            $yearLevels = $yearLevelsQuery->get();
+
+            foreach ($yearLevels as $yearLevelData) {
+                $semestersQuery = $yearLevelData->semesters();
+
+                // Apply semester filter if provided
+                if ($semesterNumber) {
+                    $semestersQuery->where('semester', $semesterNumber);
+                }
+
+                $semesters = $semestersQuery->with('courses.assignments')->get();
+
+                foreach ($semesters as $semester) {
+                    foreach ($semester->courses as $course) {
+                        $prerequisites = $course->requirements->where('requirement_type', 'pre')->map(function ($req) {
+                            return [
+                                'course_code' => $req->requiredCourse->course_code,
+                                'course_title' => $req->requiredCourse->course_title,
+                            ];
+                        });
+
+                        $corequisites = $course->requirements->where('requirement_type', 'co')->map(function ($req) {
+                            return [
+                                'course_code' => $req->requiredCourse->course_code,
+                                'course_title' => $req->requiredCourse->course_title,
+                            ];
+                        });
+
+                        $coursesCollection->push([
+                            'year_level_id' => $yearLevelData->year_level_id,
+                            'year' => $yearLevelData->year,
+                            'semester_id' => $semester->semester_id,
+                            'semester' => $semester->semester,
+                            'course_assignment_id' => $course->assignments->first()->course_assignment_id ?? null,
+                            'curricula_program_id' => $course->assignments->first()->curricula_program_id ?? null,
+                            'course_id' => $course->course_id,
+                            'course_code' => $course->course_code,
+                            'course_title' => $course->course_title,
+                            'lec_hours' => $course->lec_hours,
+                            'lab_hours' => $course->lab_hours,
+                            'units' => $course->units,
+                            'tuition_hours' => $course->tuition_hours,
+                            'prerequisites' => $prerequisites->toArray(),
+                            'corequisites' => $corequisites->toArray(),
+                        ]);
+                    }
+                }
+            }
+        }
+
+        // Get the program data to include in the response
+        $program = \DB::table('programs')->where('program_id', $programId)->first();
+
+        if (!$program) {
+            return response()->json(['error' => 'Program not found'], 404);
+        }
+
+        // Construct the response structure
+        $response = [
+            'program' => [
+                'name' => $program->program_code,  // Fetching the correct program code
+                'number_of_years' => $program->number_of_years,  // Fetching the number of years (assuming this field exists)
+                'courses' => $coursesCollection,
+            ]
+        ];
+
+        return response()->json($response);
+    }
 }
