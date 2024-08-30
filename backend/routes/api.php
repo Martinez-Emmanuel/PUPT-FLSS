@@ -20,6 +20,8 @@ Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
 Route::get('/curricula-details/{curriculumYear}/', [CurriculumDetailsController::class, 'getCurriculumDetails']);
 
 Route::post('/curriculum/', [ProgramFetchController::class, 'getCoursesForProgram']);
+Route::get('/curriculum/', [ProgramFetchController::class, 'getAllActivePrograms']);
+
 
 // Curriculum routes
 Route::get('/curricula', [CurriculumController::class, 'index']);
