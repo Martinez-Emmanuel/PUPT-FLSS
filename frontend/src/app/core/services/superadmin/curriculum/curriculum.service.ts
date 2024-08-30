@@ -56,6 +56,11 @@ export class CurriculumService {
     return this.http.get<Curriculum>(`${this.baseUrl}/curricula-details/${curriculumYear}`);
   }
 
+  getProgramsByCurriculumYear(curriculumYear: string): Observable<Program[]> {
+    return this.http.get<Program[]>(`${this.baseUrl}/programs-by-curriculum-year/${curriculumYear}`);
+  }
+
+
   updateCurriculum(updatedCurriculum: Curriculum): Observable<Curriculum> {
     const curricula = this.curriculaSubject.getValue();
     const index = curricula.findIndex(

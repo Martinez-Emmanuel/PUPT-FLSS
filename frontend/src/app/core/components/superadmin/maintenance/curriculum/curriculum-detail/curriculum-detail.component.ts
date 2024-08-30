@@ -38,6 +38,10 @@ import {
   animations: [fadeAnimation, pageFloatUpAnimation], 
 })
 export class CurriculumDetailComponent implements OnInit {
+
+   // Declare the selected programs array here
+   public selectedPrograms: string[] = [];
+
   public curriculum: Curriculum | undefined;
   public selectedProgram: string = '';
   public selectedYear: number = 1;
@@ -101,7 +105,10 @@ export class CurriculumDetailComponent implements OnInit {
       this.fetchCurriculum(curriculumYear);
     }
 
-   //Fetch and store all curricula
+    // Initialize program dropdown with no options
+    this.updateProgramDropdown([]);
+
+    //Fetch and store all curricula
     this.curriculumService.getCurricula().subscribe({
         next: (curricula) => {
             this.curriculumService.updateCurriculaSubject(curricula);
@@ -151,17 +158,15 @@ export class CurriculumDetailComponent implements OnInit {
 
   // Commented out until needed
   updateHeaderInputFields() {
-    const programOptions = this.curriculum?.programs.map((p) => p.name) || [];
-  
-    // Assuming you always want to display year levels 1 to 5
     const yearLevelOptions = [1, 2, 3, 4, 5];
-  
+
     this.headerInputFields = [
       {
         type: 'select',
         label: 'Program',
         key: 'program',
-        options: programOptions,
+        options: this.selectedPrograms, // Use only the selected programs
+        // disabled: this.selectedPrograms.length === 0 // Disable dropdown if no options
       },
       {
         type: 'select',
@@ -170,8 +175,11 @@ export class CurriculumDetailComponent implements OnInit {
         options: yearLevelOptions,
       },
     ];
+
     this.cdr.markForCheck(); // Ensure the view is updated
   }
+
+
  
 
   // Commented out until needed
@@ -211,21 +219,26 @@ export class CurriculumDetailComponent implements OnInit {
 
   // Commented out until needed
   onInputChange(values: { [key: string]: any }) {
-    console.log('Input Change:', values);
-    if (values['program'] !== undefined) {
-      this.selectedProgram = values['program'];
-      
-      // Fetch and display courses for the selected program
-      this.fetchCoursesForSelectedProgram(this.selectedProgram);
-    }
-  
     if (values['yearLevel'] !== undefined) {
-      this.selectedYear = values['yearLevel'];
+        this.selectedYear = values['yearLevel'];
     }
-  
+
+    if (values['program'] !== undefined) {
+        this.selectedProgram = values['program'];
+    }
+
+    // Fetch courses only if both program and year level are selected
+    if (this.selectedProgram && this.selectedYear) {
+        this.fetchCoursesForSelectedProgram(this.selectedProgram);
+    }
+
     this.updateHeaderInputFields();
     this.cdr.markForCheck(); // Ensure the UI is updated
   }
+
+
+
+  
   
   
   
@@ -256,46 +269,55 @@ export class CurriculumDetailComponent implements OnInit {
   // Commented out until needed
   onManagePrograms() {
     if (!this.curriculum) return;
-  
-    this.curriculumService.getAllPrograms().subscribe(programs => {
-      const selectedPrograms = this.curriculum!.programs.map(p => p.name);
-  
-      const dialogConfig: DialogConfig = {
-        title: 'Manage Programs',
-        isEdit: false,
-        fields: programs.map(program => ({
-          label: program.program_code,
-          formControlName: program.program_code,
-          type: 'checkbox' as 'text' | 'number' | 'select' | 'checkbox',
-          required: false,
-          checked: selectedPrograms.includes(program.program_code),
-        })),
-        initialValue: programs.reduce((acc, program) => {
-          acc[program.name] = selectedPrograms.includes(program.program_code);
-          return acc;
-        }, {} as { [key: string]: boolean }),
-      };
-  
-      const dialogRef = this.dialog.open(TableDialogComponent, {
-        data: dialogConfig,
-      });
-  
-      dialogRef.afterClosed().subscribe(result => {
-        if (result) {
-          // Collect all selected programs
-          const selectedProgramNames = Object.keys(result).filter(key => result[key]);
-  
-          // Update the dropdown options to show only selected programs
-          this.updateProgramDropdown(selectedProgramNames);
-  
-          // Clear displayed courses until a program is selected from the dropdown
-          this.selectedSemesters = [];
-          this.cdr.detectChanges(); // Ensure the UI is updated
-        }
-      });
+
+    // Fetch programs based on the selected curriculum year
+    this.curriculumService.getProgramsByCurriculumYear(this.curriculum.curriculum_year).subscribe(programs => {
+        const selectedPrograms = this.curriculum!.programs.map(p => p.name);
+
+        const dialogConfig: DialogConfig = {
+            title: 'Manage Programs',
+            isEdit: false,
+            fields: programs.map(program => ({
+                label: program.program_code,
+                formControlName: program.program_code,
+                type: 'checkbox' as 'text' | 'number' | 'select' | 'checkbox',
+                required: false,
+                checked: selectedPrograms.includes(program.program_code),
+            })),
+            initialValue: programs.reduce((acc, program) => {
+                acc[program.name] = selectedPrograms.includes(program.program_code);
+                return acc;
+            }, {} as { [key: string]: boolean }),
+        };
+
+        const dialogRef = this.dialog.open(TableDialogComponent, {
+            data: dialogConfig,
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            if (result) {
+                // Store selected programs
+                this.selectedPrograms = Object.keys(result).filter(key => result[key]);
+
+                // Update the dropdown options to show only selected programs
+                this.updateProgramDropdown(this.selectedPrograms);
+
+                // Reset the selected program if it's not in the selected programs
+                if (!this.selectedPrograms.includes(this.selectedProgram)) {
+                    this.selectedProgram = '';
+                }
+
+                // Clear displayed courses until a program is selected from the dropdown
+                this.selectedSemesters = [];
+                this.cdr.detectChanges(); // Ensure the UI is updated
+            }
+        });
     });
   }
-  
+
+
+
+
   
   fetchCoursesForSelectedProgram(selectedProgram: string) {
     this.selectedSemesters = []; // Reset semesters
@@ -303,20 +325,36 @@ export class CurriculumDetailComponent implements OnInit {
     const program = this.curriculum?.programs.find(p => p.name === selectedProgram);
   
     if (program) {
-      program.year_levels.forEach(yearLevel => {
-        if (yearLevel.year === this.selectedYear) {
-          yearLevel.semesters.forEach(semester => {
-            this.selectedSemesters.push({
-              ...semester,
-              courses: [...semester.courses],
-            });
-          });
-        }
+      // Find the selected year level
+      const yearLevel = program.year_levels.find(y => y.year === this.selectedYear);
+  
+      // Define all possible semesters (1 for First, 2 for Second, 3 for Summer)
+      const allSemesters = [1, 2, 3];
+  
+      // Create groupedSemesters to include all semesters, even if empty
+      const groupedSemesters: { [key: number]: Semester } = {};
+  
+      allSemesters.forEach(semNumber => {
+        const semester = yearLevel?.semesters.find(sem => sem.semester === semNumber);
+        groupedSemesters[semNumber] = semester ? { ...semester } : { semester: semNumber, courses: [] };
+  
+        // Log the courses fetched for each semester
+        console.log(`Semester ${semNumber} courses:`, groupedSemesters[semNumber].courses);
       });
+  
+      // Convert the grouped semesters object to an array
+      this.selectedSemesters = Object.values(groupedSemesters);
+    } else {
+      console.log(`Program ${selectedProgram} not found in the curriculum`);
     }
   
     this.cdr.detectChanges(); // Force update the view
   }
+  
+  
+  
+  
+  
   
   
   
@@ -329,26 +367,20 @@ export class CurriculumDetailComponent implements OnInit {
   
   // New method to update the program dropdown
   private updateProgramDropdown(selectedProgramNames: string[]) {
-    // Update the program dropdown with only the selected programs
     this.headerInputFields = this.headerInputFields.map(field => {
-      if (field.key === 'program') {
-        return {
-          ...field,
-          options: selectedProgramNames, // Update the options with the selected program names
-        };
-      }
-      return field;
+        if (field.key === 'program') {
+            return {
+                ...field,
+                options: selectedProgramNames, // Update the options with the selected program names
+                disabled: selectedProgramNames.length === 0 // Disable dropdown if no options
+            };
+        }
+        return field;
     });
-  
-    // Set the first selected program as the default
-    if (selectedProgramNames.length > 0) {
-      this.selectedProgram = selectedProgramNames[0];
-    } else {
-      this.selectedProgram = '';
-    }
-  
+
     this.cdr.markForCheck(); // Ensure that the view is updated
   }
+
   
   // Commented out until needed
   private updateCurriculumPrograms(selectedPrograms: { [key: string]: boolean }) {
