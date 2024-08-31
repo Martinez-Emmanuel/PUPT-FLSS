@@ -59,6 +59,7 @@ export class CurriculumService {
   getProgramsByCurriculumYear(curriculumYear: string): Observable<Program[]> {
     return this.http.get<Program[]>(`${this.baseUrl}/programs-by-curriculum-year/${curriculumYear}`);
   }
+  
 
 
   // updateCurriculum(updatedCurriculum: Curriculum): Observable<Curriculum> {
@@ -112,5 +113,22 @@ export class CurriculumService {
     return this.http.post(`${this.baseUrl}/deleteCurriculum`, { curriculum_year });
   }
 
+  //temp
+  removeProgramFromCurriculum(curriculumYear: string, programId: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}/removeProgramFromCurriculum`, {
+      curriculum_year: curriculumYear,
+      program_id: programId
+    });
+  }
+
+  addProgramToCurriculum(curriculumYear: string, programId: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}/addProgramToCurriculum`, {
+      curriculum_year: curriculumYear,
+      program_id: programId
+    });
+  }
+  
+  
+  
   
 }

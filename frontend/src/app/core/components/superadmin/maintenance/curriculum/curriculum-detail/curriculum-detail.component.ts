@@ -298,48 +298,96 @@ export class CurriculumDetailComponent implements OnInit {
 
   // Commented out until needed
   onManagePrograms() {
-    this.curriculumService.getAllPrograms().subscribe(programs => {
-        // Check all programs by default
-        const dialogConfig: DialogConfig = {
-            title: 'Manage Programs',
-            isEdit: false,
-            fields: programs.map(program => ({
-                label: program.program_code,
-                formControlName: program.program_code,
-                type: 'checkbox' as 'text' | 'number' | 'select' | 'checkbox',
-                required: false,
-                checked: true, // Set all programs to be checked by default
-            })),
-            initialValue: programs.reduce((acc, program) => {
-                acc[program.program_code] = true; // Set all programs to be checked by default
-                return acc;
-            }, {} as { [key: string]: boolean }),
-        };
-
-        const dialogRef = this.dialog.open(TableDialogComponent, {
-            data: dialogConfig,
-        });
-
-        dialogRef.afterClosed().subscribe(result => {
-            if (result) {
-                // Store selected programs
-                this.selectedPrograms = Object.keys(result).filter(key => result[key]);
-
-                // Update the dropdown options to show only selected programs
-                this.updateProgramDropdown(this.selectedPrograms);
-
-                // Reset the selected program if it's not in the selected programs
-                if (!this.selectedPrograms.includes(this.selectedProgram)) {
+    const curriculumYear = this.curriculum?.curriculum_year;
+  
+    if (curriculumYear) {
+      this.curriculumService.getProgramsByCurriculumYear(curriculumYear).subscribe({
+        next: (associatedPrograms) => {
+          this.curriculumService.getAllPrograms().subscribe({
+            next: (allPrograms) => {
+              const dialogConfig: DialogConfig = {
+                title: 'Manage Programs',
+                isEdit: false,
+                fields: allPrograms.map(program => ({
+                  label: program.program_code,
+                  formControlName: program.program_code,
+                  type: 'checkbox' as 'text' | 'number' | 'select' | 'checkbox',
+                  required: false,
+                  checked: associatedPrograms.some(ap => ap.program_id === program.program_id),
+                })),
+                initialValue: allPrograms.reduce((acc, program) => {
+                  acc[program.program_code] = associatedPrograms.some(ap => ap.program_id === program.program_id);
+                  return acc;
+                }, {} as { [key: string]: boolean }),
+              };
+  
+              const dialogRef = this.dialog.open(TableDialogComponent, {
+                data: dialogConfig,
+              });
+  
+              dialogRef.afterClosed().subscribe(result => {
+                if (result) {
+                  // Determine which programs were unchecked
+                  const uncheckedPrograms = associatedPrograms.filter(ap => !result[ap.program_code]);
+  
+                  uncheckedPrograms.forEach(program => {
+                    this.curriculumService.removeProgramFromCurriculum(curriculumYear, program.program_id).subscribe({
+                      next: () => {
+                        this.snackBar.open(`${program.program_code} removed from curriculum year ${curriculumYear}`, 'Close', { duration: 3000 });
+                      },
+                      error: (error) => {
+                        console.error('Error removing program:', error);
+                        this.snackBar.open('Error removing program. Please try again.', 'Close', { duration: 3000 });
+                      },
+                    });
+                  });
+  
+                  // Determine which programs were newly checked
+                  const newlyCheckedPrograms = allPrograms.filter(program => 
+                    result[program.program_code] && 
+                    !associatedPrograms.some(ap => ap.program_id === program.program_id)
+                  );
+  
+                  newlyCheckedPrograms.forEach(program => {
+                    this.curriculumService.addProgramToCurriculum(curriculumYear, program.program_id).subscribe({
+                      next: () => {
+                        this.snackBar.open(`${program.program_code} added to curriculum year ${curriculumYear}`, 'Close', { duration: 3000 });
+                      },
+                      error: (error) => {
+                        console.error('Error adding program:', error);
+                        this.snackBar.open('Error adding program. Please try again.', 'Close', { duration: 3000 });
+                      },
+                    });
+                  });
+  
+                  // Store selected programs and update the UI
+                  this.selectedPrograms = Object.keys(result).filter(key => result[key]);
+                  this.updateProgramDropdown(this.selectedPrograms);
+  
+                  if (!this.selectedPrograms.includes(this.selectedProgram)) {
                     this.selectedProgram = '';
+                  }
+  
+                  this.selectedSemesters = [];
+                  this.cdr.detectChanges();
                 }
-
-                // Clear displayed courses until a program is selected from the dropdown
-                this.selectedSemesters = [];
-                this.cdr.detectChanges(); // Ensure the UI is updated
-            }
-        });
-    });
+              });
+            },
+            error: (error) => {
+              console.error('Error fetching programs:', error);
+              this.snackBar.open('Error fetching programs. Please try again.', 'Close', { duration: 3000 });
+            },
+          });
+        },
+        error: (error) => {
+          console.error('Error fetching associated programs:', error);
+          this.snackBar.open('Error fetching associated programs. Please try again.', 'Close', { duration: 3000 });
+        },
+      });
+    }
   }
+  
+  
 
 
 
