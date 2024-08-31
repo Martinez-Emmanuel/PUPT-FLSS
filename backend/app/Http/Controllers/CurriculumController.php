@@ -47,7 +47,7 @@ class CurriculumController extends Controller
                         'curricula_program_id' => $curriculaProgram->curricula_program_id,
                         'year' => $year,
                     ]);
-    
+
                     // Step 5: Generate semesters for each year level
                     for ($semester = 1; $semester <= 3; $semester++) {
                         Semester::create([
