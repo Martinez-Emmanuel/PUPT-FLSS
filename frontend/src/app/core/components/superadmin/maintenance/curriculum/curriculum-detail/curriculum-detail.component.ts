@@ -100,27 +100,60 @@ export class CurriculumDetailComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    const curriculumYear = this.route.snapshot.paramMap.get('year');
-    if (curriculumYear) {
-      this.fetchCurriculum(curriculumYear);
-    }
+    // Fetch all programs and populate the dropdown
+    // this.fetchAllPrograms();
 
-    // Initialize program dropdown with no options
-    this.updateProgramDropdown([]);
+    // const curriculumYear = this.route.snapshot.paramMap.get('year');
+    // if (curriculumYear) {
+    //   this.fetchCurriculum(curriculumYear);
+    // }
 
-    //Fetch and store all curricula
-    this.curriculumService.getCurricula().subscribe({
-        next: (curricula) => {
-            this.curriculumService.updateCurriculaSubject(curricula);
-        },
-        error: (error) => {
-            console.error('Error fetching all curricula:', error);
-            this.snackBar.open('Error fetching all curricula. Please try again.', 'Close', {
-                duration: 3000,
-            });
-        },
+    // // Initialize program dropdown with no options
+    // this.updateProgramDropdown([]);
+
+    // //Fetch and store all curricula
+    // this.curriculumService.getCurricula().subscribe({
+    //     next: (curricula) => {
+    //         this.curriculumService.updateCurriculaSubject(curricula);
+    //     },
+    //     error: (error) => {
+    //         console.error('Error fetching all curricula:', error);
+    //         this.snackBar.open('Error fetching all curricula. Please try again.', 'Close', {
+    //             duration: 3000,
+    //         });
+    //     },
+    // });
+
+     
+
+     const curriculumYear = this.route.snapshot.paramMap.get('year');
+     if (curriculumYear) {
+       this.fetchCurriculum(curriculumYear);
+     }
+
+     // Fetch all programs when the component initializes
+     this.fetchAllPrograms();
+   }
+ 
+
+   fetchAllPrograms() {
+    this.curriculumService.getAllPrograms().subscribe({
+      next: (programs) => {
+        // Populate the dropdown with all programs
+        this.updateProgramDropdown(programs.map(program => program.program_code));
+      },
+      error: (error) => {
+        console.error('Error fetching programs:', error);
+        this.snackBar.open('Error fetching programs. Please try again.', 'Close', {
+          duration: 3000,
+        });
+      }
     });
   }
+
+
+
+  
 
   ngOnDestroy() {
     this.destroy$.next();
@@ -128,32 +161,27 @@ export class CurriculumDetailComponent implements OnInit {
   }
 
   fetchCurriculum(year: string) {
-    this.curriculumService
-      .getCurriculumByYear(year)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (curriculum) => {
-          console.log('Retrieved curriculum:', curriculum);
-          this.curriculum = curriculum;
-          this.selectedProgram = curriculum.programs[0]?.name || ''; 
-          this.selectedYear = 1; 
-          this.updateHeaderInputFields(); 
-          this.updateSelectedSemesters();
-          this.cdr.markForCheck();
-        },
-        error: (error) => {
-          console.error('Error fetching curriculum:', error);
-          this.snackBar.open(
-            'Error fetching curriculum. Please try again.',
-            'Close',
-            {
-              duration: 3000,
-            }
-          );
-        },
-      });
+    this.curriculumService.getCurriculumByYear(year).pipe(takeUntil(this.destroy$)).subscribe({
+      next: (curriculum) => {
+        console.log('Retrieved curriculum:', curriculum);
+        this.curriculum = curriculum;
+        this.selectedProgram = curriculum.programs[0]?.name || '';
+        this.selectedYear = 1;
+
+        this.updateHeaderInputFields();
+        this.updateSelectedSemesters();
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        console.error('Error fetching curriculum:', error);
+        this.snackBar.open('Error fetching curriculum. Please try again.', 'Close', {
+          duration: 3000,
+        });
+      },
+    });
   }
-  
+
+
   
 
   // Commented out until needed
@@ -220,21 +248,23 @@ export class CurriculumDetailComponent implements OnInit {
   // Commented out until needed
   onInputChange(values: { [key: string]: any }) {
     if (values['yearLevel'] !== undefined) {
-        this.selectedYear = values['yearLevel'];
+      this.selectedYear = values['yearLevel'];
     }
 
     if (values['program'] !== undefined) {
-        this.selectedProgram = values['program'];
+      this.selectedProgram = values['program'];
     }
 
-    // Fetch courses only if both program and year level are selected
+    // Ensure the program selection can be changed multiple times
     if (this.selectedProgram && this.selectedYear) {
-        this.fetchCoursesForSelectedProgram(this.selectedProgram);
+      this.fetchCoursesForSelectedProgram(this.selectedProgram);
     }
 
-    this.updateHeaderInputFields();
-    this.cdr.markForCheck(); // Ensure the UI is updated
+    this.cdr.markForCheck();
   }
+
+
+
 
 
 
@@ -323,31 +353,28 @@ export class CurriculumDetailComponent implements OnInit {
     const program = this.curriculum?.programs.find(p => p.name === selectedProgram);
   
     if (program) {
-      // Find the selected year level
-      const yearLevel = program.year_levels.find(y => y.year === this.selectedYear);
+        // Find the selected year level and its semesters
+        const yearLevel = program.year_levels.find(y => y.year === this.selectedYear);
+        const allSemesters = [1, 2, 3];
   
-      // Define all possible semesters (1 for First, 2 for Second, 3 for Summer)
-      const allSemesters = [1, 2, 3];
+        const groupedSemesters: { [key: number]: Semester } = {};
   
-      // Create groupedSemesters to include all semesters, even if empty
-      const groupedSemesters: { [key: number]: Semester } = {};
+        allSemesters.forEach(semNumber => {
+            const semester = yearLevel?.semesters.find(sem => sem.semester === semNumber);
+            groupedSemesters[semNumber] = semester ? { ...semester } : { semester: semNumber, courses: [] };
+            console.log(`Semester ${semNumber} courses:`, groupedSemesters[semNumber].courses);
+        });
   
-      allSemesters.forEach(semNumber => {
-        const semester = yearLevel?.semesters.find(sem => sem.semester === semNumber);
-        groupedSemesters[semNumber] = semester ? { ...semester } : { semester: semNumber, courses: [] };
-  
-        // Log the courses fetched for each semester
-        console.log(`Semester ${semNumber} courses:`, groupedSemesters[semNumber].courses);
-      });
-  
-      // Convert the grouped semesters object to an array
-      this.selectedSemesters = Object.values(groupedSemesters);
+        this.selectedSemesters = Object.values(groupedSemesters);
     } else {
-      console.log(`Program ${selectedProgram} not found in the curriculum`);
+        // If the program isn't part of the curriculum, just show empty tables with headers
+        this.selectedSemesters = [1, 2, 3].map(semNumber => ({ semester: semNumber, courses: [] }));
+        console.log(`Program ${selectedProgram} is not associated with the curriculum, displaying empty tables.`);
     }
-  
+
     this.cdr.detectChanges(); // Force update the view
   }
+
   
   
   
@@ -363,21 +390,23 @@ export class CurriculumDetailComponent implements OnInit {
 
 
   
-  // New method to update the program dropdown
-  private updateProgramDropdown(selectedProgramNames: string[]) {
-    this.headerInputFields = this.headerInputFields.map(field => {
-        if (field.key === 'program') {
-            return {
-                ...field,
-                options: selectedProgramNames, // Update the options with all fetched programs
-                disabled: false // Ensure dropdown is always enabled
-            };
-        }
-        return field;
-    });
+// Update the program dropdown method to accept the list of programs
+private updateProgramDropdown(programNames: string[]) {
+  this.headerInputFields = this.headerInputFields.map(field => {
+    if (field.key === 'program') {
+      return {
+        ...field,
+        options: programNames, // Populate with all fetched programs
+        disabled: false // Ensure dropdown is always enabled
+      };
+    }
+    return field;
+  });
 
-    this.cdr.markForCheck(); // Ensure that the view is updated
-  }
+  this.cdr.markForCheck(); // Ensure that the view is updated
+}
+
+
 
 
 
