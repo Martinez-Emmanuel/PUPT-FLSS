@@ -99,18 +99,18 @@ export class CurriculumService {
   }
 
   //for curriculum component
-  addCurriculum(curriculum: Curriculum): Observable<Curriculum[]> {
-    return this.http.post<Curriculum[]>(`${this.baseUrl}/addCurriculum`, curriculum);
+  addCurriculum(curriculum: Partial<Curriculum>): Observable<any> {
+    return this.http.post(`${this.baseUrl}/addCurriculum`, curriculum);
   }
   
-  updateCurriculum(curriculum: Curriculum): Observable<Curriculum> {
-    return this.http.put<Curriculum>(`${this.baseUrl}/updateCurriculum/${curriculum.curriculum_id}`, curriculum);
+  updateCurriculum(id: number, curriculum: Partial<Curriculum>): Observable<any> {
+    return this.http.put(`${this.baseUrl}/updateCurriculum/${id}`, curriculum);
   }
 
   // curriculum.service.ts
-deleteCurriculum(id: number): Observable<any> {
-  return this.http.delete(`${this.baseUrl}/deleteCurriculum/${id}`);
-}
+  deleteCurriculum(curriculum_year: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/deleteCurriculum`, { curriculum_year });
+  }
 
   
 }

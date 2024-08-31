@@ -299,8 +299,7 @@ export class CurriculumDetailComponent implements OnInit {
   // Commented out until needed
   onManagePrograms() {
     this.curriculumService.getAllPrograms().subscribe(programs => {
-        const selectedPrograms = this.curriculum?.programs.map(p => p.name) || [];
-
+        // Check all programs by default
         const dialogConfig: DialogConfig = {
             title: 'Manage Programs',
             isEdit: false,
@@ -309,10 +308,10 @@ export class CurriculumDetailComponent implements OnInit {
                 formControlName: program.program_code,
                 type: 'checkbox' as 'text' | 'number' | 'select' | 'checkbox',
                 required: false,
-                checked: selectedPrograms.includes(program.program_code),
+                checked: true, // Set all programs to be checked by default
             })),
             initialValue: programs.reduce((acc, program) => {
-                acc[program.program_code] = selectedPrograms.includes(program.program_code);
+                acc[program.program_code] = true; // Set all programs to be checked by default
                 return acc;
             }, {} as { [key: string]: boolean }),
         };

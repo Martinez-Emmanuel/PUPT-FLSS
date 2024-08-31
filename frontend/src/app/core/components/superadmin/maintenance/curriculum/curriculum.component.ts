@@ -192,16 +192,16 @@ export class CurriculumComponent implements OnInit, OnDestroy {
   
 
   private addCurriculum(newCurriculum: Curriculum) {
-    this.curriculumService.addCurriculum(newCurriculum).subscribe({
-      next: (addedCurricula) => {
-        if (Array.isArray(addedCurricula)) {
-          this.curricula.push(...addedCurricula);  // Spread operator to add all items in the array
-        } else {
-          this.curricula.push(addedCurricula);  // In case only one curriculum is returned
-        }
-        this.updateCurriculaList(this.curricula);  // Update the curricula list
-        this.showSuccessMessage('Curriculum added successfully');
-        this.cdr.markForCheck(); // Ensure the view is updated
+    const curriculumData = {
+      curriculum_year: newCurriculum.curriculum_year,
+      status: newCurriculum.status
+    };
+  
+    this.curriculumService.addCurriculum(curriculumData).subscribe({
+      next: (response) => {
+        this.showSuccessMessage(response.message);
+  
+        // Fetch the updated curricula list after adding the new curriculum
         this.fetchCurricula();
       },
       error: () => this.showErrorMessage('Error adding curriculum. Please try again.'),
@@ -213,6 +213,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
     this.selectedCurriculumIndex = this.curricula.indexOf(curriculum);
     this.openCurriculumDialog(curriculum);
   }
+  
   
 
   private getDialogConfig(curriculum?: Curriculum): DialogConfig {
@@ -276,32 +277,38 @@ export class CurriculumComponent implements OnInit, OnDestroy {
   // }
 
   private updateCurriculum(updatedCurriculum: Curriculum) {
-    console.log('Updating Curriculum ID:', updatedCurriculum.curriculum_id);
-    this.curriculumService.updateCurriculum(updatedCurriculum).subscribe({
-        next: (updatedCurriculum) => {
-            // Update the local curriculum list with the updated curriculum data
-            const index = this.curricula.findIndex(c => c.curriculum_id === updatedCurriculum.curriculum_id);
-            if (index !== -1) {
-                this.curricula[index] = updatedCurriculum;
-            }
-            this.updateCurriculaList(this.curricula);
-            this.showSuccessMessage('Curriculum updated successfully');
-            this.fetchCurricula();
-        },
-        error: () => this.showErrorMessage('Error updating curriculum. Please try again.'),
+    const curriculumData = {
+      curriculum_year: updatedCurriculum.curriculum_year,
+      status: updatedCurriculum.status
+    };
+  
+    this.curriculumService.updateCurriculum(updatedCurriculum.curriculum_id, curriculumData).subscribe({
+      next: (response) => {
+        this.showSuccessMessage(response.message);
+  
+        // Fetch the updated curricula list after the curriculum is updated
+        this.fetchCurricula();
+      },
+      error: () => this.showErrorMessage('Error updating curriculum. Please try again.'),
     });
   }
+  
 
   deleteCurriculum(curriculum: Curriculum) {
-    this.curriculumService.deleteCurriculum(curriculum.curriculum_id!).subscribe({
-        next: () => {
-            this.curricula = this.curricula.filter(c => c.curriculum_id !== curriculum.curriculum_id);
-            this.updateCurriculaList(this.curricula);
-            this.showSuccessMessage('Curriculum deleted successfully');
+      this.curriculumService.deleteCurriculum(curriculum.curriculum_year).subscribe({
+        next: (response) => {
+          this.showSuccessMessage(response.message);
+  
+          // Remove the deleted curriculum from the local list
+          this.curricula = this.curricula.filter(c => c.curriculum_id !== curriculum.curriculum_id);
+          this.updateCurriculaList(this.curricula);
         },
         error: () => this.showErrorMessage('Error deleting curriculum. Please try again.'),
-    });
-  } 
+      });
+  }
+  
+  
+  
 
 
 
