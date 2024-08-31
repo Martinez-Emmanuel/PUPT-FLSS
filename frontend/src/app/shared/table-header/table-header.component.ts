@@ -43,6 +43,8 @@ export class TableHeaderComponent {
   @Input() showExportButton = true;
   @Input() showExportDialog = false;
   @Input() showAddButton = true;
+  @Input() showActiveYearAndSem = false;
+  @Input() showButtons = true;
   @Input() selectedValues: { [key: string]: any } = {};
   @Input() customExportOptions: { all: string; current: string } | null = null;
   @Input() searchLabel = 'Search';

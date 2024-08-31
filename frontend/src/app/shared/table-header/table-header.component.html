@@ -22,6 +22,7 @@
       [ngClass]="{
         'program-field': field.key === 'program',
         'year-level-field': field.key === 'yearLevel',
+        'curriculum-field': field.key === 'curriculum',
         'sections-field': field.key === 'sections'
       }"
       subscriptSizing="dynamic"
@@ -51,29 +52,44 @@
     <!-- We can add more form field types here -->
     }
   </form>
-  <div class="button-container">
-    <!-- Export to PDF Button -->
-    @if (showExportButton) {
-    <button
-      mat-flat-button
-      class="custom-mat-button export-button"
-      (click)="onExport()"
-    >
-      <mat-icon>picture_as_pdf</mat-icon>
-      Export to PDF
-    </button>
-    }
-    <!-- Add Button -->
-    @if (showAddButton) {
-    <button
-      mat-flat-button
-      class="custom-mat-button add-button"
-      [disabled]="buttonDisabled"
-      (click)="onAdd()"
-    >
-      <mat-icon>{{ addIconName }}</mat-icon>
-      {{ addButtonLabel }}
-    </button>
+
+  <!--Objects-->
+  <div class="object-container">
+    @if (showActiveYearAndSem) {
+      <div class="active-year-sem-container">
+          <p class="text">A.Y. 2024-2025, 1st Semester</p>
+          <p class="label">Active Year & Semester</p>
+      </div>
     }
   </div>
+
+  <!--Buttons-->
+  @if (showButtons) {
+    <div class="button-container">
+      <!-- Export to PDF Button -->
+      @if (showExportButton) {
+      <button
+        mat-flat-button
+        class="custom-mat-button export-button"
+        (click)="onExport()"
+      >
+        <mat-icon>picture_as_pdf</mat-icon>
+        Export to PDF
+      </button>
+      }
+      <!-- Add Button -->
+      @if (showAddButton) {
+      <button
+        mat-flat-button
+        class="custom-mat-button add-button"
+        [disabled]="buttonDisabled"
+        (click)="onAdd()"
+      >
+        <mat-icon>{{ addIconName }}</mat-icon>
+        {{ addButtonLabel }}
+      </button>
+      }
+    </div>
+  }
+  
 </div>
