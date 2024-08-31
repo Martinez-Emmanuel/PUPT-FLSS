@@ -91,7 +91,7 @@
   }
 }
 
-mat-sidenav-content {
+.sidenav-content {
   @include flex-layout(
     $direction: column,
     $align: none,
@@ -153,6 +153,7 @@ mat-sidenav-content {
             border-radius: 50%;
             cursor: pointer;
             transition: all 0.3s ease;
+            @include gradient-primary-border;
 
             &:hover {
               box-shadow: 0 0 0 3px var(--neutral-hover);

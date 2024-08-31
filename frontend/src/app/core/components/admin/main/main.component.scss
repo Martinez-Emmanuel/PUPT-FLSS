@@ -151,6 +151,7 @@
             border-radius: 50%;
             cursor: pointer;
             transition: all 0.3s ease;
+            @include gradient-primary-border;
 
             &:hover {
               box-shadow: 0 0 0 3px var(--neutral-hover);
@@ -211,7 +212,7 @@
     flex: 1;
     background-color: var(--main-bg);
     border-radius: var(--border-radius-lg);
-    padding: var(--spacing-md);
+    padding: var(--spacing-lg);
     overflow: auto;
     width: 100%;
   }
