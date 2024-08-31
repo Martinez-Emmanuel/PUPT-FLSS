@@ -30,15 +30,15 @@ Route::get('/curriculum/', [ProgramFetchController::class, 'getAllActivePrograms
 Route::post('/addCurriculum', [CurriculumController::class, 'addCurriculum']);
 Route::post('/deleteCurriculum', [CurriculumController::class, 'deleteCurriculum']);
 Route::post('/copyCurriculum', [CurriculumController::class, 'copyCurriculum']);
-
+Route::put('/updateCurriculum/{id}', [CurriculumController::class, 'update']);
 
 
 // Curriculum routes
 Route::get('/curricula', [CurriculumController::class, 'index']);
-Route::post('/addCurriculum', [CurriculumController::class, 'addCurriculum']);
 Route::get('/curricula/{id}', [CurriculumController::class, 'show']);
-Route::put('/updateCurriculum/{id}', [CurriculumController::class, 'update']);
-Route::delete('/deleteCurriculum/{id}', [CurriculumController::class, 'destroy']);
+
+//old delete remove this
+// Route::delete('/deleteCurriculum/{id}', [CurriculumController::class, 'destroy']);
 
 // Semester routes
 Route::get('/semesters', [SemesterController::class, 'index']);
