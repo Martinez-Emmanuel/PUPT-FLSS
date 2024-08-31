@@ -17,15 +17,25 @@ use App\Http\Controllers\ProgramFetchController;
 Route::post('login', [AuthController::class, 'login'])->name('login');
 Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
 
+
+//Get all Program and Year Level and Semester with year for superadmin
 Route::get('/curricula-details/{curriculumYear}/', [CurriculumDetailsController::class, 'getCurriculumDetails']);
 
+//Get all courses for filteration
 Route::post('/curriculum/', [ProgramFetchController::class, 'getCoursesForProgram']);
 Route::get('/curriculum/', [ProgramFetchController::class, 'getAllActivePrograms']);
 
 
+//Add Curriculum that add all the program and year level and semester
+Route::post('/addCurriculum', [CurriculumController::class, 'addCurriculum']);
+Route::post('/deleteCurriculum', [CurriculumController::class, 'deleteCurriculum']);
+
+
+
+
 // Curriculum routes
 Route::get('/curricula', [CurriculumController::class, 'index']);
-Route::post('/addCurriculum', [CurriculumController::class, 'store']);
+Route::post('/addCurriculum', [CurriculumController::class, 'addCurriculum']);
 Route::get('/curricula/{id}', [CurriculumController::class, 'show']);
 Route::put('/updateCurriculum/{id}', [CurriculumController::class, 'update']);
 Route::delete('/deleteCurriculum/{id}', [CurriculumController::class, 'destroy']);
@@ -76,8 +86,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/rooms/{room_id}', [RoomController::class, 'deleteRoom']);
 
     // CRUD for Courses
-
-
 
     Route::get('/some-protected-route', function (Request $request) {
         return response()->json(['message' => 'You are authenticated']);

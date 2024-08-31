@@ -24,4 +24,8 @@ class CourseRequirement extends Model
     {
         return $this->belongsTo(Course::class, 'required_course_id', 'course_id');
     }
+    public function requirements()
+{
+    return $this->hasMany(CourseRequirement::class, 'course_id', 'course_id');
+}
 }
