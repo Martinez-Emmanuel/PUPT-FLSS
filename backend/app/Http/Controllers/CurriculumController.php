@@ -23,24 +23,24 @@ class CurriculumController extends Controller
         ], [
             'curriculum_year.unique' => 'A curriculum for this year already exists.',
         ]);
-    
+
         DB::transaction(function () use ($request) {
             // Step 1: Create the new curriculum
             $curriculum = Curriculum::create([
                 'curriculum_year' => $request->curriculum_year,
                 'status' => 'active',
             ]);
-    
+
             // Step 2: Get all active programs
             $programs = DB::table('programs')->where('status', 'active')->get();
-    
+
             // Step 3: Create curricula_program entries for each program
             foreach ($programs as $program) {
                 $curriculaProgram = CurriculaProgram::create([
                     'curriculum_id' => $curriculum->curriculum_id,
                     'program_id' => $program->program_id,
                 ]);
-    
+
                 // Step 4: Generate year levels for each program
                 for ($year = 1; $year <= $program->number_of_years; $year++) {
                     $yearLevel = YearLevel::create([
@@ -58,7 +58,7 @@ class CurriculumController extends Controller
                 }
             }
         });
-    
+
         return response()->json([
             'status' => 'success',
             'message' => 'Curriculum and associated programs, year levels, and semesters created successfully.'
@@ -86,7 +86,7 @@ class CurriculumController extends Controller
             foreach ($curriculaPrograms as $curriculaProgram) {
                 // Delete related year levels and semesters
                 $yearLevels = YearLevel::where('curricula_program_id', $curriculaProgram->curricula_program_id)->get();
-                
+
                 foreach ($yearLevels as $yearLevel) {
                     Semester::where('year_level_id', $yearLevel->year_level_id)->delete();
                     $yearLevel->delete();
@@ -119,7 +119,7 @@ class CurriculumController extends Controller
         $newCurriculum = DB::transaction(function () use ($request) {
             // Step 1: Get the original curriculum
             $originalCurriculum = Curriculum::with('curriculaPrograms.yearLevels.semesters.courseAssignments.course')
-                                            ->findOrFail($request->curriculum_id);
+                ->findOrFail($request->curriculum_id);
 
             // Step 2: Create the new curriculum
             $newCurriculum = Curriculum::create([
@@ -165,15 +165,15 @@ class CurriculumController extends Controller
 
         // Reload the new curriculum with all its related data to return
         $newCurriculumWithData = Curriculum::with('curriculaPrograms.yearLevels.semesters.courseAssignments.course')
-                                        ->findOrFail($newCurriculum->curriculum_id);
+            ->findOrFail($newCurriculum->curriculum_id);
 
-           return response()->json([
+        return response()->json([
             'status' => 'success',
             'message' => 'Curriculum and associated programs, year levels, and semesters created successfully.'
         ]);
     }
 
-    
+
     // List all curricula
     public function index()
     {
@@ -187,25 +187,25 @@ class CurriculumController extends Controller
             'curriculum_year' => 'required|string|size:4',
             'status' => 'required|in:active,inactive',
         ]);
-    
+
         $existingCurriculum = Curriculum::where('curriculum_year', $validatedData['curriculum_year'])->first();
-    
+
         if ($existingCurriculum) {
             return response()->json([
                 'message' => 'Curriculum for this year already exists',
                 'curriculum' => $existingCurriculum
-            ], 409); 
+            ], 409);
         }
-    
+
         // Create a new curriculum if it doesn't exist
         $curriculum = Curriculum::create($validatedData);
-    
+
         return response()->json([
             'message' => 'Curriculum created successfully',
             'curriculum' => $curriculum
         ], 201);
     }
-    
+
     // Show a specific curriculum
     public function show($id)
     {
@@ -241,4 +241,68 @@ class CurriculumController extends Controller
             'message' => 'Curriculum deleted successfully'
         ], 200);
     }
+
+
+    //temp:
+    public function removeProgramFromCurriculum(Request $request)
+    {
+        $request->validate([
+            'curriculum_year' => 'required|string|exists:curricula,curriculum_year',
+            'program_id' => 'required|integer|exists:programs,program_id',
+        ]);
+
+        DB::transaction(function () use ($request) {
+            $curriculum = Curriculum::where('curriculum_year', $request->curriculum_year)->firstOrFail();
+
+            CurriculaProgram::where('curriculum_id', $curriculum->curriculum_id)
+                ->where('program_id', $request->program_id)
+                ->delete();
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Program removed from curriculum successfully.',
+        ]);
+    }
+
+    public function getProgramsByCurriculumYear($curriculumYear)
+    {
+        // Find the curriculum by the provided year
+        $curriculum = Curriculum::where('curriculum_year', $curriculumYear)->firstOrFail();
+
+        // Fetch the programs associated with this curriculum
+        $programs = $curriculum->programs()->get();
+
+        return response()->json($programs);
+    }
+
+    public function addProgramToCurriculum(Request $request)
+    {
+        $request->validate([
+            'curriculum_year' => 'required|string|exists:curricula,curriculum_year',
+            'program_id' => 'required|integer|exists:programs,program_id',
+        ]);
+
+        DB::transaction(function () use ($request) {
+            $curriculum = Curriculum::where('curriculum_year', $request->curriculum_year)->firstOrFail();
+
+            // Check if the program is already associated
+            $exists = CurriculaProgram::where('curriculum_id', $curriculum->curriculum_id)
+                ->where('program_id', $request->program_id)
+                ->exists();
+
+            if (!$exists) {
+                CurriculaProgram::create([
+                    'curriculum_id' => $curriculum->curriculum_id,
+                    'program_id' => $request->program_id,
+                ]);
+            }
+        });
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Program added to curriculum successfully.',
+        ]);
+    }
+
 }

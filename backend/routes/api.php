@@ -32,6 +32,11 @@ Route::post('/deleteCurriculum', [CurriculumController::class, 'deleteCurriculum
 Route::post('/copyCurriculum', [CurriculumController::class, 'copyCurriculum']);
 Route::put('/updateCurriculum/{id}', [CurriculumController::class, 'update']);
 
+//temp
+Route::post('/removeProgramFromCurriculum', [CurriculumController::class, 'removeProgramFromCurriculum']);
+Route::get('/programs-by-curriculum-year/{curriculumYear}', [CurriculumController::class, 'getProgramsByCurriculumYear']);
+Route::post('/addProgramToCurriculum', [CurriculumController::class, 'addProgramToCurriculum']);
+
 
 
 // Course routes
