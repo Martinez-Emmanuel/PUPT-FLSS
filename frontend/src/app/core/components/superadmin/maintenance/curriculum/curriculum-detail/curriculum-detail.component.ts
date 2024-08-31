@@ -165,21 +165,42 @@ export class CurriculumDetailComponent implements OnInit {
       next: (curriculum) => {
         console.log('Retrieved curriculum:', curriculum);
         this.curriculum = curriculum;
-        this.selectedProgram = curriculum.programs[0]?.name || '';
         this.selectedYear = 1;
-
-        this.updateHeaderInputFields();
-        this.updateSelectedSemesters();
-        this.cdr.markForCheck();
+  
+        // Fetch the programs associated with this curriculum year
+        this.curriculumService.getProgramsByCurriculumYear(year).subscribe({
+          next: (associatedPrograms) => {
+            // Map the associated programs to their program codes
+            this.selectedPrograms = associatedPrograms.map(program => program.program_code);
+  
+            // Update the dropdown with the selected programs
+            this.updateProgramDropdown(this.selectedPrograms);
+  
+            // Automatically select the first program in the list if available
+            if (this.selectedPrograms.length > 0) {
+              this.selectedProgram = this.selectedPrograms[0];
+              this.fetchCoursesForSelectedProgram(this.selectedProgram);
+            } else {
+              this.selectedProgram = '';
+            }
+  
+            this.updateHeaderInputFields();
+            this.updateSelectedSemesters();
+            this.cdr.markForCheck();
+          },
+          error: (error) => {
+            console.error('Error fetching associated programs:', error);
+            this.snackBar.open('Error fetching associated programs. Please try again.', 'Close', { duration: 3000 });
+          }
+        });
       },
       error: (error) => {
         console.error('Error fetching curriculum:', error);
-        this.snackBar.open('Error fetching curriculum. Please try again.', 'Close', {
-          duration: 3000,
-        });
+        this.snackBar.open('Error fetching curriculum. Please try again.', 'Close', { duration: 3000 });
       },
     });
   }
+  
 
 
   
@@ -443,8 +464,7 @@ private updateProgramDropdown(programNames: string[]) {
     if (field.key === 'program') {
       return {
         ...field,
-        options: programNames, // Populate with all fetched programs
-        disabled: false // Ensure dropdown is always enabled
+        options: programNames, // Populate with programs associated with the curriculum year
       };
     }
     return field;
@@ -452,6 +472,7 @@ private updateProgramDropdown(programNames: string[]) {
 
   this.cdr.markForCheck(); // Ensure that the view is updated
 }
+
 
 
 
