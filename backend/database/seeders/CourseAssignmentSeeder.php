@@ -6,71 +6,142 @@ use App\Models\CourseAssignment;
 use App\Models\Course;
 use App\Models\Semester;
 use App\Models\CurriculaProgram;
+use Illuminate\Support\Facades\Log;
 
 class CourseAssignmentSeeder extends Seeder
 {
     public function run()
     {
+        // Existing curricula programs
         $bsitCurriculaProgram2018 = CurriculaProgram::where('curriculum_id', 1)->where('program_id', 1)->first();
         $bsaCurriculaProgram2018 = CurriculaProgram::where('curriculum_id', 1)->where('program_id', 2)->first();
         $bsitCurriculaProgram2022 = CurriculaProgram::where('curriculum_id', 2)->where('program_id', 1)->first();
-        $bsaCurriculaProgram2022 = CurriculaProgram::where('curriculum_id', 2)->where('program_id', 2)->first();
 
-        $semester1BSIT2018 = Semester::where('year_level_id', 1)->first();
-        $semester1BSA2018 = Semester::where('year_level_id', 2)->first();
-        $semester1BSIT2022 = Semester::where('year_level_id', 3)->first();
-        $semester1BSA2022 = Semester::where('year_level_id', 4)->first();
+        // Courses to assign (excluding BSA 2022)
+        $courseCodes = [
+            'BSIT' => [
+                '2018' => [
+                    1 => ['IT101', 'CS101', 'GE101'],
+                    2 => ['IT102', 'CS102', 'GE102']
+                ],
+                '2022' => [
+                    1 => ['IT101', 'CS101', 'GE101'],
+                    2 => ['IT102', 'CS102', 'GE102']
+                ]
+            ],
+            'BSA' => [
+                '2018' => [
+                    1 => ['ACC101', 'ACC102', 'GE101'],
+                    2 => ['ACC102', 'ACC103', 'GE102']
+                ]
+            ]
+        ];
 
-        // Assign Courses to Semesters for BSIT 2018 Curriculum
-        CourseAssignment::create([
-            'curricula_program_id' => $bsitCurriculaProgram2018->curricula_program_id,
-            'semester_id' => $semester1BSIT2018->semester_id,
-            'course_id' => Course::where('course_code', 'IT101')->first()->course_id
-        ]);
+        $semesterAdjustments = [
+            '2018' => 0,
+            '2022' => 8 // Adjust year level id for 2022 curriculum
+        ];
 
-        CourseAssignment::create([
-            'curricula_program_id' => $bsitCurriculaProgram2018->curricula_program_id,
-            'semester_id' => $semester1BSIT2018->semester_id,
-            'course_id' => Course::where('course_code', 'CS101')->first()->course_id
-        ]);
+        // Dynamic assignment for BSIT and BSA 2018
+        foreach (['BSIT' => $bsitCurriculaProgram2018, 'BSA' => $bsaCurriculaProgram2018] as $program => $curriculaProgram) {
+            foreach ($courseCodes[$program]['2018'] as $yearLevelId => $courseCodesPerSemester) {
+                foreach ($courseCodesPerSemester as $index => $courseCode) {
+                    $semester = $index + 1;
+                    $semesterRecord = Semester::where('year_level_id', $yearLevelId)
+                        ->where('semester', $semester)
+                        ->first();
 
-        // Assign Courses to Semesters for BSA 2018 Curriculum
-        CourseAssignment::create([
-            'curricula_program_id' => $bsaCurriculaProgram2018->curricula_program_id,
-            'semester_id' => $semester1BSA2018->semester_id,
-            'course_id' => Course::where('course_code', 'ACC101')->first()->course_id
-        ]);
+                    if (!$semesterRecord) {
+                        Log::error('Semester not found for 2018', [
+                            'year_level_id' => $yearLevelId,
+                            'semester' => $semester
+                        ]);
+                        continue;
+                    }
 
-        CourseAssignment::create([
-            'curricula_program_id' => $bsaCurriculaProgram2018->curricula_program_id,
-            'semester_id' => $semester1BSA2018->semester_id,
-            'course_id' => Course::where('course_code', 'GE101')->first()->course_id
-        ]);
+                    $course = Course::where('course_code', $courseCode)->first();
 
-        // Assign Courses to Semesters for BSIT 2022 Curriculum
-        CourseAssignment::create([
-            'curricula_program_id' => $bsitCurriculaProgram2022->curricula_program_id,
-            'semester_id' => $semester1BSIT2022->semester_id,
-            'course_id' => Course::where('course_code', 'IT102')->first()->course_id
-        ]);
+                    if ($course) {
+                        CourseAssignment::firstOrCreate([
+                            'curricula_program_id' => $curriculaProgram->curricula_program_id,
+                            'semester_id' => $semesterRecord->semester_id,
+                            'course_id' => $course->course_id
+                        ]);
+                    } else {
+                        Log::error('Course not found', [
+                            'course_code' => $courseCode
+                        ]);
+                    }
+                }
+            }
+        }
 
-        CourseAssignment::create([
-            'curricula_program_id' => $bsitCurriculaProgram2022->curricula_program_id,
-            'semester_id' => $semester1BSIT2022->semester_id,
-            'course_id' => Course::where('course_code', 'CS102')->first()->course_id
-        ]);
+        // Dynamic assignment for BSIT 2022
+        foreach ($courseCodes['BSIT']['2022'] as $yearLevelId => $courseCodesPerSemester) {
+            $adjustedYearLevelId = $yearLevelId + $semesterAdjustments['2022'];
 
-        // Assign Courses to Semesters for BSA 2022 Curriculum
-        CourseAssignment::create([
-            'curricula_program_id' => $bsaCurriculaProgram2022->curricula_program_id,
-            'semester_id' => $semester1BSA2022->semester_id,
-            'course_id' => Course::where('course_code', 'ACC102')->first()->course_id
-        ]);
+            foreach ($courseCodesPerSemester as $index => $courseCode) {
+                $semester = $index + 1;
+                $semesterRecord = Semester::where('year_level_id', $adjustedYearLevelId)
+                    ->where('semester', $semester)
+                    ->first();
 
-        CourseAssignment::create([
-            'curricula_program_id' => $bsaCurriculaProgram2022->curricula_program_id,
-            'semester_id' => $semester1BSA2022->semester_id,
-            'course_id' => Course::where('course_code', 'GE102')->first()->course_id
-        ]);
+                if (!$semesterRecord) {
+                    Log::error('Semester not found for 2022', [
+                        'year_level_id' => $adjustedYearLevelId,
+                        'semester' => $semester
+                    ]);
+                    continue;
+                }
+
+                $course = Course::where('course_code', $courseCode)->first();
+
+                if ($course) {
+                    CourseAssignment::firstOrCreate([
+                        'curricula_program_id' => $bsitCurriculaProgram2022->curricula_program_id,
+                        'semester_id' => $semesterRecord->semester_id,
+                        'course_id' => $course->course_id
+                    ]);
+                } else {
+                    Log::error('Course not found', [
+                        'course_code' => $courseCode
+                    ]);
+                }
+            }
+        }
+
+        // Hardcoded assignment for BSA 2022 (curricula_program_id = 4)
+        $bsaCurriculaProgram2022 = CurriculaProgram::where('curricula_program_id', 4)->first();
+
+        $bsaCourses = [
+            13 => [ // Year 1
+                33 => ['ACC101', 'ACC102', 'GE101'], // Semester 1
+                34 => ['ACC102', 'ACC103', 'GE102'], // Semester 2
+            ],
+            14 => [ // Year 2
+                35 => ['ACC201', 'ACC202', 'GE201'], // Semester 1
+                36 => ['ACC202', 'ACC203', 'GE202'], // Semester 2
+            ],
+        ];
+
+        foreach ($bsaCourses as $yearLevelId => $semesters) {
+            foreach ($semesters as $semesterId => $courseCodes) {
+                foreach ($courseCodes as $courseCode) {
+                    $course = Course::where('course_code', $courseCode)->first();
+
+                    if ($course) {
+                        CourseAssignment::firstOrCreate([
+                            'curricula_program_id' => $bsaCurriculaProgram2022->curricula_program_id,
+                            'semester_id' => $semesterId,
+                            'course_id' => $course->course_id,
+                        ]);
+                    } else {
+                        Log::error('Course not found', [
+                            'course_code' => $courseCode
+                        ]);
+                    }
+                }
+            }
+        }
     }
 }

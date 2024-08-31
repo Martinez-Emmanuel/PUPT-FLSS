@@ -15,25 +15,38 @@ class ProgramController extends Controller
         return response()->json($programs);
     }
 
-    // Create a new program
     public function store(Request $request)
-    {
-        $validatedData = $request->validate([
-            'curriculum_id' => 'nullable|integer|exists:curricula,curriculum_id',
-            'program_code' => 'required|string|max:10|unique:programs',
-            'program_title' => 'required|string|max:100',
-            'program_info' => 'required|string|max:255',
-            'status' => 'required|in:active,inactive',
-            'number_of_years' => 'required|integer|min:1',
-        ]);
+{
+    // Validate the request data
+    $validatedData = $request->validate([
+        'program_code' => 'required|string|max:10',
+        'program_title' => 'required|string|max:100',
+        'program_info' => 'required|string|max:255',
+        'status' => 'required|in:active,inactive',
+        'number_of_years' => 'required|integer|min:1',
+    ]);
 
-        $program = Program::create($validatedData);
+    // Check for uniqueness of the program_title and program_info combination within the same program_code
+    $existingProgram = Program::where('program_code', $validatedData['program_code'])
+        ->where('program_title', $validatedData['program_title'])
+        ->where('program_info', $validatedData['program_info'])
+        ->first();
 
+    if ($existingProgram) {
         return response()->json([
-            'message' => 'Program created successfully',
-            'program' => $program
-        ], 201);
+            'message' => 'A program with the same code, title, and info already exists.'
+        ], 422);
     }
+
+    // Create the new program
+    $program = Program::create($validatedData);
+
+    return response()->json([
+        'message' => 'Program created successfully',
+        'program' => $program
+    ], 201);
+}
+
 
     // Show a specific program
     public function show($id)
@@ -41,14 +54,14 @@ class ProgramController extends Controller
         $program = Program::with('curricula', 'yearLevels')->findOrFail($id);
         return response()->json($program);
     }
-
     // Update a program
     public function update(Request $request, $id)
     {
+        // Find the program by its ID or fail
         $program = Program::findOrFail($id);
 
+        // Validate the incoming request data
         $validatedData = $request->validate([
-            'curriculum_id' => 'nullable|integer|exists:curricula,curriculum_id',
             'program_code' => 'required|string|max:10|unique:programs,program_code,' . $program->program_id . ',program_id',
             'program_title' => 'required|string|max:100',
             'program_info' => 'required|string|max:255',
@@ -56,13 +69,16 @@ class ProgramController extends Controller
             'number_of_years' => 'required|integer|min:1',
         ]);
 
+        // Update the program with the validated data
         $program->update($validatedData);
 
+        // Return a success response
         return response()->json([
             'message' => 'Program updated successfully',
             'program' => $program
         ], 200);
     }
+
 
     // Delete a program
     public function destroy($id)

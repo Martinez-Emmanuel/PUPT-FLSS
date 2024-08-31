@@ -24,4 +24,5 @@ class YearLevel extends Model
     {
         return $this->belongsTo(CurriculaProgram::class, 'curricula_program_id', 'curricula_program_id');
     }
+    
 }
