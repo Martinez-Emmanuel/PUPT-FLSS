@@ -33,6 +33,13 @@ Route::post('/copyCurriculum', [CurriculumController::class, 'copyCurriculum']);
 Route::put('/updateCurriculum/{id}', [CurriculumController::class, 'update']);
 
 
+
+// Course routes
+Route::get('/courses', [CourseController::class, 'index']);
+Route::post('/addCourse', [CourseController::class, 'addCourse']);
+Route::put('/courses/{id}', [CourseController::class, 'updateCourse']);
+Route::delete('/courses/{id}', [CourseController::class, 'deleteCourse']);
+
 // Curriculum routes
 Route::get('/curricula', [CurriculumController::class, 'index']);
 Route::get('/curricula/{id}', [CurriculumController::class, 'show']);
@@ -60,12 +67,6 @@ Route::post('/addProgram', [ProgramController::class, 'store']);
 Route::get('/programs/{id}', [ProgramController::class, 'show']);
 Route::put('/updateProgram/{id}', [ProgramController::class, 'update']);
 Route::delete('/deleteProgram/{id}', [ProgramController::class, 'destroy']);
-
-Route::get('/courses', [CourseController::class, 'index']);
-Route::post('/addCourse', [CourseController::class, 'addCourse']);
-Route::put('/courses/{id}', [CourseController::class, 'updateCourse']);
-Route::delete('/courses/{id}', [CourseController::class, 'deleteCourse']);
-
 
 Route::post('/submitPreference', [PreferenceController::class, 'submitPreference']);
 // Protected routes
