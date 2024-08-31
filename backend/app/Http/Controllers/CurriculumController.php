@@ -105,6 +105,74 @@ class CurriculumController extends Controller
             'message' => 'Curriculum and all associated programs, year levels, and semesters deleted successfully.'
         ]);
     }
+
+    public function copyCurriculum(Request $request)
+    {
+        // Validate the request
+        $request->validate([
+            'curriculum_id' => 'required|exists:curricula,curriculum_id',
+            'new_curriculum_year' => 'required|integer|unique:curricula,curriculum_year',
+        ], [
+            'new_curriculum_year.unique' => 'A curriculum for this year already exists.',
+        ]);
+
+        $newCurriculum = DB::transaction(function () use ($request) {
+            // Step 1: Get the original curriculum
+            $originalCurriculum = Curriculum::with('curriculaPrograms.yearLevels.semesters.courseAssignments.course')
+                                            ->findOrFail($request->curriculum_id);
+
+            // Step 2: Create the new curriculum
+            $newCurriculum = Curriculum::create([
+                'curriculum_year' => $request->new_curriculum_year,
+                'status' => 'active',
+            ]);
+
+            // Step 3: Copy each program associated with the original curriculum
+            foreach ($originalCurriculum->curriculaPrograms as $originalCurriculaProgram) {
+                $newCurriculaProgram = CurriculaProgram::create([
+                    'curriculum_id' => $newCurriculum->curriculum_id,
+                    'program_id' => $originalCurriculaProgram->program_id,
+                ]);
+
+                // Step 4: Copy each year level associated with the original program
+                foreach ($originalCurriculaProgram->yearLevels as $originalYearLevel) {
+                    $newYearLevel = YearLevel::create([
+                        'curricula_program_id' => $newCurriculaProgram->curricula_program_id,
+                        'year' => $originalYearLevel->year,
+                    ]);
+
+                    // Step 5: Copy each semester associated with the original year level
+                    foreach ($originalYearLevel->semesters as $originalSemester) {
+                        $newSemester = Semester::create([
+                            'year_level_id' => $newYearLevel->year_level_id,
+                            'semester' => $originalSemester->semester,
+                        ]);
+
+                        // Step 6: Copy each course assignment associated with the original semester
+                        foreach ($originalSemester->courseAssignments as $originalCourseAssignment) {
+                            CourseAssignment::create([
+                                'curricula_program_id' => $newCurriculaProgram->curricula_program_id,
+                                'semester_id' => $newSemester->semester_id,
+                                'course_id' => $originalCourseAssignment->course_id,
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            return $newCurriculum;
+        });
+
+        // Reload the new curriculum with all its related data to return
+        $newCurriculumWithData = Curriculum::with('curriculaPrograms.yearLevels.semesters.courseAssignments.course')
+                                        ->findOrFail($newCurriculum->curriculum_id);
+
+           return response()->json([
+            'status' => 'success',
+            'message' => 'Curriculum and associated programs, year levels, and semesters created successfully.'
+        ]);
+    }
+
     
     // List all curricula
     public function index()

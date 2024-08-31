@@ -29,7 +29,7 @@ Route::get('/curriculum/', [ProgramFetchController::class, 'getAllActivePrograms
 //Add Curriculum that add all the program and year level and semester
 Route::post('/addCurriculum', [CurriculumController::class, 'addCurriculum']);
 Route::post('/deleteCurriculum', [CurriculumController::class, 'deleteCurriculum']);
-
+Route::post('/copyCurriculum', [CurriculumController::class, 'copyCurriculum']);
 
 
 

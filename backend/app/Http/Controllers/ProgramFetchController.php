@@ -117,7 +117,8 @@ class ProgramFetchController extends Controller
         // Fetch all active programs
         $activePrograms = \DB::table('programs')
             ->where('status', 'active')
-            ->get();
+            ->distinct() // Ensure only distinct programs are fetched
+            ->get(['program_code', 'program_title', 'number_of_years', 'program_id']);
 
         if ($activePrograms->isEmpty()) {
             return response()->json(['error' => 'No active programs found'], 404);
@@ -187,7 +188,7 @@ class ProgramFetchController extends Controller
                 'program_code' => $program->program_code,
                 'program_title' => $program->program_title,
                 'number_of_years' => $program->number_of_years,
-                'courses' => $coursesCollection,
+                'courses' => $coursesCollection->unique('course_id'), // Ensure courses are unique
             ]);
         }
 
@@ -196,4 +197,5 @@ class ProgramFetchController extends Controller
             'programs' => $programsCollection,
         ], 200);
     }
+
 }

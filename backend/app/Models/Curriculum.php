@@ -29,11 +29,20 @@ class Curriculum extends Model
     protected $fillable = [
         'curriculum_year',
         'status',
+        'program_id',
     ];
 
     public function programs()
     {
         return $this->belongsToMany(Program::class, 'curricula_program', 'curriculum_id', 'program_id');
+    }
+    public function curriculaPrograms()
+    {
+        return $this->hasMany(CurriculaProgram::class, 'curriculum_id', 'curriculum_id');
+    }
+    public function yearLevels()
+    {
+        return $this->hasMany(YearLevel::class, 'curricula_program_id', 'curricula_program_id');
     }
     
 }
