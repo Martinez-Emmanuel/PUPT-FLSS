@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -35,7 +35,7 @@ export interface InputField {
   templateUrl: './table-header.component.html',
   styleUrls: ['./table-header.component.scss'],
 })
-export class TableHeaderComponent {
+export class TableHeaderComponent implements OnInit, OnChanges {
   @Input() inputFields: InputField[] = [];
   @Input() addButtonLabel = 'Add';
   @Input() addIconName = 'add';
@@ -48,12 +48,15 @@ export class TableHeaderComponent {
   @Input() selectedValues: { [key: string]: any } = {};
   @Input() customExportOptions: { all: string; current: string } | null = null;
   @Input() searchLabel = 'Search';
+  @Input() activeYear = '';
+  @Input() activeSemester = '';
 
   @Output() add = new EventEmitter<void>();
   @Output() inputChange = new EventEmitter<{ [key: string]: any }>();
   @Output() sectionChange = new EventEmitter<number>();
   @Output() export = new EventEmitter<'all' | 'current' | undefined>();
   @Output() search = new EventEmitter<string>();
+  @Output() activeYearSemClick = new EventEmitter<void>();
 
   form: FormGroup;
 
@@ -62,9 +65,21 @@ export class TableHeaderComponent {
   }
 
   ngOnInit() {
+    this.initializeForm();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['inputFields'] || changes['selectedValues']) {
+      this.initializeForm();
+    }
+  }
+
+  private initializeForm() {
+    this.form = this.fb.group({});
     this.inputFields.forEach((field) => {
-      const initialValue =
-        this.selectedValues[field.key] || (field.type === 'section' ? 1 : '');
+      const initialValue = this.selectedValues[field.key] !== undefined
+        ? this.selectedValues[field.key]
+        : (field.type === 'section' ? 1 : '');
       this.form.addControl(field.key, this.fb.control(initialValue));
     });
 
@@ -95,6 +110,10 @@ export class TableHeaderComponent {
     } else {
       this.export.emit(undefined);
     }
+  }
+
+  onActiveYearSemClick() {
+    this.activeYearSemClick.emit();
   }
 
   incrementSection(field: InputField) {
