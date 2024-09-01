@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
@@ -7,6 +7,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 
 import { TableHeaderComponent, InputField } from '../../../../shared/table-header/table-header.component';
 import { TableDialogComponent, DialogConfig } from '../../../../shared/table-dialog/table-dialog.component';
@@ -22,16 +23,17 @@ import { SchedulingService, Schedule, Program, Curriculum } from '../../../servi
     TableHeaderComponent,
     MatTableModule,
     MatButtonModule,
+    MatIconModule,
   ],
   templateUrl: './scheduling.component.html',
   styleUrls: ['./scheduling.component.scss'],
   animations: [fadeAnimation, pageFloatUpAnimation],
 })
 export class SchedulingComponent implements OnInit, OnDestroy {
-  public schedules: Schedule[] = [];
-  public selectedProgram: string = '';
-  public selectedYear: number = 1;
-  public selectedCurriculum: string = '';
+  schedules: Schedule[] = [];
+  selectedProgram = '';
+  selectedYear = 1;
+  selectedCurriculum = '';
   private destroy$ = new Subject<void>();
 
   headerInputFields: InputField[] = [
@@ -57,19 +59,18 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
   displayedColumns: string[] = [
     'index', 'course_code', 'course_title', 'lec_hours', 'lab_hours',
-    'units', 'tuition_hours', 'day', 'time', 'professor', 'room'
+    'units', 'tuition_hours', 'day', 'time', 'professor', 'room', 'action'
   ];
 
   dayOptions = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  timeOptions = ['8:00 AM', '9:00 AM', '10:00 AM', '11:00 AM', '1:00 PM', '2:00 PM', '3:00 PM', '4:00 PM'];
-  professorOptions = ['Prof. Smith', 'Prof. Johnson', 'Prof. Williams', 'Prof. Brown', 'Prof. Jones'];
-  roomOptions = ['Room 101', 'Room 102', 'Room 103', 'Room 201', 'Room 202', 'Room 203'];
+  timeOptions: string[] = this.generateTimeOptions();
+  professorOptions = ['Geneva Urizar', 'Steven Villarosa', 'Jennifer Ortega', 'AJ San Luis', 'Gecilie Almiranez'];
+  roomOptions = ['Room 101', 'Room 102', 'Room 103', 'Room 201', 'Room 202', 'Room 203', 'DOST Lab'];
 
   constructor(
     private schedulingService: SchedulingService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -81,6 +82,18 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  generateTimeOptions(): string[] {
+    const options: string[] = [];
+    for (let hour = 7; hour <= 21; hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
+        if (hour === 21 && minute > 0) break;
+        const time = new Date(2023, 0, 1, hour, minute);
+        options.push(time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
+      }
+    }
+    return options;
+  }
+
   fetchInitialData() {
     this.schedulingService.getPrograms().pipe(takeUntil(this.destroy$)).subscribe({
       next: (programs) => {
@@ -88,14 +101,10 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         if (programs.length > 0) {
           this.selectedProgram = programs[0].name;
           this.updateYearLevels(programs[0]);
-          this.fetchCurriculums(programs[0].id);
+          this.fetchCurriculums();
         }
-        this.cdr.markForCheck();
       },
-      error: (error) => {
-        console.error('Error fetching programs:', error);
-        this.snackBar.open('Error fetching programs. Please try again.', 'Close', { duration: 3000 });
-      }
+      error: this.handleError('Error fetching programs')
     });
   }
 
@@ -104,20 +113,16 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     this.selectedYear = 1;
   }
 
-  fetchCurriculums(programId: number) {
-    this.schedulingService.getCurriculums(programId).pipe(takeUntil(this.destroy$)).subscribe({
+  fetchCurriculums() {
+    this.schedulingService.getCurriculums().pipe(takeUntil(this.destroy$)).subscribe({
       next: (curriculums) => {
         this.headerInputFields[2].options = curriculums.map(c => c.name);
         if (curriculums.length > 0) {
           this.selectedCurriculum = curriculums[0].name;
           this.fetchSchedules();
         }
-        this.cdr.markForCheck();
       },
-      error: (error) => {
-        console.error('Error fetching curriculums:', error);
-        this.snackBar.open('Error fetching curriculums. Please try again.', 'Close', { duration: 3000 });
-      }
+      error: this.handleError('Error fetching curriculums')
     });
   }
 
@@ -125,14 +130,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     this.schedulingService.getSchedules(this.selectedProgram, this.selectedYear, this.selectedCurriculum)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (schedules) => {
-          this.schedules = schedules;
-          this.cdr.markForCheck();
-        },
-        error: (error) => {
-          console.error('Error fetching schedules:', error);
-          this.snackBar.open('Error fetching schedules. Please try again.', 'Close', { duration: 3000 });
-        }
+        next: (schedules) => this.schedules = schedules,
+        error: this.handleError('Error fetching schedules')
       });
   }
 
@@ -142,7 +141,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       const program = this.headerInputFields[0].options?.find(p => p === this.selectedProgram);
       if (program) {
         this.updateYearLevels(program as unknown as Program);
-        this.fetchCurriculums((program as unknown as Program).id);
+        this.fetchCurriculums();
       }
     }
     if (values['yearLevel'] !== undefined) {
@@ -154,51 +153,59 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     this.fetchSchedules();
   }
 
-  openDialog(columnKey: string, element: Schedule) {
+  openEditDialog(element: Schedule) {
     const dialogConfig: DialogConfig = {
-      title: `Select ${this.getColumnLabel(columnKey)}`,
+      title: 'Edit Schedule Details',
       fields: [
-        {
-          label: this.getColumnLabel(columnKey),
-          formControlName: columnKey,
-          type: 'select',
-          options: this.getOptionsForColumn(columnKey),
-          required: true,
-        },
+        { label: 'Day', formControlName: 'day', type: 'select', options: this.dayOptions, required: true },
+        { label: 'Start Time', formControlName: 'startTime', type: 'select', options: this.timeOptions, required: true },
+        { label: 'End Time', formControlName: 'endTime', type: 'select', options: this.timeOptions, required: true },
+        { label: 'Professor', formControlName: 'professor', type: 'select', options: this.professorOptions, required: true },
+        { label: 'Room', formControlName: 'room', type: 'select', options: this.roomOptions, required: true },
       ],
-      isEdit: false,
-      initialValue: { [columnKey]: element[columnKey] },
+      isEdit: true,
+      initialValue: {
+        day: element.day,
+        startTime: element.time.split(' - ')[0],
+        endTime: element.time.split(' - ')[1],
+        professor: element.professor,
+        room: element.room,
+      },
     };
 
-    const dialogRef = this.dialog.open(TableDialogComponent, {
-      data: dialogConfig,
+    const dialogRef = this.dialog.open(TableDialogComponent, { data: dialogConfig });
+
+    dialogRef.componentInstance.startTimeChange.subscribe((startTime: string) => {
+      const startIndex = this.timeOptions.indexOf(startTime);
+      dialogRef.componentInstance.updateEndTimeOptions(this.timeOptions.slice(startIndex + 1));
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        element[columnKey] = result[columnKey];
-        this.cdr.markForCheck();
+        const updatedSchedule = {
+          ...element,
+          ...result,
+          time: `${result.startTime} - ${result.endTime}`
+        };
+        this.updateSchedule(updatedSchedule);
       }
     });
   }
 
-  getColumnLabel(columnKey: string): string {
-    switch (columnKey) {
-      case 'day': return 'Day';
-      case 'time': return 'Time';
-      case 'professor': return 'Professor';
-      case 'room': return 'Room';
-      default: return '';
-    }
+  updateSchedule(updatedSchedule: Schedule) {
+    this.schedulingService.updateSchedule(updatedSchedule).pipe(takeUntil(this.destroy$)).subscribe({
+      next: () => {
+        this.snackBar.open('Schedule updated successfully', 'Close', { duration: 3000 });
+        this.fetchSchedules();
+      },
+      error: this.handleError('Error updating schedule')
+    });
   }
 
-  getOptionsForColumn(columnKey: string): string[] {
-    switch (columnKey) {
-      case 'day': return this.dayOptions;
-      case 'time': return this.timeOptions;
-      case 'professor': return this.professorOptions;
-      case 'room': return this.roomOptions;
-      default: return [];
-    }
+  private handleError(message: string) {
+    return (error: any) => {
+      console.error(`${message}:`, error);
+      this.snackBar.open(`${message}. Please try again.`, 'Close', { duration: 3000 });
+    };
   }
 }

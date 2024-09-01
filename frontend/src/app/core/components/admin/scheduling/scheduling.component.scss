@@ -18,7 +18,6 @@
 .scheduling-table-container {
   @include flex-layout($direction: column, $align: none, $justify: none);
   @include hide-scrollbar;
-  flex: 1;
   overflow: auto;
   position: relative;
   border-radius: var(--border-radius-md);
@@ -28,13 +27,11 @@
     display: flex;
     flex-direction: column;
     background-color: var(--neutral-light);
-    border-radius: var(--border-radius-md);
     max-height: 50rem;
   
     .custom-table {
       @include default-transition;
       background-color: var(--neutral-light);
-      border-radius: var(--border-radius-md);
 
       .table-button {
         color: var(--primary-text);
@@ -55,6 +52,15 @@
   
     .custom-cell {
       padding: var(--spacing-sm);
+      text-align: center;
+
+      .edit-button {
+        color: var(--secondary-text);
+  
+        &:hover {
+          background-color: var(--secondary-hover);
+        }
+      }
     }
   }
 }

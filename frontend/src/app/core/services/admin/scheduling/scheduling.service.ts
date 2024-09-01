@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, of } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 export interface Program {
   id: number;
@@ -24,7 +25,7 @@ export interface Schedule {
   time: string;
   professor: string;
   room: string;
-  [key: string]: string | number; // This allows string indexing
+  [key: string]: string | number;
 }
 
 @Injectable({
@@ -51,8 +52,8 @@ export class SchedulingService {
       units: 3,
       tuition_hours: 3,
       day: 'Monday',
-      time: '8:00 AM - 11:00 AM',
-      professor: 'Dr. Smith',
+      time: '08:00 AM - 11:00 AM',
+      professor: 'Gecilie Almiranez',
       room: 'Room 101'
     },
     {
@@ -64,9 +65,9 @@ export class SchedulingService {
       units: 3,
       tuition_hours: 5,
       day: 'Tuesday',
-      time: '1:00 PM - 6:00 PM',
-      professor: 'Prof. Johnson',
-      room: 'Computer Lab 1'
+      time: '01:00 PM - 6:00 PM',
+      professor: 'AJ San Luis',
+      room: 'DOST Lab'
     },
     {
       id: 3,
@@ -77,163 +78,45 @@ export class SchedulingService {
       units: 3,
       tuition_hours: 3,
       day: 'Wednesday',
-      time: '9:00 AM - 12:00 PM',
-      professor: 'Dr. Brown',
+      time: '09:00 AM - 12:00 PM',
+      professor: 'Jennifer Ortega',
       room: 'Room 201'
     },
-    {
-      id: 3,
-      course_code: 'ACC101',
-      course_title: 'Introduction to Accounting',
-      lec_hours: 3,
-      lab_hours: 0,
-      units: 3,
-      tuition_hours: 3,
-      day: 'Wednesday',
-      time: '9:00 AM - 12:00 PM',
-      professor: 'Dr. Brown',
-      room: 'Room 201'
-    },
-    {
-      id: 3,
-      course_code: 'ACC101',
-      course_title: 'Introduction to Accounting',
-      lec_hours: 3,
-      lab_hours: 0,
-      units: 3,
-      tuition_hours: 3,
-      day: 'Wednesday',
-      time: '9:00 AM - 12:00 PM',
-      professor: 'Dr. Brown',
-      room: 'Room 201'
-    },
-    {
-      id: 3,
-      course_code: 'ACC101',
-      course_title: 'Introduction to Accounting',
-      lec_hours: 3,
-      lab_hours: 0,
-      units: 3,
-      tuition_hours: 3,
-      day: 'Wednesday',
-      time: '9:00 AM - 12:00 PM',
-      professor: 'Dr. Brown',
-      room: 'Room 201'
-    },
-    {
-      id: 3,
-      course_code: 'ACC101',
-      course_title: 'Introduction to Accounting',
-      lec_hours: 3,
-      lab_hours: 0,
-      units: 3,
-      tuition_hours: 3,
-      day: 'Wednesday',
-      time: '9:00 AM - 12:00 PM',
-      professor: 'Dr. Brown',
-      room: 'Room 201'
-    },
-    {
-      id: 3,
-      course_code: 'ACC101',
-      course_title: 'Introduction to Accounting',
-      lec_hours: 3,
-      lab_hours: 0,
-      units: 3,
-      tuition_hours: 3,
-      day: 'Wednesday',
-      time: '9:00 AM - 12:00 PM',
-      professor: 'Dr. Brown',
-      room: 'Room 201'
-    },
-    {
-      id: 3,
-      course_code: 'ACC101',
-      course_title: 'Introduction to Accounting',
-      lec_hours: 3,
-      lab_hours: 0,
-      units: 3,
-      tuition_hours: 3,
-      day: 'Wednesday',
-      time: '9:00 AM - 12:00 PM',
-      professor: 'Dr. Brown',
-      room: 'Room 201'
-    },
-    {
-      id: 3,
-      course_code: 'ACC101',
-      course_title: 'Introduction to Accounting',
-      lec_hours: 3,
-      lab_hours: 0,
-      units: 3,
-      tuition_hours: 3,
-      day: 'Wednesday',
-      time: '9:00 AM - 12:00 PM',
-      professor: 'Dr. Brown',
-      room: 'Room 201'
-    },
-    {
-      id: 3,
-      course_code: 'ACC101',
-      course_title: 'Introduction to Accounting',
-      lec_hours: 3,
-      lab_hours: 0,
-      units: 3,
-      tuition_hours: 3,
-      day: 'Wednesday',
-      time: '9:00 AM - 12:00 PM',
-      professor: 'Dr. Brown',
-      room: 'Room 201'
-    },
-    {
-      id: 3,
-      course_code: 'ACC101',
-      course_title: 'Introduction to Accounting',
-      lec_hours: 3,
-      lab_hours: 0,
-      units: 3,
-      tuition_hours: 3,
-      day: 'Wednesday',
-      time: '9:00 AM - 12:00 PM',
-      professor: 'Dr. Brown',
-      room: 'Room 201'
-    },
+    
   ];
 
   private schedulesSubject = new BehaviorSubject<Schedule[]>(this.schedules);
-
-  constructor() {}
 
   getPrograms(): Observable<Program[]> {
     return of(this.programs);
   }
 
-  getCurriculums(programId: number): Observable<Curriculum[]> {
-    // In a real scenario, you'd filter curriculums based on the program
-    // For this mock data, we'll return all curriculums
+  getCurriculums(): Observable<Curriculum[]> {
     return of(this.curriculums);
   }
 
   getSchedules(program: string, year: number, curriculum: string): Observable<Schedule[]> {
-    // In a real scenario, you'd filter schedules based on the program, year, and curriculum
-    // For this mock data, we'll return all schedules
-    return this.schedulesSubject.asObservable();
+    return this.schedulesSubject.asObservable().pipe(
+      map(schedules => schedules.filter(s => 
+        // Add actual filtering logic here when you have real data
+        true
+      ))
+    );
   }
 
-  addSchedule(schedule: Schedule): Observable<Schedule[]> {
+  addSchedule(schedule: Partial<Schedule>): Observable<Schedule[]> {
     const currentSchedules = this.schedulesSubject.getValue();
-    const newSchedule = { ...schedule, id: this.getNextId(currentSchedules) };
+    const newSchedule = { ...schedule, id: this.getNextId(currentSchedules) } as Schedule;
     this.schedulesSubject.next([...currentSchedules, newSchedule]);
     return this.schedulesSubject.asObservable();
   }
 
   updateSchedule(updatedSchedule: Schedule): Observable<Schedule[]> {
     const currentSchedules = this.schedulesSubject.getValue();
-    const index = currentSchedules.findIndex(s => s.id === updatedSchedule.id);
-    if (index !== -1) {
-      currentSchedules[index] = updatedSchedule;
-      this.schedulesSubject.next([...currentSchedules]);
-    }
+    const updatedSchedules = currentSchedules.map(s => 
+      s.id === updatedSchedule.id ? updatedSchedule : s
+    );
+    this.schedulesSubject.next(updatedSchedules);
     return this.schedulesSubject.asObservable();
   }
 
