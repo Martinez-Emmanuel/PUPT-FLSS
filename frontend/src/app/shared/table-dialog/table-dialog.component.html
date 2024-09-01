@@ -1,11 +1,8 @@
-<!-- Main container for the dialog -->
 <div class="table-dialog-container">
-  <!-- Dialog title -->
   <h2 mat-dialog-title class="table-dialog-title">
     <span>{{ isExportDialog ? "Export to PDF" : data.title }}</span>
   </h2>
 
-  <!-- Dialog content -->
   <div mat-dialog-content class="table-dialog-content">
     @if (isExportDialog) {
     <form [formGroup]="form" class="dialog-form">
@@ -23,30 +20,23 @@
       </mat-radio-group>
     </form>
     } @else {
-    <!-- Form container -->
     <form [formGroup]="form" class="dialog-form">
-      <!-- Dynamically generate form fields based on data.fields -->
-      @for (field of data.fields; track field) { @if (field.type === 'checkbox')
-      {
+      @for (field of data.fields; track field) { @switch (field.type) { @case
+      ('checkbox') {
       <mat-checkbox [formControlName]="field.formControlName" class="checkbox">
         {{ field.label }}
       </mat-checkbox>
-      } @else {
-      <!-- Individual form field container -->
+      } @default {
       <mat-form-field class="form-field" appearance="fill">
-        <!-- Field label -->
         <mat-label>{{ field.label }}</mat-label>
 
-        <!-- Switch between different input types based on field.type -->
         @switch (field.type) { @case ('text') {
-        <!-- Text input -->
         <input
           matInput
           [formControlName]="field.formControlName"
           [maxlength]="field.maxLength ?? null"
         />
         } @case ('number') {
-        <!-- Number input -->
         <input
           matInput
           type="number"
@@ -56,7 +46,6 @@
           [max]="field.max ?? null"
         />
         } @case ('select') {
-        <!-- Dropdown select input -->
         <mat-select [formControlName]="field.formControlName">
           @for (option of field.options; track option) {
           <mat-option [value]="option">
@@ -65,7 +54,6 @@
           }
         </mat-select>
         } @case ('autocomplete') {
-        <!-- Autocomplete input -->
         <input
           type="text"
           matInput
@@ -74,7 +62,8 @@
           (input)="filterOptions(field)"
         />
         <mat-autocomplete #auto="matAutocomplete">
-          @for (option of filteredOptions[field.formControlName]; track option) {
+          @for (option of filteredOptions[field.formControlName]; track option)
+          {
           <mat-option [value]="option">
             {{ option }}
           </mat-option>
@@ -82,22 +71,18 @@
         </mat-autocomplete>
         } }
 
-        <!-- Error message display -->
         <mat-error>{{
           getErrorMessage(field.formControlName, field.label)
         }}</mat-error>
-
-        <!-- Optional hint message -->
         @if (field.hint) {
         <mat-hint>{{ field.hint }}</mat-hint>
         }
       </mat-form-field>
-      } }
+      } } }
     </form>
     }
   </div>
 
-  <!-- Dialog action buttons -->
   <div mat-dialog-actions class="table-dialog-button">
     <button mat-button class="cancel-button" (click)="onCancel()">
       Cancel
