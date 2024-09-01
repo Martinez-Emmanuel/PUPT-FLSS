@@ -127,6 +127,12 @@ export class CurriculumService {
       program_id: programId
     });
   }
+
+  //add course
+  addCourse(courseData: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/addCourse`, courseData);
+  }
+  
   
   
   

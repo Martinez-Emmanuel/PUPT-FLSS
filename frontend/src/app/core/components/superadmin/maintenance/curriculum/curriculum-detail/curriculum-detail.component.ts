@@ -39,6 +39,7 @@ import {
 })
 export class CurriculumDetailComponent implements OnInit {
 
+  
    // Declare the selected programs array here
    public selectedPrograms: string[] = [];
 
@@ -170,7 +171,7 @@ export class CurriculumDetailComponent implements OnInit {
         // Fetch the programs associated with this curriculum year
         this.curriculumService.getProgramsByCurriculumYear(year).subscribe({
           next: (associatedPrograms) => {
-            // Map the associated programs to their program codes
+            console.log('Retrieved associated programs:', associatedPrograms);
             this.selectedPrograms = associatedPrograms.map(program => program.program_code);
   
             // Update the dropdown with the selected programs
@@ -201,6 +202,7 @@ export class CurriculumDetailComponent implements OnInit {
     });
   }
   
+  
 
 
   
@@ -209,6 +211,11 @@ export class CurriculumDetailComponent implements OnInit {
   updateHeaderInputFields() {
     const yearLevelOptions = [1, 2, 3, 4, 5];
 
+      // Ensure yearLevelOptions has values
+  if (yearLevelOptions.length === 0) {
+    console.error('No year level options available.');
+  }
+
     this.headerInputFields = [
       {
         type: 'select',
@@ -216,12 +223,13 @@ export class CurriculumDetailComponent implements OnInit {
         key: 'program',
         options: this.selectedPrograms, // Use only the selected programs
         // disabled: this.selectedPrograms.length === 0 // Disable dropdown if no options
+        
       },
       {
         type: 'select',
         label: 'Year Level',
         key: 'yearLevel',
-        options: yearLevelOptions,
+        options: [1,2,3,4,5],
       },
     ];
 
@@ -247,7 +255,7 @@ export class CurriculumDetailComponent implements OnInit {
         const yearLevel = program.year_levels.find(
           (yl) => yl.year === this.selectedYear
         );
-    
+  
         if (yearLevel) {
           console.log('Year level found:', yearLevel);
           this.selectedSemesters = yearLevel.semesters.map((semester) => ({
@@ -265,24 +273,29 @@ export class CurriculumDetailComponent implements OnInit {
     }
   }
   
+  
 
   // Commented out until needed
   onInputChange(values: { [key: string]: any }) {
+    console.log('Input Change Detected:', values);
+    
     if (values['yearLevel'] !== undefined) {
       this.selectedYear = values['yearLevel'];
+      console.log('Updated selectedYear:', this.selectedYear);
     }
-
+  
     if (values['program'] !== undefined) {
       this.selectedProgram = values['program'];
+      console.log('Updated selectedProgram:', this.selectedProgram);
     }
-
-    // Ensure the program selection can be changed multiple times
+  
     if (this.selectedProgram && this.selectedYear) {
       this.fetchCoursesForSelectedProgram(this.selectedProgram);
     }
-
-    this.cdr.markForCheck();
+  
+    this.cdr.markForCheck();  // Trigger change detection
   }
+  
 
 
 
