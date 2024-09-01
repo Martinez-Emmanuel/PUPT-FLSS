@@ -64,6 +64,22 @@
           </mat-option>
           }
         </mat-select>
+        } @case ('autocomplete') {
+        <!-- Autocomplete input -->
+        <input
+          type="text"
+          matInput
+          [formControlName]="field.formControlName"
+          [matAutocomplete]="auto"
+          (input)="filterOptions(field)"
+        />
+        <mat-autocomplete #auto="matAutocomplete">
+          @for (option of filteredOptions[field.formControlName]; track option) {
+          <mat-option [value]="option">
+            {{ option }}
+          </mat-option>
+          }
+        </mat-autocomplete>
         } }
 
         <!-- Error message display -->

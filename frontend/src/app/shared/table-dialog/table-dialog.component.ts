@@ -1,4 +1,4 @@
-import { Component, Inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, Output, EventEmitter, Inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
@@ -10,13 +10,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 
 import { TwoDigitInputDirective } from '../../core/imports/two-digit-input.directive';
 
 export interface DialogFieldConfig {
   label: string;
   formControlName: string;
-  type: 'text' | 'number' | 'select' | 'checkbox';
+  type: 'text' | 'number' | 'select' | 'checkbox' | 'autocomplete';
   options?: string[] | number[];
   maxLength?: number;
   required?: boolean;
@@ -24,6 +25,7 @@ export interface DialogFieldConfig {
   max?: number;
   hint?: string;
   disabled?: boolean;
+  filter?: (value: string) => string[]; // Add this line
 }
 
 export interface DialogConfig {
@@ -52,6 +54,7 @@ export interface DialogConfig {
     MatDialogModule,
     MatRadioModule,
     MatCheckboxModule,
+    MatAutocompleteModule, // Add this line
     TwoDigitInputDirective,
   ],
 })
@@ -59,6 +62,9 @@ export class TableDialogComponent {
   form: FormGroup;
   isExportDialog: boolean;
   customExportOptions: { all: string; current: string } | null = null;
+  filteredOptions: { [key: string]: (string | number)[] } = {};
+
+  @Output() startTimeChange = new EventEmitter<string>();
 
   constructor(
     private fb: FormBuilder,
@@ -89,21 +95,42 @@ export class TableDialogComponent {
           validators.push(Validators.pattern(/^\d{1,2}$/));
         if (field.min !== undefined) validators.push(Validators.min(field.min));
         if (field.max !== undefined) validators.push(Validators.max(field.max));
-
+  
         const initialValue = this.data.initialValue
           ? this.data.initialValue[field.formControlName]
           : '';
-          const control = this.fb.control(initialValue, validators);
-
-          // Set the control as disabled if specified
-          if (field.disabled) {
-            control.disable();
-          }
-    
-          this.form.addControl(field.formControlName, control);
-        });
-      }
+        const control = this.fb.control(initialValue, validators);
+  
+        // Set the control as disabled if specified
+        if (field.disabled) {
+          control.disable();
+        }
+  
+        this.form.addControl(field.formControlName, control);
+  
+        // Initialize filtered options for autocomplete fields
+        if (field.type === 'autocomplete') {
+          this.filteredOptions[field.formControlName] = field.options?.map(option => String(option)) || [];
+        }
+      });
+    }
+  
+    // Add valueChanges subscription for startTime
+    const startTimeControl = this.form.get('startTime');
+    if (startTimeControl) {
+      startTimeControl.valueChanges.subscribe(value => {
+        this.startTimeChange.emit(value);
+      });
+    }
+    this.cdr.markForCheck();
+  }
+  
+  updateEndTimeOptions(newOptions: string[]) {
+    const endTimeField = this.data.fields.find(f => f.formControlName === 'endTime');
+    if (endTimeField) {
+      endTimeField.options = newOptions;
       this.cdr.markForCheck();
+    }
   }
 
   noWhitespaceValidator(control: AbstractControl): ValidationErrors | null {
@@ -136,6 +163,19 @@ export class TableDialogComponent {
     }
     return '';
   }
+
+  filterOptions(field: DialogFieldConfig) {
+    const value = this.form.get(field.formControlName)?.value;
+    if (field.filter) {
+      this.filteredOptions[field.formControlName] = field.filter(value);
+    } else {
+      this.filteredOptions[field.formControlName] = field.options?.filter(option =>
+        String(option).toLowerCase().includes(value.toLowerCase())
+      ) || [];
+    }
+    this.cdr.markForCheck();
+  }
+  
 
   onExport() {
     if (this.form.valid) {

@@ -65,7 +65,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   dayOptions = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   timeOptions: string[] = this.generateTimeOptions();
   professorOptions = ['Geneva Urizar', 'Steven Villarosa', 'Jennifer Ortega', 'AJ San Luis', 'Gecilie Almiranez'];
-  roomOptions = ['Room 101', 'Room 102', 'Room 103', 'Room 201', 'Room 202', 'Room 203', 'DOST Lab'];
+  roomOptions = ['101', '102', '103', '201', '202', '203', 'DOST Lab'];
 
   constructor(
     private schedulingService: SchedulingService,
@@ -157,11 +157,11 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     const dialogConfig: DialogConfig = {
       title: 'Edit Schedule Details',
       fields: [
-        { label: 'Day', formControlName: 'day', type: 'select', options: this.dayOptions, required: true },
-        { label: 'Start Time', formControlName: 'startTime', type: 'select', options: this.timeOptions, required: true },
-        { label: 'End Time', formControlName: 'endTime', type: 'select', options: this.timeOptions, required: true },
-        { label: 'Professor', formControlName: 'professor', type: 'select', options: this.professorOptions, required: true },
-        { label: 'Room', formControlName: 'room', type: 'select', options: this.roomOptions, required: true },
+        { label: 'Day', formControlName: 'day', type: 'autocomplete', options: this.dayOptions, required: true },
+        { label: 'Start Time', formControlName: 'startTime', type: 'autocomplete', options: this.timeOptions, required: true },
+        { label: 'End Time', formControlName: 'endTime', type: 'autocomplete', options: this.timeOptions, required: true },
+        { label: 'Professor', formControlName: 'professor', type: 'autocomplete', options: this.professorOptions, required: true },
+        { label: 'Room', formControlName: 'room', type: 'autocomplete', options: this.roomOptions, required: true },
       ],
       isEdit: true,
       initialValue: {
@@ -172,14 +172,14 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         room: element.room,
       },
     };
-
+  
     const dialogRef = this.dialog.open(TableDialogComponent, { data: dialogConfig });
-
+  
     dialogRef.componentInstance.startTimeChange.subscribe((startTime: string) => {
       const startIndex = this.timeOptions.indexOf(startTime);
       dialogRef.componentInstance.updateEndTimeOptions(this.timeOptions.slice(startIndex + 1));
     });
-
+  
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
         const updatedSchedule = {
@@ -191,6 +191,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       }
     });
   }
+  
+  
 
   updateSchedule(updatedSchedule: Schedule) {
     this.schedulingService.updateSchedule(updatedSchedule).pipe(takeUntil(this.destroy$)).subscribe({
