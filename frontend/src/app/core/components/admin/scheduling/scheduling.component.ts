@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subject } from 'rxjs';
+import { Subject, forkJoin } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 import { MatDialog } from '@angular/material/dialog';
@@ -34,43 +34,50 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   selectedProgram = '';
   selectedYear = 1;
   selectedCurriculum = '';
+  activeYear = '2023-2024';
+  activeSemester = '1st Semester';
   private destroy$ = new Subject<void>();
 
   headerInputFields: InputField[] = [
-    {
-      type: 'select',
-      label: 'Program',
-      key: 'program',
-      options: [],
-    },
-    {
-      type: 'select',
-      label: 'Year Level',
-      key: 'yearLevel',
-      options: [],
-    },
-    {
-      type: 'select',
-      label: 'Curriculum',
-      key: 'curriculum',
-      options: [],
-    },
+    { type: 'select', label: 'Program', key: 'program', options: [] },
+    { type: 'select', label: 'Year Level', key: 'yearLevel', options: [] },
+    { type: 'select', label: 'Curriculum', key: 'curriculum', options: [] },
   ];
 
   displayedColumns: string[] = [
-    'index', 'course_code', 'course_title', 'lec_hours', 'lab_hours',
-    'units', 'tuition_hours', 'day', 'time', 'professor', 'room', 'action'
+    'index',
+    'course_code',
+    'course_title',
+    'lec_hours',
+    'lab_hours',
+    'units',
+    'tuition_hours',
+    'day',
+    'time',
+    'professor',
+    'room',
+    'action',
   ];
 
-  dayOptions = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+  dayOptions = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
   timeOptions: string[] = this.generateTimeOptions();
-  professorOptions = ['Geneva Urizar', 'Steven Villarosa', 'Jennifer Ortega', 'AJ San Luis', 'Gecilie Almiranez'];
-  roomOptions = ['101', '102', '103', '201', '202', '203', 'DOST Lab'];
+  professorOptions: string[] = [];
+  roomOptions: string[] = [];
+  academicYearOptions: string[] = ['2023-2024', '2024-2025', '2025-2026'];
+  semesterOptions: string[] = ['1st Semester', '2nd Semester', 'Summer Semester'];
 
   constructor(
     private schedulingService: SchedulingService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit() {
@@ -82,66 +89,74 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  generateTimeOptions(): string[] {
-    const options: string[] = [];
-    for (let hour = 7; hour <= 21; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        if (hour === 21 && minute > 0) break;
-        const time = new Date(2023, 0, 1, hour, minute);
-        options.push(time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }));
-      }
-    }
-    return options;
-  }
-
-  fetchInitialData() {
-    this.schedulingService.getPrograms().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (programs) => {
-        this.headerInputFields[0].options = programs.map(p => p.name);
-        if (programs.length > 0) {
-          this.selectedProgram = programs[0].name;
-          this.updateYearLevels(programs[0]);
-          this.fetchCurriculums();
-        }
+  private fetchInitialData() {
+    forkJoin({
+      programs: this.schedulingService.getPrograms(),
+      curriculums: this.schedulingService.getCurriculums(),
+      professors: this.schedulingService.getProfessors(),
+      rooms: this.schedulingService.getRooms(),
+    })
+    .pipe(takeUntil(this.destroy$))
+    .subscribe({
+      next: ({ programs, curriculums, professors, rooms }) => {
+        this.updateProgramOptions(programs);
+        this.updateCurriculumOptions(curriculums);
+        this.professorOptions = professors;
+        this.roomOptions = rooms;
+        this.fetchSchedules();
       },
-      error: this.handleError('Error fetching programs')
+      error: this.handleError('Error fetching initial data'),
     });
   }
 
-  updateYearLevels(program: Program) {
-    this.headerInputFields[1].options = Array.from({ length: program.number_of_years }, (_, i) => i + 1);
+  private updateProgramOptions(programs: Program[]) {
+    this.headerInputFields[0].options = programs.map((p) => p.name);
+    if (programs.length > 0) {
+      this.selectedProgram = programs[0].name;
+      this.updateYearLevels(programs[0]);
+    }
+  }
+
+  private updateCurriculumOptions(curriculums: Curriculum[]) {
+    this.headerInputFields[2].options = curriculums.map((c) => c.name);
+    if (curriculums.length > 0) {
+      this.selectedCurriculum = curriculums[0].name;
+    }
+  }
+
+  private updateYearLevels(program: Program) {
+    this.headerInputFields[1].options = Array.from(
+      { length: program.number_of_years },
+      (_, i) => i + 1
+    );
     this.selectedYear = 1;
   }
 
-  fetchCurriculums() {
-    this.schedulingService.getCurriculums().pipe(takeUntil(this.destroy$)).subscribe({
-      next: (curriculums) => {
-        this.headerInputFields[2].options = curriculums.map(c => c.name);
-        if (curriculums.length > 0) {
-          this.selectedCurriculum = curriculums[0].name;
-          this.fetchSchedules();
-        }
-      },
-      error: this.handleError('Error fetching curriculums')
-    });
-  }
-
-  fetchSchedules() {
-    this.schedulingService.getSchedules(this.selectedProgram, this.selectedYear, this.selectedCurriculum)
+  private fetchSchedules() {
+    this.schedulingService
+      .getSchedules(
+        this.selectedProgram,
+        this.selectedYear,
+        this.selectedCurriculum
+      )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (schedules) => this.schedules = schedules,
-        error: this.handleError('Error fetching schedules')
+        next: (schedules) => (this.schedules = schedules),
+        error: this.handleError('Error fetching schedules'),
       });
   }
 
   onInputChange(values: { [key: string]: any }) {
-    if (values['program'] !== undefined && values['program'] !== this.selectedProgram) {
+    if (
+      values['program'] !== undefined &&
+      values['program'] !== this.selectedProgram
+    ) {
       this.selectedProgram = values['program'];
-      const program = this.headerInputFields[0].options?.find(p => p === this.selectedProgram);
+      const program = this.headerInputFields[0].options?.find(
+        (p) => p === this.selectedProgram
+      );
       if (program) {
         this.updateYearLevels(program as unknown as Program);
-        this.fetchCurriculums();
       }
     }
     if (values['yearLevel'] !== undefined) {
@@ -157,11 +172,41 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     const dialogConfig: DialogConfig = {
       title: 'Edit Schedule Details',
       fields: [
-        { label: 'Day', formControlName: 'day', type: 'autocomplete', options: this.dayOptions, required: true },
-        { label: 'Start Time', formControlName: 'startTime', type: 'autocomplete', options: this.timeOptions, required: true },
-        { label: 'End Time', formControlName: 'endTime', type: 'autocomplete', options: this.timeOptions, required: true },
-        { label: 'Professor', formControlName: 'professor', type: 'autocomplete', options: this.professorOptions, required: true },
-        { label: 'Room', formControlName: 'room', type: 'autocomplete', options: this.roomOptions, required: true },
+        {
+          label: 'Day',
+          formControlName: 'day',
+          type: 'autocomplete',
+          options: this.dayOptions,
+          required: true,
+        },
+        {
+          label: 'Start Time',
+          formControlName: 'startTime',
+          type: 'autocomplete',
+          options: this.timeOptions,
+          required: true,
+        },
+        {
+          label: 'End Time',
+          formControlName: 'endTime',
+          type: 'autocomplete',
+          options: this.timeOptions,
+          required: true,
+        },
+        {
+          label: 'Professor',
+          formControlName: 'professor',
+          type: 'autocomplete',
+          options: this.professorOptions,
+          required: true,
+        },
+        {
+          label: 'Room',
+          formControlName: 'room',
+          type: 'autocomplete',
+          options: this.roomOptions,
+          required: true,
+        },
       ],
       isEdit: true,
       initialValue: {
@@ -172,42 +217,111 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         room: element.room,
       },
     };
-  
-    const dialogRef = this.dialog.open(TableDialogComponent, { data: dialogConfig });
-  
-    dialogRef.componentInstance.startTimeChange.subscribe((startTime: string) => {
-      const startIndex = this.timeOptions.indexOf(startTime);
-      dialogRef.componentInstance.updateEndTimeOptions(this.timeOptions.slice(startIndex + 1));
+
+    const dialogRef = this.dialog.open(TableDialogComponent, {
+      data: dialogConfig,
     });
-  
-    dialogRef.afterClosed().subscribe(result => {
+
+    dialogRef.componentInstance.startTimeChange.subscribe(
+      (startTime: string) => {
+        const startIndex = this.timeOptions.indexOf(startTime);
+        dialogRef.componentInstance.updateEndTimeOptions(
+          this.timeOptions.slice(startIndex + 1)
+        );
+      }
+    );
+
+    dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         const updatedSchedule = {
           ...element,
           ...result,
-          time: `${result.startTime} - ${result.endTime}`
+          time: `${result.startTime} - ${result.endTime}`,
         };
         this.updateSchedule(updatedSchedule);
       }
     });
   }
-  
-  
 
-  updateSchedule(updatedSchedule: Schedule) {
-    this.schedulingService.updateSchedule(updatedSchedule).pipe(takeUntil(this.destroy$)).subscribe({
-      next: () => {
-        this.snackBar.open('Schedule updated successfully', 'Close', { duration: 3000 });
-        this.fetchSchedules();
+  openActiveYearSemesterDialog() {
+    const dialogConfig: DialogConfig = {
+      title: 'Set Active Year and Sem',
+      fields: [
+        {
+          label: 'Academic Year',
+          formControlName: 'academicYear',
+          type: 'select',
+          options: this.academicYearOptions,
+          required: true,
+        },
+        {
+          label: 'Semester',
+          formControlName: 'semester',
+          type: 'select',
+          options: this.semesterOptions,
+          required: true,
+        },
+      ],
+      isEdit: false,
+      initialValue: {
+        academicYear: this.activeYear,
+        semester: this.activeSemester,
       },
-      error: this.handleError('Error updating schedule')
+    };
+
+    const dialogRef = this.dialog.open(TableDialogComponent, {
+      data: dialogConfig,
     });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.activeYear = result.academicYear;
+        this.activeSemester = result.semester;
+        this.snackBar.open('Active year and semester updated successfully', 'Close', {
+          duration: 3000,
+        });
+      }
+    });
+  }
+
+  private updateSchedule(updatedSchedule: Schedule) {
+    this.schedulingService
+      .updateSchedule(updatedSchedule)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Schedule updated successfully', 'Close', {
+            duration: 3000,
+          });
+          this.fetchSchedules();
+        },
+        error: this.handleError('Error updating schedule'),
+      });
+  }
+
+  private generateTimeOptions(): string[] {
+    const options: string[] = [];
+    for (let hour = 7; hour <= 21; hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
+        if (hour === 21 && minute > 0) break;
+        const time = new Date(2023, 0, 1, hour, minute);
+        options.push(
+          time.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+        );
+      }
+    }
+    return options;
   }
 
   private handleError(message: string) {
     return (error: any) => {
       console.error(`${message}:`, error);
-      this.snackBar.open(`${message}. Please try again.`, 'Close', { duration: 3000 });
+      this.snackBar.open(`${message}. Please try again.`, 'Close', {
+        duration: 3000,
+      });
     };
   }
 }

@@ -1,18 +1,21 @@
 <div class="scheduling-container">
   <div class="scheduling-header-container" [@fadeAnimation]>
     <app-table-header
-      [inputFields]="headerInputFields"
-      [showExportButton]="false"
-      [showAddButton]="false"
-      [showActiveYearAndSem]="true"
-      [showButtons]="false"
-      (inputChange)="onInputChange($event)"
-      [selectedValues]="{
-        program: selectedProgram,
-        yearLevel: selectedYear,
-        curriculum: selectedCurriculum
-      }"
-    ></app-table-header>
+  [inputFields]="headerInputFields"
+  [showExportButton]="false"
+  [showAddButton]="false"
+  [showActiveYearAndSem]="true"
+  [showButtons]="false"
+  (inputChange)="onInputChange($event)"
+  [selectedValues]="{
+    program: selectedProgram,
+    yearLevel: selectedYear,
+    curriculum: selectedCurriculum
+  }"
+  [activeYear]="activeYear"
+  [activeSemester]="activeSemester"
+  (activeYearSemClick)="openActiveYearSemesterDialog()"
+></app-table-header>
   </div>
 
   <div class="scheduling-table-container" [@pageFloatUpAnimation]>
