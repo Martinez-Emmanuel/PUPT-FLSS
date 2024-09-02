@@ -62,6 +62,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     'Summer Semester',
   ];
 
+  // Store programs separately for easier access
+  programs: Program[] = [];
+
   constructor(
     private schedulingService: SchedulingService,
     private dialog: MatDialog,
@@ -170,6 +173,23 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     if (curriculum !== undefined) this.selectedCurriculum = curriculum;
     if (section !== undefined) this.selectedSection = section;
     this.fetchSchedules();
+  }
+
+  // Update Year Levels based on selected program
+  private updateYearLevels() {
+    const selectedProgram = this.programs.find(
+      (p) => p.name === this.selectedProgram
+    );
+
+    if (selectedProgram) {
+      this.headerInputFields[1].options = Array.from(
+        { length: selectedProgram.number_of_years },
+        (_, i) => i + 1
+      );
+      this.selectedYear = 1; // Reset to first year when program changes
+    } else {
+      this.headerInputFields[1].options = [];
+    }
   }
 
   openAddSectionDialog() {
@@ -346,6 +366,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     professors: string[],
     rooms: string[]
   ) {
+    this.programs = programs;
     this.setProgramOptions(programs);
     this.setCurriculumOptions(curriculums);
     this.professorOptions = professors;
@@ -363,19 +384,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   private setCurriculumOptions(curriculums: Curriculum[]) {
     this.headerInputFields[2].options = curriculums.map((c) => c.name);
     if (curriculums.length > 0) this.selectedCurriculum = curriculums[0].name;
-  }
-
-  private updateYearLevels() {
-    const program = this.headerInputFields[0].options?.find(
-      (p) => p === this.selectedProgram
-    ) as unknown as Program;
-    if (program) {
-      this.headerInputFields[1].options = Array.from(
-        { length: program.number_of_years },
-        (_, i) => i + 1
-      );
-      this.selectedYear = 1;
-    }
   }
 
   // Error Handling
