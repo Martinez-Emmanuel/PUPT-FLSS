@@ -13,7 +13,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { TableDialogComponent } from '../../shared/table-dialog/table-dialog.component';
 
 export interface InputField {
-  type: 'text' | 'select' | 'date' | 'number' | 'section';
+  type: 'text' | 'select' | 'date' | 'number';
   label: string;
   placeholder?: string;
   options?: any[];
@@ -53,7 +53,6 @@ export class TableHeaderComponent implements OnInit, OnChanges {
 
   @Output() add = new EventEmitter<void>();
   @Output() inputChange = new EventEmitter<{ [key: string]: any }>();
-  @Output() sectionChange = new EventEmitter<number>();
   @Output() export = new EventEmitter<'all' | 'current' | undefined>();
   @Output() search = new EventEmitter<string>();
   @Output() activeYearSemClick = new EventEmitter<void>();
@@ -77,9 +76,10 @@ export class TableHeaderComponent implements OnInit, OnChanges {
   private initializeForm() {
     this.form = this.fb.group({});
     this.inputFields.forEach((field) => {
-      const initialValue = this.selectedValues[field.key] !== undefined
-        ? this.selectedValues[field.key]
-        : (field.type === 'section' ? 1 : '');
+      const initialValue =
+        this.selectedValues[field.key] !== undefined
+          ? this.selectedValues[field.key]
+          : '';
       this.form.addControl(field.key, this.fb.control(initialValue));
     });
 
@@ -112,21 +112,7 @@ export class TableHeaderComponent implements OnInit, OnChanges {
     }
   }
 
-  onActiveYearSemClick() {
+  onActiveYearSemClick(): void {
     this.activeYearSemClick.emit();
-  }
-
-  incrementSection(field: InputField) {
-    const currentValue = this.form.get(field.key)?.value || 1;
-    this.form.get(field.key)?.setValue(currentValue + 1);
-    this.sectionChange.emit(currentValue + 1);
-  }
-
-  decrementSection(field: InputField) {
-    const currentValue = this.form.get(field.key)?.value || 1;
-    if (currentValue > 1) {
-      this.form.get(field.key)?.setValue(currentValue - 1);
-      this.sectionChange.emit(currentValue - 1);
-    }
   }
 }
