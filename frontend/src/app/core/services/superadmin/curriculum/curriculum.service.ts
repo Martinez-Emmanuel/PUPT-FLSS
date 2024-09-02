@@ -54,38 +54,45 @@ export class CurriculumService {
 
   constructor(private http: HttpClient) {}
 
+  //Fetch all curricula
   getCurricula(): Observable<Curriculum[]> {
     return this.http.get<Curriculum[]>(`${this.baseUrl}/curricula`);
   }
 
+  // Fetch all details based on curriculum year
   getCurriculumByYear(curriculumYear: string): Observable<Curriculum> {
     return this.http.get<Curriculum>(`${this.baseUrl}/curricula-details/${curriculumYear}`);
   }
 
+  // For Programs 
+
+  // Fetch all programs associated to the Curriculum Year
   getProgramsByCurriculumYear(curriculumYear: string): Observable<Program[]> {
     return this.http.get<Program[]>(`${this.baseUrl}/programs-by-curriculum-year/${curriculumYear}`);
   }
   
-  // updateCurriculum(updatedCurriculum: Curriculum): Observable<Curriculum> {
-  //   const curricula = this.curriculaSubject.getValue();
-  //   const index = curricula.findIndex(
-  //       (c) => c.curriculum_year === updatedCurriculum.curriculum_year
-  //   );
-    
-  //   if (index !== -1) {
-  //       curricula[index] = updatedCurriculum;
-  //       this.curriculaSubject.next([...curricula]);
-  //       return of(updatedCurriculum);
-  //   } else {
-  //       console.error('Curriculum not found for year:', updatedCurriculum.curriculum_year);
-  //       return throwError(() => new Error('Curriculum not found'));
-  //   }
-  // }
-
+  // Fetch all programs
   getAllPrograms(): Observable<Program[]> {
     return this.http.get<Program[]>(`${this.baseUrl}/programs`); // Adjust the API endpoint according to your backend
   }
+  
+  // Add the program to specific Curriculum year
+  addProgramToCurriculum(curriculumYear: string, programId: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}/addProgramToCurriculum`, {
+      curriculum_year: curriculumYear,
+      program_id: programId
+    });
+  }
 
+  // Delete a program in specific curriculum year
+  removeProgramFromCurriculum(curriculumYear: string, programId: number): Observable<any> {
+    return this.http.post(`${this.baseUrl}/removeProgramFromCurriculum`, {
+      curriculum_year: curriculumYear,
+      program_id: programId
+    });
+  }
+
+  // Map semester number to string 
   mapSemesterToEnum(semesterNumber: number): string {
     switch (semesterNumber) {
       case 1:
@@ -99,46 +106,40 @@ export class CurriculumService {
     }
   }
 
-  updateCurriculaSubject(curricula: Curriculum[]): void {
-    this.curriculaSubject.next(curricula);
-  }
+  // updateCurriculaSubject(curricula: Curriculum[]): void {
+  //   this.curriculaSubject.next(curricula);
+  // }
 
-  //for curriculum component
+  //For curriculum component
+
+  //Add Curriculum
   addCurriculum(curriculum: Partial<Curriculum>): Observable<any> {
     return this.http.post(`${this.baseUrl}/addCurriculum`, curriculum);
   }
-  
+
+  // Update Curriculum
   updateCurriculum(id: number, curriculum: Partial<Curriculum>): Observable<any> {
     return this.http.put(`${this.baseUrl}/updateCurriculum/${id}`, curriculum);
   }
 
-  // curriculum.service.ts
+  // Delete Curriculum
   deleteCurriculum(curriculum_year: string): Observable<any> {
     return this.http.post(`${this.baseUrl}/deleteCurriculum`, { curriculum_year });
   }
 
-  //temp
-  removeProgramFromCurriculum(curriculumYear: string, programId: number): Observable<any> {
-    return this.http.post(`${this.baseUrl}/removeProgramFromCurriculum`, {
-      curriculum_year: curriculumYear,
-      program_id: programId
-    });
-  }
-
-  addProgramToCurriculum(curriculumYear: string, programId: number): Observable<any> {
-    return this.http.post(`${this.baseUrl}/addProgramToCurriculum`, {
-      curriculum_year: curriculumYear,
-      program_id: programId
-    });
-  }
-
-  //add course
+  // For Course (inside the curriculum year)
+  //Add course
   addCourse(courseData: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/addCourse`, courseData);
   }
 
-  // updateCourse(courseId: number, courseData: any): Observable<any> {
-  //   return this.http.put(`${this.baseUrl}/courses/${courseId}`, courseData);
-  // }
+  // Update course
+  updateCourse(courseId: number, courseData: any): Observable<any> {
+    return this.http.put(`${this.baseUrl}/courses/${courseId}`, courseData);
+  }
 
+  // Delete course
+  deleteCourse(courseId: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/courses/${courseId}`);
+  }
 }

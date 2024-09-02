@@ -27,7 +27,7 @@
     [tableHeadingButtonText]="'Add Course'"
     [tableHeadingButtonIcon]="'add'"
     (tableHeadingButtonClick)="onAddCourse(semester)"
-    (edit)="onEditCourse($event)"
+    (edit)="onEditCourse($event, semester)"
     (delete)="onDeleteCourse($event)"
   ></app-table-generic>
 </div>
