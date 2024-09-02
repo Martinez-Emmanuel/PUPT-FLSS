@@ -56,6 +56,7 @@ export class TableHeaderComponent implements OnInit, OnChanges {
   @Output() export = new EventEmitter<'all' | 'current' | undefined>();
   @Output() search = new EventEmitter<string>();
   @Output() activeYearSemClick = new EventEmitter<void>();
+  @Output() addSection = new EventEmitter<void>();
 
   form: FormGroup;
 

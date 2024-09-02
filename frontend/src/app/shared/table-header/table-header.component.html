@@ -17,7 +17,7 @@
             'program-field': field.key === 'program',
             'year-level-field': field.key === 'yearLevel',
             'curriculum-field': field.key === 'curriculum',
-            'sections-field': field.key === 'sections'
+            'sections-field': field.key === 'section'
           }"
           subscriptSizing="dynamic"
         >
@@ -27,6 +27,9 @@
               <mat-option [value]="option">
                 {{ option }}
               </mat-option>
+            }
+            @if (field.key === 'section') {
+              <mat-option (click)="addSection.emit()">Add section</mat-option>
             }
           </mat-select>
         </mat-form-field>
