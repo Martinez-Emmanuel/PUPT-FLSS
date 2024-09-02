@@ -128,12 +128,24 @@ export class CurriculumDetailComponent implements OnInit {
       next: (curriculum) => {
         if (curriculum) {
           console.log('Full Curriculum Object:', curriculum);
-          console.log('Curriculum ID:', curriculum.curriculum_id); // Ensure this logs the correct ID
           this.curriculum = curriculum;
           this.selectedProgram = curriculum.programs[0]?.name || ''; // Use the program name
           this.selectedYear = 1;
-          this.updateHeaderInputFields();
-          this.updateSelectedSemesters();
+  
+          // Fetch associated programs and update dropdown
+          this.curriculumService.getProgramsByCurriculumYear(year).subscribe({
+            next: (programs) => {
+              this.selectedPrograms = programs.map(program => program.program_code);
+              this.updateHeaderInputFields();
+              this.updateProgramDropdown(this.selectedPrograms);
+              this.updateSelectedSemesters();
+            },
+            error: (error) => {
+              console.error('Error fetching associated programs:', error);
+              this.snackBar.open('Error fetching associated programs. Please try again.', 'Close', { duration: 3000 });
+            }
+          });
+  
           this.cdr.markForCheck();
         }
       },
@@ -143,6 +155,7 @@ export class CurriculumDetailComponent implements OnInit {
       },
     });
   }
+  
   
   updateHeaderInputFields() {
     const yearLevelOptions = [1, 2, 3, 4, 5];
