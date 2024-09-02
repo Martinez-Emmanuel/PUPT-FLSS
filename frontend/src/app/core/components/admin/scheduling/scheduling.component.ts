@@ -44,7 +44,12 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     { type: 'select', label: 'Program', key: 'program', options: [] },
     { type: 'select', label: 'Year Level', key: 'yearLevel', options: [] },
     { type: 'select', label: 'Curriculum', key: 'curriculum', options: [] },
-    { type: 'select', label: 'Section', key: 'section', options: this.sectionOptions },
+    {
+      type: 'select',
+      label: 'Section',
+      key: 'section',
+      options: this.sectionOptions,
+    },
   ];
 
   displayedColumns: string[] = [
@@ -75,7 +80,11 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   professorOptions: string[] = [];
   roomOptions: string[] = [];
   academicYearOptions: string[] = ['2023-2024', '2022-2023', '2021-2022'];
-  semesterOptions: string[] = ['1st Semester', '2nd Semester', 'Summer Semester'];
+  semesterOptions: string[] = [
+    '1st Semester',
+    '2nd Semester',
+    'Summer Semester',
+  ];
 
   constructor(
     private schedulingService: SchedulingService,
@@ -99,17 +108,17 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       professors: this.schedulingService.getProfessors(),
       rooms: this.schedulingService.getRooms(),
     })
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: ({ programs, curriculums, professors, rooms }) => {
-        this.updateProgramOptions(programs);
-        this.updateCurriculumOptions(curriculums);
-        this.professorOptions = professors;
-        this.roomOptions = rooms;
-        this.fetchSchedules();
-      },
-      error: this.handleError('Error fetching initial data'),
-    });
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ({ programs, curriculums, professors, rooms }) => {
+          this.updateProgramOptions(programs);
+          this.updateCurriculumOptions(curriculums);
+          this.professorOptions = professors;
+          this.roomOptions = rooms;
+          this.fetchSchedules();
+        },
+        error: this.handleError('Error fetching initial data'),
+      });
   }
 
   private updateProgramOptions(programs: Program[]) {
@@ -145,7 +154,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (schedules) => (this.schedules = schedules),
+        next: (schedules) => {
+          this.schedules = [...schedules];
+        },
         error: this.handleError('Error fetching schedules'),
       });
   }
@@ -187,22 +198,24 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       ],
       isEdit: false,
     };
-  
+
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: dialogConfig,
     });
-  
+
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         this.addSection(result.sectionName);
       }
     });
   }
-  
+
   addSection(sectionName: string) {
     if (!this.sectionOptions.includes(sectionName)) {
       this.sectionOptions.push(sectionName);
-      this.sectionOptions.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+      this.sectionOptions.sort((a, b) =>
+        a.localeCompare(b, undefined, { numeric: true })
+      );
       this.headerInputFields = [...this.headerInputFields]; // Trigger change detection
       this.snackBar.open('Section added successfully', 'Close', {
         duration: 3000,
@@ -213,7 +226,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       });
     }
   }
-  
+
   openEditDialog(element: Schedule) {
     const dialogConfig: DialogConfig = {
       title: 'Edit Schedule Details',
@@ -256,11 +269,11 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       ],
       isEdit: true,
       initialValue: {
-        day: element.day,
-        startTime: element.time.split(' - ')[0],
-        endTime: element.time.split(' - ')[1],
-        professor: element.professor,
-        room: element.room,
+        day: element.day || '',
+        startTime: element.time ? element.time.split(' - ')[0] : '',
+        endTime: element.time ? element.time.split(' - ')[1] : '',
+        professor: element.professor || '',
+        room: element.room || '',
       },
     };
 
@@ -323,14 +336,19 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       if (result) {
         this.activeYear = result.academicYear;
         this.activeSemester = result.semester;
-        this.snackBar.open('Active year and semester updated successfully', 'Close', {
-          duration: 3000,
-        });
+        this.snackBar.open(
+          'Active year and semester updated successfully',
+          'Close',
+          {
+            duration: 3000,
+          }
+        );
       }
     });
   }
 
   private updateSchedule(updatedSchedule: Schedule) {
+    console.log('Updating Schedule:', updatedSchedule); // Debug line to check the data
     this.schedulingService
       .updateSchedule(updatedSchedule)
       .pipe(takeUntil(this.destroy$))
