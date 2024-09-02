@@ -7,10 +7,12 @@
   [showActiveYearAndSem]="true"
   [showButtons]="false"
   (inputChange)="onInputChange($event)"
+  (addSection)="openAddSectionDialog()"
   [selectedValues]="{
     program: selectedProgram,
     yearLevel: selectedYear,
-    curriculum: selectedCurriculum
+    curriculum: selectedCurriculum,
+    section: selectedSection
   }"
   [activeYear]="activeYear"
   [activeSemester]="activeSemester"

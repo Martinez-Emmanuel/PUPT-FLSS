@@ -31,8 +31,10 @@ import { SchedulingService, Schedule, Program, Curriculum } from '../../../servi
 })
 export class SchedulingComponent implements OnInit, OnDestroy {
   schedules: Schedule[] = [];
+  sectionOptions: string[] = ['1'];
   selectedProgram = '';
   selectedYear = 1;
+  selectedSection = '1';
   selectedCurriculum = '';
   activeYear = '2023-2024';
   activeSemester = '1st Semester';
@@ -42,6 +44,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     { type: 'select', label: 'Program', key: 'program', options: [] },
     { type: 'select', label: 'Year Level', key: 'yearLevel', options: [] },
     { type: 'select', label: 'Curriculum', key: 'curriculum', options: [] },
+    { type: 'select', label: 'Section', key: 'section', options: this.sectionOptions },
   ];
 
   displayedColumns: string[] = [
@@ -71,7 +74,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   timeOptions: string[] = this.generateTimeOptions();
   professorOptions: string[] = [];
   roomOptions: string[] = [];
-  academicYearOptions: string[] = ['2023-2024', '2024-2025', '2025-2026'];
+  academicYearOptions: string[] = ['2023-2024', '2022-2023', '2021-2022'];
   semesterOptions: string[] = ['1st Semester', '2nd Semester', 'Summer Semester'];
 
   constructor(
@@ -137,7 +140,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       .getSchedules(
         this.selectedProgram,
         this.selectedYear,
-        this.selectedCurriculum
+        this.selectedCurriculum,
+        this.selectedSection
       )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -165,9 +169,51 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     if (values['curriculum'] !== undefined) {
       this.selectedCurriculum = values['curriculum'];
     }
+    if (values['section'] !== undefined) {
+      this.selectedSection = values['section'];
+    }
     this.fetchSchedules();
   }
-
+  openAddSectionDialog() {
+    const dialogConfig: DialogConfig = {
+      title: 'Add Section',
+      fields: [
+        {
+          label: 'Section Name',
+          formControlName: 'sectionName',
+          type: 'text',
+          required: true,
+        },
+      ],
+      isEdit: false,
+    };
+  
+    const dialogRef = this.dialog.open(TableDialogComponent, {
+      data: dialogConfig,
+    });
+  
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.addSection(result.sectionName);
+      }
+    });
+  }
+  
+  addSection(sectionName: string) {
+    if (!this.sectionOptions.includes(sectionName)) {
+      this.sectionOptions.push(sectionName);
+      this.sectionOptions.sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+      this.headerInputFields = [...this.headerInputFields]; // Trigger change detection
+      this.snackBar.open('Section added successfully', 'Close', {
+        duration: 3000,
+      });
+    } else {
+      this.snackBar.open('Section already exists', 'Close', {
+        duration: 3000,
+      });
+    }
+  }
+  
   openEditDialog(element: Schedule) {
     const dialogConfig: DialogConfig = {
       title: 'Edit Schedule Details',
