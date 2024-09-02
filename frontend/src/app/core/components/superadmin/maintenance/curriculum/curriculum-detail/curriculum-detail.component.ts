@@ -8,7 +8,6 @@ import { takeUntil } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-// Commented out until needed
 import { TableGenericComponent } from '../../../../../../shared/table-generic/table-generic.component';
 import { TableHeaderComponent, InputField } from '../../../../../../shared/table-header/table-header.component';
 import { TableDialogComponent, DialogConfig } from '../../../../../../shared/table-dialog/table-dialog.component';
@@ -29,9 +28,9 @@ import {
   standalone: true,
   imports: [
     CommonModule,
-    TableGenericComponent, // Commented out for now
-    TableHeaderComponent,  // Commented out for now
-    DialogGenericComponent,  // Commented out for now
+    TableGenericComponent, 
+    TableHeaderComponent,  
+    DialogGenericComponent, 
   ],
   templateUrl: './curriculum-detail.component.html',
   styleUrls: ['./curriculum-detail.component.scss'],
@@ -39,10 +38,8 @@ import {
 })
 export class CurriculumDetailComponent implements OnInit {
 
-  
-   // Declare the selected programs array here
-   public selectedPrograms: string[] = [];
-
+  // Declare the selected programs array here
+  public selectedPrograms: string[] = [];
   public curriculum: Curriculum | undefined;
   public selectedProgram: string = '';
   public selectedYear: number = 1;
@@ -50,7 +47,6 @@ export class CurriculumDetailComponent implements OnInit {
   public customExportOptions: { all: string; current: string } | null = null;
   private destroy$ = new Subject<void>();
 
-  // Commented out until needed
   headerInputFields: InputField[] = [
     {
       type: 'select',
@@ -66,7 +62,6 @@ export class CurriculumDetailComponent implements OnInit {
     },
   ];
 
-  // Commented out until needed
   columns = [
     { key: 'index', label: '#' },
     { key: 'course_code', label: 'Course Code' },
@@ -101,32 +96,6 @@ export class CurriculumDetailComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Fetch all programs and populate the dropdown
-    // this.fetchAllPrograms();
-
-    // const curriculumYear = this.route.snapshot.paramMap.get('year');
-    // if (curriculumYear) {
-    //   this.fetchCurriculum(curriculumYear);
-    // }
-
-    // // Initialize program dropdown with no options
-    // this.updateProgramDropdown([]);
-
-    // //Fetch and store all curricula
-    // this.curriculumService.getCurricula().subscribe({
-    //     next: (curricula) => {
-    //         this.curriculumService.updateCurriculaSubject(curricula);
-    //     },
-    //     error: (error) => {
-    //         console.error('Error fetching all curricula:', error);
-    //         this.snackBar.open('Error fetching all curricula. Please try again.', 'Close', {
-    //             duration: 3000,
-    //         });
-    //     },
-    // });
-
-     
-
      const curriculumYear = this.route.snapshot.paramMap.get('year');
      if (curriculumYear) {
        this.fetchCurriculum(curriculumYear);
@@ -134,10 +103,9 @@ export class CurriculumDetailComponent implements OnInit {
 
      // Fetch all programs when the component initializes
      this.fetchAllPrograms();
-   }
+  }
  
-
-   fetchAllPrograms() {
+  fetchAllPrograms() {
     this.curriculumService.getAllPrograms().subscribe({
       next: (programs) => {
         // Populate the dropdown with all programs
@@ -151,49 +119,25 @@ export class CurriculumDetailComponent implements OnInit {
       }
     });
   }
-
-
-
   
-
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
   fetchCurriculum(year: string) {
-    this.curriculumService.getCurriculumByYear(year).pipe(takeUntil(this.destroy$)).subscribe({
+    this.curriculumService.getCurriculumByYear(year).subscribe({
       next: (curriculum) => {
-        console.log('Retrieved curriculum:', curriculum);
-        this.curriculum = curriculum;
-        this.selectedYear = 1;
-  
-        // Fetch the programs associated with this curriculum year
-        this.curriculumService.getProgramsByCurriculumYear(year).subscribe({
-          next: (associatedPrograms) => {
-            console.log('Retrieved associated programs:', associatedPrograms);
-            this.selectedPrograms = associatedPrograms.map(program => program.program_code);
-  
-            // Update the dropdown with the selected programs
-            this.updateProgramDropdown(this.selectedPrograms);
-  
-            // Automatically select the first program in the list if available
-            if (this.selectedPrograms.length > 0) {
-              this.selectedProgram = this.selectedPrograms[0];
-              this.fetchCoursesForSelectedProgram(this.selectedProgram);
-            } else {
-              this.selectedProgram = '';
-            }
-  
-            this.updateHeaderInputFields();
-            this.updateSelectedSemesters();
-            this.cdr.markForCheck();
-          },
-          error: (error) => {
-            console.error('Error fetching associated programs:', error);
-            this.snackBar.open('Error fetching associated programs. Please try again.', 'Close', { duration: 3000 });
-          }
-        });
+        if (curriculum) {
+          console.log('Full Curriculum Object:', curriculum);
+          console.log('Curriculum ID:', curriculum.curriculum_id); // Ensure this logs the correct ID
+          this.curriculum = curriculum;
+          this.selectedProgram = curriculum.programs[0]?.name || ''; // Use the program name
+          this.selectedYear = 1;
+          this.updateHeaderInputFields();
+          this.updateSelectedSemesters();
+          this.cdr.markForCheck();
+        }
       },
       error: (error) => {
         console.error('Error fetching curriculum:', error);
@@ -202,42 +146,31 @@ export class CurriculumDetailComponent implements OnInit {
     });
   }
   
-  
-
-
-  
-
-  // Commented out until needed
   updateHeaderInputFields() {
     const yearLevelOptions = [1, 2, 3, 4, 5];
-
-      // Ensure yearLevelOptions has values
-  if (yearLevelOptions.length === 0) {
+    // Ensure yearLevelOptions has values
+    if (yearLevelOptions.length === 0) {
     console.error('No year level options available.');
   }
 
-    this.headerInputFields = [
-      {
-        type: 'select',
-        label: 'Program',
-        key: 'program',
-        options: this.selectedPrograms, // Use only the selected programs
-        // disabled: this.selectedPrograms.length === 0 // Disable dropdown if no options
-        
-      },
-      {
-        type: 'select',
-        label: 'Year Level',
-        key: 'yearLevel',
-        options: [1,2,3,4,5],
+  this.headerInputFields = [
+    {
+      type: 'select',
+      label: 'Program',
+      key: 'program',
+      options: this.selectedPrograms, // Use only the selected programs
+      // disabled: this.selectedPrograms.length === 0 // Disable dropdown if no options    
+    },
+    {
+      type: 'select',
+      label: 'Year Level',
+      key: 'yearLevel',
+      options: yearLevelOptions,
       },
     ];
 
     this.cdr.markForCheck(); // Ensure the view is updated
   }
-
-
- 
 
   // Commented out until needed
   // updateCustomExportOptions() {
@@ -272,65 +205,221 @@ export class CurriculumDetailComponent implements OnInit {
       }
     }
   }
-  
-  
 
   // Commented out until needed
   onInputChange(values: { [key: string]: any }) {
     console.log('Input Change Detected:', values);
     
     if (values['yearLevel'] !== undefined) {
-      this.selectedYear = values['yearLevel'];
-      console.log('Updated selectedYear:', this.selectedYear);
+        this.selectedYear = values['yearLevel'];
+        console.log('Updated selectedYear:', this.selectedYear);
+
+        const program = this.getProgram();
+        if (program) {
+            const yearLevel = this.getYearLevel(program);
+            if (yearLevel) {
+                console.log('Fetched Year Level ID:', yearLevel.year_level_id);
+            } else {
+                console.log('Year level not found for selected year:', this.selectedYear);
+            }
+        } else {
+            console.log('Program not found for selected program:', this.selectedProgram);
+        }
     }
   
     if (values['program'] !== undefined) {
-      this.selectedProgram = values['program'];
-      console.log('Updated selectedProgram:', this.selectedProgram);
+        this.selectedProgram = values['program'];
+        console.log('Updated selectedProgram:', this.selectedProgram);
+
+        const programId = this.getProgramId(this.selectedProgram);
+        if (programId) {
+            console.log('Fetched Program ID:', programId);
+        } else {
+            console.log('Program ID not found for selected program:', this.selectedProgram);
+        }
     }
   
     if (this.selectedProgram && this.selectedYear) {
-      this.fetchCoursesForSelectedProgram(this.selectedProgram);
+        this.fetchCoursesForSelectedProgram(this.selectedProgram);
+    }
+
+    this.cdr.markForCheck();  // Trigger change detection
+
+  
+    if (values['program'] !== undefined) {
+        this.selectedProgram = values['program'];
+        console.log('Updated selectedProgram:', this.selectedProgram);
+
+        // Fetch and log the program ID
+        const programId = this.getProgramId(this.selectedProgram);
+        if (programId) {
+            console.log('Fetched Program ID:', programId);
+        } else {
+            console.log('Program ID not found for selected program:', this.selectedProgram);
+        }
     }
   
+    if (this.selectedProgram && this.selectedYear) {
+        this.fetchCoursesForSelectedProgram(this.selectedProgram);
+    }
+
     this.cdr.markForCheck();  // Trigger change detection
   }
-  
-
-
-
-
-
 
   
+  // onEditCourse(course: Course) {
+  //   this.handleCourseDialog(course);
+  // }
+
+  // onEditCourse(course: Course) {
+  //   if (!this.curriculum) {
+  //     this.snackBar.open('Error: No curriculum loaded.', 'Close', { duration: 3000 });
+  //     return;
+  //   }
   
+  //   const curriculumId = this.curriculum.curriculum_id; // Fetch the curriculum ID
+  //   const program = this.getProgram(); // Fetch the selected program object
   
+  //   if (!program) {
+  //     this.snackBar.open('Error: Selected program not found.', 'Close', { duration: 3000 });
+  //     return;
+  //   }
   
+  //   const programId = program.curricula_program_id; // Fetch the program ID from the program object
+  //   const yearLevel = this.getYearLevel(program); // Fetch the selected year level
+  
+  //   if (!curriculumId || !programId || !yearLevel) {
+  //     this.snackBar.open('Error: Missing curriculum, program, or year level information.', 'Close', { duration: 3000 });
+  //     return;
+  //   }
+  
+  //   const semesterId = course.semester_id || this.selectedSemesters.find(s => s.semester === course.semester)?.semester_id; // Fetch the semester ID
+  
+  //   console.log('Fetched Curriculum ID:', curriculumId); // Log the fetched curriculum ID
+  //   console.log('Fetched Program ID:', programId); // Log the fetched program ID
+  //   console.log('Fetched Year Level ID:', yearLevel.year_level_id); // Log the fetched year level ID
+  //   console.log('Fetched Semester ID:', semesterId); // Log the fetched semester ID
+  
+  //   const dialogConfig = this.getCourseDialogConfig(course, course.semester);
+  //   const dialogRef = this.dialog.open(TableDialogComponent, {
+  //     data: dialogConfig,
+  //     disableClose: true,
+  //   });
+  
+  //   dialogRef.afterClosed().subscribe((result) => {
+  //     if (result) {
+  //       const updatedCourse = {
+  //         course_code: result.course_code,
+  //         course_title: result.course_title,
+  //         lec_hours: result.lec_hours,
+  //         lab_hours: result.lab_hours,
+  //         units: result.units,
+  //         tuition_hours: result.tuition_hours,
+  //         curriculum_id: curriculumId, // Automatically use the fetched curriculum ID
+  //         semester_id: semesterId, // Automatically use the fetched semester ID
+  //         year_level_id: yearLevel.year_level_id, // Automatically use the fetched year level ID
+  //         curricula_program_id: programId, // Automatically use the fetched program ID
+  //         requirements: result.requirements || [], // Handle pre/co-requisites
+  //       };
+  
+  //       this.curriculumService.updateCourse(course.course_id, updatedCourse).subscribe({
+  //         next: (response) => {
+  //           this.snackBar.open('Course updated successfully', 'Close', {
+  //             duration: 3000,
+  //           });
+  //           this.fetchCurriculum(this.curriculum!.curriculum_year); // Refresh the curriculum after update
+  //           this.cdr.detectChanges(); // Force update the view
+  //         },
+  //         error: (error) => {
+  //           console.error('Error updating course:', error);
+  //           this.snackBar.open('Error updating course. Please try again.', 'Close', {
+  //             duration: 3000,
+  //           });
+  //         }
+  //       });
+  //     }
+  //   });
+  // }
   
 
-  
-
-  // Commented out until needed
-  onEditCourse(course: Course) {
-    this.handleCourseDialog(course);
-  }
-
-  // Commented out until needed
   onDeleteCourse(course: Course) {
     // this.deleteCourse(course);
   }
 
-  // Commented out until needed
-  onAddCourse(semester: number) {
-    this.handleCourseDialog(undefined, semester);
+  onAddCourse(semester: Semester) {
+    if (!this.curriculum) {
+      this.snackBar.open('Error: No curriculum loaded.', 'Close', { duration: 3000 });
+      return;
+    }
+  
+    const curriculumId = this.curriculum.curriculum_id; // Fetch the curriculum ID
+    const program = this.getProgram(); // Fetch the selected program object
+  
+    if (!program) {
+      this.snackBar.open('Error: Selected program not found.', 'Close', { duration: 3000 });
+      return;
+    }
+  
+    const programId = program.curricula_program_id; // Fetch the program ID from the program object
+    const yearLevel = this.getYearLevel(program); // Fetch the selected year level
+  
+    if (!curriculumId || !programId || !yearLevel) {
+      this.snackBar.open('Error: Missing curriculum, program, or year level information.', 'Close', { duration: 3000 });
+      return;
+    }
+  
+    const semesterId = semester.semester_id; // Fetch the semester ID
+    console.log('Fetched Curriculum ID:', curriculumId); // Log the fetched curriculum ID
+    console.log('Fetched Program ID:', programId); // Log the fetched program ID
+    console.log('Fetched Year Level ID:', yearLevel.year_level_id); // Log the fetched year level ID
+    console.log('Fetched Semester ID:', semesterId); // Log the fetched semester ID
+  
+    const dialogConfig = this.getCourseDialogConfig(undefined, semester.semester);
+    const dialogRef = this.dialog.open(TableDialogComponent, {
+      data: dialogConfig,
+      disableClose: true,
+    });
+  
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        const newCourse = {
+          course_code: result.course_code,
+          course_title: result.course_title,
+          lec_hours: result.lec_hours,
+          lab_hours: result.lab_hours,
+          units: result.units,
+          tuition_hours: result.tuition_hours,
+          curriculum_id: curriculumId, // Automatically use the fetched curriculum ID
+          semester_id: semesterId, // Automatically use the fetched semester ID
+          year_level_id: yearLevel.year_level_id, // Automatically use the fetched year level ID
+          curricula_program_id: programId, // Automatically use the fetched program ID
+          requirements: result.requirements || [], // Handle pre/co-requisites
+        };
+  
+        this.curriculumService.addCourse(newCourse).subscribe({
+          next: (response) => {
+            this.snackBar.open('Course added successfully', 'Close', {
+              duration: 3000,
+            });
+            this.fetchCurriculum(this.curriculum!.curriculum_year);
+            this.cdr.detectChanges(); // Force update the view
+            
+          },
+          error: (error) => {
+            console.error('Error adding course:', error);
+            this.snackBar.open('Error adding course. Please try again.', 'Close', {
+              duration: 3000,
+            });
+          }
+        });
+      }
+    });
   }
-
-  // Commented out until needed
+  
   onExport() {
     alert('Export functionality not implemented yet');
   }
 
-  // Commented out until needed
   onManagePrograms() {
     const curriculumYear = this.curriculum?.curriculum_year;
   
@@ -420,60 +509,42 @@ export class CurriculumDetailComponent implements OnInit {
       });
     }
   }
-  
-  
 
-
-
-
-
-  
   fetchCoursesForSelectedProgram(selectedProgram: string) {
     this.selectedSemesters = []; // Reset semesters
-  
+
     const program = this.curriculum?.programs.find(p => p.name === selectedProgram);
-  
+
     if (program) {
         // Find the selected year level and its semesters
         const yearLevel = program.year_levels.find(y => y.year === this.selectedYear);
         const allSemesters = [1, 2, 3];
-  
+
         const groupedSemesters: { [key: number]: Semester } = {};
-  
+
         allSemesters.forEach(semNumber => {
             const semester = yearLevel?.semesters.find(sem => sem.semester === semNumber);
-            groupedSemesters[semNumber] = semester ? { ...semester } : { semester: semNumber, courses: [] };
+            groupedSemesters[semNumber] = semester 
+                ? { ...semester } 
+                : { semester: semNumber, courses: [], semester_id: 0 }; // Default value for missing semester_id
             console.log(`Semester ${semNumber} courses:`, groupedSemesters[semNumber].courses);
         });
-  
+
         this.selectedSemesters = Object.values(groupedSemesters);
     } else {
         // If the program isn't part of the curriculum, just show empty tables with headers
-        this.selectedSemesters = [1, 2, 3].map(semNumber => ({ semester: semNumber, courses: [] }));
-        console.log(`Program ${selectedProgram} is not associated with the curriculum, displaying empty tables.`);
+        this.selectedSemesters = [1, 2, 3].map(semNumber => ({
+            semester_id: 0,  // Set a default semester_id
+            semester: semNumber,
+            courses: [],
+        }));
     }
-
     this.cdr.detectChanges(); // Force update the view
   }
 
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
-
-
-  
-// Update the program dropdown method to accept the list of programs
-private updateProgramDropdown(programNames: string[]) {
-  this.headerInputFields = this.headerInputFields.map(field => {
+  // Update the program dropdown method to accept the list of programs
+  private updateProgramDropdown(programNames: string[]) {
+    this.headerInputFields = this.headerInputFields.map(field => {
     if (field.key === 'program') {
       return {
         ...field,
@@ -481,18 +552,11 @@ private updateProgramDropdown(programNames: string[]) {
       };
     }
     return field;
-  });
+    });
 
-  this.cdr.markForCheck(); // Ensure that the view is updated
-}
+    this.cdr.markForCheck(); // Ensure that the view is updated
+  }
 
-
-
-
-
-
-  
-  // Commented out until needed
   private updateCurriculumPrograms(selectedPrograms: { [key: string]: boolean }) {
     if (!this.curriculum) return;
   
@@ -520,11 +584,7 @@ private updateProgramDropdown(programNames: string[]) {
     //   }
     // );
   }
-  
 
-  
-
-  // Commented out until needed
   private getCourseDialogConfig(
     course?: Course,
     semester?: number
@@ -596,14 +656,49 @@ private updateProgramDropdown(programNames: string[]) {
     };
   }
 
-  // Commented out until needed
   private handleCourseDialog(course?: Course, semester?: number): void {
     const dialogConfig = this.getCourseDialogConfig(course, semester);
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: dialogConfig,
       disableClose: true,
     });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.addNewCourse(result, semester!);
+      }
+    });
   }
+
+  private addNewCourse(newCourse: any, semester: number) {
+    const courseData = {
+      ...newCourse,
+      semester_id: semester,                      // Correct semester
+      year_level_id: this.selectedYear,           // Correct year level
+      curricula_program_id: this.getProgramId(this.selectedProgram), // Correct program
+    };
+
+    this.curriculumService.addCourse(courseData).subscribe({
+      next: (response) => {
+        this.snackBar.open('Course added successfully', 'Close', {
+          duration: 3000,
+        });
+        this.fetchCoursesForSelectedProgram(this.selectedProgram); // Refresh the courses displayed
+      },
+      error: (error) => {
+        console.error('Error adding course:', error);
+        this.snackBar.open('Error adding course. Please try again.', 'Close', {
+          duration: 3000,
+        });
+      }
+    });
+  }
+
+  private getProgramId(programName: string): number | undefined {
+    const program = this.curriculum?.programs?.find(p => p.name === programName);
+    return program?.curricula_program_id;
+  }
+
   //   dialogRef.afterClosed().subscribe((result) => {
   //     if (result) {
   //       if (course) {

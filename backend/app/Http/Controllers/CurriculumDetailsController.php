@@ -18,9 +18,10 @@ class CurriculumDetailsController extends Controller
             ->get();
 
         $result = [
+            'curriculum_id' => $curriculum->curriculum_id,
             'curriculum_year' => $curriculum->curriculum_year,
             'status' => ucfirst($curriculum->status),
-            'programs' => $curriculaPrograms->map(function($curriculaProgram) {
+            'programs' => $curriculaPrograms->map(function ($curriculaProgram) {
                 return [
                     'curricula_program_id' => $curriculaProgram->curricula_program_id,
                     'name' => $curriculaProgram->program->program_code,
@@ -35,7 +36,7 @@ class CurriculumDetailsController extends Controller
 
     private function getYearLevels($curriculaProgram)
     {
-        return $curriculaProgram->yearLevels->map(function($yearLevel) use ($curriculaProgram) {
+        return $curriculaProgram->yearLevels->map(function ($yearLevel) use ($curriculaProgram) {
             return [
                 'year_level_id' => $yearLevel->year_level_id,
                 'year' => $yearLevel->year,
@@ -46,7 +47,7 @@ class CurriculumDetailsController extends Controller
 
     private function getSemesters($yearLevel, $curriculaProgram)
     {
-        return $yearLevel->semesters->map(function($semester) use ($curriculaProgram) {
+        return $yearLevel->semesters->map(function ($semester) use ($curriculaProgram) {
             return [
                 'semester_id' => $semester->semester_id,
                 'semester' => $semester->semester,
@@ -59,13 +60,13 @@ class CurriculumDetailsController extends Controller
     {
         $courseAssignments = CourseAssignment::where('curricula_program_id', $curriculaProgram->curricula_program_id)
             ->where('semester_id', $semesterId)
-            ->whereHas('curriculaProgram', function($query) use ($curriculaProgram) {
+            ->whereHas('curriculaProgram', function ($query) use ($curriculaProgram) {
                 $query->where('curriculum_id', $curriculaProgram->curriculum_id);
             })
             ->with(['course.requirements.requiredCourse'])
             ->get();
 
-        return $courseAssignments->map(function($assignment) {
+        return $courseAssignments->map(function ($assignment) {
             $course = $assignment->course;
 
             return [
@@ -87,7 +88,7 @@ class CurriculumDetailsController extends Controller
 
     private function getRequirements($course, $type)
     {
-        return $course->requirements->where('requirement_type', $type)->map(function($req) {
+        return $course->requirements->where('requirement_type', $type)->map(function ($req) {
             return [
                 'course_id' => $req->requiredCourse->course_id,
                 'course_code' => $req->requiredCourse->course_code,

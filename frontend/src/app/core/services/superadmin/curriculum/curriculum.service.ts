@@ -1,8 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import {BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { environment } from '../../../../../environments/environment.dev';
 
 export interface Course {
+  course_id: number;
   course_code: string;
   pre_req?: string;
   co_req?: string;
@@ -11,14 +13,17 @@ export interface Course {
   lab_hours: number;
   units: number;
   tuition_hours: number;
+  semester_id?: number;
 }
 
 export interface Semester {
+  semester_id: number;
   semester: number;
   courses: Course[];
 }
 
 export interface YearLevel {
+  year_level_id: number;
   year: number;
   semesters: Semester[];
 }
@@ -27,6 +32,7 @@ export interface Program {
   name: string;
   year_levels: YearLevel[];
   number_of_years: number;
+  curricula_program_id: number;
   program_id: number;
   program_code: string;
   program_title: string;
@@ -43,7 +49,7 @@ export interface Curriculum {
   providedIn: 'root',
 })
 export class CurriculumService {
-  private baseUrl = 'http://127.0.0.1:8000/api'; // Replace with your backend API URL
+  private baseUrl = environment.apiUrl;
   private curriculaSubject = new BehaviorSubject<Curriculum[]>([]);
 
   constructor(private http: HttpClient) {}
@@ -60,8 +66,6 @@ export class CurriculumService {
     return this.http.get<Program[]>(`${this.baseUrl}/programs-by-curriculum-year/${curriculumYear}`);
   }
   
-
-
   // updateCurriculum(updatedCurriculum: Curriculum): Observable<Curriculum> {
   //   const curricula = this.curriculaSubject.getValue();
   //   const index = curricula.findIndex(
@@ -132,9 +136,9 @@ export class CurriculumService {
   addCourse(courseData: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/addCourse`, courseData);
   }
-  
-  
-  
-  
-  
+
+  // updateCourse(courseId: number, courseData: any): Observable<any> {
+  //   return this.http.put(`${this.baseUrl}/courses/${courseId}`, courseData);
+  // }
+
 }

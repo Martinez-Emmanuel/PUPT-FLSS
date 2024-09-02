@@ -26,7 +26,7 @@
     [tableHeadingTitle]="getSemesterDisplay(semester.semester)"
     [tableHeadingButtonText]="'Add Course'"
     [tableHeadingButtonIcon]="'add'"
-    (tableHeadingButtonClick)="onAddCourse(semester.semester)"
+    (tableHeadingButtonClick)="onAddCourse(semester)"
     (edit)="onEditCourse($event)"
     (delete)="onDeleteCourse($event)"
   ></app-table-generic>
