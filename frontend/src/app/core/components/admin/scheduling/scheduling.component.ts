@@ -31,7 +31,7 @@ import { SchedulingService, Schedule, Program, Curriculum } from '../../../servi
 })
 export class SchedulingComponent implements OnInit, OnDestroy {
   schedules: Schedule[] = [];
-  sectionOptions: string[] = ['1'];
+  sectionOptions: string[] = [];
   selectedProgram = '';
   selectedYear = 1;
   selectedSection = '1';
@@ -55,14 +55,13 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   timeOptions: string[] = this.generateTimeOptions();
   professorOptions: string[] = [];
   roomOptions: string[] = [];
-  academicYearOptions: string[] = ['2023-2024', '2022-2023', '2021-2022'];
+  academicYearOptions: string[] = [];
   semesterOptions: string[] = [
     '1st Semester',
     '2nd Semester',
     'Summer Semester',
   ];
 
-  // Store programs separately for easier access
   programs: Program[] = [];
 
   constructor(
@@ -80,7 +79,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // Initialization
   private initializeHeaderInputFields(): InputField[] {
     return [
       { type: 'select', label: 'Program', key: 'program', options: [] },
@@ -129,18 +127,32 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     return options;
   }
 
-  // Data Fetching
   private fetchInitialData() {
     forkJoin({
+      academicYears: this.schedulingService.getAcademicYears(),
       programs: this.schedulingService.getPrograms(),
       curriculums: this.schedulingService.getCurriculums(),
       professors: this.schedulingService.getProfessors(),
       rooms: this.schedulingService.getRooms(),
+      sections: this.schedulingService.getSections(this.selectedProgram),
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({ programs, curriculums, professors, rooms }) => {
+        next: ({
+          academicYears,
+          programs,
+          curriculums,
+          professors,
+          rooms,
+          sections,
+        }) => {
+          this.academicYearOptions = academicYears.map((ay) => ay.year);
           this.populateOptions(programs, curriculums, professors, rooms);
+          this.setProgramOptions(programs);
+          this.sectionOptions = sections;
+          this.headerInputFields.find(
+            (field) => field.key === 'section'
+          )!.options = sections;
           this.fetchSchedules();
         },
         error: this.handleError('Error fetching initial data'),
@@ -162,12 +174,12 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       });
   }
 
-  // UI Events Handling
   onInputChange(values: { [key: string]: any }) {
     const { program, yearLevel, curriculum, section } = values;
     if (program !== undefined && program !== this.selectedProgram) {
       this.selectedProgram = program;
       this.updateYearLevels();
+      this.fetchSections(program);
     }
     if (yearLevel !== undefined) this.selectedYear = yearLevel;
     if (curriculum !== undefined) this.selectedCurriculum = curriculum;
@@ -175,7 +187,14 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     this.fetchSchedules();
   }
 
-  // Update Year Levels based on selected program
+  private fetchSections(program: string) {
+    this.schedulingService.getSections(program).subscribe((sections) => {
+      this.sectionOptions = sections;
+      this.headerInputFields.find((field) => field.key === 'section')!.options =
+        sections;
+    });
+  }
+
   private updateYearLevels() {
     const selectedProgram = this.programs.find(
       (p) => p.name === this.selectedProgram
@@ -186,7 +205,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         { length: selectedProgram.number_of_years },
         (_, i) => i + 1
       );
-      this.selectedYear = 1; // Reset to first year when program changes
+      this.selectedYear = 1;
     } else {
       this.headerInputFields[1].options = [];
     }
@@ -329,20 +348,25 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Data Manipulation
   private addSection(sectionName: string) {
-    if (!this.sectionOptions.includes(sectionName)) {
-      this.sectionOptions.push(sectionName);
-      this.sectionOptions.sort((a, b) =>
-        a.localeCompare(b, undefined, { numeric: true })
-      );
-      this.headerInputFields = [...this.headerInputFields];
-      this.snackBar.open('Section added successfully', 'Close', {
-        duration: 3000,
+    this.schedulingService
+      .addSection(this.selectedProgram, sectionName)
+      .subscribe((success) => {
+        if (success) {
+          this.sectionOptions.push(sectionName);
+          this.sectionOptions.sort((a, b) =>
+            a.localeCompare(b, undefined, { numeric: true })
+          );
+          this.headerInputFields = [...this.headerInputFields];
+          this.snackBar.open('Section added successfully', 'Close', {
+            duration: 3000,
+          });
+        } else {
+          this.snackBar.open('Section already exists', 'Close', {
+            duration: 3000,
+          });
+        }
       });
-    } else {
-      this.snackBar.open('Section already exists', 'Close', { duration: 3000 });
-    }
   }
 
   private updateSchedule(updatedSchedule: Schedule) {
@@ -386,7 +410,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     if (curriculums.length > 0) this.selectedCurriculum = curriculums[0].name;
   }
 
-  // Error Handling
   private handleError(message: string) {
     return (error: any) => {
       console.error(`${message}:`, error);
