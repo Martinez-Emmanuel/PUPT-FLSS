@@ -40,32 +40,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   activeSemester = '1st Semester';
   private destroy$ = new Subject<void>();
 
-  headerInputFields: InputField[] = [
-    { type: 'select', label: 'Program', key: 'program', options: [] },
-    { type: 'select', label: 'Year Level', key: 'yearLevel', options: [] },
-    { type: 'select', label: 'Curriculum', key: 'curriculum', options: [] },
-    {
-      type: 'select',
-      label: 'Section',
-      key: 'section',
-      options: this.sectionOptions,
-    },
-  ];
-
-  displayedColumns: string[] = [
-    'index',
-    'course_code',
-    'course_title',
-    'lec_hours',
-    'lab_hours',
-    'units',
-    'tuition_hours',
-    'day',
-    'time',
-    'professor',
-    'room',
-    'action',
-  ];
+  headerInputFields: InputField[] = this.initializeHeaderInputFields();
+  displayedColumns: string[] = this.initializeDisplayedColumns();
 
   dayOptions = [
     'Monday',
@@ -101,6 +77,56 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  // Initialization
+  private initializeHeaderInputFields(): InputField[] {
+    return [
+      { type: 'select', label: 'Program', key: 'program', options: [] },
+      { type: 'select', label: 'Year Level', key: 'yearLevel', options: [] },
+      { type: 'select', label: 'Curriculum', key: 'curriculum', options: [] },
+      {
+        type: 'select',
+        label: 'Section',
+        key: 'section',
+        options: this.sectionOptions,
+      },
+    ];
+  }
+
+  private initializeDisplayedColumns(): string[] {
+    return [
+      'index',
+      'course_code',
+      'course_title',
+      'lec_hours',
+      'lab_hours',
+      'units',
+      'tuition_hours',
+      'day',
+      'time',
+      'professor',
+      'room',
+      'action',
+    ];
+  }
+
+  private generateTimeOptions(): string[] {
+    const options: string[] = [];
+    for (let hour = 7; hour <= 21; hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
+        if (hour === 21 && minute > 0) break;
+        const time = new Date(2023, 0, 1, hour, minute);
+        options.push(
+          time.toLocaleTimeString('en-US', {
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+        );
+      }
+    }
+    return options;
+  }
+
+  // Data Fetching
   private fetchInitialData() {
     forkJoin({
       programs: this.schedulingService.getPrograms(),
@@ -111,37 +137,11 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: ({ programs, curriculums, professors, rooms }) => {
-          this.updateProgramOptions(programs);
-          this.updateCurriculumOptions(curriculums);
-          this.professorOptions = professors;
-          this.roomOptions = rooms;
+          this.populateOptions(programs, curriculums, professors, rooms);
           this.fetchSchedules();
         },
         error: this.handleError('Error fetching initial data'),
       });
-  }
-
-  private updateProgramOptions(programs: Program[]) {
-    this.headerInputFields[0].options = programs.map((p) => p.name);
-    if (programs.length > 0) {
-      this.selectedProgram = programs[0].name;
-      this.updateYearLevels(programs[0]);
-    }
-  }
-
-  private updateCurriculumOptions(curriculums: Curriculum[]) {
-    this.headerInputFields[2].options = curriculums.map((c) => c.name);
-    if (curriculums.length > 0) {
-      this.selectedCurriculum = curriculums[0].name;
-    }
-  }
-
-  private updateYearLevels(program: Program) {
-    this.headerInputFields[1].options = Array.from(
-      { length: program.number_of_years },
-      (_, i) => i + 1
-    );
-    this.selectedYear = 1;
   }
 
   private fetchSchedules() {
@@ -154,37 +154,24 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (schedules) => {
-          this.schedules = [...schedules];
-        },
+        next: (schedules) => (this.schedules = [...schedules]),
         error: this.handleError('Error fetching schedules'),
       });
   }
 
+  // UI Events Handling
   onInputChange(values: { [key: string]: any }) {
-    if (
-      values['program'] !== undefined &&
-      values['program'] !== this.selectedProgram
-    ) {
-      this.selectedProgram = values['program'];
-      const program = this.headerInputFields[0].options?.find(
-        (p) => p === this.selectedProgram
-      );
-      if (program) {
-        this.updateYearLevels(program as unknown as Program);
-      }
+    const { program, yearLevel, curriculum, section } = values;
+    if (program !== undefined && program !== this.selectedProgram) {
+      this.selectedProgram = program;
+      this.updateYearLevels();
     }
-    if (values['yearLevel'] !== undefined) {
-      this.selectedYear = values['yearLevel'];
-    }
-    if (values['curriculum'] !== undefined) {
-      this.selectedCurriculum = values['curriculum'];
-    }
-    if (values['section'] !== undefined) {
-      this.selectedSection = values['section'];
-    }
+    if (yearLevel !== undefined) this.selectedYear = yearLevel;
+    if (curriculum !== undefined) this.selectedCurriculum = curriculum;
+    if (section !== undefined) this.selectedSection = section;
     this.fetchSchedules();
   }
+
   openAddSectionDialog() {
     const dialogConfig: DialogConfig = {
       title: 'Add Section',
@@ -199,32 +186,12 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       isEdit: false,
     };
 
-    const dialogRef = this.dialog.open(TableDialogComponent, {
-      data: dialogConfig,
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.addSection(result.sectionName);
-      }
-    });
-  }
-
-  addSection(sectionName: string) {
-    if (!this.sectionOptions.includes(sectionName)) {
-      this.sectionOptions.push(sectionName);
-      this.sectionOptions.sort((a, b) =>
-        a.localeCompare(b, undefined, { numeric: true })
-      );
-      this.headerInputFields = [...this.headerInputFields]; // Trigger change detection
-      this.snackBar.open('Section added successfully', 'Close', {
-        duration: 3000,
+    this.dialog
+      .open(TableDialogComponent, { data: dialogConfig })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result) this.addSection(result.sectionName);
       });
-    } else {
-      this.snackBar.open('Section already exists', 'Close', {
-        duration: 3000,
-      });
-    }
   }
 
   openEditDialog(element: Schedule) {
@@ -291,14 +258,12 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     );
 
     dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        const updatedSchedule = {
+      if (result)
+        this.updateSchedule({
           ...element,
           ...result,
           time: `${result.startTime} - ${result.endTime}`,
-        };
-        this.updateSchedule(updatedSchedule);
-      }
+        });
     });
   }
 
@@ -328,27 +293,39 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       },
     };
 
-    const dialogRef = this.dialog.open(TableDialogComponent, {
-      data: dialogConfig,
-    });
+    this.dialog
+      .open(TableDialogComponent, { data: dialogConfig })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result) {
+          this.activeYear = result.academicYear;
+          this.activeSemester = result.semester;
+          this.snackBar.open(
+            'Active year and semester updated successfully',
+            'Close',
+            { duration: 3000 }
+          );
+        }
+      });
+  }
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.activeYear = result.academicYear;
-        this.activeSemester = result.semester;
-        this.snackBar.open(
-          'Active year and semester updated successfully',
-          'Close',
-          {
-            duration: 3000,
-          }
-        );
-      }
-    });
+  // Data Manipulation
+  private addSection(sectionName: string) {
+    if (!this.sectionOptions.includes(sectionName)) {
+      this.sectionOptions.push(sectionName);
+      this.sectionOptions.sort((a, b) =>
+        a.localeCompare(b, undefined, { numeric: true })
+      );
+      this.headerInputFields = [...this.headerInputFields];
+      this.snackBar.open('Section added successfully', 'Close', {
+        duration: 3000,
+      });
+    } else {
+      this.snackBar.open('Section already exists', 'Close', { duration: 3000 });
+    }
   }
 
   private updateSchedule(updatedSchedule: Schedule) {
-    console.log('Updating Schedule:', updatedSchedule); // Debug line to check the data
     this.schedulingService
       .updateSchedule(updatedSchedule)
       .pipe(takeUntil(this.destroy$))
@@ -363,23 +340,45 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       });
   }
 
-  private generateTimeOptions(): string[] {
-    const options: string[] = [];
-    for (let hour = 7; hour <= 21; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        if (hour === 21 && minute > 0) break;
-        const time = new Date(2023, 0, 1, hour, minute);
-        options.push(
-          time.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-          })
-        );
-      }
-    }
-    return options;
+  private populateOptions(
+    programs: Program[],
+    curriculums: Curriculum[],
+    professors: string[],
+    rooms: string[]
+  ) {
+    this.setProgramOptions(programs);
+    this.setCurriculumOptions(curriculums);
+    this.professorOptions = professors;
+    this.roomOptions = rooms;
   }
 
+  private setProgramOptions(programs: Program[]) {
+    this.headerInputFields[0].options = programs.map((p) => p.name);
+    if (programs.length > 0) {
+      this.selectedProgram = programs[0].name;
+      this.updateYearLevels();
+    }
+  }
+
+  private setCurriculumOptions(curriculums: Curriculum[]) {
+    this.headerInputFields[2].options = curriculums.map((c) => c.name);
+    if (curriculums.length > 0) this.selectedCurriculum = curriculums[0].name;
+  }
+
+  private updateYearLevels() {
+    const program = this.headerInputFields[0].options?.find(
+      (p) => p === this.selectedProgram
+    ) as unknown as Program;
+    if (program) {
+      this.headerInputFields[1].options = Array.from(
+        { length: program.number_of_years },
+        (_, i) => i + 1
+      );
+      this.selectedYear = 1;
+    }
+  }
+
+  // Error Handling
   private handleError(message: string) {
     return (error: any) => {
       console.error(`${message}:`, error);
