@@ -28,17 +28,17 @@ export interface Schedule {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class SchedulingService {
   private mockData = {
     programs: [
       { id: 1, name: 'BSIT', number_of_years: 4 },
-      { id: 2, name: 'BSA', number_of_years: 5 }
+      { id: 2, name: 'BSA', number_of_years: 5 },
     ],
     curriculums: [
       { id: 1, name: '2018' },
-      { id: 2, name: '2022' }
+      { id: 2, name: '2022' },
     ],
     schedules: [
       {
@@ -52,7 +52,7 @@ export class SchedulingService {
         day: 'Monday',
         time: '08:00 AM - 11:00 AM',
         professor: 'Gecilie Almiranez',
-        room: '101'
+        room: '101',
       },
       {
         id: 2,
@@ -65,7 +65,7 @@ export class SchedulingService {
         day: 'Tuesday',
         time: '01:00 PM - 6:00 PM',
         professor: 'AJ San Luis',
-        room: 'DOST Lab'
+        room: 'DOST Lab',
       },
       {
         id: 3,
@@ -78,11 +78,16 @@ export class SchedulingService {
         day: 'Wednesday',
         time: '09:00 AM - 12:00 PM',
         professor: 'Jennifer Ortega',
-        room: '201'
+        room: '201',
       },
     ],
-    professors: ['Gecilie Almiranez', 'AJ San Luis', 'Jennifer Ortega', 'Steven Villarosa'],
-    rooms: ['101', '102', '103', '201', '202', '203', 'DOST Lab']
+    professors: [
+      'Gecilie Almiranez',
+      'AJ San Luis',
+      'Jennifer Ortega',
+      'Steven Villarosa',
+    ],
+    rooms: ['101', '102', '103', '201', '202', '203', 'DOST Lab'],
   };
 
   getPrograms(): Observable<Program[]> {
@@ -93,7 +98,12 @@ export class SchedulingService {
     return this.simulateHttpRequest(this.mockData.curriculums);
   }
 
-  getSchedules(program: string, year: number, curriculum: string): Observable<Schedule[]> {
+  getSchedules(
+    program: string,
+    year: number,
+    curriculum: string,
+    selectedSection: string
+  ): Observable<Schedule[]> {
     return this.simulateHttpRequest(this.mockData.schedules);
   }
 
@@ -106,13 +116,18 @@ export class SchedulingService {
   }
 
   addSchedule(schedule: Partial<Schedule>): Observable<Schedule> {
-    const newSchedule = { ...schedule, id: this.getNextId(this.mockData.schedules) } as Schedule;
+    const newSchedule = {
+      ...schedule,
+      id: this.getNextId(this.mockData.schedules),
+    } as Schedule;
     this.mockData.schedules.push(newSchedule);
     return this.simulateHttpRequest(newSchedule);
   }
 
   updateSchedule(updatedSchedule: Schedule): Observable<Schedule> {
-    const index = this.mockData.schedules.findIndex(s => s.id === updatedSchedule.id);
+    const index = this.mockData.schedules.findIndex(
+      (s) => s.id === updatedSchedule.id
+    );
     if (index !== -1) {
       this.mockData.schedules[index] = updatedSchedule;
     }
@@ -120,7 +135,7 @@ export class SchedulingService {
   }
 
   deleteSchedule(scheduleId: number): Observable<boolean> {
-    const index = this.mockData.schedules.findIndex(s => s.id === scheduleId);
+    const index = this.mockData.schedules.findIndex((s) => s.id === scheduleId);
     if (index !== -1) {
       this.mockData.schedules.splice(index, 1);
       return this.simulateHttpRequest(true);
@@ -129,7 +144,7 @@ export class SchedulingService {
   }
 
   private getNextId(items: { id: number }[]): number {
-    return Math.max(...items.map(item => item.id), 0) + 1;
+    return Math.max(...items.map((item) => item.id), 0) + 1;
   }
 
   private simulateHttpRequest<T>(data: T): Observable<T> {
