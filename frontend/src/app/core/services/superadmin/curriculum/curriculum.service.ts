@@ -132,6 +132,15 @@ export class CurriculumService {
     return this.http.post(`${this.baseUrl}/deleteCurriculum`, { curriculum_year });
   }
 
+  // For copying an existing curriculum
+  copyCurriculum(curriculumId: number, newCurriculumYear: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/copyCurriculum`, {
+      curriculum_id: curriculumId,
+      new_curriculum_year: newCurriculumYear
+    });
+  }
+  
+
   // For Course (inside the curriculum year)
   //Add course
   addCourse(courseData: any): Observable<any> {

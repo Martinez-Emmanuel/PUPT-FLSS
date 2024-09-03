@@ -173,7 +173,13 @@ export class CurriculumComponent implements OnInit, OnDestroy {
 
             dialogRef.afterClosed().subscribe(result => {
                 if (result) {
-                    this.addCurriculum(result);
+                    if (result.copy_from && result.copy_from !== 'None') {
+                        // Call the backend API to copy the selected curriculum
+                        this.copyCurriculum(result);
+                    } else {
+                        // No curriculum copy, just add a new one
+                        this.addCurriculum(result);
+                    }
                 }
             });
         },
@@ -181,6 +187,28 @@ export class CurriculumComponent implements OnInit, OnDestroy {
     });
   }
 
+  private copyCurriculum(copyData: any) {
+    const curriculumYearToCopyFrom = copyData.copy_from.split(' ')[0];
+    const newCurriculumYear = copyData.curriculum_year;
+  
+    // Find the curriculum_id for the selected curriculum year to copy from
+    const curriculumToCopy = this.curricula.find(curriculum => curriculum.curriculum_year === curriculumYearToCopyFrom);
+  
+    if (curriculumToCopy && curriculumToCopy.curriculum_id) {
+      const curriculumId = curriculumToCopy.curriculum_id;
+  
+      this.curriculumService.copyCurriculum(curriculumId, newCurriculumYear).subscribe({
+        next: (response) => {
+          this.showSuccessMessage('Curriculum copied successfully');
+          this.fetchCurricula(); // Refresh the list after copying
+        },
+        error: () => this.showErrorMessage('Error copying curriculum. Please try again.'),
+      });
+    } else {
+      this.showErrorMessage('Error: Curriculum to copy from not found.');
+    }
+  }
+  
   private addCurriculum(newCurriculum: Curriculum) {
     const curriculumData = {
       curriculum_year: newCurriculum.curriculum_year,
