@@ -134,7 +134,10 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       curriculums: this.schedulingService.getCurriculums(),
       professors: this.schedulingService.getProfessors(),
       rooms: this.schedulingService.getRooms(),
-      sections: this.schedulingService.getSections(this.selectedProgram),
+      sections: this.schedulingService.getSections(
+        this.selectedProgram,
+        this.selectedYear
+      ),
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
@@ -179,19 +182,25 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     if (program !== undefined && program !== this.selectedProgram) {
       this.selectedProgram = program;
       this.updateYearLevels();
-      this.fetchSections(program);
+      this.fetchSections(program, this.selectedYear);
     }
-    if (yearLevel !== undefined) this.selectedYear = yearLevel;
+    if (yearLevel !== undefined) {
+      this.selectedYear = yearLevel;
+      this.fetchSections(this.selectedProgram, yearLevel);
+    }
     if (curriculum !== undefined) this.selectedCurriculum = curriculum;
     if (section !== undefined) this.selectedSection = section;
     this.fetchSchedules();
   }
 
-  private fetchSections(program: string) {
-    this.schedulingService.getSections(program).subscribe((sections) => {
+  private fetchSections(program: string, year: number) {
+    this.schedulingService.getSections(program, year).subscribe((sections) => {
       this.sectionOptions = sections;
       this.headerInputFields.find((field) => field.key === 'section')!.options =
         sections;
+      if (!sections.includes(this.selectedSection)) {
+        this.selectedSection = sections[0] || '1';
+      }
     });
   }
 
@@ -350,14 +359,10 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
   private addSection(sectionName: string) {
     this.schedulingService
-      .addSection(this.selectedProgram, sectionName)
+      .addSection(this.selectedProgram, this.selectedYear, sectionName)
       .subscribe((success) => {
         if (success) {
-          this.sectionOptions.push(sectionName);
-          this.sectionOptions.sort((a, b) =>
-            a.localeCompare(b, undefined, { numeric: true })
-          );
-          this.headerInputFields = [...this.headerInputFields];
+          this.fetchSections(this.selectedProgram, this.selectedYear);
           this.snackBar.open('Section added successfully', 'Close', {
             duration: 3000,
           });
