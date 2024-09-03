@@ -13,6 +13,7 @@ use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\YearLevelController;
 use App\Http\Controllers\CurriculumDetailsController;
 use App\Http\Controllers\ProgramFetchController;
+use App\Http\Controllers\AccountController;
 // Public routes
 Route::post('login', [AuthController::class, 'login'])->name('login');
 Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
@@ -73,6 +74,15 @@ Route::get('/programs/{id}', [ProgramController::class, 'show']);
 Route::put('/updateProgram/{id}', [ProgramController::class, 'update']);
 Route::delete('/deleteProgram/{id}', [ProgramController::class, 'destroy']);
 
+
+Route::middleware(['auth:sanctum', 'super_admin'])->group(function () {
+    Route::get('/showAccounts', [AccountController::class, 'index']);
+    Route::post('/addAccount', [AccountController::class, 'store']);
+    Route::get('/accounts/{user}', [AccountController::class, 'show']);
+    Route::put('/updateAccount/{user}', [AccountController::class, 'update']);
+    Route::delete('/deleteAccount/{user}', [AccountController::class, 'destroy']);
+});
+
 Route::post('/submitPreference', [PreferenceController::class, 'submitPreference']);
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -92,6 +102,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/rooms/{room_id}', [RoomController::class, 'deleteRoom']);
 
     // CRUD for Courses
+
+
 
     Route::get('/some-protected-route', function (Request $request) {
         return response()->json(['message' => 'You are authenticated']);
