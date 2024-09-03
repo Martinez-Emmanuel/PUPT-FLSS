@@ -181,16 +181,6 @@ export class CurriculumComponent implements OnInit, OnDestroy {
     });
   }
 
-
-
-
-
-
-
-
-  
-  
-
   private addCurriculum(newCurriculum: Curriculum) {
     const curriculumData = {
       curriculum_year: newCurriculum.curriculum_year,
@@ -214,8 +204,6 @@ export class CurriculumComponent implements OnInit, OnDestroy {
     this.openCurriculumDialog(curriculum);
   }
   
-  
-
   private getDialogConfig(curriculum?: Curriculum): DialogConfig {
     return {
         title: 'Curriculum',

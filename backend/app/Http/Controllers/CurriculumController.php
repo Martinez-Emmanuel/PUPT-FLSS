@@ -283,7 +283,7 @@ class CurriculumController extends Controller
             'program_id' => 'required|integer|exists:programs,program_id',
         ]);
 
-        DB::transaction(function () use ($request) {
+        $newCurriculaProgram = DB::transaction(function () use ($request) {
             $curriculum = Curriculum::where('curriculum_year', $request->curriculum_year)->firstOrFail();
 
             // Check if the program is already associated
@@ -292,17 +292,42 @@ class CurriculumController extends Controller
                 ->exists();
 
             if (!$exists) {
-                CurriculaProgram::create([
+                $curriculaProgram = CurriculaProgram::create([
                     'curriculum_id' => $curriculum->curriculum_id,
                     'program_id' => $request->program_id,
                 ]);
+
+                // Generate year levels based on the program's number of years
+                $program = Program::find($request->program_id);
+                for ($year = 1; $year <= $program->number_of_years; $year++) {
+                    YearLevel::create([
+                        'curricula_program_id' => $curriculaProgram->curricula_program_id,
+                        'year' => $year,
+                    ]);
+                }
+
+                return $curriculaProgram;
             }
+
+            return null;
         });
 
+        if ($newCurriculaProgram) {
+            $curriculaProgramWithDetails = CurriculaProgram::with('yearLevels')
+                ->where('curricula_program_id', $newCurriculaProgram->curricula_program_id)
+                ->first();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Program added to curriculum successfully.',
+                'data' => $curriculaProgramWithDetails
+            ]);
+        }
+
         return response()->json([
-            'status' => 'success',
-            'message' => 'Program added to curriculum successfully.',
-        ]);
+            'status' => 'error',
+            'message' => 'Program is already associated with this curriculum year.'
+        ], 400);
     }
 
 }

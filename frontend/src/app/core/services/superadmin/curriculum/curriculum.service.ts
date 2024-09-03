@@ -3,17 +3,24 @@ import { HttpClient } from '@angular/common/http';
 import {BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { environment } from '../../../../../environments/environment.dev';
 
+
 export interface Course {
   course_id: number;
   course_code: string;
-  pre_req?: string;
-  co_req?: string;
+  prerequisites?: CourseRequirement[]; // Match with backend response
+  corequisites?: CourseRequirement[];  // Match with backend response
   course_title: string;
   lec_hours: number;
   lab_hours: number;
   units: number;
   tuition_hours: number;
   semester_id?: number;
+}
+
+export interface CourseRequirement {  // New interface to represent prerequisites and corequisites
+  course_id: number;
+  course_code: string;
+  course_title: string;
 }
 
 export interface Semester {
@@ -23,7 +30,7 @@ export interface Semester {
 }
 
 export interface YearLevel {
-  year_level_id: number;
+  year_level_id?: number;
   year: number;
   semesters: Semester[];
 }
