@@ -1,102 +1,54 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { environment } from '../../../../../../environments/environment.dev';
+import { CookieService } from 'ngx-cookie-service';
 
 export interface Faculty {
-  facultyId: string;
+  id: string;
   name: string;
-  email: string;
-  type: string;  // Part-Time, Full-Time, Regular
+  faculty_email: string;
+  type: string;
   unitsAssigned: number;
-  status: string;  // Active, Inactive
+  status: string;
+  role: string; 
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class FacultyService {
-  private facultySubject = new BehaviorSubject<Faculty[]>([
-    {
-      facultyId: 'FA1234TG2024',
-      name: 'Alice Johnson',
-      email: 'alice.johnson@example.com',
-      type: 'Full-Time',
-      unitsAssigned: 25,
-      status: 'Active',
-    },
-    {
-      facultyId: 'FA5678TG2024',
-      name: 'Bob Smith',
-      email: 'bob.smith@example.com',
-      type: 'Part-Time',
-      unitsAssigned: 10,
-      status: 'Inactive',
-    },
-    {
-      facultyId: 'FA1135TG2024',
-      name: 'Emman Martinez',
-      email: 'emmanmartinez@gmail.com',
-      type: 'Full-Time',
-      unitsAssigned: 25,
-      status: 'Active',
-    },
-    {
-      facultyId: 'FA0090TG2024',
-      name: 'Adrian Naoe',
-      email: 'naoe.adrianb@gmail.com',
-      type: 'Regular',
-      unitsAssigned: 30,
-      status: 'Active',
-    },
-    {
-      facultyId: 'FA0369TG2024',
-      name: 'Kyla Malaluan',
-      email: 'emmanmartinez@gmail.com',
-      type: 'Part-Time',
-      unitsAssigned: 20,
-      status: 'Inactive',
-    },
-  ]);
+  private baseUrl = environment.apiUrl;
+
+  constructor(private http: HttpClient, private cookieService: CookieService) {}
+
+  private getHeaders(): HttpHeaders {
+    const token = this.cookieService.get('token');
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    });
+  }
 
   getFaculty(): Observable<Faculty[]> {
-    const facultyWithMaskedEmails = this.facultySubject.getValue().map(faculty => ({
-      ...faculty,
-      email: this.maskEmail(faculty.email),
-    }));
-    return of(facultyWithMaskedEmails);
+    return this.http.get<Faculty[]>(`${this.baseUrl}/showAccounts`, { headers: this.getHeaders() }).pipe(
+      map((users) =>
+        users.filter((user) => user.role === 'faculty')
+      )
+    );
   }
 
-  private maskEmail(email: string): string {
-    const [localPart, domain] = email.split('@');
-    if (localPart.length > 2) {
-      return `${localPart[0]}${'*'.repeat(localPart.length - 2)}${localPart[localPart.length - 1]}@${domain}`;
-    }
-    return email; // Fallback if email is too short
+  addFaculty(faculty: Faculty): Observable<Faculty[]> {
+    return this.http.post<Faculty[]>(`${this.baseUrl}/addAccount`, faculty, { headers: this.getHeaders() });
   }
 
-  addFaculty(
-    faculty: Faculty
-  ): Observable<Faculty[]> {
-    const facultyList = this.facultySubject.getValue();
-    this.facultySubject.next([...facultyList, faculty]);
-    return of(this.facultySubject.getValue());
+  updateFaculty(index: number, updatedFaculty: Faculty): Observable<Faculty[]> {
+    return this.http.put<Faculty[]>(`${this.baseUrl}/updateAccount/${updatedFaculty.id}`, updatedFaculty, { headers: this.getHeaders() });
   }
 
-  updateFaculty(
-    index: number, 
-    updatedFaculty: Faculty
-  ): Observable<Faculty[]> {
-    const facultyList = this.facultySubject.getValue();
-    facultyList[index] = updatedFaculty;
-    this.facultySubject.next([...facultyList]);
-    return of(this.facultySubject.getValue());
-  }
-
-  deleteFaculty(
-    index: number
-  ): Observable<Faculty[]> {
-    const facultyList = this.facultySubject.getValue();
-    facultyList.splice(index, 1);
-    this.facultySubject.next([...facultyList]);
-    return of(this.facultySubject.getValue());
+  deleteFaculty(index: number): Observable<Faculty[]> {
+    return this.http.delete<Faculty[]>(`${this.baseUrl}/deleteAccount/${index}`, { headers: this.getHeaders() });
   }
 }

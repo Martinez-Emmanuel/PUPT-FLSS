@@ -75,7 +75,7 @@ export class AdminComponent implements OnInit {
 
   fetchAdmins() {
     this.adminService.getAdmins().subscribe((admins) => {
-      this.admins = admins;
+      this.admins = admins; // Already filtered to only include admins and super admins
       this.cdr.markForCheck();
     });
   }
@@ -84,7 +84,7 @@ export class AdminComponent implements OnInit {
     this.adminService.getAdmins().subscribe((admins) => {
       this.admins = admins.filter(
         (admin) =>
-          admin.adminId.includes(searchTerm) ||
+          admin.id.includes(searchTerm) ||
           admin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           admin.role.toLowerCase().includes(searchTerm.toLowerCase()) 
       );

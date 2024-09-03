@@ -46,13 +46,13 @@ export class FacultyComponent implements OnInit {
     { key: 'index', label: '#' },
     { key: 'facultyId', label: 'Faculty Code' },
     { key: 'name', label: 'Name' },
-    { key: 'email', label: 'Email' },
+    { key: 'faculty_email', label: 'Email' },
     { key: 'type', label: 'Type' }, // Part-Time, Full-Time, Regular
     { key: 'unitsAssigned', label: 'Units Assigned' },
     { key: 'status', label: 'Status' }, 
   ];
 
-  displayedColumns: string[] = ['index', 'facultyId', 'name', 'email', 'type', 'unitsAssigned', 'status', 'action'];
+  displayedColumns: string[] = ['index', 'facultyId', 'name', 'faculty_email', 'type', 'unitsAssigned', 'status', 'action'];
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -67,7 +67,7 @@ export class FacultyComponent implements OnInit {
 
   fetchFaculty() {
     this.facultyService.getFaculty().subscribe((faculty) => {
-      this.faculty = faculty;
+      this.faculty = faculty; // Already filtered to only include faculty members
       this.cdr.markForCheck();
     });
   }
@@ -76,7 +76,7 @@ export class FacultyComponent implements OnInit {
     this.facultyService.getFaculty().subscribe((faculty) => {
       this.faculty = faculty.filter(
         (facultyMember) =>
-          facultyMember.facultyId.includes(searchTerm) ||
+          facultyMember.id.includes(searchTerm) ||
           facultyMember.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           facultyMember.type.toLowerCase().includes(searchTerm.toLowerCase()) 
       );
@@ -106,7 +106,7 @@ export class FacultyComponent implements OnInit {
         },
         {
           label: 'Email',
-          formControlName: 'email',
+          formControlName: 'faculty_email',
           type: 'text',
           maxLength: 100,
           required: true,

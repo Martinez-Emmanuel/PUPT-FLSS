@@ -1,8 +1,12 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { map } from 'rxjs/operators';
+import { environment } from '../../../../../../environments/environment.dev';
+import { CookieService } from 'ngx-cookie-service';
 
 export interface Admin {
-  adminId: string;
+  id: string;
   name: string;
   password: string;
   email: string;
@@ -14,74 +18,36 @@ export interface Admin {
   providedIn: 'root',
 })
 export class AdminService {
-  private adminsSubject = new BehaviorSubject<Admin[]>([
-    {
-      adminId: 'SPA11234TG',
-      name: 'John Doe',
-      password: 'password123',
-      email: 'john.doe@example.com',
-      role: 'Super Admin',
-      status: 'Active',
-    },
-    {
-      adminId: 'ADM55678TG',
-      name: 'Jane Smith',
-      password: 'pass456',
-      email: 'jane.smith@example.com',
-      role: 'Admin',
-      status: 'Inactive',
-    },
-    {
-      adminId: 'ADM78910TG',
-      name: 'Adrian Naoe',
-      password: 'mysecuredpwd',
-      email: 'naoe.adrianb@gmail.com',
-      role: 'Admin',
-      status: 'Active',
-    },
-    {
-      adminId: 'SPA47910TG',
-      name: 'Kyla Malaluan',
-      password: 'admin_014',
-      email: 'malaluankyla@gmail.com',
-      role: 'Super Admin',
-      status: 'Active',
-    },
-    {
-      adminId: 'ADM00765TG',
-      name: 'Alice Guo',
-      password: 'alicepwd456',
-      email: 'alice123@gmail.com',
-      role: 'Admin',
-      status: 'Inactive',
-    },
-  ]);
+  private baseUrl = environment.apiUrl;
 
-  getAdmins(maskPasswords: boolean = true): Observable<Admin[]> {
-    const admins = this.adminsSubject.getValue().map(admin => ({
-      ...admin,
-      password: maskPasswords ? '*****' : admin.password, // Mask or reveal based on flag
-    }));
-    return of(admins);
-  }  
+  constructor(private http: HttpClient, private cookieService: CookieService) {}
+
+  private getHeaders(): HttpHeaders {
+    const token = this.cookieService.get('token');
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    });
+  }
+
+  getAdmins(): Observable<Admin[]> {
+    return this.http.get<Admin[]>(`${this.baseUrl}/showAccounts`, { headers: this.getHeaders() }).pipe(
+      map((users) =>
+        users.filter((user) => user.role === 'admin' || user.role === 'super_admin')
+      )
+    );
+  }
 
   addAdmin(admin: Admin): Observable<Admin[]> {
-    const admins = this.adminsSubject.getValue();
-    this.adminsSubject.next([...admins, admin]);
-    return of(this.adminsSubject.getValue());
+    return this.http.post<Admin[]>(`${this.baseUrl}/addAccount`, admin, { headers: this.getHeaders() });
   }
 
   updateAdmin(index: number, updatedAdmin: Admin): Observable<Admin[]> {
-    const admins = this.adminsSubject.getValue();
-    admins[index] = updatedAdmin;
-    this.adminsSubject.next([...admins]);
-    return of(this.adminsSubject.getValue());
+    return this.http.put<Admin[]>(`${this.baseUrl}/updateAccount/${updatedAdmin.id}`, updatedAdmin, { headers: this.getHeaders() });
   }
 
   deleteAdmin(index: number): Observable<Admin[]> {
-    const admins = this.adminsSubject.getValue();
-    admins.splice(index, 1);
-    this.adminsSubject.next([...admins]);
-    return of(this.adminsSubject.getValue());
+    return this.http.delete<Admin[]>(`${this.baseUrl}/deleteAccount/${index}`, { headers: this.getHeaders() });
   }
 }
