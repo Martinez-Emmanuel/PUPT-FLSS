@@ -7,17 +7,19 @@ import { environment } from '../../../../../environments/environment.dev';
 export interface Course {
   course_id: number;
   course_code: string;
-  prerequisites?: CourseRequirement[]; // Match with backend response
-  corequisites?: CourseRequirement[];  // Match with backend response
+  prerequisites?: CourseRequirement[]; 
+  corequisites?: CourseRequirement[];  
   course_title: string;
   lec_hours: number;
   lab_hours: number;
   units: number;
   tuition_hours: number;
   semester_id?: number;
+  pre_req?: string; 
+  co_req?: string;  
 }
 
-export interface CourseRequirement {  // New interface to represent prerequisites and corequisites
+export interface CourseRequirement { 
   course_id: number;
   course_code: string;
   course_title: string;
@@ -80,7 +82,7 @@ export class CurriculumService {
   
   // Fetch all programs
   getAllPrograms(): Observable<Program[]> {
-    return this.http.get<Program[]>(`${this.baseUrl}/programs`); // Adjust the API endpoint according to your backend
+    return this.http.get<Program[]>(`${this.baseUrl}/programs`); 
   }
   
   // Add the program to specific Curriculum year
@@ -112,10 +114,6 @@ export class CurriculumService {
         return `Semester ${semesterNumber}`;
     }
   }
-
-  // updateCurriculaSubject(curricula: Curriculum[]): void {
-  //   this.curriculaSubject.next(curricula);
-  // }
 
   //For curriculum component
 

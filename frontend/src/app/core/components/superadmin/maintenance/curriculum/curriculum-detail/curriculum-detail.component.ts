@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -63,8 +62,8 @@ export class CurriculumDetailComponent implements OnInit {
   columns = [
     { key: 'index', label: '#' },
     { key: 'course_code', label: 'Course Code' },
-    { key: 'pre_req', label: 'Pre-requisite' },  // This should match with your 'pre_req' field
-    { key: 'co_req', label: 'Co-requisite' },    // This should match with your 'co_req' field
+    { key: 'pre_req', label: 'Pre-requisite' },  
+    { key: 'co_req', label: 'Co-requisite' },  
     { key: 'course_title', label: 'Course Title' },
     { key: 'lec_hours', label: 'Lec Hours' },
     { key: 'lab_hours', label: 'Lab Hours' },
@@ -129,7 +128,7 @@ export class CurriculumDetailComponent implements OnInit {
         if (curriculum) {
           console.log('Full Curriculum Object:', curriculum);
           this.curriculum = curriculum;
-          this.selectedProgram = curriculum.programs[0]?.name || ''; // Use the program name
+          this.selectedProgram = curriculum.programs[0]?.name || ''; 
           this.selectedYear = 1;
   
           // Fetch associated programs and update dropdown
@@ -142,7 +141,9 @@ export class CurriculumDetailComponent implements OnInit {
             },
             error: (error) => {
               console.error('Error fetching associated programs:', error);
-              this.snackBar.open('Error fetching associated programs. Please try again.', 'Close', { duration: 3000 });
+              this.snackBar.open(
+                'Error fetching associated programs. Please try again.', 
+                'Close', { duration: 3000 });
             }
           });
   
@@ -151,7 +152,9 @@ export class CurriculumDetailComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error fetching curriculum:', error);
-        this.snackBar.open('Error fetching curriculum. Please try again.', 'Close', { duration: 3000 });
+        this.snackBar.open(
+          'Error fetching curriculum. Please try again.', 
+          'Close', { duration: 3000 });
       },
     });
   }
@@ -230,8 +233,6 @@ export class CurriculumDetailComponent implements OnInit {
     }
   }
   
-  
-
   onInputChange(values: { [key: string]: any }) {
     console.log('Input Change Detected:', values);
 
@@ -294,7 +295,9 @@ export class CurriculumDetailComponent implements OnInit {
 
             // Handle the case where the program is undefined
             if (!program) {
-                this.snackBar.open('Error: Selected program not found.', 'Close', { duration: 3000 });
+                this.snackBar.open(
+                  'Error: Selected program not found.', 'Close', 
+                  { duration: 3000 });
                 return;
             }
 
@@ -434,19 +437,15 @@ export class CurriculumDetailComponent implements OnInit {
         }
     });
   }
+  private getCourseIdByTitle(courseTitle: string): number | undefined {
+    const course = this.curriculum?.programs
+        .flatMap(program => program.year_levels)
+        .flatMap(yearLevel => yearLevel.semesters)
+        .flatMap(sem => sem.courses)
+        .find(course => course.course_title === courseTitle);
+    return course?.course_id;
+  }
 
-// Helper method to get course ID by its title
-private getCourseIdByTitle(courseTitle: string): number | undefined {
-  const course = this.curriculum?.programs
-      .flatMap(program => program.year_levels)
-      .flatMap(yearLevel => yearLevel.semesters)
-      .flatMap(sem => sem.courses)
-      .find(course => course.course_title === courseTitle);
-  return course?.course_id;
-}
-
-
-  
   onExport() {
     alert('Export functionality not implemented yet');
   }
@@ -558,36 +557,54 @@ private getCourseIdByTitle(courseTitle: string): number | undefined {
 }
 
 
-  fetchCoursesForSelectedProgram(selectedProgram: string) {
-    this.selectedSemesters = []; // Reset semesters
+fetchCoursesForSelectedProgram(selectedProgram: string) {
+  this.selectedSemesters = []; // Reset semesters
 
-    const program = this.curriculum?.programs.find(p => p.name === selectedProgram);
+  const program = this.curriculum?.programs.find(p => p.name === selectedProgram);
 
-    if (program) {
-        // Find the selected year level and its semesters
-        const yearLevel = program.year_levels.find(y => y.year === this.selectedYear);
-        const allSemesters = [1, 2, 3];
+  if (program) {
+      // Find the selected year level and its semesters
+      const yearLevel = program.year_levels.find(y => y.year === this.selectedYear);
+      const allSemesters = [1, 2, 3];
 
-        const groupedSemesters: { [key: number]: Semester } = {};
+      const groupedSemesters: { [key: number]: Semester } = {};
 
-        allSemesters.forEach(semNumber => {
-            const semester = yearLevel?.semesters.find(sem => sem.semester === semNumber);
-            groupedSemesters[semNumber] = semester 
-                ? { ...semester } 
-                : { semester: semNumber, courses: [], semester_id: 0 }; // Default value for missing semester_id
-            console.log(`Semester ${semNumber} courses:`, groupedSemesters[semNumber].courses);
-        });
+      allSemesters.forEach(semNumber => {
+          const semester = yearLevel?.semesters.find(sem => sem.semester === semNumber);
+          groupedSemesters[semNumber] = semester 
+              ? { ...semester, courses: semester.courses.map(course => this.populateCourseRequisites(course)) }
+              : { semester: semNumber, courses: [], semester_id: 0 }; // Default value for missing semester_id
+          console.log(`Semester ${semNumber} courses:`, groupedSemesters[semNumber].courses);
+      });
 
-        this.selectedSemesters = Object.values(groupedSemesters);
-    } else {
-        // If the program isn't part of the curriculum, just show empty tables with headers
-        this.selectedSemesters = [1, 2, 3].map(semNumber => ({
-            semester_id: 0,  // Set a default semester_id
-            semester: semNumber,
-            courses: [],
-        }));
-    }
-    this.cdr.detectChanges(); // Force update the view
+      this.selectedSemesters = Object.values(groupedSemesters);
+  } else {
+      // If the program isn't part of the curriculum, just show empty tables with headers
+      this.selectedSemesters = [1, 2, 3].map(semNumber => ({
+          semester_id: 0,  // Set a default semester_id
+          semester: semNumber,
+          courses: [],
+      }));
+  }
+  this.cdr.detectChanges(); // Force update the view
+}
+
+  // Helper method to populate prerequisites and corequisites
+  populateCourseRequisites(course: Course): Course {
+    const pre_req = course.prerequisites?.length 
+        ? course.prerequisites.map(p => p.course_title).join(', ') 
+        : 'None';
+    const co_req = course.corequisites?.length 
+        ? course.corequisites.map(c => c.course_title).join(', ') 
+        : 'None';
+
+    console.log(`Course: ${course.course_code}, Pre-req: ${pre_req}, Co-req: ${co_req}`);
+
+    return {
+        ...course,
+        pre_req,
+        co_req,
+    };
   }
 
   // Update the program dropdown method to accept the list of programs
