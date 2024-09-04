@@ -1,6 +1,7 @@
 import { Component, Output, EventEmitter, Inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -70,6 +71,7 @@ export class TableDialogComponent {
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<TableDialogComponent>,
     private cdr: ChangeDetectorRef,
+    private router: Router,
     @Inject(MAT_DIALOG_DATA) public data: DialogConfig
   ) {
     this.form = this.fb.group({});
@@ -167,6 +169,11 @@ export class TableDialogComponent {
       return `Your ${label} is invalid.`;
     }
     return '';
+  }
+
+  navigateToAcademicYear() {
+    this.dialogRef.close();
+    this.router.navigate(['/admin/scheduling/academic-year']);
   }
 
   filterOptions(field: DialogFieldConfig) {

@@ -53,6 +53,7 @@
           </mat-option>
           }
         </mat-select>
+
         } @case ('autocomplete') {
         <input
           type="text"
@@ -70,11 +71,16 @@
           }
         </mat-autocomplete>
         } }
-
         <mat-error>{{
           getErrorMessage(field.formControlName, field.label)
         }}</mat-error>
-        @if (field.hint) {
+        @if (field.formControlName === 'academicYear') {
+        <mat-hint>
+          <span class="academic-year-hint" (click)="navigateToAcademicYear()"
+            >Manage Academic Years</span
+          >
+        </mat-hint>
+        } @if (field.hint) {
         <mat-hint>{{ field.hint }}</mat-hint>
         }
       </mat-form-field>
