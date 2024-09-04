@@ -71,7 +71,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   loading = true;
   isDarkMode = false;
   showSidenav = false;
-  showProgramSelection = true; // New property to control visibility of program selection
+  showProgramSelection = true; 
 
   readonly displayedColumns: string[] = [
     'action',
@@ -139,17 +139,16 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   selectProgram(program: Program): void {
     this.selectedProgram = program;
     this.loading = true;
-    this.showProgramSelection = false; // hide program selection
+    this.showProgramSelection = false; 
     this.courses = program.year_levels
       .flatMap((yearLevel) => yearLevel.semesters)
       .flatMap((semester) => semester.courses);
     this.loading = false;
-    this.dataSource.data = []; // Clear current table data when program changes
+    this.dataSource.data = []; 
     this.updateTotalUnits();
     this.cdr.markForCheck();
   }
 
-  // Add a method to go back to program selection
   backToProgramSelection(): void {
     this.showProgramSelection = true;
     this.selectedProgram = undefined;
