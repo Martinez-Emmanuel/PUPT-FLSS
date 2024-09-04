@@ -107,10 +107,15 @@ export class TableDialogComponent {
   }
 
   noWhitespaceValidator(control: AbstractControl): ValidationErrors | null {
-    const isWhitespace = (control.value || '').trim().length === 0;
-    const isValid = !isWhitespace || !control.value;
+    const value = control.value;
+  
+    // Ensure control.value is a string before applying .trim()
+    const isWhitespace = typeof value === 'string' && value.trim().length === 0;
+    const isValid = !isWhitespace || !value;
+    
     return isValid ? null : { whitespace: true };
   }
+  
 
   getErrorMessage(formControlName: string, label: string): string {
     const control = this.form.get(formControlName);

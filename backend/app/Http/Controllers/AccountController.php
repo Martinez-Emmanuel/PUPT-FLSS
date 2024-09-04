@@ -33,14 +33,14 @@ class AccountController extends Controller
             'faculty_unit' => 'required_if:role,faculty',
             'password' => 'required|string|min:8',
         ]);
-    
+
         $user = User::create([
             'name' => $validatedData['name'],
             'code' => $validatedData['code'],
             'role' => $validatedData['role'],
             'password' => $validatedData['password'], // No manual hashing needed
         ]);
-    
+
         if ($validatedData['role'] === 'faculty') {
             Faculty::create([
                 'user_id' => $user->id,
@@ -49,29 +49,28 @@ class AccountController extends Controller
                 'faculty_unit' => $validatedData['faculty_unit'],
             ]);
         }
-    
+
         return response()->json($user, 201);
     }
-    
+
     public function update(Request $request, User $user)
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
-            'code' => 'required|string|max:255|unique:users,code,' . $user->id,
-            'role' => 'required|in:super_admin,admin,faculty',
+            'role' => 'required|in:superadmin,admin,faculty',
             'faculty_email' => 'required_if:role,faculty|email|unique:faculty,faculty_email,' . optional($user->faculty)->id,
             'faculty_type' => 'required_if:role,faculty',
             'faculty_unit' => 'required_if:role,faculty',
             'password' => 'sometimes|string|min:8',
         ]);
-    
+
+        // Update user data
         $user->update([
             'name' => $validatedData['name'],
-            'code' => $validatedData['code'],
             'role' => $validatedData['role'],
-            // No need to manually hash the password
         ]);
-    
+
+        // Handle faculty data based on role
         if ($validatedData['role'] === 'faculty') {
             $user->faculty()->updateOrCreate(
                 ['user_id' => $user->id],
@@ -83,17 +82,21 @@ class AccountController extends Controller
             );
         } else {
             if ($user->faculty) {
-                $user->faculty->delete();
+                $user->faculty->delete();  // Delete faculty record if role is not faculty
             }
         }
-    
+
+        // Update password if provided
         if (isset($validatedData['password'])) {
-            $user->update(['password' => $validatedData['password']]); // No manual hashing needed
+            $user->update(['password' => $validatedData['password']]);  // Password will be hashed
         }
-    
+
+        // Return the updated user with faculty relationship
         return response()->json($user->load('faculty'));
     }
-    
+
+
+
 
     public function destroy(User $user)
     {
@@ -101,7 +104,7 @@ class AccountController extends Controller
             $user->faculty->delete();
         }
         $user->delete();
-    
+
         return response()->json(null, 204);
     }
 

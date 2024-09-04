@@ -1,18 +1,32 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../../../../environments/environment.dev';
 import { CookieService } from 'ngx-cookie-service';
+
+export interface User {
+  id: string;
+  name: string;
+  code: string;
+  role: string;
+  faculty?: {
+    faculty_email: string;
+    faculty_type: string;
+    faculty_unit: number;
+  };
+  status?: string; // Adjust if status is actually part of the response
+}
 
 export interface Faculty {
   id: string;
   name: string;
+  code: string;
   faculty_email: string;
-  type: string;
-  unitsAssigned: number;
-  status: string;
-  role: string; 
+  faculty_type: string;
+  faculty_unit: number;
+  status: string; // You might need to add this on the backend if you require it
+  role: string;
 }
 
 @Injectable({
@@ -33,22 +47,47 @@ export class FacultyService {
   }
 
   getFaculty(): Observable<Faculty[]> {
-    return this.http.get<Faculty[]>(`${this.baseUrl}/showAccounts`, { headers: this.getHeaders() }).pipe(
-      map((users) =>
-        users.filter((user) => user.role === 'faculty')
-      )
+    return this.http.get<User[]>(`${this.baseUrl}/showAccounts`, { headers: this.getHeaders() }).pipe(
+      map((users) => {
+        if (!Array.isArray(users)) {
+          throw new Error('Unexpected response format');
+        }
+
+        // Filter only those users with the role 'faculty'
+        return users
+          .filter((user) => user.role === 'faculty')
+          .map((user) => ({
+            id: user.id.toString(),
+            name: user.name,
+            code: user.code,
+            faculty_email: user.faculty?.faculty_email || '',
+            faculty_type: user.faculty?.faculty_type || '',
+            faculty_unit: user.faculty?.faculty_unit ?? 0,
+            status: user.status || 'Inactive', // Default to 'Inactive' if status is undefined
+            role: user.role,
+          }));
+      }),
+      catchError((error) => {
+        console.error('Error fetching faculty:', error);
+        return of([]); // Return an empty array on error
+      })
     );
   }
+  
+  
 
-  addFaculty(faculty: Faculty): Observable<Faculty[]> {
-    return this.http.post<Faculty[]>(`${this.baseUrl}/addAccount`, faculty, { headers: this.getHeaders() });
+  addFaculty(faculty: Faculty): Observable<Faculty> {
+    return this.http.post<Faculty>(`${this.baseUrl}/addAccount`, faculty, { headers: this.getHeaders() });
   }
-
-  updateFaculty(index: number, updatedFaculty: Faculty): Observable<Faculty[]> {
-    return this.http.put<Faculty[]>(`${this.baseUrl}/updateAccount/${updatedFaculty.id}`, updatedFaculty, { headers: this.getHeaders() });
+  
+  updateFaculty(id: string, faculty: Omit<Faculty, 'code'>): Observable<Faculty> {
+    return this.http.put<Faculty>(`${this.baseUrl}/updateAccount/${id}`, faculty, { headers: this.getHeaders() });
   }
-
-  deleteFaculty(index: number): Observable<Faculty[]> {
-    return this.http.delete<Faculty[]>(`${this.baseUrl}/deleteAccount/${index}`, { headers: this.getHeaders() });
+  
+  
+  
+  deleteFaculty(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/deleteAccount/${id}`, { headers: this.getHeaders() });
   }
+  
 }

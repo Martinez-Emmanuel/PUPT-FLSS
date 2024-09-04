@@ -1,17 +1,28 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../../../../environments/environment.dev';
 import { CookieService } from 'ngx-cookie-service';
 
-export interface Admin {
+export interface Faculty {
+  id: number;
+  user_id: number;
+  faculty_email: string;
+  faculty_type: string;
+  faculty_unit: string;
+}
+
+export interface User {
+  code: string;
   id: string;
   name: string;
-  password: string;
-  email: string;
+  password?: string;
+  email: string;  // This is likely coming from 'faculty_email'
   role: string;
   status: string;
+  faculty?: Faculty;  // Add this line to include the faculty object in the User interface
+  passwordDisplay?: string;
 }
 
 @Injectable({
@@ -31,23 +42,30 @@ export class AdminService {
     });
   }
 
-  getAdmins(): Observable<Admin[]> {
-    return this.http.get<Admin[]>(`${this.baseUrl}/showAccounts`, { headers: this.getHeaders() }).pipe(
-      map((users) =>
-        users.filter((user) => user.role === 'admin' || user.role === 'super_admin')
+  getAdmins(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.baseUrl}/showAccounts`, { headers: this.getHeaders() }).pipe(
+      map((users) => 
+        users.filter(user => user.role === 'admin' || user.role === 'superadmin')
       )
     );
   }
 
-  addAdmin(admin: Admin): Observable<Admin[]> {
-    return this.http.post<Admin[]>(`${this.baseUrl}/addAccount`, admin, { headers: this.getHeaders() });
+  getAdminById(id: string): Observable<User> {  // Use 'id' instead of 'code'
+    return this.http.get<User>(`${this.baseUrl}/accounts/${id}`, { headers: this.getHeaders() });
   }
 
-  updateAdmin(index: number, updatedAdmin: Admin): Observable<Admin[]> {
-    return this.http.put<Admin[]>(`${this.baseUrl}/updateAccount/${updatedAdmin.id}`, updatedAdmin, { headers: this.getHeaders() });
+  addAdmin(admin: User): Observable<User> {
+    return this.http.post<User>(`${this.baseUrl}/addAccount`, admin, { headers: this.getHeaders() });
   }
 
-  deleteAdmin(index: number): Observable<Admin[]> {
-    return this.http.delete<Admin[]>(`${this.baseUrl}/deleteAccount/${index}`, { headers: this.getHeaders() });
+  updateAdmin(id: string, updatedAdmin: User): Observable<User> {
+    return this.http.put<User>(`${this.baseUrl}/updateAccount/${id}`, updatedAdmin, {
+      headers: this.getHeaders(),
+    });
+  }
+  
+
+  deleteAdmin(id: string): Observable<void> {  // Use 'id' instead of 'code'
+    return this.http.delete<void>(`${this.baseUrl}/deleteAccount/${id}`, { headers: this.getHeaders() });
   }
 }
