@@ -24,7 +24,7 @@ import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { DialogTimeComponent } from '../../../../shared/dialog-time/dialog-time.component';
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
 import { ThemeService } from '../../../services/theme/theme.service';
-import { CourseService, Course } from '../../../services/course/courses.service';
+import { PreferencesService, Program, Course } from '../../../services/faculty/preference/preferences.service';
 import { CookieService } from 'ngx-cookie-service';
 import { fadeAnimation, cardEntranceAnimation } from '../../../animations/animations';
 
@@ -58,16 +58,20 @@ interface TableData extends Course {
   templateUrl: './preferences.component.html',
   styleUrls: ['./preferences.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [CourseService],
+  providers: [PreferencesService],
   animations: [fadeAnimation, cardEntranceAnimation],
 })
 export class PreferencesComponent implements OnInit, OnDestroy {
+  programs: Program[] = [];
   courses: Course[] = [];
+  selectedProgram: Program | undefined;
+  loadingPrograms = true;
   units = 0;  // Renamed from totalUnits to units
   readonly maxUnits = 25;
   loading = true;
   isDarkMode = false;
   showSidenav = false;
+  showProgramSelection = true; // New property to control visibility of program selection
 
   readonly displayedColumns: string[] = [
     'action',
@@ -97,14 +101,14 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     private readonly themeService: ThemeService,
     private readonly cdr: ChangeDetectorRef,
     private readonly dialog: MatDialog,
-    private readonly courseService: CourseService,
+    private readonly preferencesService: PreferencesService,
     private readonly snackBar: MatSnackBar,
     private readonly cookieService: CookieService
   ) {}
 
   ngOnInit() {
     this.subscribeToThemeChanges();
-    this.loadCourses();
+    this.loadPrograms();
   }
 
   ngAfterViewInit() {
@@ -114,20 +118,45 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     }, 0);
   }
 
-  private loadCourses() {
-    this.loading = true;
-      this.courseService.getCourses().subscribe({
-        next: (courses) => {
-          this.courses = courses;
-          this.loading = false;
-          this.cdr.markForCheck();
-        },
-        error: (error) => {
-          console.error('Error loading courses:', error);
-          this.loading = false;
-          this.cdr.markForCheck();
-        },
+  private loadPrograms() {
+    this.loadingPrograms = true;
+    this.preferencesService.getPrograms().subscribe({
+      next: (programs) => {
+        console.log('Programs:', this.programs);
+        this.programs = programs;
+        this.loadingPrograms = false;
+        this.cdr.markForCheck();
+
+      },
+      error: (error) => {
+        console.error('Error loading programs:', error);
+        this.loadingPrograms = false;
+        this.cdr.markForCheck();
+      },
     });
+  }
+
+  selectProgram(program: Program): void {
+    this.selectedProgram = program;
+    this.loading = true;
+    this.showProgramSelection = false; // hide program selection
+    this.courses = program.year_levels
+      .flatMap((yearLevel) => yearLevel.semesters)
+      .flatMap((semester) => semester.courses);
+    this.loading = false;
+    this.dataSource.data = []; // Clear current table data when program changes
+    this.updateTotalUnits();
+    this.cdr.markForCheck();
+  }
+
+  // Add a method to go back to program selection
+  backToProgramSelection(): void {
+    this.showProgramSelection = true;
+    this.selectedProgram = undefined;
+    this.courses = [];
+    this.dataSource.data = [];
+    this.updateTotalUnits();
+    this.cdr.markForCheck();
   }
 
   get isRemoveDisabled(): boolean {
@@ -223,7 +252,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     }
     const submittedData = this.prepareSubmissionData(facultyId);
 
-    this.courseService.submitPreferences(submittedData).subscribe({
+    this.preferencesService.submitPreferences(submittedData).subscribe({
       next: () => this.showSnackBar('Preferences submitted successfully.'),
       error: (error) => {
         console.error('Error submitting preferences:', error);
