@@ -122,14 +122,20 @@ export class CurriculumDetailComponent implements OnInit {
     this.destroy$.complete();
   }
 
-  fetchCurriculum(year: string) {
+  fetchCurriculum(year: string, selectedProgram?: string, selectedYear?: number) {
     this.curriculumService.getCurriculumByYear(year).subscribe({
       next: (curriculum) => {
         if (curriculum) {
           console.log('Full Curriculum Object:', curriculum);
           this.curriculum = curriculum;
-          this.selectedProgram = curriculum.programs[0]?.name || ''; 
-          this.selectedYear = 1;
+
+
+          // this.selectedProgram = curriculum.programs[0]?.name || ''; 
+          // this.selectedYear = 1;
+
+           // Restore selected program and year, or set defaults
+           this.selectedProgram = selectedProgram || curriculum.programs[0]?.name || ''; 
+           this.selectedYear = selectedYear || 1; 
   
           // Fetch associated programs and update dropdown
           this.curriculumService.getProgramsByCurriculumYear(year).subscribe({
@@ -322,13 +328,16 @@ export class CurriculumDetailComponent implements OnInit {
                 ].filter(req => req.required_course_id), // Filter out any undefined requirements
             };
 
+            const previousSelectedProgram = this.selectedProgram;
+            const previousSelectedYear = this.selectedYear;
+
             // Proceed with your logic to update the course
             this.curriculumService.updateCourse(course.course_id, updatedCourse).subscribe({
                 next: (response) => {
                     this.snackBar.open('Course updated successfully', 'Close', {
                         duration: 3000,
                     });
-                    this.fetchCurriculum(this.curriculum!.curriculum_year);
+                     this.fetchCurriculum(this.curriculum!.curriculum_year, previousSelectedProgram, previousSelectedYear);
                     this.cdr.detectChanges(); // Force update the view
                 },
                 error: (error) => {
@@ -384,6 +393,11 @@ export class CurriculumDetailComponent implements OnInit {
     }
 
     const semesterId = semester.semester_id; // Fetch the semester ID
+    //try
+    const previousSelectedProgram = this.selectedProgram; // Store the selected program
+    const previousSelectedYear = this.selectedYear; // Save the current selected year level before reloading
+    
+
     console.log('Fetched Curriculum ID:', curriculumId); // Log the fetched curriculum ID
     console.log('Fetched Program ID:', programId); // Log the fetched program ID
     console.log('Fetched Year Level ID:', yearLevel.year_level_id); // Log the fetched year level ID
@@ -423,8 +437,8 @@ export class CurriculumDetailComponent implements OnInit {
                     this.snackBar.open('Course added successfully', 'Close', {
                         duration: 3000,
                     });
-                    this.fetchCurriculum(this.curriculum!.curriculum_year);
-                    
+
+                    this.fetchCurriculum(this.curriculum!.curriculum_year, previousSelectedProgram, previousSelectedYear);
                     this.cdr.detectChanges(); // Force update the view
                 },
                 error: (error) => {
