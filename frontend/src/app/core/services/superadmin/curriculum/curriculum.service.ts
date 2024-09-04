@@ -135,8 +135,8 @@ export class CurriculumService {
   // For copying an existing curriculum
   copyCurriculum(curriculumId: number, newCurriculumYear: string): Observable<any> {
     return this.http.post(`${this.baseUrl}/copyCurriculum`, {
-      curriculum_id: curriculumId,
-      new_curriculum_year: newCurriculumYear
+      curriculum_id: curriculumId,  // ID of the curriculum to copy
+      new_curriculum_year: newCurriculumYear // New year for the copied curriculum
     });
   }
   

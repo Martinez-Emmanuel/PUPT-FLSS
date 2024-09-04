@@ -12,6 +12,7 @@ use App\Models\Semester;
 use App\Models\CourseRequirement;
 use App\Models\Course;
 use App\Models\Program;
+
 class CurriculumController extends Controller
 {
 
@@ -150,10 +151,21 @@ class CurriculumController extends Controller
 
                         // Step 6: Copy each course assignment associated with the original semester
                         foreach ($originalSemester->courseAssignments as $originalCourseAssignment) {
+                            // Create a new course based on the original course
+                            $newCourse = Course::create([
+                                'course_code' => $originalCourseAssignment->course->course_code,
+                                'course_title' => $originalCourseAssignment->course->course_title,
+                                'lec_hours' => $originalCourseAssignment->course->lec_hours,
+                                'lab_hours' => $originalCourseAssignment->course->lab_hours,
+                                'units' => $originalCourseAssignment->course->units,
+                                'tuition_hours' => $originalCourseAssignment->course->tuition_hours,
+                            ]);
+
+                            // Create a new course assignment with the new course_id
                             CourseAssignment::create([
                                 'curricula_program_id' => $newCurriculaProgram->curricula_program_id,
                                 'semester_id' => $newSemester->semester_id,
-                                'course_id' => $originalCourseAssignment->course_id,
+                                'course_id' => $newCourse->course_id,
                             ]);
                         }
                     }
@@ -172,6 +184,7 @@ class CurriculumController extends Controller
             'message' => 'Curriculum and associated programs, year levels, and semesters created successfully.'
         ]);
     }
+
 
 
     // List all curricula
@@ -241,7 +254,6 @@ class CurriculumController extends Controller
             'message' => 'Curriculum deleted successfully'
         ], 200);
     }
-
 
     //temp:
     public function removeProgramFromCurriculum(Request $request)
@@ -329,5 +341,4 @@ class CurriculumController extends Controller
             'message' => 'Program is already associated with this curriculum year.'
         ], 400);
     }
-
 }

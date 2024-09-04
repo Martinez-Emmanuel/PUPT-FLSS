@@ -147,49 +147,37 @@ export class CurriculumComponent implements OnInit, OnDestroy {
   // Commented out dialog functions until necessary
   openAddCurriculumDialog() {
     this.curriculumService.getCurricula().subscribe({
-        next: (availableCurricula) => {
-            // Convert curriculum_id to a number
-            availableCurricula = availableCurricula.map(curriculum => ({
-                ...curriculum,
-                curriculum_id: Number(curriculum.curriculum_id)  // Convert string to number
-            }));
-
-            const dialogConfig = this.getDialogConfig();
-
-            if (dialogConfig.fields) {
-                const copyField = dialogConfig.fields.find(field => field.formControlName === 'copy_from');
-                if (copyField) {
-                    copyField.options = [
-                        'None', // Default option
-                        ...availableCurricula.map(curriculum => `${curriculum.curriculum_year} Curriculum `)
-                    ];
-                }
+      next: (availableCurricula) => {
+        const dialogConfig = this.getDialogConfig(availableCurricula);  // Populate the dialog with available curricula
+  
+        const dialogRef = this.dialog.open(TableDialogComponent, {
+          data: dialogConfig,
+          disableClose: true,
+        });
+  
+        dialogRef.afterClosed().subscribe((result) => {
+          if (result) {
+            if (result.copy_from && result.copy_from !== 'None') {
+              this.copyCurriculum(result);  // Copy the curriculum if a source is selected
+            } else {
+              this.addCurriculum(result);  // Add a new curriculum if no source is selected
             }
-
-            const dialogRef = this.dialog.open(TableDialogComponent, {
-                data: dialogConfig,
-                disableClose: true,
-            });
-
-            dialogRef.afterClosed().subscribe(result => {
-                if (result) {
-                    if (result.copy_from && result.copy_from !== 'None') {
-                        // Call the backend API to copy the selected curriculum
-                        this.copyCurriculum(result);
-                    } else {
-                        // No curriculum copy, just add a new one
-                        this.addCurriculum(result);
-                    }
-                }
-            });
-        },
-        error: () => this.showErrorMessage('Error fetching available curricula. Please try again.')
+          }
+        });
+      },
+      error: () => {
+        this.showErrorMessage('Error fetching available curricula. Please try again.');
+      }
     });
   }
+  
+  
+  
+  
 
   private copyCurriculum(copyData: any) {
-    const curriculumYearToCopyFrom = copyData.copy_from.split(' ')[0];
-    const newCurriculumYear = copyData.curriculum_year;
+    const curriculumYearToCopyFrom = copyData.copy_from.split(' ')[0]; // Extract the curriculum year to copy from
+    const newCurriculumYear = copyData.curriculum_year; // Get the new curriculum year
   
     // Find the curriculum_id for the selected curriculum year to copy from
     const curriculumToCopy = this.curricula.find(curriculum => curriculum.curriculum_year === curriculumYearToCopyFrom);
@@ -197,17 +185,22 @@ export class CurriculumComponent implements OnInit, OnDestroy {
     if (curriculumToCopy && curriculumToCopy.curriculum_id) {
       const curriculumId = curriculumToCopy.curriculum_id;
   
+      // Call the curriculumService to copy the curriculum
       this.curriculumService.copyCurriculum(curriculumId, newCurriculumYear).subscribe({
         next: (response) => {
-          this.showSuccessMessage('Curriculum copied successfully');
-          this.fetchCurricula(); // Refresh the list after copying
+          this.showSuccessMessage('Curriculum copied successfully with new curriculum ID.');
+          this.fetchCurricula(); // Refresh the list to show the new curriculum
         },
-        error: () => this.showErrorMessage('Error copying curriculum. Please try again.'),
+        error: (error) => {
+          this.showErrorMessage('Error copying curriculum. Please try again.');
+          console.error('Error:', error);
+        },
       });
     } else {
       this.showErrorMessage('Error: Curriculum to copy from not found.');
     }
   }
+  
   
   private addCurriculum(newCurriculum: Curriculum) {
     const curriculumData = {
@@ -232,58 +225,64 @@ export class CurriculumComponent implements OnInit, OnDestroy {
     this.openCurriculumDialog(curriculum);
   }
   
-  private getDialogConfig(curriculum?: Curriculum): DialogConfig {
+  private getDialogConfig(availableCurricula: Curriculum[]): any {
     return {
-        title: 'Curriculum',
-        isEdit: !!curriculum,
-        fields: [
-            {
-                label: 'Curriculum Year',
-                formControlName: 'curriculum_year',
-                type: 'text',
-                maxLength: 4,
-                required: true,
-            },
-            {
-                label: 'Status',
-                formControlName: 'status',
-                type: 'select',
-                options: this.curriculumStatuses,
-                required: true,
-            },
-            {
-                label: 'Copy a curriculum',
-                formControlName: 'copy_from',
-                type: 'select',
-                hint: `Copy from another curriculum. 
-                       You can still adjust the copied curriculum later.`,
-                options: [], // Will be populated dynamically in `openAddCurriculumDialog`
-                required: false,
-            },
-        ],
-        initialValue: {
-            ...curriculum,
-            copy_from: 'None',
-            status: curriculum?.status || 'Active',
+      title: 'Curriculum',
+      fields: [
+        {
+          label: 'New Curriculum Year',
+          formControlName: 'curriculum_year',
+          type: 'text',
+          maxLength: 4,
+          required: true,
         },
+        {
+          label: 'Status',
+          formControlName: 'status',
+          type: 'select',
+          options: ['active', 'inactive'],
+          required: true,
+        },
+        {
+          label: 'Copy from existing curriculum',
+          formControlName: 'copy_from',
+          type: 'select',
+          options: [
+            'None',
+            ...availableCurricula.map(curriculum => `${curriculum.curriculum_year} Curriculum`)
+          ],
+          required: false,
+        },
+      ],
+      initialValue: {
+        copy_from: 'None',
+        status: 'active',
+      },
     };
   }
+  
+  
+  
 
   
 
-  private openCurriculumDialog(curriculum?: Curriculum) {
-    const config = this.getDialogConfig(curriculum);
+  private openCurriculumDialog(curriculum: Curriculum | undefined) {
+    // Ensure curriculum is passed as an array, even if it's a single object or undefined
+    const curriculaList = curriculum ? [curriculum] : [];  // Convert to array or pass empty array if undefined
+  
+    const config = this.getDialogConfig(curriculaList);  // Pass the array
     const dialogRef = this.dialog.open(TableDialogComponent, {
-       data: config,
-       disableClose: true,
+      data: config,
+      disableClose: true,
     });
- 
+  
     dialogRef.afterClosed().subscribe((result) => {
-       if (result) {
-          this.updateCurriculum({ ...curriculum, ...result });  // Ensure curriculum_id is passed
-       }
+      if (result) {
+        this.updateCurriculum({ ...curriculum, ...result }); // Ensure curriculum_id is passed
+      }
     });
- }
+  }
+  
 
   //   dialogRef.afterClosed().subscribe((result) => {
   //     if (result) {
