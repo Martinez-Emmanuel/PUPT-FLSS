@@ -28,8 +28,14 @@ class User extends Authenticatable
         $this->attributes['password'] = Hash::make($value);
     }
 
+    // public function faculty()
+    // {
+    //     return $this->hasOne(Faculty::class);
+    // }
+
     public function faculty()
     {
-        return $this->hasOne(Faculty::class);
+        return $this->hasOne(Faculty::class, 'user_id'); // Link by user_id in Faculty table
     }
+
 }

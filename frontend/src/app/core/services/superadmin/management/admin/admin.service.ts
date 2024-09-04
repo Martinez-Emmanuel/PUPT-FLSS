@@ -42,30 +42,30 @@ export class AdminService {
     });
   }
 
+  // Fetch all admins
   getAdmins(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.baseUrl}/showAccounts`, { headers: this.getHeaders() }).pipe(
-      map((users) => 
-        users.filter(user => user.role === 'admin' || user.role === 'superadmin')
-      )
-    );
+    return this.http.get<User[]>(`${this.baseUrl}/getAdmins`, { headers: this.getHeaders() });
   }
 
-  getAdminById(id: string): Observable<User> {  // Use 'id' instead of 'code'
-    return this.http.get<User>(`${this.baseUrl}/accounts/${id}`, { headers: this.getHeaders() });
+  // Fetch a specific admin by ID
+  getAdminById(id: string): Observable<User> {
+    return this.http.get<User>(`${this.baseUrl}/getAdmins/${id}`, { headers: this.getHeaders() });
   }
 
+  // Add a new admin
   addAdmin(admin: User): Observable<User> {
-    return this.http.post<User>(`${this.baseUrl}/addAccount`, admin, { headers: this.getHeaders() });
+    return this.http.post<User>(`${this.baseUrl}/addAdmins`, admin, { headers: this.getHeaders() });
   }
 
+  // Update an existing admin
   updateAdmin(id: string, updatedAdmin: User): Observable<User> {
-    return this.http.put<User>(`${this.baseUrl}/updateAccount/${id}`, updatedAdmin, {
+    return this.http.put<User>(`${this.baseUrl}/updateAdmins/${id}`, updatedAdmin, {
       headers: this.getHeaders(),
     });
   }
-  
 
-  deleteAdmin(id: string): Observable<void> {  // Use 'id' instead of 'code'
-    return this.http.delete<void>(`${this.baseUrl}/deleteAccount/${id}`, { headers: this.getHeaders() });
+  // Delete an admin by ID
+  deleteAdmin(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/deleteAdmins/${id}`, { headers: this.getHeaders() });
   }
 }

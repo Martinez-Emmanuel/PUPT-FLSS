@@ -75,12 +75,30 @@ Route::put('/updateProgram/{id}', [ProgramController::class, 'update']);
 Route::delete('/deleteProgram/{id}', [ProgramController::class, 'destroy']);
 
 
+// Route::middleware(['auth:sanctum', 'super_admin'])->group(function () {
+//     Route::get('/showAccounts', [AccountController::class, 'index']);
+//     Route::post('/addAccount', [AccountController::class, 'store']);
+//     Route::get('/accounts/{user}', [AccountController::class, 'show']);
+//     Route::put('/updateAccount/{user}', [AccountController::class, 'update']);
+//     Route::delete('/deleteAccount/{user}', [AccountController::class, 'destroy']);
+// });
+
 Route::middleware(['auth:sanctum', 'super_admin'])->group(function () {
     Route::get('/showAccounts', [AccountController::class, 'index']);
     Route::post('/addAccount', [AccountController::class, 'store']);
     Route::get('/accounts/{user}', [AccountController::class, 'show']);
     Route::put('/updateAccount/{user}', [AccountController::class, 'update']);
     Route::delete('/deleteAccount/{user}', [AccountController::class, 'destroy']);
+
+    // Fetch all admins
+    Route::get('/getAdmins', [AccountController::class, 'indexAdmins']);
+    // Store a new admin
+    Route::post('/addAdmins', [AccountController::class, 'storeAdmin']);
+    // Update an existing admin
+    Route::put('/updateAdmins/{admin}', [AccountController::class, 'updateAdmin']);
+    // Delete an admin
+    Route::delete('/deleteAdmins/{admin}', [AccountController::class, 'destroyAdmin']);
+
 });
 
 Route::post('/submitPreference', [PreferenceController::class, 'submitPreference']);

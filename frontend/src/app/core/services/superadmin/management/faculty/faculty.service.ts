@@ -27,6 +27,7 @@ export interface Faculty {
   faculty_unit: number;
   status: string; // You might need to add this on the backend if you require it
   role: string;
+  password?: string;  // Make password optional
 }
 
 @Injectable({
@@ -52,8 +53,8 @@ export class FacultyService {
         if (!Array.isArray(users)) {
           throw new Error('Unexpected response format');
         }
-
-        // Filter only those users with the role 'faculty'
+  
+        // Filter users by role (done in backend, so this is optional)
         return users
           .filter((user) => user.role === 'faculty')
           .map((user) => ({
@@ -63,7 +64,7 @@ export class FacultyService {
             faculty_email: user.faculty?.faculty_email || '',
             faculty_type: user.faculty?.faculty_type || '',
             faculty_unit: user.faculty?.faculty_unit ?? 0,
-            status: user.status || 'Inactive', // Default to 'Inactive' if status is undefined
+            status: user.status || 'Active',
             role: user.role,
           }));
       }),
@@ -75,10 +76,12 @@ export class FacultyService {
   }
   
   
+  
 
   addFaculty(faculty: Faculty): Observable<Faculty> {
     return this.http.post<Faculty>(`${this.baseUrl}/addAccount`, faculty, { headers: this.getHeaders() });
   }
+  
   
   updateFaculty(id: string, faculty: Omit<Faculty, 'code'>): Observable<Faculty> {
     return this.http.put<Faculty>(`${this.baseUrl}/updateAccount/${id}`, faculty, { headers: this.getHeaders() });
@@ -86,8 +89,10 @@ export class FacultyService {
   
   
   
+  
   deleteFaculty(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/deleteAccount/${id}`, { headers: this.getHeaders() });
   }
+  
   
 }
