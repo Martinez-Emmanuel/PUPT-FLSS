@@ -34,6 +34,14 @@ export const ADMIN_ROUTES: Routes = [
         data: { pageTitle: 'Scheduling' },
       },
       {
+        path: 'scheduling/academic-year',
+        loadComponent: () =>
+          import('./academic-year/academic-year.component').then(
+            (m) => m.AcademicYearComponent
+          ),
+        data: { pageTitle: 'Academic Year' },
+      },
+      {
         path: 'reports',
         loadComponent: () =>
           import('./reports/reports.component').then((m) => m.ReportsComponent),
