@@ -28,7 +28,41 @@
           <span mat-symbol="search" matPrefix></span>
         </mat-form-field>
       </div>
+
+      <!-- Programs List --> 
+      @if (showProgramSelection) {
+      <div id="programs_list">
+        <h3 class="section-label">Select a Program</h3>
+        <div class="programs-scroll-container">
+          <!-- Display spinner while loading programs -->
+          @if (loadingPrograms) {
+            <div class="progress-wrapper">
+              <mat-spinner diameter="40"></mat-spinner>
+            </div>
+          }
+          <!-- Display programs when loaded -->
+          @else {
+            <div [@cardEntranceAnimation]="programs.length">
+              @for (program of programs; track program.program_id) {
+                <div class="program-card" (click)="selectProgram(program)">
+                  <div class="program-info">
+                    <span class="program-name">{{ program.name }}</span>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      </div>
+      } @else {
+      <!-- Courses List -->
       <div id="courses_list">
+        <h3 class="section-label"> 
+          <button mat-icon-button (click)="backToProgramSelection()">
+            <mat-icon>arrow_back</mat-icon>
+          </button>
+          {{ selectedProgram?.name }} Courses
+        </h3>
         <div class="courses-scroll-container">
           <!-- Display spinner while loading -->
           @if (loading) {
@@ -37,10 +71,10 @@
             </div>
           }
           <!-- Display courses when loaded -->
-          @if (!loading) {
+          @else {
             <div [@cardEntranceAnimation]="courses.length">
             @for (course of courses; track course.course_id) { 
-              <div class="course-card">
+              <div class="course-card" (click)="addCourseToTable(course)">
                 <div class="course-info">
                   <span class="course-code">{{ course.course_code }}</span>
                   <span class="course-title">{{ course.course_title }}</span>
@@ -58,6 +92,7 @@
           }
         </div>
       </div>
+      }
     </div>
 
     <!-- Preferences Table -->
