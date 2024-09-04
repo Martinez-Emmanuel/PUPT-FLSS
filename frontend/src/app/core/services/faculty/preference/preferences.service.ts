@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 
-// Define interfaces based on your data structure
 export interface Course {
-  course_id: string;  // Ensure this field exists
+  course_id: string;  
   course_code: string;
   pre_req: string;
   co_req: string;
