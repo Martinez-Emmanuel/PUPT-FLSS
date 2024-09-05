@@ -16,8 +16,10 @@ interface Program {
   program_code: string;
   program_title: string;
   year_levels: number;
-  sections: string[];
+  sections: { [yearLevel: string]: number };
+  curriculums: { [yearLevel: string]: string };
 }
+
 
 type AcademicYear = string;
 
@@ -76,13 +78,21 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
         program_code: 'BSIT',
         program_title: 'Bachelor of Science in Information Technology',
         year_levels: 4,
-        sections: ['1', '2', '3', '4'],
+        sections: { '1': 2, '2': 1, '3': 3, '4': 2 },
+        curriculums: { '1': '2022', '2': '2022', '3': '2018', '4': '2018' },
       },
       {
         program_code: 'BSA',
         program_title: 'Bachelor of Science in Accountancy',
-        year_levels: 4,
-        sections: ['1', '2', '3', '4', '5'],
+        year_levels: 5,
+        sections: { '1': 2, '2': 2, '3': 1, '4': 3, '5': 2 },
+        curriculums: {
+          '1': '2022',
+          '2': '2022',
+          '3': '2018',
+          '4': '2018',
+          '5': '2018',
+        },
       },
     ];
     this.academicYearOptions = ['2022-2023', '2023-2024', '2024-2025'];
@@ -97,9 +107,13 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
   }
 
   private removeAcademicYear(year: string): void {
-    this.academicYearOptions = this.academicYearOptions.filter((y) => y !== year);
+    this.academicYearOptions = this.academicYearOptions.filter(
+      (y) => y !== year
+    );
     this.headerInputFields[0].options = [...this.academicYearOptions];
-    this.selectedAcademicYear = this.academicYearOptions.length ? this.academicYearOptions[0] : '';
+    this.selectedAcademicYear = this.academicYearOptions.length
+      ? this.academicYearOptions[0]
+      : '';
   }
 
   onInputChange(values: { [key: string]: any }) {
@@ -111,34 +125,45 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     const curriculumVersions = ['2018', '2022', '2024'];
     const fields: DialogFieldConfig[] = [];
 
-    program.sections.forEach((_, index) => {
+    for (let i = 0; i < program.year_levels; i++) {
+      const yearLevelKey = `yearLevel${i + 1}`;
+      const curriculumKey = `curriculumVersion${i + 1}`;
+
       fields.push({
-        label: `Year Level ${index + 1}`,
-        formControlName: `yearLevel${index + 1}`,
+        label: `Year Level ${i + 1}`,
+        formControlName: yearLevelKey,
         type: 'text',
         required: true,
         disabled: true,
       });
+
       fields.push({
         label: `Curriculum`,
-        formControlName: `curriculumVersion${index + 1}`,
+        formControlName: curriculumKey,
         type: 'select',
         options: curriculumVersions,
         required: true,
       });
-    });
+    }
 
     const initialValue = fields.reduce((acc, field) => {
-      acc[field.formControlName] =
-        field.type === 'text'
-          ? `${parseInt(field.formControlName.replace('yearLevel', ''))}`
-          : '';
+      if (field.type === 'text') {
+        acc[field.formControlName] = `${parseInt(
+          field.formControlName.replace('yearLevel', '')
+        )}`;
+      } else if (field.type === 'select') {
+        const yearLevelIndex = field.formControlName.replace(
+          'curriculumVersion',
+          ''
+        );
+        acc[field.formControlName] = program.curriculums[yearLevelIndex] || '';
+      }
       return acc;
     }, {} as { [key: string]: any });
 
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: {
-        title: `${program.program_code} Year Levels`,
+        title: `Manage ${program.program_code} Year Levels`,
         fields,
         isEdit: true,
         initialValue,
@@ -158,32 +183,61 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
   }
 
   onManageSections(program: Program) {
-    const dialogConfig: DialogConfig = {
-      title: `${program.program_code} Sections`,
-      fields: [
-        {
-          label: 'Number of Sections',
-          formControlName: 'numberOfSections',
-          type: 'number',
-          required: true,
-          min: 1,
-        },
-      ],
-      isEdit: true,
-      initialValue: { numberOfSections: program.sections.length },
-    };
+    const fields: DialogFieldConfig[] = [];
+
+    for (let i = 0; i < program.year_levels; i++) {
+      const yearLevelKey = `yearLevel${i + 1}`;
+      const sectionsKey = `numberOfSections${i + 1}`;
+
+      fields.push({
+        label: `Year Level ${i + 1}`,
+        formControlName: yearLevelKey,
+        type: 'text',
+        required: true,
+        disabled: true,
+      });
+
+      fields.push({
+        label: `Number of Sections`,
+        formControlName: sectionsKey,
+        type: 'number',
+        required: true,
+        min: 1,
+      });
+    }
+
+    const initialValue = fields.reduce((acc, field) => {
+      if (field.type === 'text') {
+        acc[field.formControlName] = `${parseInt(
+          field.formControlName.replace('yearLevel', '')
+        )}`;
+      } else if (field.type === 'number') {
+        const yearLevelIndex = field.formControlName.replace(
+          'numberOfSections',
+          ''
+        );
+        acc[field.formControlName] = program.sections[yearLevelIndex] || 1;
+      }
+      return acc;
+    }, {} as { [key: string]: any });
 
     const dialogRef = this.dialog.open(TableDialogComponent, {
-      data: dialogConfig,
+      data: {
+        title: `Manage ${program.program_code} Sections`,
+        fields,
+        isEdit: true,
+        initialValue,
+        useHorizontalLayout: true,
+      },
       disableClose: true,
     });
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        program.sections = Array.from(
-          { length: result.numberOfSections },
-          (_, i) => (i + 1).toString()
-        );
+        for (let i = 0; i < program.year_levels; i++) {
+          const sectionsKey = `numberOfSections${i + 1}`;
+          program.sections[(i + 1).toString()] = result[sectionsKey];
+        }
         this.programs = [...this.programs];
         this.snackBar.open('Sections updated successfully!', 'Close', {
           duration: 3000,
@@ -227,7 +281,6 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
           type: 'text',
           required: true,
           maxLength: 4,
-          options: undefined, // Explicitly set options to undefined for text inputs
         },
         {
           label: 'Year End',
@@ -235,39 +288,46 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
           type: 'text',
           required: true,
           maxLength: 4,
-          options: undefined, // Explicitly set options to undefined for text inputs
-        }
+        },
       ],
       isEdit: false,
       useHorizontalLayout: true,
       initialValue: { yearStart: '', yearEnd: '' },
     };
-  
+
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: dialogConfig,
       disableClose: true,
     });
-  
+
     dialogRef.afterClosed().subscribe((result) => {
       if (result && result.yearStart && result.yearEnd) {
-        if (this.isValidYear(result.yearStart) && this.isValidYear(result.yearEnd)) {
+        if (
+          this.isValidYear(result.yearStart) &&
+          this.isValidYear(result.yearEnd)
+        ) {
           const newAcademicYear = `${result.yearStart} - ${result.yearEnd}`;
           this.addNewAcademicYear(newAcademicYear);
           this.snackBar.open('New academic year added successfully!', 'Close', {
             duration: 3000,
           });
         } else {
-          this.snackBar.open('Invalid year format. Please enter valid 4-digit years.', 'Close', {
-            duration: 3000,
-          });
+          this.snackBar.open(
+            'Invalid year format. Please enter valid 4-digit years.',
+            'Close',
+            {
+              duration: 3000,
+            }
+          );
         }
       }
     });
   }
-  
-  // Helper method to validate year input
+
   private isValidYear(year: string): boolean {
-    return /^\d{4}$/.test(year) && parseInt(year) > 1900 && parseInt(year) < 2100;
+    return (
+      /^\d{4}$/.test(year) && parseInt(year) > 1900 && parseInt(year) < 2100
+    );
   }
 
   openManageAcademicYearDialog(): void {
