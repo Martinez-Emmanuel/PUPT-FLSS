@@ -222,29 +222,52 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
       title: 'Add Academic Year',
       fields: [
         {
-          label: 'New Academic Year',
-          formControlName: 'newAcademicYear',
+          label: 'Year Start',
+          formControlName: 'yearStart',
           type: 'text',
           required: true,
+          maxLength: 4,
+          options: undefined, // Explicitly set options to undefined for text inputs
         },
+        {
+          label: 'Year End',
+          formControlName: 'yearEnd',
+          type: 'text',
+          required: true,
+          maxLength: 4,
+          options: undefined, // Explicitly set options to undefined for text inputs
+        }
       ],
-      isEdit: false,  // This dialog is not an edit form
-      initialValue: { newAcademicYear: '' },  // Initial value for the input form
+      isEdit: false,
+      useHorizontalLayout: true,
+      initialValue: { yearStart: '', yearEnd: '' },
     };
-
+  
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: dialogConfig,
       disableClose: true,
     });
-
+  
     dialogRef.afterClosed().subscribe((result) => {
-      if (result && result.newAcademicYear) {
-        this.addNewAcademicYear(result.newAcademicYear);
-        this.snackBar.open('New academic year added successfully!', 'Close', {
-          duration: 3000,
-        });
+      if (result && result.yearStart && result.yearEnd) {
+        if (this.isValidYear(result.yearStart) && this.isValidYear(result.yearEnd)) {
+          const newAcademicYear = `${result.yearStart} - ${result.yearEnd}`;
+          this.addNewAcademicYear(newAcademicYear);
+          this.snackBar.open('New academic year added successfully!', 'Close', {
+            duration: 3000,
+          });
+        } else {
+          this.snackBar.open('Invalid year format. Please enter valid 4-digit years.', 'Close', {
+            duration: 3000,
+          });
+        }
       }
     });
+  }
+  
+  // Helper method to validate year input
+  private isValidYear(year: string): boolean {
+    return /^\d{4}$/.test(year) && parseInt(year) > 1900 && parseInt(year) < 2100;
   }
 
   openManageAcademicYearDialog(): void {

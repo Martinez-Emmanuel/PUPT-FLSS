@@ -40,18 +40,30 @@
             <div class="horizontal-field-container">
               <mat-form-field class="form-field horizontal-field" appearance="fill">
                 <mat-label>{{ field.label }}</mat-label>
-                <input matInput [formControlName]="field.formControlName" [attr.disabled]="field.disabled ? '' : null" />
+                <ng-container [ngSwitch]="field.type">
+                  <input *ngSwitchCase="'text'" matInput [formControlName]="field.formControlName" [attr.disabled]="field.disabled ? '' : null" [maxlength]="field.maxLength ?? null" />
+                  <input *ngSwitchCase="'number'" matInput type="number" [formControlName]="field.formControlName" [attr.disabled]="field.disabled ? '' : null" [min]="field.min ?? null" [max]="field.max ?? null" />
+                  <mat-select *ngSwitchCase="'select'" [formControlName]="field.formControlName">
+                    @for (option of field.options; track option) {
+                      <mat-option [value]="option">{{ option }}</mat-option>
+                    }
+                  </mat-select>
+                </ng-container>
                 <mat-error>{{ getErrorMessage(field.formControlName, field.label) }}</mat-error>
               </mat-form-field>
               
               @if (i + 1 < data.fields.length) {
                 <mat-form-field class="form-field horizontal-field" appearance="fill">
                   <mat-label>{{ data.fields[i + 1].label }}</mat-label>
-                  <mat-select [formControlName]="data.fields[i + 1].formControlName">
-                    @for (option of data.fields[i + 1].options; track option) {
-                      <mat-option [value]="option">{{ option }}</mat-option>
-                    }
-                  </mat-select>
+                  <ng-container [ngSwitch]="data.fields[i + 1].type">
+                    <input *ngSwitchCase="'text'" matInput [formControlName]="data.fields[i + 1].formControlName" [attr.disabled]="data.fields[i + 1].disabled ? '' : null" [maxlength]="data.fields[i + 1].maxLength ?? null" />
+                    <input *ngSwitchCase="'number'" matInput type="number" [formControlName]="data.fields[i + 1].formControlName" [attr.disabled]="data.fields[i + 1].disabled ? '' : null" [min]="data.fields[i + 1].min ?? null" [max]="data.fields[i + 1].max ?? null" />
+                    <mat-select *ngSwitchCase="'select'" [formControlName]="data.fields[i + 1].formControlName">
+                      @for (option of data.fields[i + 1].options; track option) {
+                        <mat-option [value]="option">{{ option }}</mat-option>
+                      }
+                    </mat-select>
+                  </ng-container>
                   <mat-error>{{ getErrorMessage(data.fields[i + 1].formControlName, data.fields[i + 1].label) }}</mat-error>
                 </mat-form-field>
               }

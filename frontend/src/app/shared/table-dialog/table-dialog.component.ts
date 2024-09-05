@@ -129,7 +129,13 @@ export class TableDialogComponent {
   getValidators(field: DialogFieldConfig): ValidatorFn[] {
     const validators: ValidatorFn[] = [];
     if (field.required) validators.push(Validators.required);
-    if (field.maxLength) validators.push(Validators.maxLength(field.maxLength));
+    if (field.maxLength) {
+      validators.push(Validators.maxLength(field.maxLength));
+      if (field.maxLength === 4) {
+        validators.push(Validators.minLength(4));
+        validators.push(Validators.pattern(/^\d{4}$/));
+      }
+    }
     if (field.type === 'text') validators.push(this.noWhitespaceValidator);
     if (field.type === 'number')
       validators.push(Validators.pattern(/^\d{1,2}$/));
@@ -160,18 +166,22 @@ export class TableDialogComponent {
       return `${label} is required.`;
     }
     if (control?.hasError('maxlength')) {
-      return `${label} cannot exceed ${
-        control.getError('maxlength').requiredLength
-      } characters.`;
+      return `${label} cannot exceed ${control.getError('maxlength').requiredLength} characters.`;
+    }
+    if (control?.hasError('minlength')) {
+      return `${label} must be exactly ${control.getError('minlength').requiredLength} characters.`;
+    }
+    if (control?.hasError('pattern')) {
+      if (control.getError('pattern').requiredPattern === '/^\\d{4}$/') {
+        return `${label} must be exactly 4 digits.`;
+      }
+      return `${label} must be a number with up to two digits.`;
     }
     if (control?.hasError('min')) {
       return `${label} must be greater than the minimum value.`;
     }
     if (control?.hasError('max')) {
       return `${label} cannot exceed the maximum value.`;
-    }
-    if (control?.hasError('pattern')) {
-      return `${label} must be a number with up to two digits.`;
     }
     if (control?.hasError('whitespace')) {
       return `Your ${label} is invalid.`;
