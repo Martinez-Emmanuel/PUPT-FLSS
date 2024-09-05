@@ -304,28 +304,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     this.fetchSchedules();
   }
 
-  openAddSectionDialog() {
-    const dialogConfig: DialogConfig = {
-      title: 'Add Section',
-      fields: [
-        {
-          label: 'Section Name',
-          formControlName: 'sectionName',
-          type: 'text',
-          required: true,
-        },
-      ],
-      isEdit: false,
-    };
-
-    this.dialog
-      .open(TableDialogComponent, { data: dialogConfig })
-      .afterClosed()
-      .subscribe((result) => {
-        if (result) this.addSection(result.sectionName);
-      });
-  }
-
   openEditDialog(element: Schedule) {
     const dialogConfig: DialogConfig = {
       title: 'Edit Schedule Details',

@@ -28,9 +28,6 @@
                 {{ option }}
               </mat-option>
             }
-            @if (field.key === 'section') {
-              <mat-option (click)="addSection.emit()">Add section</mat-option>
-            }
             @if (field.key === 'academicYear') {
               <mat-option (click)="onAddAcademicYearClick()">
                 Add Academic Year
