@@ -90,6 +90,12 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     this.selectedAcademicYear = this.academicYearOptions[0];
   }
 
+  private addNewAcademicYear(newAcademicYear: string): void {
+    this.academicYearOptions.push(newAcademicYear);
+    this.headerInputFields[0].options = [...this.academicYearOptions];
+    this.selectedAcademicYear = newAcademicYear;
+  }
+
   onInputChange(values: { [key: string]: any }) {
     if (values['academicYear'])
       this.selectedAcademicYear = values['academicYear'];
@@ -199,6 +205,36 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
       if (result === 'Delete') {
         this.programs = this.programs.filter((p) => p !== element);
         this.snackBar.open('Program deleted successfully!', 'Close', {
+          duration: 3000,
+        });
+      }
+    });
+  }
+
+  openAddAcademicYearDialog(): void {
+    const dialogConfig: DialogConfig = {
+      title: 'Add Academic Year',
+      fields: [
+        {
+          label: 'New Academic Year',
+          formControlName: 'newAcademicYear',
+          type: 'text',
+          required: true,
+        },
+      ],
+      isEdit: false,  // This dialog is not an edit form
+      initialValue: { newAcademicYear: '' },  // Initial value for the input form
+    };
+
+    const dialogRef = this.dialog.open(TableDialogComponent, {
+      data: dialogConfig,
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result && result.newAcademicYear) {
+        this.addNewAcademicYear(result.newAcademicYear);
+        this.snackBar.open('New academic year added successfully!', 'Close', {
           duration: 3000,
         });
       }

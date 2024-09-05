@@ -57,6 +57,7 @@ export class TableHeaderComponent implements OnInit, OnChanges {
   @Output() search = new EventEmitter<string>();
   @Output() activeYearSemClick = new EventEmitter<void>();
   @Output() addSection = new EventEmitter<void>();
+  @Output() addAcademicYear = new EventEmitter<void>();
 
   form: FormGroup;
 
@@ -116,4 +117,9 @@ export class TableHeaderComponent implements OnInit, OnChanges {
   onActiveYearSemClick(): void {
     this.activeYearSemClick.emit();
   }
+
+  onAddAcademicYearClick(): void {
+    this.addAcademicYear.emit();  // Emit the event to open the dialog in parent component
+  }
+
 }
