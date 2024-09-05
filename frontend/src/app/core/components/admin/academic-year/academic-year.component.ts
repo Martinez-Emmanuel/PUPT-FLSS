@@ -1,7 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subject } from 'rxjs';
-
+import { Subject, takeUntil } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,6 +12,7 @@ import { TableDialogComponent, DialogConfig, DialogFieldConfig } from '../../../
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
 
 import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
+import { SchedulingService } from '../../../services/admin/scheduling/scheduling.service';
 
 interface Program {
   program_code: string;
@@ -21,7 +21,6 @@ interface Program {
   sections: { [yearLevel: string]: number };
   curriculums: { [yearLevel: string]: string };
 }
-
 
 type AcademicYear = string;
 
@@ -63,7 +62,11 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     'action',
   ];
 
-  constructor(private dialog: MatDialog, private snackBar: MatSnackBar) {}
+  constructor(
+    private dialog: MatDialog,
+    private snackBar: MatSnackBar,
+    private schedulingService: SchedulingService
+  ) {}
 
   ngOnInit() {
     this.loadSampleData();
@@ -75,31 +78,69 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
   }
 
   loadSampleData() {
-    this.programs = [
-      {
-        program_code: 'BSIT',
-        program_title: 'Bachelor of Science in Information Technology',
-        year_levels: 4,
-        sections: { '1': 2, '2': 1, '3': 3, '4': 2 },
-        curriculums: { '1': '2022', '2': '2022', '3': '2018', '4': '2018' },
-      },
-      {
-        program_code: 'BSA',
-        program_title: 'Bachelor of Science in Accountancy',
-        year_levels: 5,
-        sections: { '1': 2, '2': 2, '3': 1, '4': 3, '5': 2 },
-        curriculums: {
-          '1': '2022',
-          '2': '2022',
-          '3': '2018',
-          '4': '2018',
-          '5': '2018',
-        },
-      },
-    ];
-    this.academicYearOptions = ['2022-2023', '2023-2024', '2024-2025'];
-    this.headerInputFields[0].options = this.academicYearOptions;
-    this.selectedAcademicYear = this.academicYearOptions[0];
+    this.schedulingService
+      .getAcademicYears()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((academicYears) => {
+        this.academicYearOptions = academicYears.map((ay) => ay.year);
+        this.headerInputFields[0].options = this.academicYearOptions;
+        this.selectedAcademicYear = this.academicYearOptions[0];
+      });
+      
+    this.schedulingService
+      .getPrograms()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((programs) => {
+        this.programs = programs.map((program) => ({
+          program_code: program.name,
+          program_title: program.name,
+          year_levels: program.number_of_years,
+          sections: this.getSectionsByProgram(
+            program.name,
+            program.number_of_years
+          ),
+          curriculums: this.getCurriculumsByProgram(
+            program.name,
+            program.number_of_years
+          ),
+        }));
+      });
+  }
+
+  private getSectionsByProgram(
+    programCode: string,
+    numberOfYears: number
+  ): { [yearLevel: string]: number } {
+    const sections: { [yearLevel: string]: number } = {};
+    for (let year = 1; year <= numberOfYears; year++) {
+      this.schedulingService
+        .getSections(programCode, year)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe((sectionsList) => {
+          sections[year.toString()] = sectionsList.length;
+        });
+    }
+    return sections;
+  }
+
+  private getCurriculumsByProgram(
+    programCode: string,
+    numberOfYears: number
+  ): { [yearLevel: string]: string } {
+    const curriculums: { [yearLevel: string]: string } = {};
+    this.schedulingService
+      .getActiveYearAndSemester()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(({ activeYear }) => {
+        const mapping =
+          this.schedulingService['mockData'].curriculumMapping[activeYear]?.[
+            programCode
+          ];
+        for (let year = 1; year <= numberOfYears; year++) {
+          curriculums[year.toString()] = mapping ? mapping[year] : '2022';
+        }
+      });
+    return curriculums;
   }
 
   private addNewAcademicYear(newAcademicYear: string): void {
