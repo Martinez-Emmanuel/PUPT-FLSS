@@ -35,6 +35,7 @@ export interface DialogConfig {
   fields: DialogFieldConfig[];
   isEdit: boolean;
   initialValue?: any;
+  useHorizontalLayout?: boolean;
   isExportDialog?: boolean;
 }
 

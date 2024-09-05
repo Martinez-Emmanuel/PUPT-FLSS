@@ -21,70 +21,100 @@
     </form>
     } @else {
     <form [formGroup]="form" class="dialog-form">
-      @for (field of data.fields; track field) { @switch (field.type) { @case
-      ('checkbox') {
-      <mat-checkbox [formControlName]="field.formControlName" class="checkbox">
-        {{ field.label }}
-      </mat-checkbox>
-      } @default {
-      <mat-form-field class="form-field" appearance="fill">
-        <mat-label>{{ field.label }}</mat-label>
-
-        @switch (field.type) { @case ('text') {
-        <input
-          matInput
-          [formControlName]="field.formControlName"
-          [maxlength]="field.maxLength ?? null"
-        />
-        } @case ('number') {
-        <input
-          matInput
-          type="number"
-          appTwoDigitInput
-          [formControlName]="field.formControlName"
-          [min]="field.min ?? null"
-          [max]="field.max ?? null"
-        />
-        } @case ('select') {
-        <mat-select [formControlName]="field.formControlName">
-          @for (option of field.options; track option) {
-          <mat-option [value]="option">
-            {{ option }}
-          </mat-option>
+      @if (data.useHorizontalLayout) {
+        @for (field of data.fields; track field; let i = $index) {
+          @if (i % 2 === 0) {
+            <div class="horizontal-field-container">
+              <mat-form-field class="form-field horizontal-field" appearance="fill">
+                <mat-label>{{ field.label }}</mat-label>
+                <input matInput [formControlName]="field.formControlName" [attr.disabled]="field.disabled ? '' : null" />
+                <mat-error>{{ getErrorMessage(field.formControlName, field.label) }}</mat-error>
+              </mat-form-field>
+              
+              @if (i + 1 < data.fields.length) {
+                <mat-form-field class="form-field horizontal-field" appearance="fill">
+                  <mat-label>{{ data.fields[i + 1].label }}</mat-label>
+                  <mat-select [formControlName]="data.fields[i + 1].formControlName">
+                    @for (option of data.fields[i + 1].options; track option) {
+                      <mat-option [value]="option">{{ option }}</mat-option>
+                    }
+                  </mat-select>
+                  <mat-error>{{ getErrorMessage(data.fields[i + 1].formControlName, data.fields[i + 1].label) }}</mat-error>
+                </mat-form-field>
+              }
+            </div>
           }
-        </mat-select>
-
-        } @case ('autocomplete') {
-        <input
-          type="text"
-          matInput
-          [formControlName]="field.formControlName"
-          [matAutocomplete]="auto"
-          (input)="filterOptions(field)"
-        />
-        <mat-autocomplete #auto="matAutocomplete">
-          @for (option of filteredOptions[field.formControlName]; track option)
-          {
-          <mat-option [value]="option">
-            {{ option }}
-          </mat-option>
-          }
-        </mat-autocomplete>
-        } }
-        <mat-error>{{
-          getErrorMessage(field.formControlName, field.label)
-        }}</mat-error>
-        @if (field.formControlName === 'academicYear') {
-        <mat-hint>
-          <span class="academic-year-hint" (click)="navigateToAcademicYear()"
-            >Manage Academic Years</span
-          >
-        </mat-hint>
-        } @if (field.hint) {
-        <mat-hint>{{ field.hint }}</mat-hint>
         }
-      </mat-form-field>
-      } } }
+      } @else {
+        @for (field of data.fields; track field) {
+          @switch (field.type) {
+            @case ('checkbox') {
+              <mat-checkbox [formControlName]="field.formControlName" class="checkbox">
+                {{ field.label }}
+              </mat-checkbox>
+            }
+            @default {
+              <mat-form-field class="form-field" appearance="fill">
+                <mat-label>{{ field.label }}</mat-label>
+
+                @switch (field.type) {
+                  @case ('text') {
+                    <input
+                      matInput
+                      [formControlName]="field.formControlName"
+                      [maxlength]="field.maxLength ?? null"
+                    />
+                  }
+                  @case ('number') {
+                    <input
+                      matInput
+                      type="number"
+                      appTwoDigitInput
+                      [formControlName]="field.formControlName"
+                      [min]="field.min ?? null"
+                      [max]="field.max ?? null"
+                    />
+                  }
+                  @case ('select') {
+                    <mat-select [formControlName]="field.formControlName">
+                      @for (option of field.options; track option) {
+                        <mat-option [value]="option">
+                          {{ option }}
+                        </mat-option>
+                      }
+                    </mat-select>
+                  }
+                  @case ('autocomplete') {
+                    <input
+                      type="text"
+                      matInput
+                      [formControlName]="field.formControlName"
+                      [matAutocomplete]="auto"
+                      (input)="filterOptions(field)"
+                    />
+                    <mat-autocomplete #auto="matAutocomplete">
+                      @for (option of filteredOptions[field.formControlName]; track option) {
+                        <mat-option [value]="option">
+                          {{ option }}
+                        </mat-option>
+                      }
+                    </mat-autocomplete>
+                  }
+                }
+                <mat-error>{{ getErrorMessage(field.formControlName, field.label) }}</mat-error>
+                @if (field.formControlName === 'academicYear') {
+                  <mat-hint>
+                    <span class="academic-year-hint" (click)="navigateToAcademicYear()">Manage Academic Years</span>
+                  </mat-hint>
+                }
+                @if (field.hint) {
+                  <mat-hint>{{ field.hint }}</mat-hint>
+                }
+              </mat-form-field>
+            }
+          }
+        }
+      }
     </form>
     }
   </div>
