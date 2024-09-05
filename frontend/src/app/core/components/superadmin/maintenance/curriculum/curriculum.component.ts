@@ -232,6 +232,16 @@ export class CurriculumComponent implements OnInit, OnDestroy {
           options: ['active', 'inactive'],
           required: true,
         },
+        {
+          label: 'Copy from existing curriculum',
+          formControlName: 'copy_from',
+          type: 'select',
+          options: [
+            'None',
+            ...availableCurricula.map(curriculum => `${curriculum.curriculum_year} Curriculum`)
+          ],
+          required: false,
+        },
       ],
       initialValue: {
         copy_from: 'None',

@@ -148,8 +148,8 @@ class AccountController extends Controller
         // Validate the incoming request
         $validatedData = $request->validate([
             'name' => 'sometimes|required|string|max:255',
-            'code' => 'sometimes|required|string|max:255',
-            'password' => 'sometimes|required|string|min:8',
+            'code' => 'sometimes|required|string|max:255|unique:users,code,' . $admin->id,
+            'password' => 'sometimes|string|min:8',
             'role' => 'sometimes|required|in:admin,superadmin',
             'status' => 'sometimes|required|in:active,inactive',
         ]);
@@ -158,18 +158,30 @@ class AccountController extends Controller
         $changedFields = [];
 
         // Check each field for changes and update if necessary
-        foreach ($validatedData as $key => $value) {
-            if ($key === 'password') {
-                if (Hash::check($value, $admin->password)) {
-                    // Password hasn't changed, so skip it
-                    continue;
-                }
-                $admin->password = Hash::make($value);
-                $changedFields[] = 'password';
-            } elseif ($admin->$key != $value) {
-                $admin->$key = $value;
-                $changedFields[] = $key;
-            }
+        if (isset($validatedData['name'])) {
+            $admin->name = $validatedData['name'];
+            $changedFields[] = 'name';
+        }
+
+        if (isset($validatedData['code']) && $admin->code != $validatedData['code']) {
+            $admin->code = $validatedData['code'];
+            $changedFields[] = 'code';
+        }
+
+        if (isset($validatedData['role']) && $admin->role != $validatedData['role']) {
+            $admin->role = $validatedData['role'];
+            $changedFields[] = 'role';
+        }
+
+        if (isset($validatedData['status']) && $admin->status != $validatedData['status']) {
+            $admin->status = $validatedData['status'];
+            $changedFields[] = 'status';
+        }
+
+        if (isset($validatedData['password'])) {
+            // If the password is being updated, hash it
+            $admin->password = $validatedData['password']; // Hashing will be handled by setPasswordAttribute
+            $changedFields[] = 'password';
         }
 
         if (empty($changedFields)) {
