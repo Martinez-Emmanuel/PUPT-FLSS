@@ -428,7 +428,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     };
 
     this.dialog
-      .open(TableDialogComponent, { data: dialogConfig })
+      .open(TableDialogComponent, { data: dialogConfig, disableClose: true, })
       .afterClosed()
       .subscribe((result) => {
         if (result) {
