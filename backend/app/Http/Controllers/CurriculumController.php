@@ -255,7 +255,7 @@ class CurriculumController extends Controller
         ], 200);
     }
 
-    //temp:
+    //For Manage Program (curriculum year):
     public function removeProgramFromCurriculum(Request $request)
     {
         $request->validate([
@@ -309,13 +309,23 @@ class CurriculumController extends Controller
                     'program_id' => $request->program_id,
                 ]);
 
-                // Generate year levels based on the program's number of years
+                // Generate year levels and semesters based on the program's number of years
                 $program = Program::find($request->program_id);
+
+                // Loop through each year level and create semesters for each one
                 for ($year = 1; $year <= $program->number_of_years; $year++) {
-                    YearLevel::create([
+                    $yearLevel = YearLevel::create([
                         'curricula_program_id' => $curriculaProgram->curricula_program_id,
                         'year' => $year,
                     ]);
+
+                    // Generate semesters for each year level (assuming two semesters per year)
+                    for ($semester = 1; $semester <= 3; $semester++) {
+                        Semester::create([
+                            'year_level_id' => $yearLevel->year_level_id,
+                            'semester' => $semester,
+                        ]);
+                    }
                 }
 
                 return $curriculaProgram;
@@ -325,7 +335,8 @@ class CurriculumController extends Controller
         });
 
         if ($newCurriculaProgram) {
-            $curriculaProgramWithDetails = CurriculaProgram::with('yearLevels')
+            // Fetch the entire curricula program with its year levels, semesters, and courses
+            $curriculaProgramWithDetails = CurriculaProgram::with(['yearLevels.semesters.courses.prerequisites', 'yearLevels.semesters.courses.corequisites'])
                 ->where('curricula_program_id', $newCurriculaProgram->curricula_program_id)
                 ->first();
 
@@ -341,4 +352,5 @@ class CurriculumController extends Controller
             'message' => 'Program is already associated with this curriculum year.'
         ], 400);
     }
+
 }

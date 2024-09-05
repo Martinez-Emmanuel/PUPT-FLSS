@@ -353,12 +353,15 @@ export class CurriculumDetailComponent implements OnInit {
 
 
   onDeleteCourse(course: Course) {
+    const previousSelectedProgram = this.selectedProgram;
+    const previousSelectedYear = this.selectedYear;
+
     this.curriculumService.deleteCourse(course.course_id).subscribe({
       next: () => {
         this.snackBar.open('Course deleted successfully', 'Close', {
           duration: 3000,
         });
-        this.fetchCurriculum(this.curriculum!.curriculum_year);
+        this.fetchCurriculum(this.curriculum!.curriculum_year, previousSelectedProgram, previousSelectedYear);
       },
       error: (error) => {
         console.error('Error deleting course:', error);
@@ -465,9 +468,9 @@ export class CurriculumDetailComponent implements OnInit {
   }
 
   onManagePrograms() {
-  const curriculumYear = this.curriculum?.curriculum_year;
+    const curriculumYear = this.curriculum?.curriculum_year;
   
-  if (curriculumYear) {
+    if (curriculumYear) {
     this.curriculumService.getProgramsByCurriculumYear(curriculumYear).subscribe({
       next: (associatedPrograms) => {
         this.curriculumService.getAllPrograms().subscribe({
@@ -568,40 +571,40 @@ export class CurriculumDetailComponent implements OnInit {
       },
     });
   }
-}
-
-
-fetchCoursesForSelectedProgram(selectedProgram: string) {
-  this.selectedSemesters = []; // Reset semesters
-
-  const program = this.curriculum?.programs.find(p => p.name === selectedProgram);
-
-  if (program) {
-      // Find the selected year level and its semesters
-      const yearLevel = program.year_levels.find(y => y.year === this.selectedYear);
-      const allSemesters = [1, 2, 3];
-
-      const groupedSemesters: { [key: number]: Semester } = {};
-
-      allSemesters.forEach(semNumber => {
-          const semester = yearLevel?.semesters.find(sem => sem.semester === semNumber);
-          groupedSemesters[semNumber] = semester 
-              ? { ...semester, courses: semester.courses.map(course => this.populateCourseRequisites(course)) }
-              : { semester: semNumber, courses: [], semester_id: 0 }; // Default value for missing semester_id
-          console.log(`Semester ${semNumber} courses:`, groupedSemesters[semNumber].courses);
-      });
-
-      this.selectedSemesters = Object.values(groupedSemesters);
-  } else {
-      // If the program isn't part of the curriculum, just show empty tables with headers
-      this.selectedSemesters = [1, 2, 3].map(semNumber => ({
-          semester_id: 0,  // Set a default semester_id
-          semester: semNumber,
-          courses: [],
-      }));
   }
-  this.cdr.detectChanges(); // Force update the view
-}
+
+
+  fetchCoursesForSelectedProgram(selectedProgram: string) {
+    this.selectedSemesters = []; // Reset semesters
+
+    const program = this.curriculum?.programs.find(p => p.name === selectedProgram);
+
+    if (program) {
+        // Find the selected year level and its semesters
+        const yearLevel = program.year_levels.find(y => y.year === this.selectedYear);
+        const allSemesters = [1, 2, 3];
+
+        const groupedSemesters: { [key: number]: Semester } = {};
+
+        allSemesters.forEach(semNumber => {
+            const semester = yearLevel?.semesters.find(sem => sem.semester === semNumber);
+            groupedSemesters[semNumber] = semester 
+                ? { ...semester, courses: semester.courses.map(course => this.populateCourseRequisites(course)) }
+                : { semester: semNumber, courses: [], semester_id: 0 }; // Default value for missing semester_id
+            console.log(`Semester ${semNumber} courses:`, groupedSemesters[semNumber].courses);
+        });
+
+        this.selectedSemesters = Object.values(groupedSemesters);
+    } else {
+        // If the program isn't part of the curriculum, just show empty tables with headers
+        this.selectedSemesters = [1, 2, 3].map(semNumber => ({
+            semester_id: 0,  // Set a default semester_id
+            semester: semNumber,
+            courses: [],
+        }));
+    }
+    this.cdr.detectChanges(); // Force update the view
+  }
 
   // Helper method to populate prerequisites and corequisites
   populateCourseRequisites(course: Course): Course {

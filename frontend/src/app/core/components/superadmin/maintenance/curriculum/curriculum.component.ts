@@ -9,7 +9,6 @@ import { takeUntil } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-// Commented out components that are not yet necessary
 import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
 import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
@@ -23,8 +22,8 @@ import { CurriculumService, Curriculum, Program } from '../../../../services/sup
   imports: [
     CommonModule,
     ReactiveFormsModule,
-    TableGenericComponent, // Commented out for now
-    TableHeaderComponent,  // Commented out for now
+    TableGenericComponent, 
+    TableHeaderComponent, 
   ],
   templateUrl: './curriculum.component.html',
   styleUrls: ['./curriculum.component.scss'],
@@ -40,7 +39,6 @@ export class CurriculumComponent implements OnInit, OnDestroy {
   programs: Program[] = [];
   availableCurriculumYears: string[] = [];
   
-  // Commented out columns and displayedColumns until necessary
   columns = [
     { key: 'index', label: '#' },
     { key: 'curriculum_year', label: 'Curriculum Year' },
@@ -49,7 +47,6 @@ export class CurriculumComponent implements OnInit, OnDestroy {
 
   displayedColumns: string[] = ['index', 'curriculum_year', 'status'];
 
-  // Commented out headerInputFields until necessary
   headerInputFields: InputField[] = [
     {
       type: 'text',
@@ -106,7 +103,6 @@ export class CurriculumComponent implements OnInit, OnDestroy {
   //   });
   // }
 
-  // Commented out onSearch until necessary
   private onSearch(searchTerm: string) {
     this.curriculumService
       .getCurricula()
@@ -125,16 +121,10 @@ export class CurriculumComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Commented out onInputChange until necessary
   public onInputChange(values: { [key: string]: any }) {
     if (values['search'] !== undefined) {
       this.onSearch(values['search']);
     }
-  }
-
-  // Commented out onExport until necessary
-  onExport() {
-    alert('Export functionality not implemented yet');
   }
 
   onViewCurriculum(curriculum: Curriculum) {
@@ -144,7 +134,6 @@ export class CurriculumComponent implements OnInit, OnDestroy {
     ]);
   }
 
-  // Commented out dialog functions until necessary
   openAddCurriculumDialog() {
     this.curriculumService.getCurricula().subscribe({
       next: (availableCurricula) => {
@@ -230,7 +219,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
       title: 'Curriculum',
       fields: [
         {
-          label: 'New Curriculum Year',
+          label: 'Update Curriculum Year',
           formControlName: 'curriculum_year',
           type: 'text',
           maxLength: 4,
@@ -243,16 +232,6 @@ export class CurriculumComponent implements OnInit, OnDestroy {
           options: ['active', 'inactive'],
           required: true,
         },
-        {
-          label: 'Copy from existing curriculum',
-          formControlName: 'copy_from',
-          type: 'select',
-          options: [
-            'None',
-            ...availableCurricula.map(curriculum => `${curriculum.curriculum_year} Curriculum`)
-          ],
-          required: false,
-        },
       ],
       initialValue: {
         copy_from: 'None',
@@ -261,11 +240,6 @@ export class CurriculumComponent implements OnInit, OnDestroy {
     };
   }
   
-  
-  
-
-  
-
   private openCurriculumDialog(curriculum: Curriculum | undefined) {
     // Ensure curriculum is passed as an array, even if it's a single object or undefined
     const curriculaList = curriculum ? [curriculum] : [];  // Convert to array or pass empty array if undefined
@@ -308,7 +282,6 @@ export class CurriculumComponent implements OnInit, OnDestroy {
     });
   }
   
-
   deleteCurriculum(curriculum: Curriculum) {
       this.curriculumService.deleteCurriculum(curriculum.curriculum_year).subscribe({
         next: (response) => {
@@ -322,11 +295,6 @@ export class CurriculumComponent implements OnInit, OnDestroy {
       });
   }
   
-  
-  
-
-
-
   private updateCurriculaList(curricula: Curriculum[]) {
     this.curricula = curricula;
     this.cdr.markForCheck();
