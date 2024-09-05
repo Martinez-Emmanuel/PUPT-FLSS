@@ -48,6 +48,14 @@ interface SchedulesByYear {
   [year: string]: SchedulesBySemester;
 }
 
+interface CurriculumMapping {
+  [academicYear: string]: {
+    [program: string]: {
+      [year: number]: string;
+    };
+  };
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -67,6 +75,7 @@ export class SchedulingService {
     rooms: string[];
     activeYear: AcademicYear;
     activeSemester: Semester;
+    curriculumMapping: CurriculumMapping;
   } = {
     academicYears: [
       {
@@ -458,359 +467,6 @@ export class SchedulingService {
           },
         ],
       },
-      '2024-2025': {
-        '1st Semester': [
-          // BSIT Year 1 - Curriculum 2018 and 2022
-          {
-            id: 21,
-            course_code: 'IT103',
-            course_title: 'Web Development Fundamentals',
-            lec_hours: 2,
-            lab_hours: 3,
-            units: 4,
-            tuition_hours: 5,
-            day: 'Monday',
-            time: '1:00 PM - 4:00 PM',
-            professor: 'Jennifer Ortega',
-            room: '201',
-            program: 'BSIT',
-            year: 1,
-            curriculum: '2018',
-            section: '1',
-          },
-          {
-            id: 22,
-            course_code: 'COMP103',
-            course_title: 'Web Development Fundamentals',
-            lec_hours: 2,
-            lab_hours: 3,
-            units: 4,
-            tuition_hours: 5,
-            day: 'Wednesday',
-            time: '10:00 AM - 1:00 PM',
-            professor: 'Nikki Dela Rosa',
-            room: '203',
-            program: 'BSIT',
-            year: 1,
-            curriculum: '2022',
-            section: '1',
-          },
-          {
-            id: 23,
-            course_code: 'IT104',
-            course_title: 'Computer Hardware Fundamentals',
-            lec_hours: 3,
-            lab_hours: 2,
-            units: 4,
-            tuition_hours: 5,
-            day: 'Tuesday',
-            time: '8:00 AM - 11:00 AM',
-            professor: 'Steven Villarosa',
-            room: '202',
-            program: 'BSIT',
-            year: 1,
-            curriculum: '2018',
-            section: '2',
-          },
-          {
-            id: 24,
-            course_code: 'COMP104',
-            course_title: 'Computer Hardware Fundamentals',
-            lec_hours: 3,
-            lab_hours: 2,
-            units: 4,
-            tuition_hours: 5,
-            day: 'Thursday',
-            time: '2:00 PM - 5:00 PM',
-            professor: 'AJ San Luis',
-            room: '204',
-            program: 'BSIT',
-            year: 1,
-            curriculum: '2022',
-            section: '2',
-          },
-          // BSIT Year 2 - Curriculum 2018 and 2022
-          {
-            id: 25,
-            course_code: 'IT202',
-            course_title: 'Object-Oriented Programming',
-            lec_hours: 3,
-            lab_hours: 1,
-            units: 3,
-            tuition_hours: 4,
-            day: 'Monday',
-            time: '10:00 AM - 12:00 PM',
-            professor: 'Erica Caturay',
-            room: '101',
-            program: 'BSIT',
-            year: 2,
-            curriculum: '2018',
-            section: '1',
-          },
-          {
-            id: 26,
-            course_code: 'COMP202',
-            course_title: 'Object-Oriented Programming',
-            lec_hours: 3,
-            lab_hours: 1,
-            units: 3,
-            tuition_hours: 4,
-            day: 'Wednesday',
-            time: '1:00 PM - 3:00 PM',
-            professor: 'John Dustin Santos',
-            room: '102',
-            program: 'BSIT',
-            year: 2,
-            curriculum: '2022',
-            section: '1',
-          },
-          // BSIT Year 3 - Curriculum 2018 and 2022
-          {
-            id: 27,
-            course_code: 'IT302',
-            course_title: 'Database Management Systems',
-            lec_hours: 3,
-            lab_hours: 2,
-            units: 4,
-            tuition_hours: 5,
-            day: 'Tuesday',
-            time: '8:00 AM - 11:00 AM',
-            professor: 'Gecilie Almiranez',
-            room: '201',
-            program: 'BSIT',
-            year: 3,
-            curriculum: '2018',
-            section: '1',
-          },
-          {
-            id: 28,
-            course_code: 'COMP302',
-            course_title: 'Database Management Systems',
-            lec_hours: 3,
-            lab_hours: 2,
-            units: 4,
-            tuition_hours: 5,
-            day: 'Thursday',
-            time: '10:00 AM - 1:00 PM',
-            professor: 'Jennifer Ortega',
-            room: '202',
-            program: 'BSIT',
-            year: 3,
-            curriculum: '2022',
-            section: '1',
-          },
-          // BSIT Year 4 - Curriculum 2018 and 2022
-          {
-            id: 29,
-            course_code: 'IT402',
-            course_title: 'Software Engineering',
-            lec_hours: 3,
-            lab_hours: 1,
-            units: 4,
-            tuition_hours: 4,
-            day: 'Friday',
-            time: '8:00 AM - 12:00 PM',
-            professor: 'Jennifer Ortega',
-            room: '301',
-            program: 'BSIT',
-            year: 4,
-            curriculum: '2018',
-            section: '1',
-          },
-          {
-            id: 30,
-            course_code: 'COMP402',
-            course_title: 'Software Engineering',
-            lec_hours: 3,
-            lab_hours: 2,
-            units: 4,
-            tuition_hours: 5,
-            day: 'Monday',
-            time: '1:00 PM - 4:00 PM',
-            professor: 'Steven Villarosa',
-            room: '302',
-            program: 'BSIT',
-            year: 4,
-            curriculum: '2022',
-            section: '1',
-          },
-          // BSA Year 1 - Curriculum 2018 and 2022
-          {
-            id: 31,
-            course_code: 'AC102',
-            course_title: 'Business Law and Ethics',
-            lec_hours: 3,
-            lab_hours: 0,
-            units: 3,
-            tuition_hours: 3,
-            day: 'Tuesday',
-            time: '1:00 PM - 3:00 PM',
-            professor: 'Nikki Dela Rosa',
-            room: '103',
-            program: 'BSA',
-            year: 1,
-            curriculum: '2018',
-            section: '1',
-          },
-          {
-            id: 32,
-            course_code: 'MGMT102',
-            course_title: 'Business Law and Ethics',
-            lec_hours: 3,
-            lab_hours: 1,
-            units: 4,
-            tuition_hours: 4,
-            day: 'Thursday',
-            time: '3:00 PM - 5:00 PM',
-            professor: 'Erica Caturay',
-            room: '104',
-            program: 'BSA',
-            year: 1,
-            curriculum: '2022',
-            section: '2',
-          },
-          // BSA Year 2 - Curriculum 2018 and 2022
-          {
-            id: 33,
-            course_code: 'AC202',
-            course_title: 'Cost Accounting',
-            lec_hours: 3,
-            lab_hours: 0,
-            units: 3,
-            tuition_hours: 3,
-            day: 'Wednesday',
-            time: '8:00 AM - 10:00 AM',
-            professor: 'Gecilie Almiranez',
-            room: '105',
-            program: 'BSA',
-            year: 2,
-            curriculum: '2018',
-            section: '1',
-          },
-          {
-            id: 34,
-            course_code: 'MGMT202',
-            course_title: 'Cost Accounting',
-            lec_hours: 3,
-            lab_hours: 1,
-            units: 4,
-            tuition_hours: 4,
-            day: 'Friday',
-            time: '10:00 AM - 12:00 PM',
-            professor: 'AJ San Luis',
-            room: '106',
-            program: 'BSA',
-            year: 2,
-            curriculum: '2022',
-            section: '1',
-          },
-          // BSA Year 3 - Curriculum 2018 and 2022
-          {
-            id: 35,
-            course_code: 'AC302',
-            course_title: 'Taxation',
-            lec_hours: 3,
-            lab_hours: 0,
-            units: 3,
-            tuition_hours: 3,
-            day: 'Monday',
-            time: '1:00 PM - 3:00 PM',
-            professor: 'John Dustin Santos',
-            room: '203',
-            program: 'BSA',
-            year: 3,
-            curriculum: '2018',
-            section: '1',
-          },
-          {
-            id: 36,
-            course_code: 'MGMT302',
-            course_title: 'Taxation',
-            lec_hours: 3,
-            lab_hours: 1,
-            units: 4,
-            tuition_hours: 4,
-            day: 'Thursday',
-            time: '1:00 PM - 3:00 PM',
-            professor: 'Steven Villarosa',
-            room: '204',
-            program: 'BSA',
-            year: 3,
-            curriculum: '2022',
-            section: '1',
-          },
-          // BSA Year 4 - Curriculum 2018 and 2022
-          {
-            id: 37,
-            course_code: 'AC401',
-            course_title: 'Financial Management',
-            lec_hours: 3,
-            lab_hours: 1,
-            units: 4,
-            tuition_hours: 4,
-            day: 'Tuesday',
-            time: '9:00 AM - 12:00 PM',
-            professor: 'Jennifer Ortega',
-            room: '301',
-            program: 'BSA',
-            year: 4,
-            curriculum: '2018',
-            section: '1',
-          },
-          {
-            id: 38,
-            course_code: 'MGMT401',
-            course_title: 'Financial Management',
-            lec_hours: 3,
-            lab_hours: 0,
-            units: 3,
-            tuition_hours: 3,
-            day: 'Wednesday',
-            time: '1:00 PM - 4:00 PM',
-            professor: 'Erica Caturay',
-            room: '302',
-            program: 'BSA',
-            year: 4,
-            curriculum: '2022',
-            section: '1',
-          },
-          // BSA Year 5 - Curriculum 2018 and 2022
-          {
-            id: 39,
-            course_code: 'AC501',
-            course_title: 'Strategic Management',
-            lec_hours: 3,
-            lab_hours: 0,
-            units: 3,
-            tuition_hours: 3,
-            day: 'Monday',
-            time: '10:00 AM - 12:00 PM',
-            professor: 'John Dustin Santos',
-            room: '401',
-            program: 'BSA',
-            year: 5,
-            curriculum: '2018',
-            section: '1',
-          },
-          {
-            id: 40,
-            course_code: 'MGMT501',
-            course_title: 'Strategic Management',
-            lec_hours: 3,
-            lab_hours: 0,
-            units: 3,
-            tuition_hours: 3,
-            day: 'Tuesday',
-            time: '1:00 PM - 3:00 PM',
-            professor: 'Nikki Dela Rosa',
-            room: '403',
-            program: 'BSA',
-            year: 5,
-            curriculum: '2022',
-            section: '1',
-          },
-        ],
-      },
     },
     professors: [
       'Gecilie Almiranez',
@@ -850,6 +506,23 @@ export class SchedulingService {
     ],
     activeYear: '2023-2024',
     activeSemester: '2nd Semester',
+    curriculumMapping: {
+      '2023-2024': {
+        BSIT: {
+          1: '2022',
+          2: '2022',
+          3: '2018',
+          4: '2018',
+        },
+        BSA: {
+          1: '2022',
+          2: '2022',
+          3: '2018',
+          4: '2018',
+          5: '2018',
+        },
+      },
+    },
   };
 
   getAcademicYears(): Observable<any[]> {
@@ -897,26 +570,18 @@ export class SchedulingService {
     ] as SchedulesBySemester;
     const semesterSchedules = yearSchedules?.[activeSemester] || [];
 
-    const activeCurriculum = this.getCurriculumForYearLevel(program, year);
+    const curriculumToUse =
+      this.mockData.curriculumMapping[activeYear]?.[program]?.[year];
 
     const filteredSchedules = semesterSchedules.filter(
       (s) =>
         s.program === program &&
         s.year === year &&
         s.section === selectedSection &&
-        s.curriculum === activeCurriculum
+        s.curriculum === curriculumToUse
     );
 
     return this.simulateHttpRequest(filteredSchedules);
-  }
-
-  getCurriculumForYearLevel(program: string, year: number): string {
-    const curriculumMapping: { [key: string]: { [year: number]: string } } = {
-      BSIT: { 1: '2022', 2: '2022', 3: '2018', 4: '2018' },
-      BSA: { 1: '2022', 2: '2022', 3: '2018', 4: '2018', 5: '2018' },
-    };
-
-    return curriculumMapping[program]?.[year] || '2018';
   }
 
   getProfessors(): Observable<string[]> {
