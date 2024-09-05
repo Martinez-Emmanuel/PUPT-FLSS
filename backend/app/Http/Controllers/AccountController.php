@@ -112,37 +112,12 @@ class AccountController extends Controller
     }
 
     //For Admin
-    // public function indexAdmins()
-    // {
-    //     // Fetch users with roles 'admin' or 'super_admin'
-    //     $admins = User::whereIn('role', ['admin', 'superadmin'])->get();
-    //     return response()->json($admins);
-    // }
-
     public function indexAdmins()
     {
-        // Fetch users with roles 'admin' or 'superadmin' and eager load the 'faculty' relationship
-        $admins = User::whereIn('role', ['admin', 'superadmin'])
-            ->with('faculty') // Eager load faculty relationship
-            ->get();
-
-        // Map through the results to ensure 'faculty_email' is included if the user has faculty details
-        $adminsWithFacultyEmail = $admins->map(function ($admin) {
-            return [
-                'id' => $admin->id,
-                'name' => $admin->name,
-                'code' => $admin->code,
-                'role' => $admin->role,
-                'status' => $admin->status,
-                'email' => $admin->faculty ? $admin->faculty->faculty_email : null, // Fetch faculty email if exists
-                'password' => $admin->password,
-            ];
-        });
-
-        return response()->json($adminsWithFacultyEmail);
+        // Fetch users with roles 'admin' or 'super_admin'
+        $admins = User::whereIn('role', ['admin', 'superadmin'])->get();
+        return response()->json($admins);
     }
-
-
 
     public function storeAdmin(Request $request)
     {

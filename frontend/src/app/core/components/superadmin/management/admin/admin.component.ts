@@ -47,7 +47,7 @@ export class AdminComponent implements OnInit {
     { key: 'code', label: 'Admin Code' },  // Display 'Admin Code' as per requirement
     { key: 'name', label: 'Name' },
     { key: 'passwordDisplay', label: 'Password' }, 
-    { key: 'email', label: 'Email' },
+    // { key: 'email', label: 'Email' },
     { key: 'role', label: 'Role' },
     { key: 'status', label: 'Status' },
   ];
@@ -57,7 +57,7 @@ export class AdminComponent implements OnInit {
     'code',    // 'Admin Code'
     'name', 
     'passwordDisplay',
-    'email', 
+    // 'email', 
     'role', 
     'status', 
     'action'
@@ -79,7 +79,7 @@ export class AdminComponent implements OnInit {
     this.adminService.getAdmins().subscribe((admins) => {
       this.admins = admins.map(admin => ({
         ...admin,
-        email: admin.email || '',  // Email comes from faculty_email if it exists
+        // email: admin.email || '',  // Email comes from faculty_email if it exists
         passwordDisplay: '••••••••' // Mask password in UI
       }));
       this.cdr.markForCheck();
@@ -124,15 +124,15 @@ export class AdminComponent implements OnInit {
           formControlName: 'password',
           type: 'text',
           maxLength: 100,
-          required: true,
+          required: false,
         },
-        {
-          label: 'Email',
-          formControlName: 'email',
-          type: 'text',
-          maxLength: 100,
-          required: true,
-        },
+        // {
+        //   label: 'Email',
+        //   formControlName: 'email',
+        //   type: 'text',
+        //   maxLength: 100,
+        //   required: true,
+        // },
         {
           label: 'Role',
           formControlName: 'role',
@@ -148,7 +148,7 @@ export class AdminComponent implements OnInit {
           required: true,
         },
       ],
-      initialValue: admin || { status: 'Active' },
+      initialValue: admin ? { ...admin, password: '' } : {},
     };
   }
 
@@ -193,12 +193,12 @@ export class AdminComponent implements OnInit {
     const adminData: any = {
       name: updatedAdmin.name,
       role: updatedAdmin.role,
-      password: updatedAdmin.password || null,
-      status: updatedAdmin.status, // Make sure to include status in the update
+      status: updatedAdmin.status,
     };
   
-    if (adminData.password === null) {
-      delete adminData.password;
+    // Include the password only if it is not empty
+    if (updatedAdmin.password) {
+      adminData.password = updatedAdmin.password;
     }
   
     this.adminService.updateAdmin(id, adminData).subscribe((updatedAdminResponse) => {
@@ -207,7 +207,7 @@ export class AdminComponent implements OnInit {
       if (index !== -1) {
         this.admins[index] = {
           ...updatedAdminResponse,
-          passwordDisplay: '••••••••',
+          passwordDisplay: '••••••••',  // Keep showing the masked password in the table
           email: updatedAdminResponse.faculty?.faculty_email || '',
         };
       }
@@ -219,6 +219,8 @@ export class AdminComponent implements OnInit {
       this.cdr.markForCheck();
     });
   }
+  
+  
   
   
 
