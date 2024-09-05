@@ -174,6 +174,13 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
+        for (let i = 0; i < program.year_levels; i++) {
+          const curriculumKey = `curriculumVersion${i + 1}`;
+          program.curriculums[(i + 1).toString()] = result[curriculumKey];
+        }
+
+        this.programs = [...this.programs];
+
         console.log('Updated Curriculum Versions:', result);
         this.snackBar.open('Year levels updated successfully!', 'Close', {
           duration: 3000,
