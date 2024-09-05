@@ -130,30 +130,18 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       programs: this.schedulingService.getPrograms(),
       professors: this.schedulingService.getProfessors(),
       rooms: this.schedulingService.getRooms(),
-      sections: this.schedulingService.getSections(
-        this.selectedProgram,
-        this.selectedYear
-      ),
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: ({
-          academicYears,
-          programs,
-          professors,
-          rooms,
-          sections,
-        }) => {
+        next: ({ academicYears, programs, professors, rooms }) => {
           this.academicYearOptions = academicYears.map(
             (ay) => ay.year as AcademicYear
           );
           this.semesterOptions = academicYears[0]?.semesters || [];
+
           this.populateOptions(programs, professors, rooms);
           this.setProgramOptions(programs);
-          this.sectionOptions = sections;
-          this.headerInputFields.find(
-            (field) => field.key === 'section'
-          )!.options = sections;
+          this.fetchSections(this.selectedProgram, this.selectedYear);
           this.fetchSchedules();
         },
         error: this.handleError('Error fetching initial data'),
