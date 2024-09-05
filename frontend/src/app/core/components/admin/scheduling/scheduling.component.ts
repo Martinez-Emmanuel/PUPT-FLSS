@@ -35,7 +35,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   selectedProgram = '';
   selectedYear = 1;
   selectedSection = '1';
-  selectedCurriculum = '';
 
   activeYear: AcademicYear = '2023-2024';
   activeSemester: Semester = '2nd Semester';
@@ -82,7 +81,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     return [
       { type: 'select', label: 'Program', key: 'program', options: [] },
       { type: 'select', label: 'Year Level', key: 'yearLevel', options: [] },
-      { type: 'select', label: 'Curriculum', key: 'curriculum', options: [] },
       {
         type: 'select',
         label: 'Section',
@@ -130,7 +128,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     forkJoin({
       academicYears: this.schedulingService.getAcademicYears(),
       programs: this.schedulingService.getPrograms(),
-      curriculums: this.schedulingService.getCurriculums(),
       professors: this.schedulingService.getProfessors(),
       rooms: this.schedulingService.getRooms(),
       sections: this.schedulingService.getSections(
@@ -143,7 +140,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         next: ({
           academicYears,
           programs,
-          curriculums,
           professors,
           rooms,
           sections,
@@ -152,7 +148,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
             (ay) => ay.year as AcademicYear
           );
           this.semesterOptions = academicYears[0]?.semesters || [];
-          this.populateOptions(programs, curriculums, professors, rooms);
+          this.populateOptions(programs, professors, rooms);
           this.setProgramOptions(programs);
           this.sectionOptions = sections;
           this.headerInputFields.find(
@@ -183,7 +179,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       .getSchedules(
         this.selectedProgram,
         this.selectedYear,
-        this.selectedCurriculum,
         this.selectedSection,
         this.activeYear,
         this.activeSemester
@@ -221,23 +216,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     }
   }
 
-  private addSection(sectionName: string) {
-    this.schedulingService
-      .addSection(this.selectedProgram, this.selectedYear, sectionName)
-      .subscribe((success) => {
-        if (success) {
-          this.fetchSections(this.selectedProgram, this.selectedYear);
-          this.snackBar.open('Section added successfully', 'Close', {
-            duration: 3000,
-          });
-        } else {
-          this.snackBar.open('Section already exists', 'Close', {
-            duration: 3000,
-          });
-        }
-      });
-  }
-
   private updateSchedule(updatedSchedule: Schedule) {
     this.schedulingService
       .updateSchedule(updatedSchedule)
@@ -255,13 +233,11 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
   private populateOptions(
     programs: Program[],
-    curriculums: Curriculum[],
     professors: string[],
     rooms: string[]
   ) {
     this.programs = programs;
     this.setProgramOptions(programs);
-    this.setCurriculumOptions(curriculums);
     this.professorOptions = professors;
     this.roomOptions = rooms;
   }
@@ -274,11 +250,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     }
   }
 
-  private setCurriculumOptions(curriculums: Curriculum[]) {
-    this.headerInputFields[2].options = curriculums.map((c) => c.name);
-    if (curriculums.length > 0) this.selectedCurriculum = curriculums[0].name;
-  }
-
   private handleError(message: string) {
     return (error: any) => {
       console.error(`${message}:`, error);
@@ -289,7 +260,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   }
 
   onInputChange(values: { [key: string]: any }) {
-    const { program, yearLevel, curriculum, section } = values;
+    const { program, yearLevel, section } = values;
     if (program !== undefined && program !== this.selectedProgram) {
       this.selectedProgram = program;
       this.updateYearLevels();
@@ -299,7 +270,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       this.selectedYear = yearLevel;
       this.fetchSections(this.selectedProgram, yearLevel);
     }
-    if (curriculum !== undefined) this.selectedCurriculum = curriculum;
     if (section !== undefined) this.selectedSection = section;
     this.fetchSchedules();
   }

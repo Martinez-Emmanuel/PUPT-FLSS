@@ -811,7 +811,6 @@ export class SchedulingService {
           },
         ],
       },
-
     },
     professors: [
       'Gecilie Almiranez',
@@ -857,11 +856,20 @@ export class SchedulingService {
     return this.simulateHttpRequest(this.mockData.academicYears);
   }
 
-  getActiveYearAndSemester(): Observable<{ activeYear: AcademicYear; activeSemester: Semester; }> {
-    return this.simulateHttpRequest({ activeYear: this.mockData.activeYear, activeSemester: this.mockData.activeSemester });
+  getActiveYearAndSemester(): Observable<{
+    activeYear: AcademicYear;
+    activeSemester: Semester;
+  }> {
+    return this.simulateHttpRequest({
+      activeYear: this.mockData.activeYear,
+      activeSemester: this.mockData.activeSemester,
+    });
   }
 
-  setActiveYearAndSemester(activeYear: AcademicYear, activeSemester: Semester): Observable<void> {
+  setActiveYearAndSemester(
+    activeYear: AcademicYear,
+    activeSemester: Semester
+  ): Observable<void> {
     this.mockData.activeYear = activeYear;
     this.mockData.activeSemester = activeSemester;
     return this.simulateHttpRequest(undefined);
@@ -871,23 +879,44 @@ export class SchedulingService {
     return this.simulateHttpRequest(this.mockData.programs);
   }
 
-  getCurriculums(): Observable<Curriculum[]> {
-    return this.simulateHttpRequest(this.mockData.curriculums);
-  }
-
   getSections(program: string, year: number): Observable<string[]> {
-    return this.simulateHttpRequest(this.mockData.sections[program]?.[year] || ['1']);
+    return this.simulateHttpRequest(
+      this.mockData.sections[program]?.[year] || ['1']
+    );
   }
 
-  getSchedules(program: string, year: number, curriculum: string, selectedSection: string, activeYear: AcademicYear, activeSemester: Semester): Observable<Schedule[]> {
-    const yearSchedules = this.mockData.schedules[activeYear] as SchedulesBySemester;
+  getSchedules(
+    program: string,
+    year: number,
+    selectedSection: string,
+    activeYear: AcademicYear,
+    activeSemester: Semester
+  ): Observable<Schedule[]> {
+    const yearSchedules = this.mockData.schedules[
+      activeYear
+    ] as SchedulesBySemester;
     const semesterSchedules = yearSchedules?.[activeSemester] || [];
 
+    const activeCurriculum = this.getCurriculumForYearLevel(program, year);
+
     const filteredSchedules = semesterSchedules.filter(
-      (s) => s.program === program && s.year === year && s.curriculum === curriculum && s.section === selectedSection
+      (s) =>
+        s.program === program &&
+        s.year === year &&
+        s.section === selectedSection &&
+        s.curriculum === activeCurriculum
     );
 
     return this.simulateHttpRequest(filteredSchedules);
+  }
+
+  getCurriculumForYearLevel(program: string, year: number): string {
+    const curriculumMapping: { [key: string]: { [year: number]: string } } = {
+      BSIT: { 1: '2022', 2: '2022', 3: '2018', 4: '2018' },
+      BSA: { 1: '2022', 2: '2022', 3: '2018', 4: '2018', 5: '2018' },
+    };
+
+    return curriculumMapping[program]?.[year] || '2018';
   }
 
   getProfessors(): Observable<string[]> {
@@ -898,7 +927,11 @@ export class SchedulingService {
     return this.simulateHttpRequest(this.mockData.rooms);
   }
 
-  addSection(program: string, year: number, sectionName: string): Observable<boolean> {
+  addSection(
+    program: string,
+    year: number,
+    sectionName: string
+  ): Observable<boolean> {
     if (!this.mockData.sections[program]) {
       this.mockData.sections[program] = {};
     }
@@ -918,14 +951,21 @@ export class SchedulingService {
       const semesterSchedules = yearSchedules[this.mockData.activeSemester];
 
       if (semesterSchedules) {
-        const index = semesterSchedules.findIndex((s) => s.id === updatedSchedule.id);
+        const index = semesterSchedules.findIndex(
+          (s) => s.id === updatedSchedule.id
+        );
         if (index !== -1) {
-          semesterSchedules[index] = { ...semesterSchedules[index], ...updatedSchedule };
+          semesterSchedules[index] = {
+            ...semesterSchedules[index],
+            ...updatedSchedule,
+          };
         }
       }
     }
 
-    return this.simulateHttpRequest(updatedSchedule).pipe(tap(() => console.log('Updated schedule:', updatedSchedule)));
+    return this.simulateHttpRequest(updatedSchedule).pipe(
+      tap(() => console.log('Updated schedule:', updatedSchedule))
+    );
   }
 
   private simulateHttpRequest<T>(data: T): Observable<T> {
