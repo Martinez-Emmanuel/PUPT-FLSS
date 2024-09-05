@@ -38,7 +38,7 @@ export interface Schedule {
 }
 
 export type Semester = '1st Semester' | '2nd Semester' | 'Summer Semester';
-export type AcademicYear = '2023-2024' | '2024-2025';
+export type AcademicYear = `${number}-${number}`;
 
 interface SchedulesBySemester {
   [semester: string]: Schedule[];
