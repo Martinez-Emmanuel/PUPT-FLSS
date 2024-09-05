@@ -7,6 +7,25 @@
 }
 
 .table-dialog-content {
+
+  .academic-year-list {
+    @include flex-layout($direction: column, $gap: var(--spacing-sm));
+    width: 100%;
+    font-size: var(--font-size-md);
+
+    .academic-year-item {
+      @include flex-layout($justify: space-between);
+      width: inherit;
+
+      .delete-acad-item {
+        color: var(--primary-text);
+        @include flex-layout;
+        cursor: pointer;
+      }
+    }
+
+  }
+
   .dialog-form {
     padding: var(--spacing-sm) 0;
 

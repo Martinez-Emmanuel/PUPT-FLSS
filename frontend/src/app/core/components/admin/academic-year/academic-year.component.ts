@@ -96,6 +96,12 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     this.selectedAcademicYear = newAcademicYear;
   }
 
+  private removeAcademicYear(year: string): void {
+    this.academicYearOptions = this.academicYearOptions.filter((y) => y !== year);
+    this.headerInputFields[0].options = [...this.academicYearOptions];
+    this.selectedAcademicYear = this.academicYearOptions.length ? this.academicYearOptions[0] : '';
+  }
+
   onInputChange(values: { [key: string]: any }) {
     if (values['academicYear'])
       this.selectedAcademicYear = values['academicYear'];
@@ -241,22 +247,28 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     });
   }
 
-  openManageAcademicYearDialog() {
-    const dialogConfig: DialogData = {
+  openManageAcademicYearDialog(): void {
+    const dialogConfig: DialogConfig = {
       title: 'Manage Academic Years',
-      content: 'Add or edit academic years here.',
-      actionText: 'Save',
-      cancelText: 'Cancel',
+      isManageList: true,
+      academicYearList: [...this.academicYearOptions],
+      fields: [],
+      isEdit: false,
     };
 
-    this.dialog
-      .open(DialogGenericComponent, { data: dialogConfig })
-      .afterClosed()
-      .subscribe((result) => {
-        if (result) {
-          // Logic to handle dialog result
-        }
-      });
+    const dialogRef = this.dialog.open(TableDialogComponent, {
+      data: dialogConfig,
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result && result.deletedYear) {
+        this.removeAcademicYear(result.deletedYear);
+        this.snackBar.open('Academic year removed successfully!', 'Close', {
+          duration: 3000,
+        });
+      }
+    });
   }
 
   private handleError(message: string) {

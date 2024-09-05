@@ -2,7 +2,6 @@ import { Component, Output, EventEmitter, Inject, ChangeDetectionStrategy, Chang
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -12,7 +11,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-
+import { MatIconModule } from '@angular/material/icon';
 import { TwoDigitInputDirective } from '../../core/imports/two-digit-input.directive';
 
 export interface DialogFieldConfig {
@@ -37,6 +36,8 @@ export interface DialogConfig {
   initialValue?: any;
   useHorizontalLayout?: boolean;
   isExportDialog?: boolean;
+  isManageList?: boolean;  // New property for managing list
+  academicYearList?: string[];  // New property to pass list of years
 }
 
 @Component({
@@ -57,6 +58,7 @@ export interface DialogConfig {
     MatRadioModule,
     MatCheckboxModule,
     MatAutocompleteModule,
+    MatIconModule,
     TwoDigitInputDirective,
   ],
 })
@@ -78,7 +80,12 @@ export class TableDialogComponent {
     this.form = this.fb.group({});
     this.isExportDialog = data.isExportDialog || false;
     this.customExportOptions = data.customExportOptions || null;
-    this.initForm();
+
+    if (data.isManageList) {
+      // Initialize logic for managing a list
+    } else {
+      this.initForm();
+    }
   }
 
   initForm() {
@@ -205,5 +212,11 @@ export class TableDialogComponent {
 
   onCancel() {
     this.dialogRef.close(null);
+  }
+
+  // New method to handle deleting an academic year
+  onDeleteYear(year: string): void {
+    // Emit the deleted year to the parent component
+    this.dialogRef.close({ deletedYear: year });
   }
 }
