@@ -286,7 +286,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           label: 'End Time',
           formControlName: 'endTime',
           type: 'autocomplete',
-          options: this.timeOptions,
+          options: this.timeOptions, // Initial full list; will be filtered dynamically
           required: true,
         },
         {
@@ -313,21 +313,22 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         room: element.room || '',
       },
     };
-
+  
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: dialogConfig,
       disableClose: true,
     });
-
-    dialogRef.componentInstance.startTimeChange.subscribe(
-      (startTime: string) => {
-        const startIndex = this.timeOptions.indexOf(startTime);
-        dialogRef.componentInstance.updateEndTimeOptions(
-          this.timeOptions.slice(startIndex + 1)
-        );
-      }
-    );
-
+  
+    // Dynamic End Time Options based on Start Time selection
+    dialogRef.componentInstance.startTimeChange.subscribe((startTime: string) => {
+      const startIndex = this.timeOptions.indexOf(startTime);
+  
+      // Filter end time options to show only times after the selected start time
+      const validEndTimes = this.timeOptions.slice(startIndex + 1);
+  
+      dialogRef.componentInstance.updateEndTimeOptions(validEndTimes);
+    });
+  
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         const updatedSchedule: Schedule = {
@@ -339,6 +340,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       }
     });
   }
+  
 
   openActiveYearSemesterDialog() {
     const dialogConfig: DialogConfig = {
