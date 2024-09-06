@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subject, takeUntil } from 'rxjs';
+
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -86,21 +87,21 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
         this.headerInputFields[0].options = this.academicYearOptions;
         this.selectedAcademicYear = this.academicYearOptions[0];
       });
-      
+
     this.schedulingService
       .getPrograms()
       .pipe(takeUntil(this.destroy$))
       .subscribe((programs) => {
         this.programs = programs.map((program) => ({
-          program_code: program.name,
-          program_title: program.name,
+          program_code: program.code,
+          program_title: program.title,
           year_levels: program.number_of_years,
           sections: this.getSectionsByProgram(
-            program.name,
+            program.code,
             program.number_of_years
           ),
           curriculums: this.getCurriculumsByProgram(
-            program.name,
+            program.code,
             program.number_of_years
           ),
         }));

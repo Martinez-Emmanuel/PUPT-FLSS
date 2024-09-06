@@ -37,6 +37,10 @@
         color: var(--primary-text);
       }
     }
+       
+    .index {
+      padding: 0 var(--spacing-md);
+    }
 
     .custom-header {
       text-wrap: nowrap;
@@ -48,6 +52,7 @@
       position: sticky;
       top: 0;
       z-index: 2;
+
     }
 
     .custom-cell {

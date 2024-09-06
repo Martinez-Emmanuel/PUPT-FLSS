@@ -191,7 +191,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
   private updateYearLevels() {
     const selectedProgram = this.programs.find(
-      (p) => p.name === this.selectedProgram
+      (p) => p.code === this.selectedProgram
     );
     if (selectedProgram) {
       this.headerInputFields[1].options = Array.from(
@@ -231,9 +231,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   }
 
   private setProgramOptions(programs: Program[]) {
-    this.headerInputFields[0].options = programs.map((p) => p.name);
+    this.headerInputFields[0].options = programs.map((p) => p.code);
     if (programs.length > 0) {
-      this.selectedProgram = programs[0].name;
+      this.selectedProgram = programs[0].code;
       this.updateYearLevels();
     }
   }
@@ -314,6 +314,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: dialogConfig,
+      disableClose: true,
     });
 
     dialogRef.componentInstance.startTimeChange.subscribe(
@@ -339,7 +340,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
   openActiveYearSemesterDialog() {
     const dialogConfig: DialogConfig = {
-      title: 'Set Active Year and Sem',
+      title: 'Set Active Year and Semester',
       fields: [
         {
           label: 'Academic Year',

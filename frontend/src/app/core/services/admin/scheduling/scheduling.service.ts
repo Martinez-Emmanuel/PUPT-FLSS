@@ -4,7 +4,8 @@ import { delay } from 'rxjs/operators';
 
 export interface Program {
   id: number;
-  name: string;
+  code: string;
+  title: string;
   number_of_years: number;
 }
 
@@ -92,8 +93,8 @@ export class SchedulingService {
       },
     ],
     programs: [
-      { id: 1, name: 'BSIT', number_of_years: 4 },
-      { id: 2, name: 'BSA', number_of_years: 5 },
+      { id: 1, code: 'BSIT', title: 'Bachelor of Science in Information Technology', number_of_years: 4 },
+      { id: 2, code: 'BSA', title: 'Bachelor of Science in Accountancy', number_of_years: 5 },
     ],
     curriculums: [
       { id: 1, name: '2018' },
