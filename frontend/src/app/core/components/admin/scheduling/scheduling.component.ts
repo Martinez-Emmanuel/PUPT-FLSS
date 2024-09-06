@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subject, forkJoin } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { Observable, of, Subject } from 'rxjs';
+import { takeUntil, switchMap } from 'rxjs/operators';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -13,7 +13,7 @@ import { TableHeaderComponent, InputField } from '../../../../shared/table-heade
 import { TableDialogComponent, DialogConfig } from '../../../../shared/table-dialog/table-dialog.component';
 import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
 
-import { SchedulingService, Schedule, Program, Curriculum, AcademicYear, Semester } from '../../../services/admin/scheduling/scheduling.service';
+import { SchedulingService, Schedule, Program, AcademicYear, Semester } from '../../../services/admin/scheduling/scheduling.service';
 
 @Component({
   selector: 'app-scheduling',
@@ -58,7 +58,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   roomOptions: string[] = [];
   academicYearOptions: AcademicYear[] = [];
   semesterOptions: Semester[] = [];
-
   programs: Program[] = [];
 
   constructor(
@@ -68,13 +67,139 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.fetchInitialData();
-    this.fetchActiveYearAndSemester();
+    this.initializeComponent();
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private initializeComponent() {
+    this.schedulingService
+      .getInitialData()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ({ academicYears, professors, rooms }) => {
+          this.academicYearOptions = academicYears.map(
+            (ay) => ay.year as AcademicYear
+          );
+          this.semesterOptions = academicYears[0]?.semesters || [];
+          this.professorOptions = professors;
+          this.roomOptions = rooms;
+          this.loadActiveYearAndSemester();
+        },
+        error: this.handleError('Error fetching initial data'),
+      });
+  }
+
+  private loadActiveYearAndSemester() {
+    this.schedulingService
+      .getActiveYearAndSemester()
+      .pipe(
+        takeUntil(this.destroy$),
+        switchMap(({ activeYear, activeSemester }) => {
+          this.activeYear = activeYear;
+          this.activeSemester = activeSemester;
+          return this.setProgramOptionsForYear(this.activeYear, true);
+        })
+      )
+      .subscribe({
+        next: () => this.fetchSchedules(),
+        error: this.handleError('Error fetching active year and semester'),
+      });
+  }
+
+  private fetchSchedules() {
+    if (!this.selectedProgram) return;
+
+    this.schedulingService
+      .getSchedules(
+        this.selectedProgram,
+        this.selectedYear,
+        this.selectedSection,
+        this.activeYear,
+        this.activeSemester
+      )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (schedules) => (this.schedules = [...schedules]),
+        error: this.handleError('Error fetching schedules'),
+      });
+  }
+
+  private fetchSections(program: string, year: number) {
+    this.schedulingService
+      .getSections(program, year)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((sections) => {
+        this.sectionOptions = sections;
+        this.headerInputFields.find(
+          (field) => field.key === 'section'
+        )!.options = sections;
+        if (!sections.includes(this.selectedSection)) {
+          this.selectedSection = sections[0] || '1';
+        }
+      });
+  }
+
+  private updateYearLevels() {
+    const selectedProgram = this.programs.find(
+      (p) => p.code === this.selectedProgram
+    );
+    this.headerInputFields[1].options = selectedProgram
+      ? Array.from({ length: selectedProgram.number_of_years }, (_, i) => i + 1)
+      : [];
+    this.selectedYear = 1;
+  }
+
+  private setProgramOptionsForYear(
+    academicYear: AcademicYear,
+    initialLoad = false
+  ): Observable<void> {
+    return this.schedulingService.getProgramsForYear(academicYear).pipe(
+      takeUntil(this.destroy$),
+      switchMap((programsForYear) => {
+        this.programs = programsForYear;
+        this.headerInputFields[0].options = programsForYear.map((p) => p.code);
+
+        if (programsForYear.length > 0) {
+          this.selectedProgram = programsForYear[0].code;
+          this.updateYearLevels();
+          this.fetchSections(this.selectedProgram, this.selectedYear);
+        }
+
+        if (initialLoad) {
+          this.fetchSchedules();
+        }
+
+        return of();
+      })
+    );
+  }
+
+  private updateSchedule(updatedSchedule: Schedule) {
+    this.schedulingService
+      .updateSchedule(updatedSchedule)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Schedule updated successfully', 'Close', {
+            duration: 3000,
+          });
+          this.fetchSchedules();
+        },
+        error: this.handleError('Error updating schedule'),
+      });
+  }
+
+  private handleError(message: string) {
+    return (error: any) => {
+      console.error(`${message}:`, error);
+      this.snackBar.open(`${message}. Please try again.`, 'Close', {
+        duration: 3000,
+      });
+    };
   }
 
   private initializeHeaderInputFields(): InputField[] {
@@ -122,129 +247,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       }
     }
     return options;
-  }
-
-  private fetchInitialData() {
-    forkJoin({
-      academicYears: this.schedulingService.getAcademicYears(),
-      programs: this.schedulingService.getPrograms(),
-      professors: this.schedulingService.getProfessors(),
-      rooms: this.schedulingService.getRooms(),
-    })
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: ({ academicYears, programs, professors, rooms }) => {
-          this.academicYearOptions = academicYears.map(
-            (ay) => ay.year as AcademicYear
-          );
-          this.semesterOptions = academicYears[0]?.semesters || [];
-
-          this.populateOptions(programs, professors, rooms);
-          this.setProgramOptions(programs);
-          this.fetchSections(this.selectedProgram, this.selectedYear);
-          this.fetchSchedules();
-        },
-        error: this.handleError('Error fetching initial data'),
-      });
-  }
-
-  private fetchActiveYearAndSemester() {
-    this.schedulingService
-      .getActiveYearAndSemester()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (data) => {
-          this.activeYear = data.activeYear;
-          this.activeSemester = data.activeSemester;
-          this.fetchSchedules();
-        },
-        error: this.handleError('Error fetching active year and semester'),
-      });
-  }
-
-  private fetchSchedules() {
-    this.schedulingService
-      .getSchedules(
-        this.selectedProgram,
-        this.selectedYear,
-        this.selectedSection,
-        this.activeYear,
-        this.activeSemester
-      )
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (schedules) => (this.schedules = [...schedules]),
-        error: this.handleError('Error fetching schedules'),
-      });
-  }
-
-  private fetchSections(program: string, year: number) {
-    this.schedulingService.getSections(program, year).subscribe((sections) => {
-      this.sectionOptions = sections;
-      this.headerInputFields.find((field) => field.key === 'section')!.options =
-        sections;
-      if (!sections.includes(this.selectedSection)) {
-        this.selectedSection = sections[0] || '1';
-      }
-    });
-  }
-
-  private updateYearLevels() {
-    const selectedProgram = this.programs.find(
-      (p) => p.code === this.selectedProgram
-    );
-    if (selectedProgram) {
-      this.headerInputFields[1].options = Array.from(
-        { length: selectedProgram.number_of_years },
-        (_, i) => i + 1
-      );
-      this.selectedYear = 1;
-    } else {
-      this.headerInputFields[1].options = [];
-    }
-  }
-
-  private updateSchedule(updatedSchedule: Schedule) {
-    this.schedulingService
-      .updateSchedule(updatedSchedule)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.snackBar.open('Schedule updated successfully', 'Close', {
-            duration: 3000,
-          });
-          this.fetchSchedules();
-        },
-        error: this.handleError('Error updating schedule'),
-      });
-  }
-
-  private populateOptions(
-    programs: Program[],
-    professors: string[],
-    rooms: string[]
-  ) {
-    this.programs = programs;
-    this.setProgramOptions(programs);
-    this.professorOptions = professors;
-    this.roomOptions = rooms;
-  }
-
-  private setProgramOptions(programs: Program[]) {
-    this.headerInputFields[0].options = programs.map((p) => p.code);
-    if (programs.length > 0) {
-      this.selectedProgram = programs[0].code;
-      this.updateYearLevels();
-    }
-  }
-
-  private handleError(message: string) {
-    return (error: any) => {
-      console.error(`${message}:`, error);
-      this.snackBar.open(`${message}. Please try again.`, 'Close', {
-        duration: 3000,
-      });
-    };
   }
 
   onInputChange(values: { [key: string]: any }) {
@@ -365,7 +367,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     };
 
     this.dialog
-      .open(TableDialogComponent, { data: dialogConfig, disableClose: true, })
+      .open(TableDialogComponent, { data: dialogConfig, disableClose: true })
       .afterClosed()
       .subscribe((result) => {
         if (result) {
@@ -384,7 +386,11 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                   'Close',
                   { duration: 3000 }
                 );
-                this.fetchSchedules();
+                this.setProgramOptionsForYear(this.activeYear, true).subscribe(
+                  () => {
+                    this.fetchSchedules();
+                  }
+                );
               },
               error: this.handleError('Error setting active year and semester'),
             });
