@@ -286,7 +286,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           label: 'End Time',
           formControlName: 'endTime',
           type: 'autocomplete',
-          options: this.timeOptions, // Initial full list; will be filtered dynamically
+          options: this.timeOptions,
           required: true,
         },
         {
@@ -317,15 +317,12 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: dialogConfig,
       disableClose: true,
+      autoFocus: false,
     });
   
-    // Dynamic End Time Options based on Start Time selection
     dialogRef.componentInstance.startTimeChange.subscribe((startTime: string) => {
       const startIndex = this.timeOptions.indexOf(startTime);
-  
-      // Filter end time options to show only times after the selected start time
       const validEndTimes = this.timeOptions.slice(startIndex + 1);
-  
       dialogRef.componentInstance.updateEndTimeOptions(validEndTimes);
     });
   
