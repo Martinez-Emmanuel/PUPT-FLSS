@@ -1,35 +1,39 @@
 <!-- Table Header -->
 <div class="curriculum-header-container" [@fadeAnimation]>
   <app-table-header
-  [inputFields]="headerInputFields"
-  [addButtonLabel]="'Manage Programs'"
-  [addIconName]="'apps'"
-  [showExportDialog]="true"
-  [customExportOptions]="customExportOptions"
-  (inputChange)="onInputChange($event)"
-  (export)="onExport()"
-  (add)="onManagePrograms()"
-  [selectedValues]="{ program: selectedProgram, yearLevel: selectedYear }"
-></app-table-header>
+    [inputFields]="headerInputFields"
+    [addButtonLabel]="'Manage Programs'"
+    [addIconName]="'apps'"
+    [showExportDialog]="true"
+    [customExportOptions]="customExportOptions"
+    (inputChange)="onInputChange($event)"
+    (export)="onExport()"
+    (add)="onManagePrograms()"
+    [selectedValues]="{ program: selectedProgram, yearLevel: selectedYear }"
+  ></app-table-header>
 </div>
 
-<div class="curriculum-detail-container" [@pageFloatUpAnimation]>
-@for (semester of selectedSemesters; track semester.semester; let i = $index)
-{
-<div class="semester-container">
-  <app-table-generic
-    [columns]="columns"
-    [data]="semester.courses"
-    [tableName]="'course/s'"
-    [displayedColumns]="displayedColumns"
-    [showTableHeading]="true"
-    [tableHeadingTitle]="getSemesterDisplay(semester.semester)"
-    [tableHeadingButtonText]="'Add Course'"
-    [tableHeadingButtonIcon]="'add'"
-    (tableHeadingButtonClick)="onAddCourse(semester)"
-    (edit)="onEditCourse($event, semester)"
-    (delete)="onDeleteCourse($event)"
-  ></app-table-generic>
+@if (loading) {
+<app-loading></app-loading>
+} @else {
+<div class="curriculum-detail-container">
+  @for (semester of selectedSemesters; track semester.semester; let i = $index)
+  {
+  <div class="semester-container" [@pageFloatUpAnimation]>
+    <app-table-generic
+      [columns]="columns"
+      [data]="semester.courses"
+      [tableName]="'course/s'"
+      [displayedColumns]="displayedColumns"
+      [showTableHeading]="true"
+      [tableHeadingTitle]="getSemesterDisplay(semester.semester)"
+      [tableHeadingButtonText]="'Add Course'"
+      [tableHeadingButtonIcon]="'add'"
+      (tableHeadingButtonClick)="onAddCourse(semester)"
+      (edit)="onEditCourse($event, semester)"
+      (delete)="onDeleteCourse($event)"
+    ></app-table-generic>
+  </div>
+  }
 </div>
 }
-</div>

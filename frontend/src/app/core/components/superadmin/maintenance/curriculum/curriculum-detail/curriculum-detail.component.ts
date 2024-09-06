@@ -6,11 +6,14 @@ import { Subject } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatProgressBar } from '@angular/material/progress-bar';
 
 import { TableGenericComponent } from '../../../../../../shared/table-generic/table-generic.component';
 import { TableHeaderComponent, InputField } from '../../../../../../shared/table-header/table-header.component';
 import { TableDialogComponent, DialogConfig } from '../../../../../../shared/table-dialog/table-dialog.component';
 import { DialogGenericComponent } from '../../../../../../shared/dialog-generic/dialog-generic.component';
+import { LoadingComponent } from '../../../../../../shared/loading/loading.component';
+
 import { fadeAnimation, pageFloatUpAnimation } from '../../../../../animations/animations';
 
 import {
@@ -27,9 +30,11 @@ import {
   standalone: true,
   imports: [
     CommonModule,
+    MatProgressBar,
     TableGenericComponent, 
     TableHeaderComponent,  
-    DialogGenericComponent, 
+    DialogGenericComponent,
+    LoadingComponent
   ],
   templateUrl: './curriculum-detail.component.html',
   styleUrls: ['./curriculum-detail.component.scss'],
@@ -43,6 +48,7 @@ export class CurriculumDetailComponent implements OnInit {
   public selectedSemesters: Semester[] = [];
   public customExportOptions: { all: string; current: string } | null = null;
   private destroy$ = new Subject<void>();
+  public loading: boolean = true;
 
   headerInputFields: InputField[] = [
     {
@@ -62,8 +68,8 @@ export class CurriculumDetailComponent implements OnInit {
   columns = [
     { key: 'index', label: '#' },
     { key: 'course_code', label: 'Course Code' },
-    { key: 'pre_req', label: 'Pre-requisite' },  
-    { key: 'co_req', label: 'Co-requisite' },  
+    { key: 'pre_req', label: 'Pre-req' },  
+    { key: 'co_req', label: 'Co-req' },  
     { key: 'course_title', label: 'Course Title' },
     { key: 'lec_hours', label: 'Lec Hours' },
     { key: 'lab_hours', label: 'Lab Hours' },
@@ -103,16 +109,19 @@ export class CurriculumDetailComponent implements OnInit {
   }
  
   fetchAllPrograms() {
+    this.loading = true; 
     this.curriculumService.getAllPrograms().subscribe({
       next: (programs) => {
         // Populate the dropdown with all programs
         this.updateProgramDropdown(programs.map(program => program.program_code));
+        this.loading = false;
       },
       error: (error) => {
         console.error('Error fetching programs:', error);
         this.snackBar.open('Error fetching programs. Please try again.', 'Close', {
           duration: 3000,
         });
+        this.loading = false;
       }
     });
   }
@@ -123,6 +132,7 @@ export class CurriculumDetailComponent implements OnInit {
   }
 
   fetchCurriculum(year: string, selectedProgram?: string, selectedYear?: number) {
+    this.loading = true;
     this.curriculumService.getCurriculumByYear(year).subscribe({
       next: (curriculum) => {
         if (curriculum) {
@@ -154,6 +164,7 @@ export class CurriculumDetailComponent implements OnInit {
           });
   
           this.cdr.markForCheck();
+          this.loading = false;
         }
       },
       error: (error) => {
@@ -161,6 +172,7 @@ export class CurriculumDetailComponent implements OnInit {
         this.snackBar.open(
           'Error fetching curriculum. Please try again.', 
           'Close', { duration: 3000 });
+          this.loading = false;
       },
     });
   }
