@@ -61,12 +61,154 @@ interface CurriculumMapping {
   providedIn: 'root',
 })
 export class SchedulingService {
+  getInitialData(): Observable<{
+    academicYears: {
+      id: number;
+      year: AcademicYear;
+      semesters: Semester[];
+      programs: string[];
+    }[];
+    professors: string[];
+    rooms: string[];
+  }> {
+    return this.simulateHttpRequest({
+      academicYears: this.mockData.academicYears,
+      professors: this.mockData.professors,
+      rooms: this.mockData.rooms,
+    });
+  }
+
+  getAcademicYears(): Observable<any[]> {
+    return this.simulateHttpRequest(this.mockData.academicYears);
+  }
+
+  getActiveYearAndSemester(): Observable<{
+    activeYear: AcademicYear;
+    activeSemester: Semester;
+  }> {
+    return this.simulateHttpRequest({
+      activeYear: this.mockData.activeYear,
+      activeSemester: this.mockData.activeSemester,
+    });
+  }
+
+  setActiveYearAndSemester(
+    activeYear: AcademicYear,
+    activeSemester: Semester
+  ): Observable<void> {
+    this.mockData.activeYear = activeYear;
+    this.mockData.activeSemester = activeSemester;
+    return this.simulateHttpRequest(undefined);
+  }
+
+  getPrograms(): Observable<Program[]> {
+    return this.simulateHttpRequest(this.mockData.programs);
+  }
+
+  getProgramsForYear(academicYear: AcademicYear): Observable<Program[]> {
+    const yearData = this.mockData.academicYears.find(
+      (ay) => ay.year === academicYear
+    );
+    if (yearData) {
+      const programs = this.mockData.programs.filter((program) =>
+        yearData.programs.includes(program.code)
+      );
+      return this.simulateHttpRequest(programs);
+    }
+    return this.simulateHttpRequest([]);
+  }
+
+  getSections(program: string, year: number): Observable<string[]> {
+    return this.simulateHttpRequest(
+      this.mockData.sections[program]?.[year] || ['1']
+    );
+  }
+
+  addSection(
+    program: string,
+    year: number,
+    sectionName: string
+  ): Observable<boolean> {
+    if (!this.mockData.sections[program]) {
+      this.mockData.sections[program] = {};
+    }
+    if (!this.mockData.sections[program][year]) {
+      this.mockData.sections[program][year] = [];
+    }
+    if (!this.mockData.sections[program][year].includes(sectionName)) {
+      this.mockData.sections[program][year].push(sectionName);
+      return this.simulateHttpRequest(true);
+    }
+    return this.simulateHttpRequest(false);
+  }
+
+  getSchedules(
+    program: string,
+    year: number,
+    selectedSection: string,
+    activeYear: AcademicYear,
+    activeSemester: Semester
+  ): Observable<Schedule[]> {
+    const yearSchedules = this.mockData.schedules[
+      activeYear
+    ] as SchedulesBySemester;
+    const semesterSchedules = yearSchedules?.[activeSemester] || [];
+
+    const curriculumToUse =
+      this.mockData.curriculumMapping[activeYear]?.[program]?.[year];
+    const filteredSchedules = semesterSchedules.filter(
+      (s) =>
+        s.program === program &&
+        s.year === year &&
+        s.section === selectedSection &&
+        s.curriculum === curriculumToUse
+    );
+
+    return this.simulateHttpRequest(filteredSchedules);
+  }
+
+  updateSchedule(updatedSchedule: Schedule): Observable<Schedule> {
+    const yearSchedules = this.mockData.schedules[this.mockData.activeYear];
+    if (yearSchedules) {
+      const semesterSchedules = yearSchedules[this.mockData.activeSemester];
+
+      if (semesterSchedules) {
+        const index = semesterSchedules.findIndex(
+          (s) => s.id === updatedSchedule.id
+        );
+        if (index !== -1) {
+          semesterSchedules[index] = {
+            ...semesterSchedules[index],
+            ...updatedSchedule,
+          };
+        }
+      }
+    }
+
+    return this.simulateHttpRequest(updatedSchedule).pipe(
+      tap(() => console.log('Updated schedule:', updatedSchedule))
+    );
+  }
+
+  getProfessors(): Observable<string[]> {
+    return this.simulateHttpRequest(this.mockData.professors);
+  }
+
+  getRooms(): Observable<string[]> {
+    return this.simulateHttpRequest(this.mockData.rooms);
+  }
+
+  private simulateHttpRequest<T>(data: T): Observable<T> {
+    return of(data).pipe(delay(300));
+  }
+
   private mockData: {
     academicYears: {
       id: number;
       year: AcademicYear;
       semesters: Semester[];
       activeCurricula: string[];
+      programs: string[];
     }[];
     programs: Program[];
     curriculums: Curriculum[];
@@ -84,17 +226,35 @@ export class SchedulingService {
         year: '2023-2024',
         semesters: ['1st Semester', '2nd Semester', 'Summer Semester'],
         activeCurricula: ['2018', '2022'],
+        programs: ['BSIT', 'BSA'],
       },
       {
         id: 2,
         year: '2024-2025',
         semesters: ['1st Semester', '2nd Semester', 'Summer Semester'],
         activeCurricula: ['2018', '2022'],
+        programs: ['BSIT', 'BSA', 'BSPSYCH'],
       },
     ],
     programs: [
-      { id: 1, code: 'BSIT', title: 'Bachelor of Science in Information Technology', number_of_years: 4 },
-      { id: 2, code: 'BSA', title: 'Bachelor of Science in Accountancy', number_of_years: 5 },
+      {
+        id: 1,
+        code: 'BSIT',
+        title: 'Bachelor of Science in Information Technology',
+        number_of_years: 4,
+      },
+      {
+        id: 2,
+        code: 'BSA',
+        title: 'Bachelor of Science in Accountancy',
+        number_of_years: 5,
+      },
+      {
+        id: 3,
+        code: 'BSPSYCH',
+        title: 'Bachelor of Science in Psychology',
+        number_of_years: 4,
+      },
     ],
     curriculums: [
       { id: 1, name: '2018' },
@@ -108,6 +268,12 @@ export class SchedulingService {
         4: ['1'],
       },
       BSA: {
+        1: ['1'],
+        2: ['1'],
+        3: ['1'],
+        4: ['1'],
+      },
+      BSPSYCH: {
         1: ['1'],
         2: ['1'],
         3: ['1'],
@@ -819,6 +985,77 @@ export class SchedulingService {
             curriculum: '2022',
             section: '1',
           },
+          // BS PSYCH Year 1 - Curriculum 2018 and 2022
+          {
+            id: 41,
+            course_code: 'PSYCH101',
+            course_title: 'Introduction to Psychology',
+            lec_hours: 3,
+            lab_hours: 1,
+            units: 4,
+            tuition_hours: 4,
+            day: 'Monday',
+            time: '8:00 AM - 10:00 AM',
+            professor: 'Erica Caturay',
+            room: '305',
+            program: 'BSPSYCH',
+            year: 1,
+            curriculum: '2018',
+            section: '1',
+          },
+          {
+            id: 42,
+            course_code: 'PSYCH102',
+            course_title: 'Developmental Psychology',
+            lec_hours: 3,
+            lab_hours: 0,
+            units: 3,
+            tuition_hours: 3,
+            day: 'Wednesday',
+            time: '1:00 PM - 3:00 PM',
+            professor: 'Steven Villarosa',
+            room: '306',
+            program: 'BSPSYCH',
+            year: 1,
+            curriculum: '2022',
+            section: '1',
+          },
+
+          // BS PSYCH Year 2 - Curriculum 2018 and 2022
+          {
+            id: 43,
+            course_code: 'PSYCH201',
+            course_title: 'Abnormal Psychology',
+            lec_hours: 3,
+            lab_hours: 0,
+            units: 3,
+            tuition_hours: 3,
+            day: 'Tuesday',
+            time: '10:00 AM - 12:00 PM',
+            professor: 'Nikki Dela Rosa',
+            room: '401',
+            program: 'BSPSYCH',
+            year: 2,
+            curriculum: '2018',
+            section: '1',
+          },
+          {
+            id: 44,
+            course_code: 'PSYCH202',
+            course_title: 'Social Psychology',
+            lec_hours: 3,
+            lab_hours: 0,
+            units: 3,
+            tuition_hours: 3,
+            day: 'Thursday',
+            time: '2:00 PM - 4:00 PM',
+            professor: 'John Dustin Santos',
+            room: '402',
+            program: 'BSPSYCH',
+            year: 2,
+            curriculum: '2022',
+            section: '1',
+          },
         ],
       },
     },
@@ -876,7 +1113,7 @@ export class SchedulingService {
           5: '2018',
         },
       },
-      '2024-2025': {  // Add this missing mapping
+      '2024-2025': {
         BSIT: {
           1: '2022',
           2: '2022',
@@ -890,120 +1127,13 @@ export class SchedulingService {
           4: '2018',
           5: '2018',
         },
+        BSPSYCH: {
+          1: '2022',
+          2: '2022',
+          3: '2018',
+          4: '2018',
+        },
       },
     },
-    
   };
-
-  getAcademicYears(): Observable<any[]> {
-    return this.simulateHttpRequest(this.mockData.academicYears);
-  }
-
-  getActiveYearAndSemester(): Observable<{
-    activeYear: AcademicYear;
-    activeSemester: Semester;
-  }> {
-    return this.simulateHttpRequest({
-      activeYear: this.mockData.activeYear,
-      activeSemester: this.mockData.activeSemester,
-    });
-  }
-
-  setActiveYearAndSemester(
-    activeYear: AcademicYear,
-    activeSemester: Semester
-  ): Observable<void> {
-    this.mockData.activeYear = activeYear;
-    this.mockData.activeSemester = activeSemester;
-    return this.simulateHttpRequest(undefined);
-  }
-
-  getPrograms(): Observable<Program[]> {
-    return this.simulateHttpRequest(this.mockData.programs);
-  }
-
-  getSections(program: string, year: number): Observable<string[]> {
-    return this.simulateHttpRequest(
-      this.mockData.sections[program]?.[year] || ['1']
-    );
-  }
-
-  getSchedules(
-    program: string,
-    year: number,
-    selectedSection: string,
-    activeYear: AcademicYear,
-    activeSemester: Semester
-  ): Observable<Schedule[]> {
-    const yearSchedules = this.mockData.schedules[
-      activeYear
-    ] as SchedulesBySemester;
-    const semesterSchedules = yearSchedules?.[activeSemester] || [];
-
-    const curriculumToUse =
-      this.mockData.curriculumMapping[activeYear]?.[program]?.[year];
-
-    const filteredSchedules = semesterSchedules.filter(
-      (s) =>
-        s.program === program &&
-        s.year === year &&
-        s.section === selectedSection &&
-        s.curriculum === curriculumToUse
-    );
-
-    return this.simulateHttpRequest(filteredSchedules);
-  }
-
-  getProfessors(): Observable<string[]> {
-    return this.simulateHttpRequest(this.mockData.professors);
-  }
-
-  getRooms(): Observable<string[]> {
-    return this.simulateHttpRequest(this.mockData.rooms);
-  }
-
-  addSection(
-    program: string,
-    year: number,
-    sectionName: string
-  ): Observable<boolean> {
-    if (!this.mockData.sections[program]) {
-      this.mockData.sections[program] = {};
-    }
-    if (!this.mockData.sections[program][year]) {
-      this.mockData.sections[program][year] = [];
-    }
-    if (!this.mockData.sections[program][year].includes(sectionName)) {
-      this.mockData.sections[program][year].push(sectionName);
-      return this.simulateHttpRequest(true);
-    }
-    return this.simulateHttpRequest(false);
-  }
-
-  updateSchedule(updatedSchedule: Schedule): Observable<Schedule> {
-    const yearSchedules = this.mockData.schedules[this.mockData.activeYear];
-    if (yearSchedules) {
-      const semesterSchedules = yearSchedules[this.mockData.activeSemester];
-
-      if (semesterSchedules) {
-        const index = semesterSchedules.findIndex(
-          (s) => s.id === updatedSchedule.id
-        );
-        if (index !== -1) {
-          semesterSchedules[index] = {
-            ...semesterSchedules[index],
-            ...updatedSchedule,
-          };
-        }
-      }
-    }
-
-    return this.simulateHttpRequest(updatedSchedule).pipe(
-      tap(() => console.log('Updated schedule:', updatedSchedule))
-    );
-  }
-
-  private simulateHttpRequest<T>(data: T): Observable<T> {
-    return of(data).pipe(delay(300));
-  }
 }
