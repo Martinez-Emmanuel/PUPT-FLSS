@@ -1,9 +1,28 @@
-import { Component, Output, EventEmitter, Inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import {
+  Component,
+  Output,
+  EventEmitter,
+  Inject,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  AbstractControl,
+  ValidationErrors,
+  ValidatorFn,
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogRef,
+  MatDialogModule,
+} from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -145,6 +164,23 @@ export class TableDialogComponent {
     }
   }
 
+  public updateEndTimeOptions(newOptions: string[]): void {
+    const endTimeFieldConfig = this.data.fields.find(
+      (f) => f.formControlName === 'endTime'
+    );
+
+    if (endTimeFieldConfig) {
+      endTimeFieldConfig.options = newOptions;
+      const endTimeControl = this.form.get('endTime');
+
+      if (endTimeControl) {
+        endTimeControl.setValue('');
+        this.filteredOptions['endTime'] = newOptions;
+        this.cdr.markForCheck();
+      }
+    }
+  }
+
   private getValidators(field: DialogFieldConfig): ValidatorFn[] {
     const validators: ValidatorFn[] = [];
 
@@ -163,24 +199,13 @@ export class TableDialogComponent {
     return validators;
   }
 
-  updateEndTimeOptions(newOptions: string[]): void {
-    const endTimeField = this.data.fields.find(
-      (f) => f.formControlName === 'endTime'
-    );
-    if (endTimeField) {
-      endTimeField.options = newOptions;
-      this.cdr.markForCheck();
-    }
-  }
-
   noWhitespaceValidator(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
     const isWhitespace = typeof value === 'string' && value.trim().length === 0;
     const isValid = !isWhitespace || !value;
-    
+
     return isValid ? null : { whitespace: true };
   }
-  
 
   getErrorMessage(formControlName: string, label: string): string {
     const control = this.form.get(formControlName);
