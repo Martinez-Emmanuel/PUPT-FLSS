@@ -4,6 +4,7 @@
     <app-table-header
       [inputFields]="headerInputFields"
       [addButtonLabel]="'Add Curriculum'"
+      [showExportButton]=false
       (inputChange)="onInputChange($event)"
       (add)="openAddCurriculumDialog()"  
     ></app-table-header>
