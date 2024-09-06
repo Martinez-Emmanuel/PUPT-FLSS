@@ -70,13 +70,34 @@ export class TableGenericComponent<T> implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
+    if (this.paginator) {
+        this.dataSource.paginator = this.paginator;
+        this.paginator.page.subscribe(() => {
+            this.dataSource.paginator = this.paginator;
+        });
+    } else {
+        console.error('Paginator is not defined');
+    }
 
-    this.paginator.page.subscribe(() => {
-      this.dataSource.paginator = this.paginator;
-    });
+    if (this.sort) {
+        this.dataSource.sort = this.sort;
+    } else {
+        console.error('Sort is not defined');
+    }
   }
+  
+  //temp
+  // ngAfterViewChecked() {
+  //   if (this.paginator && !this.dataSource.paginator) {
+  //       this.dataSource.paginator = this.paginator;
+  //   }
+
+  //   if (this.sort && !this.dataSource.sort) {
+  //       this.dataSource.sort = this.sort;
+  //   }
+  // }
+
+
 
   getIndex(index: number): number {
     if (this.paginator) {

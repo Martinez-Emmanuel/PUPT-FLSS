@@ -7,7 +7,6 @@ use App\Models\Faculty;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
 
-
 class FacultySeeder extends Seeder
 {
     /**
@@ -17,12 +16,13 @@ class FacultySeeder extends Seeder
      */
     public function run(): void
     {
-        // Creating Users
+        // Creating Users with 'active' status
         $user1 = User::create([
             'name' => 'Steven Villarosa',
             'code' => 'FA1234TG2023',
             'password' => '#Q!FR&334', // Password will be hashed by the model mutator
             'role' => 'faculty',
+            'status' => 'active', // Set status to active
         ]);
 
         $user2 = User::create([
@@ -30,6 +30,7 @@ class FacultySeeder extends Seeder
             'code' => 'ADM001TG2024',
             'password' => '$z7g235Y1', // Password will be hashed by the model mutator
             'role' => 'admin',
+            'status' => 'active', // Set status to active
         ]);
 
         $user3 = User::create([
@@ -37,19 +38,37 @@ class FacultySeeder extends Seeder
             'code' => 'SDM001TG2024',
             'password' => '!7DQK95#', // Password will be hashed by the model mutator
             'role' => 'superadmin',
+            'status' => 'active', // Set status to active
+        ]);
+
+        $user4 = User::create([
+            'name' => 'Adrian Naoe',
+            'code' => 'SDM002TG2024',
+            'password' => 'TEST123', // Password will be hashed by the model mutator
+            'role' => 'faculty',
+            'status' => 'active', // Set status to active
+        ]);
+
+        $user5 = User::create([
+            'name' => 'Kyla Malaluan',
+            'code' => 'SDM003TG2024',
+            'password' => 'TEST123', // Password will be hashed by the model mutator
+            'role' => 'faculty',
+            'status' => 'active', // Set status to active
+        ]);
+
+        $user6 = User::create([
+            'name' => 'Via Rasquero',
+            'code' => 'SDM004TG2024',
+            'password' => 'TEST123', // Password will be hashed by the model mutator
+            'role' => 'superadmin',
+            'status' => 'active', // Set status to active
         ]);
 
         // Creating Faculties
         Faculty::create([
             'user_id' => $user1->id,
             'faculty_email' => 'ssvillarosa@example.com',
-            'faculty_type' => 'part-time',
-            'faculty_unit' => '18',
-        ]);
-
-        Faculty::create([
-            'user_id' => $user1->id,
-            'faculty_email' => 'andreasnaoe@gmail.com',
             'faculty_type' => 'part-time',
             'faculty_unit' => '18',
         ]);
@@ -64,22 +83,29 @@ class FacultySeeder extends Seeder
         Faculty::create([
             'user_id' => $user3->id,
             'faculty_email' => 'alice.johnson@example.com',
-            'faculty_type' => 'regular',  // Changed 'temporary' to 'regular' to match ENUM
-            'faculty_unit' => '18',
-        ]);
-
-        Faculty::create([
-            'user_id' => $user3->id,
-            'faculty_email' => 'bob.brown@example.com',
             'faculty_type' => 'regular',
             'faculty_unit' => '18',
         ]);
 
         Faculty::create([
-            'user_id' => $user2->id,
-            'faculty_email' => 'carol.white@example.com',
-            'faculty_type' => 'full-time',
-            'faculty_unit' => '30',
+            'user_id' => $user4->id,
+            'faculty_email' => 'adrianxample@gmail.com',
+            'faculty_type' => 'regular',
+            'faculty_unit' => '18',
+        ]);
+
+        Faculty::create([
+            'user_id' => $user5->id,
+            'faculty_email' => 'kylaxample@gmail.com',
+            'faculty_type' => 'part-time',
+            'faculty_unit' => '18',
+        ]);
+
+        Faculty::create([
+            'user_id' => $user6->id,
+            'faculty_email' => 'viarasqueroxample@gmail.com',
+            'faculty_type' => 'part-time',
+            'faculty_unit' => '18',
         ]);
     }
 }

@@ -11,6 +11,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 
+
 import {
   TableDialogComponent,
   DialogConfig,
@@ -20,7 +21,7 @@ import { TableHeaderComponent } from '../../../../../shared/table-header/table-h
 
 import {
   AdminService,
-  Admin,
+  User,
 } from '../../../../services/superadmin/management/admin/admin.service';
 
 @Component({
@@ -37,30 +38,31 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminComponent implements OnInit {
-  adminStatuses = ['Active', 'Inactive'];
+  adminStatuses = ['active', 'inactive'];
   selectedAdminIndex: number | null = null;
 
-  admins: Admin[] = [];
+  admins: User[] = [];
   columns = [
     { key: 'index', label: '#' },
-    { key: 'adminId', label: 'Admin ID' },
+    { key: 'code', label: 'Admin Code' },  // Display 'Admin Code' as per requirement
     { key: 'name', label: 'Name' },
-    { key: 'password', label: 'Password'},
-    { key: 'email', label: 'Email' },
+    { key: 'passwordDisplay', label: 'Password' }, 
+    // { key: 'email', label: 'Email' },
     { key: 'role', label: 'Role' },
     { key: 'status', label: 'Status' },
   ];
-
+  
   displayedColumns: string[] = [
     'index', 
-    'adminId', 
+    'code',    // 'Admin Code'
     'name', 
-    'password',
-    'email', 
+    'passwordDisplay',
+    // 'email', 
     'role', 
     'status', 
     'action'
   ];
+  
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -75,33 +77,39 @@ export class AdminComponent implements OnInit {
 
   fetchAdmins() {
     this.adminService.getAdmins().subscribe((admins) => {
-      this.admins = admins;
+      this.admins = admins.map(admin => ({
+        ...admin,
+        // email: admin.email || '',  // Email comes from faculty_email if it exists
+        passwordDisplay: '••••••••' // Mask password in UI
+      }));
       this.cdr.markForCheck();
     });
   }
+  
+  
 
   onSearch(searchTerm: string) {
     this.adminService.getAdmins().subscribe((admins) => {
       this.admins = admins.filter(
         (admin) =>
-          admin.adminId.includes(searchTerm) ||
+          admin.id.includes(searchTerm) ||  // Search by 'id'
           admin.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          admin.role.toLowerCase().includes(searchTerm.toLowerCase()) 
+          admin.role.toLowerCase().includes(searchTerm.toLowerCase())
       );
       this.cdr.markForCheck();
     });
   }
 
-  private getDialogConfig(admin?: Admin): DialogConfig {
+  private getDialogConfig(admin?: User): DialogConfig {
     return {
       title: 'Admin',
       isEdit: !!admin,
       fields: [
         {
-          label: 'Admin ID',
-          formControlName: 'adminId',
+          label: 'Admin Code',  // Display 'Admin Code' in the dialog
+          formControlName: 'code',
           type: 'text',
-          maxLength: 10,
+          maxLength: 20,
           required: true,
         },
         {
@@ -115,20 +123,21 @@ export class AdminComponent implements OnInit {
           label: 'Password',
           formControlName: 'password',
           type: 'text',
-          required: true,
-        },
-        {
-          label: 'Email',
-          formControlName: 'email',
-          type: 'text',
           maxLength: 100,
-          required: true,
+          required: false,
         },
+        // {
+        //   label: 'Email',
+        //   formControlName: 'email',
+        //   type: 'text',
+        //   maxLength: 100,
+        //   required: true,
+        // },
         {
           label: 'Role',
           formControlName: 'role',
           type: 'select',
-          options: ['Admin', 'Super Admin'],
+          options: ['admin', 'superadmin'],
           required: true,
         },
         {
@@ -139,7 +148,7 @@ export class AdminComponent implements OnInit {
           required: true,
         },
       ],
-      initialValue: admin || { status: 'Active' },
+      initialValue: admin ? { ...admin, password: '' } : {},
     };
   }
 
@@ -149,65 +158,83 @@ export class AdminComponent implements OnInit {
       data: config,
       disableClose: true,
     });
-
+  
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.adminService.addAdmin(result).subscribe((admins) => {
-          this.admins = admins;
+        this.adminService.addAdmin(result).subscribe((newAdmin) => {
+          this.admins.push(newAdmin);
           this.snackBar.open('Admin added successfully', 'Close', {
             duration: 3000,
           });
+          this.fetchAdmins();
           this.cdr.markForCheck();
         });
       }
     });
   }
+  
 
-  openEditAdminDialog(admin: Admin) {
-    this.selectedAdminIndex = this.admins.indexOf(admin);
+  openEditAdminDialog(admin: User) {
     const config = this.getDialogConfig(admin);
-
+  
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: config,
       disableClose: true,
     });
-
+  
     dialogRef.afterClosed().subscribe((result) => {
-      if (result && this.selectedAdminIndex !== null) {
-        this.updateAdmin(result);
+      if (result) {
+        this.updateAdmin(admin.id, result);  // Use 'id' for updates
       }
     });
   }
-
-  updateAdmin(updatedAdmin: any) {
-    if (this.selectedAdminIndex !== null) {
-      this.admins[this.selectedAdminIndex] = {
-        ...this.admins[this.selectedAdminIndex],
-        ...updatedAdmin,
-      };
-
-      this.adminService
-        .updateAdmin(this.selectedAdminIndex, updatedAdmin)
-        .subscribe((admins) => {
-          this.admins = admins;
-          this.snackBar.open('Admin updated successfully', 'Close', {
-            duration: 3000,
-          });
-          this.cdr.markForCheck();
-        });
+  
+  updateAdmin(id: string, updatedAdmin: any) {
+    const adminData: any = {
+      name: updatedAdmin.name,
+      role: updatedAdmin.role,
+      status: updatedAdmin.status,
+    };
+  
+    // Include the password only if it is not empty
+    if (updatedAdmin.password) {
+      adminData.password = updatedAdmin.password;
     }
+  
+    this.adminService.updateAdmin(id, adminData).subscribe((updatedAdminResponse) => {
+      const index = this.admins.findIndex(admin => admin.id === id);
+  
+      if (index !== -1) {
+        this.admins[index] = {
+          ...updatedAdminResponse,
+          passwordDisplay: '••••••••',  // Keep showing the masked password in the table
+          email: updatedAdminResponse.faculty?.faculty_email || '',
+        };
+      }
+  
+      this.snackBar.open('Admin updated successfully', 'Close', {
+        duration: 3000,
+      });
+      this.fetchAdmins();
+      this.cdr.markForCheck();
+    });
   }
+  
+  
+  
+  
 
-  deleteAdmin(admin: Admin) {
+  deleteAdmin(admin: User) {
     const index = this.admins.indexOf(admin);
     if (index >= 0) {
-      this.adminService.deleteAdmin(index).subscribe((admins) => {
-        this.admins = admins;
+      this.adminService.deleteAdmin(admin.id).subscribe(() => {
+        this.admins.splice(index, 1);
         this.snackBar.open('Admin deleted successfully', 'Close', {
           duration: 3000,
         });
+        this.fetchAdmins();
         this.cdr.markForCheck();
       });
     }
   }
-}
+}  

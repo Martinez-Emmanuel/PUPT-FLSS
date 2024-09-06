@@ -32,4 +32,8 @@ class Program extends Model
     {
         return $this->hasMany(CourseAssignment::class, 'program_id', 'program_id');
     }
+    public function curriculaPrograms()
+    {
+        return $this->hasMany(CurriculaProgram::class, 'program_id', 'program_id');
+    }
 }
