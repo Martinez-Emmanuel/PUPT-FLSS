@@ -86,6 +86,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
         this.academicYearOptions = academicYears.map((ay) => ay.year);
         this.headerInputFields[0].options = this.academicYearOptions;
         this.selectedAcademicYear = this.academicYearOptions[0];
+        this.filterProgramsByAcademicYear(this.selectedAcademicYear);
       });
 
     this.schedulingService
@@ -160,9 +161,48 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
       : '';
   }
 
+  filterProgramsByAcademicYear(academicYear: AcademicYear) {
+    this.schedulingService
+      .getAcademicYears()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((academicYears) => {
+        const selectedYearData = academicYears.find(
+          (ay) => ay.year === academicYear
+        );
+
+        if (selectedYearData) {
+          const programCodes = selectedYearData.programs;
+
+          this.schedulingService
+            .getPrograms()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((programs) => {
+              const programsForYear = programs.filter((program) =>
+                programCodes.includes(program.code)
+              );
+
+              this.programs = programsForYear.map((program) => ({
+                program_code: program.code,
+                program_title: program.title,
+                year_levels: program.number_of_years,
+                sections: this.getSectionsByProgram(
+                  program.code,
+                  program.number_of_years
+                ),
+                curriculums: this.getCurriculumsByProgram(
+                  program.code,
+                  program.number_of_years
+                ),
+              }));
+            });
+        }
+      });
+  }
+
   onInputChange(values: { [key: string]: any }) {
     if (values['academicYear'])
       this.selectedAcademicYear = values['academicYear'];
+    this.filterProgramsByAcademicYear(this.selectedAcademicYear);
   }
 
   onManageYearLevels(program: Program) {
