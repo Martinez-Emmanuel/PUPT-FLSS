@@ -175,8 +175,6 @@ export class TableDialogComponent {
 
   noWhitespaceValidator(control: AbstractControl): ValidationErrors | null {
     const value = control.value;
-  
-    // Ensure control.value is a string before applying .trim()
     const isWhitespace = typeof value === 'string' && value.trim().length === 0;
     const isValid = !isWhitespace || !value;
     
