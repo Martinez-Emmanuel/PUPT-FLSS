@@ -1,17 +1,24 @@
 <!-- Table Header -->
 <div class="curriculum-header-container" [@fadeAnimation]>
   <app-table-header
-  [inputFields]="headerInputFields"
-  [addButtonLabel]="'Manage Programs'"
-  [addIconName]="'apps'"
-  [showExportDialog]="true"
-  [customExportOptions]="customExportOptions"
-  (inputChange)="onInputChange($event)"
-  (export)="onExport()"
-  (add)="onManagePrograms()"
-  [selectedValues]="{ program: selectedProgram, yearLevel: selectedYear }"
-></app-table-header>
+    [inputFields]="headerInputFields"
+    [addButtonLabel]="'Manage Programs'"
+    [addIconName]="'apps'"
+    [showExportDialog]="true"
+    [customExportOptions]="customExportOptions"
+    (export)="onExport($event)"
+    (inputChange)="onInputChange($event)"
+    (add)="onManagePrograms()"
+    [selectedValues]="{ program: selectedProgram, yearLevel: selectedYear }"
+  ></app-table-header>
 </div>
+
+@if (showPreview) {
+  <div class="pdf-preview-container">
+    <button mat-button (click)="cancelPreview()">Cancel Preview</button>
+    <iframe id="pdfPreview" width="100%" height="600px"></iframe>
+  </div>
+}
 
 <div class="curriculum-detail-container" [@pageFloatUpAnimation]>
 @for (semester of selectedSemesters; track semester.semester; let i = $index)
