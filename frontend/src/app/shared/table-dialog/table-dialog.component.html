@@ -4,26 +4,23 @@
   </h2>
 
   <div mat-dialog-content class="table-dialog-content">
-    <div *ngIf="data.isManageList" class="academic-year-list">
-      <!-- Updated styling for each academic year item -->
-      <div
-        class="academic-year-item"
-        *ngFor="let year of data.academicYearList"
-      >
-        <span>{{ year }}</span>
-        <!-- Replaced mat-icon-button with mat-icon and added styling class -->
-
-        <button
-          mat-button
-          class="delete-acad-item"
-          (click)="onDeleteYear(year)"
-        >
-          <mat-icon>delete</mat-icon>
-          <span>Delete</span>
-        </button>
+    @if (data.isManageList) {
+      <div class="academic-year-list">
+        @for (year of data.academicYearList; track year) {
+          <div class="academic-year-item">
+            <span>{{ year }}</span>
+            <button
+              mat-button
+              class="delete-acad-item"
+              (click)="onDeleteYear(year)"
+            >
+              <mat-icon>delete</mat-icon>
+              <span>Delete</span>
+            </button>
+          </div>
+        }
       </div>
-    </div>
-
+    }
     @if (isExportDialog) {
     <form [formGroup]="form" class="dialog-form">
       <mat-radio-group formControlName="exportOption">
