@@ -26,8 +26,19 @@
           <mat-label>Search</mat-label>
           <input matInput />
           <span mat-symbol="search" matPrefix></span>
+        <button mat-icon-button [matMenuTriggerFor]="filterMenu" matSuffix>
+          <mat-icon>filter_list</mat-icon>
+        </button>
         </mat-form-field>
       </div>
+
+      <mat-menu #filterMenu="matMenu">
+        @for (year of yearLevels; track year) {
+          <button mat-menu-item (click)="filterByYear(year)">
+            Year Level: {{ year }}
+          </button>
+        }
+      </mat-menu>
 
       <!-- Programs List --> 
       @if (showProgramSelection) {
@@ -72,8 +83,8 @@
           }
           <!-- Display courses when loaded -->
           @else {
-            <div [@cardEntranceAnimation]="courses.length">
-            @for (course of courses; track course.course_id) { 
+            <div [@cardEntranceAnimation]="filteredCourses.length">
+              @for (course of filteredCourses; track course.course_id) { 
               <div class="course-card" (click)="addCourseToTable(course)">
                 <div class="course-info">
                   <span class="course-code">{{ course.course_code }}</span>
