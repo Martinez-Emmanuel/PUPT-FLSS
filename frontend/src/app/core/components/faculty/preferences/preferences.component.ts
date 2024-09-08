@@ -18,13 +18,14 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSortModule } from '@angular/material/sort';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatMenuModule } from '@angular/material/menu';
 
 import { TimeFormatPipe } from '../../../pipes/time-format/time-format.pipe';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { DialogTimeComponent } from '../../../../shared/dialog-time/dialog-time.component';
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
 import { ThemeService } from '../../../services/theme/theme.service';
-import { PreferencesService, Program, Course } from '../../../services/faculty/preference/preferences.service';
+import { PreferencesService, Program, Course, YearLevel, Semester } from '../../../services/faculty/preference/preferences.service';
 import { CookieService } from 'ngx-cookie-service';
 import { fadeAnimation, cardEntranceAnimation } from '../../../animations/animations';
 
@@ -54,6 +55,7 @@ interface TableData extends Course {
     MatDialogModule,
     MatProgressSpinnerModule,
     MatSortModule, // Optional
+    MatMenuModule,
   ],
   templateUrl: './preferences.component.html',
   styleUrls: ['./preferences.component.scss'],
@@ -64,6 +66,7 @@ interface TableData extends Course {
 export class PreferencesComponent implements OnInit, OnDestroy {
   programs: Program[] = [];
   courses: Course[] = [];
+  filteredCourses: Course[] = [];
   selectedProgram: Program | undefined;
   loadingPrograms = true;
   units = 0;  // Renamed from totalUnits to units
@@ -72,6 +75,8 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   isDarkMode = false;
   showSidenav = false;
   showProgramSelection = true; 
+  yearLevels: number[] = [1, 2, 3, 4];
+  selectedYearLevel: number | null = null;
 
   readonly displayedColumns: string[] = [
     'action',
@@ -117,12 +122,11 @@ export class PreferencesComponent implements OnInit, OnDestroy {
       this.cdr.markForCheck();
     }, 0);
   }
-
+  
   private loadPrograms() {
     this.loadingPrograms = true;
     this.preferencesService.getPrograms().subscribe({
       next: (programs) => {
-        console.log('Programs:', this.programs);
         this.programs = programs;
         this.loadingPrograms = false;
         this.cdr.markForCheck();
@@ -143,18 +147,57 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     this.courses = program.year_levels
       .flatMap((yearLevel) => yearLevel.semesters)
       .flatMap((semester) => semester.courses);
+    this.filteredCourses = this.courses;
     this.loading = false;
     this.dataSource.data = []; 
     this.updateTotalUnits();
+    this.selectedYearLevel = null;
     this.cdr.markForCheck();
   }
 
+  filterByYear(year: number | null): void {
+    this.selectedYearLevel = year;
+    this.applyYearLevelFilter();
+    this.cdr.markForCheck();
+  }
+
+  private applyYearLevelFilter(): void {
+    if (this.selectedYearLevel === null || 
+      this.selectedProgram === undefined) {
+      this.filteredCourses = this.courses;
+    } else {
+      const program = this.programs.find(
+        (prog: Program) => 
+        prog.program_id === this.selectedProgram?.program_id
+      );
+  
+      if (program) {
+        const yearLevel = program.year_levels.find(
+          (yl: YearLevel) => yl.year === this.selectedYearLevel
+        );
+  
+        if (yearLevel) {
+          this.filteredCourses = yearLevel.semesters.flatMap(
+            (semester: Semester) => semester.courses
+          );
+        } else {
+          this.filteredCourses = [];
+        }
+      } else {
+        this.filteredCourses = [];
+      }
+    }
+  
+    this.cdr.markForCheck();
+  }  
+  
   backToProgramSelection(): void {
     this.showProgramSelection = true;
     this.selectedProgram = undefined;
     this.courses = [];
     this.dataSource.data = [];
     this.updateTotalUnits();
+    this.selectedYearLevel = null;
     this.cdr.markForCheck();
   }
 
@@ -172,7 +215,8 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   }
 
   addCourseToTable(course: Course) {
-    if (this.isCourseAlreadyAdded(course) || this.isMaxUnitsExceeded(course)) {
+    if (this.isCourseAlreadyAdded(course) || 
+        this.isMaxUnitsExceeded(course)) {
       return;
     }
 
