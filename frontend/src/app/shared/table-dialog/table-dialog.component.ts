@@ -86,6 +86,8 @@ export interface DialogConfig {
 export class TableDialogComponent {
   form!: FormGroup;
   isExportDialog!: boolean;
+  isEditDialog: boolean = false;
+  isConflict: boolean = false;
   customExportOptions: { all: string; current: string } | null = null;
   filteredOptions: { [key: string]: (string | number)[] } = {};
 
@@ -105,6 +107,7 @@ export class TableDialogComponent {
     this.form = this.fb.group({});
     this.isExportDialog = this.data.isExportDialog || false;
     this.customExportOptions = this.data.customExportOptions || null;
+    this.isEditDialog = this.data.title === 'Edit Schedule Details';
 
     if (this.data.isManageList) {
     } else {

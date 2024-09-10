@@ -4,24 +4,37 @@
   </h2>
 
   <div mat-dialog-content class="table-dialog-content">
-    @if (data.isManageList) {
-      <div class="academic-year-list">
-        @for (year of data.academicYearList; track year) {
-          <div class="academic-year-item">
-            <span>{{ year }}</span>
-            <button
-              mat-button
-              class="delete-acad-item"
-              (click)="onDeleteYear(year)"
-            >
-              <mat-icon>delete</mat-icon>
-              <span>Delete</span>
-            </button>
-          </div>
-        }
+    @if (isEditDialog) {
+    <div class="schedule-validator">
+      <div
+        class="validation-message"
+        [ngClass]="{ conflict: isConflict, 'no-conflict': !isConflict }"
+      >
+        <mat-icon>{{ isConflict ? "error" : "check_circle" }}</mat-icon>
+        <span>{{
+          isConflict
+            ? "Warning: Schedule conflicts have been detected. "
+            : "No scheduling conflicts have been detected."
+        }}</span>
       </div>
-    }
-    @if (isExportDialog) {
+    </div>
+    } @if (data.isManageList) {
+    <div class="academic-year-list">
+      @for (year of data.academicYearList; track year) {
+      <div class="academic-year-item">
+        <span>{{ year }}</span>
+        <button
+          mat-button
+          class="delete-acad-item"
+          (click)="onDeleteYear(year)"
+        >
+          <mat-icon>delete</mat-icon>
+          <span>Delete</span>
+        </button>
+      </div>
+      }
+    </div>
+    } @if (isExportDialog) {
     <form [formGroup]="form" class="dialog-form">
       <mat-radio-group formControlName="exportOption">
         <mat-radio-button value="all">

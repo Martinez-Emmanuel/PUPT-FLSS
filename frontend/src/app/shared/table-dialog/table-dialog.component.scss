@@ -6,8 +6,17 @@
   // max-width: none; // Remove max-width constraint
 }
 
-.table-dialog-content {
+.table-dialog-title {
+  font-family: "Inter Tight", sans-serif !important;
+  color: var(--primary-text) !important;
 
+  span {
+    font-weight: 500;
+  }
+}
+
+.table-dialog-content {
+  
   .academic-year-list {
     @include flex-layout($direction: column, $gap: var(--spacing-sm));
     width: 100%;
@@ -23,7 +32,6 @@
         cursor: pointer;
       }
     }
-
   }
 
   .dialog-form {
@@ -35,8 +43,11 @@
     }
 
     .horizontal-field-container {
-      @include flex-layout($align: flex-start, $justify: space-between, $gap: var(--spacing-sm));
-      margin-bottom: var(--spacing-md);
+      @include flex-layout(
+        $align: flex-start,
+        $justify: space-between,
+        $gap: var(--spacing-sm)
+      );
     }
 
     .checkbox {
@@ -49,14 +60,26 @@
       color: var(--primary-text);
     }
   }
-}
 
-.table-dialog-title {
-  font-family: "Inter Tight", sans-serif !important;
-  color: var(--primary-text) !important;
+  .validation-message {
+    // border: 1px solid cyan;
 
-  span {
-    font-weight: 500;
+    @include flex-layout;
+    font-size: var(--font-size-sm);
+    @include flex-layout($gap: var(--spacing-xxs));
+
+    mat-icon {
+      @include flex-layout;
+      font-size: var(--font-size-md);
+    }
+  }
+
+  .conflict {
+    color: var(--primary-text);
+  }
+
+  .no-conflict {
+    color: var(--secondary-text);
   }
 }
 
