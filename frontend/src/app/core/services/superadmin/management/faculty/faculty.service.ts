@@ -1,105 +1,98 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { Observable, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { environment } from '../../../../../../environments/environment.dev';
+import { CookieService } from 'ngx-cookie-service';
+
+export interface User {
+  id: string;
+  name: string;
+  code: string;
+  role: string;
+  faculty?: {
+    faculty_email: string;
+    faculty_type: string;
+    faculty_unit: number;
+  };
+  status?: string; // Adjust if status is actually part of the response
+}
 
 export interface Faculty {
-  facultyId: string;
+  id: string;
   name: string;
-  email: string;
-  type: string;  // Part-Time, Full-Time, Regular
-  unitsAssigned: number;
-  status: string;  // Active, Inactive
+  code: string;
+  faculty_email: string;
+  faculty_type: string;
+  faculty_unit: number;
+  status: string; // You might need to add this on the backend if you require it
+  role: string;
+  password?: string;  // Make password optional
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class FacultyService {
-  private facultySubject = new BehaviorSubject<Faculty[]>([
-    {
-      facultyId: 'FA1234TG2024',
-      name: 'Alice Johnson',
-      email: 'alice.johnson@example.com',
-      type: 'Full-Time',
-      unitsAssigned: 25,
-      status: 'Active',
-    },
-    {
-      facultyId: 'FA5678TG2024',
-      name: 'Bob Smith',
-      email: 'bob.smith@example.com',
-      type: 'Part-Time',
-      unitsAssigned: 10,
-      status: 'Inactive',
-    },
-    {
-      facultyId: 'FA1135TG2024',
-      name: 'Emman Martinez',
-      email: 'emmanmartinez@gmail.com',
-      type: 'Full-Time',
-      unitsAssigned: 25,
-      status: 'Active',
-    },
-    {
-      facultyId: 'FA0090TG2024',
-      name: 'Adrian Naoe',
-      email: 'naoe.adrianb@gmail.com',
-      type: 'Regular',
-      unitsAssigned: 30,
-      status: 'Active',
-    },
-    {
-      facultyId: 'FA0369TG2024',
-      name: 'Kyla Malaluan',
-      email: 'kyla.malaluan@gmail.com',
-      type: 'Part-Time',
-      unitsAssigned: 20,
-      status: 'Inactive',
-    },
-  ]);
+  private baseUrl = environment.apiUrl;
 
-  getFaculty(isEditMode: boolean = false): Observable<Faculty[]> {
-    if (isEditMode) {
-      return of(this.facultySubject.getValue()); // Return full email for editing
-    }
-    const facultyWithMaskedEmails = this.facultySubject.getValue().map(faculty => ({
-      ...faculty,
-      email: this.maskEmail(faculty.email),
-    }));
-    return of(facultyWithMaskedEmails);
+  constructor(private http: HttpClient, private cookieService: CookieService) {}
+
+  private getHeaders(): HttpHeaders {
+    const token = this.cookieService.get('token');
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    });
   }
 
-  private maskEmail(email: string): string {
-    const [localPart, domain] = email.split('@');
-    if (localPart.length > 2) {
-      return `${localPart[0]}${'*'.repeat(localPart.length - 2)}${localPart[localPart.length - 1]}@${domain}`;
-    }
-    return email; // Fallback if email is too short
+  getFaculty(): Observable<Faculty[]> {
+    return this.http.get<User[]>(`${this.baseUrl}/showAccounts`, { headers: this.getHeaders() }).pipe(
+      map((users) => {
+        if (!Array.isArray(users)) {
+          throw new Error('Unexpected response format');
+        }
+  
+        // Filter users by role (done in backend, so this is optional)
+        return users
+          .filter((user) => user.role === 'faculty')
+          .map((user) => ({
+            id: user.id.toString(),
+            name: user.name,
+            code: user.code,
+            faculty_email: user.faculty?.faculty_email || '',
+            faculty_type: user.faculty?.faculty_type || '',
+            faculty_unit: user.faculty?.faculty_unit ?? 0,
+            status: user.status || 'Active',
+            role: user.role,
+          }));
+      }),
+      catchError((error) => {
+        console.error('Error fetching faculty:', error);
+        return of([]); // Return an empty array on error
+      })
+    );
   }
+  
+  
+  
 
-  addFaculty(
-    faculty: Faculty
-  ): Observable<Faculty[]> {
-    const facultyList = this.facultySubject.getValue();
-    this.facultySubject.next([...facultyList, faculty]);
-    return of(this.facultySubject.getValue());
+  addFaculty(faculty: Faculty): Observable<Faculty> {
+    return this.http.post<Faculty>(`${this.baseUrl}/addAccount`, faculty, { headers: this.getHeaders() });
   }
-
-  updateFaculty(
-    index: number, 
-    updatedFaculty: Faculty
-  ): Observable<Faculty[]> {
-    const facultyList = this.facultySubject.getValue();
-    facultyList[index] = updatedFaculty;
-    this.facultySubject.next([...facultyList]);
-    return of(this.facultySubject.getValue());
+  
+  
+  updateFaculty(id: string, faculty: Omit<Faculty, 'code'>): Observable<Faculty> {
+    return this.http.put<Faculty>(`${this.baseUrl}/updateAccount/${id}`, faculty, { headers: this.getHeaders() });
   }
-
-  deleteFaculty(
-    index: number
-  ): Observable<Faculty[]> {
-    const facultyList = this.facultySubject.getValue();
-    facultyList.splice(index, 1);
-    this.facultySubject.next([...facultyList]);
-    return of(this.facultySubject.getValue());
+  
+  
+  
+  
+  deleteFaculty(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/deleteAccount/${id}`, { headers: this.getHeaders() });
   }
+  
+  
 }

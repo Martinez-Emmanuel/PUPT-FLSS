@@ -32,4 +32,13 @@ class Semester extends Model
             'course_id'    // Local key on CourseAssignment table...
         );
     }
+    public function activeSemesters()
+    {
+        return $this->hasMany(ActiveSemester::class, 'semester_id', 'semester_id');
+    }
+
+    public function courseAssignments()
+    {
+        return $this->hasMany(CourseAssignment::class, 'semester_id', 'semester_id');
+    }
 }
