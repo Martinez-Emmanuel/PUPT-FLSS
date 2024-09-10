@@ -4,16 +4,18 @@
 -- Query 1: Get all academic Years and semesters
 SELECT 
     ay.academic_year_id,
-    ay.year_start,
-    ay.year_end,
+    CONCAT(ay.year_start, '-', ay.year_end) AS academic_year,
     s.semester_id,
-    s.semester
+    s.semester AS semester_number,
+    act_s.is_active
 FROM 
     academic_years ay
 JOIN 
-    active_semesters ase ON ay.academic_year_id = ase.academic_year_id
+    active_semesters act_s ON ay.academic_year_id = act_s.academic_year_id
 JOIN 
-    semesters s ON ase.semester_id = s.semester_id;
+    semesters s ON act_s.semester_id = s.semester_id
+ORDER BY 
+    ay.year_start, s.semester;
 
 
 -- Query 2: Get the current active year and semester
@@ -121,8 +123,8 @@ WHERE
         (p.program_code = 'BSIT' AND pylc.year_level IN (1, 2) AND c.curriculum_year = 2022) OR
         (p.program_code = 'BSIT' AND pylc.year_level IN (3, 4) AND c.curriculum_year = 2018) OR
 
-        (p.program_code = 'BSA' AND pylc.year_level IN (1, 2) AND c.curriculum_year = 2022) OR
-        (p.program_code = 'BSA' AND pylc.year_level IN (3, 4, 5) AND c.curriculum_year = 2018) OR
+        (p.program_code = 'BSME' AND pylc.year_level IN (1, 2) AND c.curriculum_year = 2022) OR
+        (p.program_code = 'BSME' AND pylc.year_level IN (3, 4, 5) AND c.curriculum_year = 2018) OR
 
         (p.program_code = 'BSPSYCH' AND pylc.year_level IN (1, 2, 3, 4) AND c.curriculum_year = 2022) -- hypothetical program case scenario
     )
@@ -179,176 +181,220 @@ GROUP BY
 ORDER BY 
     p.program_id, sp.year_level;
 
+
 -- Query 7: Retrieve Courses and Schedule 
-SELECT DISTINCT
+SELECT 
+    p.program_code,
+    p.program_title,
+    sp.section_name,
+    yl.year AS year_level,
+    s.semester AS semester_number,
     c.course_code,
     c.course_title,
-    c.lec_hours AS Lec,
-    c.lab_hours AS Lab,
-    c.units,
-    c.tuition_hours,
-    sch.day,
-    sch.start_time,
-    sch.end_time,
-    f.faculty_email AS professor_email,
-    u.name AS professor_name,
-    r.room_code AS room
+    sc.day,
+    sc.start_time,
+    sc.end_time,
+    u.name AS faculty_name,
+    r.room_code,
+    r.location
 FROM 
-    sections_per_program_year sp
+    programs p
 JOIN 
-    program_year_level_curricula pylc ON sp.program_id = pylc.program_id 
-                                      AND sp.year_level = pylc.year_level
-                                      AND sp.academic_year_id = pylc.academic_year_id
+    sections_per_program_year sp ON p.program_id = sp.program_id
 JOIN 
-    curricula c2 ON pylc.curriculum_id = c2.curriculum_id
+    year_levels yl ON sp.year_level = yl.year
 JOIN 
-    curricula_program cp ON c2.curriculum_id = cp.curriculum_id
+    semesters s ON s.year_level_id = yl.year_level_id
 JOIN 
-    course_assignments ca ON cp.curricula_program_id = ca.curricula_program_id
+    active_semesters ase ON ase.semester_id = s.semester_id
+JOIN 
+    section_courses scs ON sp.sections_per_program_year_id = scs.sections_per_program_year_id
+JOIN 
+    course_assignments ca ON scs.course_assignment_id = ca.course_assignment_id
 JOIN 
     courses c ON ca.course_id = c.course_id
 JOIN 
-    section_courses sc ON sp.sections_per_program_year_id = sc.sections_per_program_year_id
-                      AND sc.course_id = c.course_id
+    schedules sc ON scs.section_course_id = sc.section_course_id
 JOIN 
-    schedules sch ON sc.section_course_id = sch.section_course_id
+    faculty f ON sc.faculty_id = f.id
 JOIN 
-    faculty f ON sch.faculty_id = f.id
+    users u ON f.user_id = u.id -- change as needed!
 JOIN 
-    users u ON f.user_id = u.id
-JOIN 
-    rooms r ON sch.room_id = r.room_id
-JOIN 
-    active_semesters ase ON sp.academic_year_id = ase.academic_year_id
-JOIN 
-    semesters s ON ase.semester_id = s.semester_id
+    rooms r ON sc.room_id = r.room_id
 WHERE 
-    ase.is_active = 1 -- change as needed!
-    AND sp.program_id = 1 -- change as needed!
-    AND sp.year_level = 1 -- change as needed!
-    AND sp.section_name = 'Section A' -- change as needed!
+    p.program_code = 'BSIT' -- change as needed!
+    AND yl.year = 1 -- change as needed!
+    AND sp.section_name = 'Section 1' -- change as needed!
+    AND ase.is_active = 1
 ORDER BY 
-    c.course_code, sch.day, sch.start_time;
+    p.program_code, yl.year, sp.section_name, c.course_code;
 
 
--- Query 8: Retrieve a specific faculty load and schedule for the current
+-- Query 8: Retrieve a specific faculty's load and schedule for the current
 -- active academic year and semester
 SELECT 
+    u.name AS faculty_name,
+    p.program_code,
+    p.program_title,
+    sp.section_name,
+    yl.year AS year_level,
+    s.semester AS semester_number,
     c.course_code,
     c.course_title,
-    c.lec_hours AS Lec,
-    c.lab_hours AS Lab,
-    c.units,
-    c.tuition_hours,
-    sch.day,
-    sch.start_time,
-    sch.end_time,
-    sp.section_name,
-    r.room_code AS room,
-    f.faculty_email AS professor_email,
-    u.name AS professor_name
+    sc.day,
+    sc.start_time,
+    sc.end_time,
+    r.room_code,
+    r.location
 FROM 
-    schedules sch
-JOIN 
-    section_courses sc ON sch.section_course_id = sc.section_course_id
-JOIN 
-    sections_per_program_year sp ON sc.sections_per_program_year_id = sp.sections_per_program_year_id
-JOIN 
-    courses c ON sc.course_id = c.course_id
-JOIN 
-    rooms r ON sch.room_id = r.room_id
-JOIN 
-    faculty f ON sch.faculty_id = f.id
+    faculty f
 JOIN 
     users u ON f.user_id = u.id
 JOIN 
-    active_semesters ase ON sp.academic_year_id = ase.academic_year_id
+    schedules sc ON f.id = sc.faculty_id
 JOIN 
-    semesters s ON ase.semester_id = s.semester_id
+    section_courses scs ON sc.section_course_id = scs.section_course_id
+JOIN 
+    course_assignments ca ON scs.course_assignment_id = ca.course_assignment_id
+JOIN 
+    courses c ON ca.course_id = c.course_id
+JOIN 
+    sections_per_program_year sp ON scs.sections_per_program_year_id = sp.sections_per_program_year_id
+JOIN 
+    programs p ON sp.program_id = p.program_id
+JOIN 
+    year_levels yl ON sp.year_level = yl.year
+JOIN 
+    semesters s ON s.year_level_id = yl.year_level_id
+JOIN 
+    active_semesters ase ON ase.semester_id = s.semester_id AND ase.academic_year_id = sp.academic_year_id
+JOIN 
+    rooms r ON sc.room_id = r.room_id
 WHERE 
-    ase.is_active = 1 -- change as needed!
-    AND sch.faculty_id = 1 -- change as needed!
+    u.code = 'FA0001TG2024'  -- change as needed!
+    AND ase.is_active = 1
 ORDER BY 
-    sch.day, sch.start_time;
+    sc.day, sc.start_time;
 
 
 -- Query 9: Retrieve load and Schedule for a specific Program-Year-Level-Section
 -- combination for the current active year and semester
 SELECT 
+    p.program_code,
+    p.program_title,
+    sp.section_name,
+    yl.year AS year_level,
+    s.semester AS semester_number,
     c.course_code,
     c.course_title,
-    c.lec_hours AS Lec,
-    c.lab_hours AS Lab,
-    c.units,
-    c.tuition_hours,
-    sch.day,
-    sch.start_time,
-    sch.end_time,
-    u.name AS professor_name,
-    r.room_code AS room
+    sc.day,
+    sc.start_time,
+    sc.end_time,
+    u.name AS faculty_name,
+    r.room_code,
+    r.location
 FROM 
-    sections_per_program_year sp
+    programs p
 JOIN 
-    section_courses sc ON sp.sections_per_program_year_id = sc.sections_per_program_year_id
+    sections_per_program_year sp ON p.program_id = sp.program_id
 JOIN 
-    courses c ON sc.course_id = c.course_id
+    year_levels yl ON sp.year_level = yl.year
 JOIN 
-    schedules sch ON sc.section_course_id = sch.section_course_id
+    semesters s ON s.year_level_id = yl.year_level_id
 JOIN 
-    faculty f ON sch.faculty_id = f.id
+    active_semesters ase ON ase.semester_id = s.semester_id AND ase.academic_year_id = sp.academic_year_id
+JOIN 
+    section_courses scs ON sp.sections_per_program_year_id = scs.sections_per_program_year_id
+JOIN 
+    course_assignments ca ON scs.course_assignment_id = ca.course_assignment_id
+JOIN 
+    courses c ON ca.course_id = c.course_id
+JOIN 
+    schedules sc ON scs.section_course_id = sc.section_course_id
+JOIN 
+    faculty f ON sc.faculty_id = f.id
 JOIN 
     users u ON f.user_id = u.id
 JOIN 
-    rooms r ON sch.room_id = r.room_id
-JOIN 
-    active_semesters ase ON sp.academic_year_id = ase.academic_year_id
-JOIN 
-    semesters s ON ase.semester_id = s.semester_id
+    rooms r ON sc.room_id = r.room_id
 WHERE 
-    ase.is_active = 1 -- change as needed!
-    AND sp.program_id = 1 -- change as needed!
-    AND sp.year_level = 1 -- change as needed!
-    AND sp.section_name = 'Section A' -- change as needed!
-ORDER BY 
-    c.course_code, sch.day, sch.start_time;
+    p.program_code = 'BSIT'  -- change as needed!
+    AND yl.year = 1          -- change as needed!
+    AND sp.section_name = 'Section 1'  -- change as needed!
+    AND ase.is_active = 1 
+
 
 
 -- Query 10: Retrieve Load and Schedule for a Room on a Particular Day
 SELECT 
+    r.room_code,
+    r.location,
+    sc.day,
+    sc.start_time,
+    sc.end_time,
     c.course_code,
     c.course_title,
-    c.lec_hours AS Lec,
-    c.lab_hours AS Lab,
-    c.units,
-    c.tuition_hours,
-    sch.day,
-    sch.start_time,
-    sch.end_time,
-    sp.section_name,
-    f.faculty_email AS professor_email,
-    u.name AS professor_name,
-    r.room_code AS room
+    u.name AS faculty_name,
+    p.program_code,
+    p.program_title,
+    sp.section_name
 FROM 
-    schedules sch
+    schedules sc
 JOIN 
-    section_courses sc ON sch.section_course_id = sc.section_course_id
+    rooms r ON sc.room_id = r.room_id
 JOIN 
-    sections_per_program_year sp ON sc.sections_per_program_year_id = sp.sections_per_program_year_id
+    section_courses scs ON sc.section_course_id = scs.section_course_id
 JOIN 
-    courses c ON sc.course_id = c.course_id
+    course_assignments ca ON scs.course_assignment_id = ca.course_assignment_id
 JOIN 
-    rooms r ON sch.room_id = r.room_id
+    courses c ON ca.course_id = c.course_id
 JOIN 
-    faculty f ON sch.faculty_id = f.id
+    faculty f ON sc.faculty_id = f.id
 JOIN 
     users u ON f.user_id = u.id
 JOIN 
-    active_semesters ase ON sp.academic_year_id = ase.academic_year_id
+    sections_per_program_year sp ON scs.sections_per_program_year_id = sp.sections_per_program_year_id
 JOIN 
-    semesters s ON ase.semester_id = s.semester_id
+    programs p ON sp.program_id = p.program_id
 WHERE 
-    ase.is_active = 1 -- change as needed!
-    AND sch.room_id = 1 -- change as needed!
-    AND sch.day = 'Monday' -- change as needed!
+    r.room_code = 'A201'  -- change as needed!
+    AND sc.day = 'Monday'  -- change as needed!
 ORDER BY 
-    sch.start_time;
+    sc.start_time;
+
+
+-- Query 11: Retrieve Courses Offered for Faculty Preference Submission
+SELECT DISTINCT
+    p.program_code,
+    p.program_title,
+    yl.year AS year_level,
+    co.course_code,
+    co.course_title,
+    c.curriculum_year
+FROM 
+    programs p
+JOIN 
+    program_year_level_curricula pylc ON p.program_id = pylc.program_id
+JOIN 
+    curricula c ON pylc.curriculum_id = c.curriculum_id
+JOIN 
+    year_levels yl ON pylc.year_level = yl.year
+JOIN 
+    course_assignments ca ON ca.curricula_program_id = (
+        SELECT cp.curricula_program_id 
+        FROM curricula_program cp 
+        WHERE cp.curriculum_id = pylc.curriculum_id 
+          AND cp.program_id = p.program_id
+    )
+JOIN 
+    courses co ON ca.course_id = co.course_id
+JOIN 
+    active_semesters ase ON ase.academic_year_id = pylc.academic_year_id 
+                         AND ase.is_active = 1 
+                         AND ase.semester_id = ca.semester_id
+WHERE 
+    p.program_code = 'BSIT'   -- change as needed!
+    AND yl.year = 1           -- change as needed!
+ORDER BY 
+    p.program_code, yl.year, co.course_code;
+
