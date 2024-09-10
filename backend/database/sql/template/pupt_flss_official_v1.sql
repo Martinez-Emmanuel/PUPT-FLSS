@@ -240,13 +240,14 @@ CREATE TABLE `sections_per_program_year` (
 CREATE TABLE `section_courses` (
   `section_course_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `sections_per_program_year_id` int(10) UNSIGNED NOT NULL,
-  `course_id` int(10) UNSIGNED NOT NULL,
+  `course_assignment_id` int(10) UNSIGNED NOT NULL,  -- Changed to reference `course_assignment_id` instead of `course_id`
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`section_course_id`),
   FOREIGN KEY (`sections_per_program_year_id`) REFERENCES `sections_per_program_year` (`sections_per_program_year_id`) ON DELETE CASCADE,
-  FOREIGN KEY (`course_id`) REFERENCES `courses` (`course_id`) ON DELETE CASCADE
+  FOREIGN KEY (`course_assignment_id`) REFERENCES `course_assignments` (`course_assignment_id`) ON DELETE CASCADE  -- Ensures proper linkage
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 -- Create a flexible scheduling system
 CREATE TABLE `schedules` (
