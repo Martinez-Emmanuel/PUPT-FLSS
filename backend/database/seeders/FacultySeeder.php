@@ -20,7 +20,7 @@ class FacultySeeder extends Seeder
         $user1 = User::create([
             'name' => 'Steven Villarosa',
             'code' => 'FA1234TG2023',
-            'password' => '#Q!FR&334', // Password will be hashed by the model mutator
+            'password' => 'facultypass', // Password will be hashed by the model mutator
             'role' => 'faculty',
             'status' => 'active', // Set status to active
         ]);
@@ -28,7 +28,7 @@ class FacultySeeder extends Seeder
         $user2 = User::create([
             'name' => 'Marissa Ferrer',
             'code' => 'ADM001TG2024',
-            'password' => '$z7g235Y1', // Password will be hashed by the model mutator
+            'password' => 'adminpass', // Password will be hashed by the model mutator
             'role' => 'admin',
             'status' => 'active', // Set status to active
         ]);
@@ -36,7 +36,7 @@ class FacultySeeder extends Seeder
         $user3 = User::create([
             'name' => 'Ermmanuel Martinez',
             'code' => 'SDM001TG2024',
-            'password' => '!7DQK95#', // Password will be hashed by the model mutator
+            'password' => 'superadminpass', // Password will be hashed by the model mutator
             'role' => 'superadmin',
             'status' => 'active', // Set status to active
         ]);
