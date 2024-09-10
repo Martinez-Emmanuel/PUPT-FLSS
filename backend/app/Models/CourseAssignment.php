@@ -30,4 +30,9 @@ class CourseAssignment extends Model
     {
         return $this->belongsTo(CurriculaProgram::class, 'curricula_program_id', 'curricula_program_id');
     }
+
+    public function sectionCourses()
+    {
+        return $this->hasMany(SectionCourse::class, 'course_assignment_id', 'course_assignment_id');
+    }
 }

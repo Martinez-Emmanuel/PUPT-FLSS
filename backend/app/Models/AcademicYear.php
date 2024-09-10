@@ -17,13 +17,23 @@ class AcademicYear extends Model
         'is_active',
     ];
 
-    public function sections()
-    {
-        return $this->hasMany(Section::class, 'academic_year_id', 'academic_year_id');
-    }
-
     public function activeSemesters()
     {
         return $this->hasMany(ActiveSemester::class, 'academic_year_id', 'academic_year_id');
+    }
+
+    public function academicYearCurricula()
+    {
+        return $this->hasMany(AcademicYearCurricula::class, 'academic_year_id', 'academic_year_id');
+    }
+
+    public function programYearLevelCurricula()
+    {
+        return $this->hasMany(ProgramYearLevelCurricula::class, 'academic_year_id', 'academic_year_id');
+    }
+
+    public function sectionsPerProgramYear()
+    {
+        return $this->hasMany(SectionsPerProgramYear::class, 'academic_year_id', 'academic_year_id');
     }
 }
