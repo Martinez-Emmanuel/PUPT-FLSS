@@ -104,13 +104,15 @@
   }
 }
 
-#courses_list {
+#courses_list, 
+#programs_list {
   flex: 1;
   overflow: hidden;
   display: flex;
   flex-direction: column;
 
-  .courses-scroll-container {
+  .courses-scroll-container,
+  .programs-scroll-container {
     @include custom-scrollbar;
     flex: 1;
     overflow-y: auto;
@@ -123,7 +125,18 @@
   }
 }
 
-.course-card {
+.section-label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+
+  button {
+    margin-right: 0.5rem;
+  }
+}
+
+.course-card, 
+.program-card {
   @include default-transition;
   @include gradient-soft-secondary(30deg);
   display: flex;
@@ -133,14 +146,16 @@
   margin-bottom: var(--spacing-xs);
   border-radius: var(--border-radius-sm);
 
-  .course-info {
+  .course-info, 
+  .program-info {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xxs);
   }
 
   .course-code,
-  .course-title {
+  .course-title,
+  .program-name {
     color: var(--neutral-base);
   }
 
@@ -149,7 +164,8 @@
     font-size: var(--font-size-sm);
   }
 
-  .course-title {
+  .course-title,
+  .program-name {
     font-weight: 400;
     font-size: var(--font-size-md);
   }
