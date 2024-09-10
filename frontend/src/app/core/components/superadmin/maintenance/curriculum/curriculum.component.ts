@@ -214,12 +214,14 @@ export class CurriculumComponent implements OnInit, OnDestroy {
     this.openCurriculumDialog(curriculum);
   }
   
-  private getDialogConfig(availableCurricula: Curriculum[]): any {
+  private getDialogConfig(availableCurricula: Curriculum[], existingCurriculum?: Curriculum): DialogConfig {
+    const isEdit = !!existingCurriculum;
     return {
-      title: 'Curriculum',
+      title: isEdit ? 'Edit Curriculum' : 'Add Curriculum',
+      isEdit: isEdit,
       fields: [
         {
-          label: 'Update Curriculum Year',
+          label: 'Curriculum Year',
           formControlName: 'curriculum_year',
           type: 'text',
           maxLength: 4,
@@ -228,33 +230,37 @@ export class CurriculumComponent implements OnInit, OnDestroy {
         {
           label: 'Status',
           formControlName: 'status',
-          type: 'select',
+          type: 'select' as const,
           options: ['active', 'inactive'],
           required: true,
         },
-        {
+        ...(isEdit ? [] : [{
           label: 'Copy from existing curriculum',
           formControlName: 'copy_from',
-          type: 'select',
+          type: 'select' as const,
           options: [
             'None',
             ...availableCurricula.map(curriculum => `${curriculum.curriculum_year} Curriculum`)
           ],
           required: false,
-        },
+        }]),
       ],
-      initialValue: {
+      initialValue: isEdit ? {
+        curriculum_year: existingCurriculum!.curriculum_year,
+        status: existingCurriculum!.status,
+      } : {
         copy_from: 'None',
         status: 'active',
       },
     };
   }
   
-  private openCurriculumDialog(curriculum: Curriculum | undefined) {
-    // Ensure curriculum is passed as an array, even if it's a single object or undefined
-    const curriculaList = curriculum ? [curriculum] : [];  // Convert to array or pass empty array if undefined
-  
-    const config = this.getDialogConfig(curriculaList);  // Pass the array
+  private openCurriculumDialog(curriculum?: Curriculum) {
+    const availableCurricula = curriculum 
+      ? this.curricula.filter(c => c.curriculum_id !== curriculum.curriculum_id) 
+      : this.curricula;
+    const config = this.getDialogConfig(availableCurricula, curriculum);
+    
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: config,
       disableClose: true,
@@ -262,12 +268,17 @@ export class CurriculumComponent implements OnInit, OnDestroy {
   
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.updateCurriculum({ ...curriculum, ...result }); // Ensure curriculum_id is passed
+        if (config.isEdit) {
+          this.updateCurriculum({ ...curriculum!, ...result });
+        } else if (result.copy_from && result.copy_from !== 'None') {
+          this.copyCurriculum(result);
+        } else {
+          this.addCurriculum(result);
+        }
       }
     });
   }
   
-
   //   dialogRef.afterClosed().subscribe((result) => {
   //     if (result) {
   //       curriculum ? this.updateCurriculum(result) : this.addCurriculum(result);

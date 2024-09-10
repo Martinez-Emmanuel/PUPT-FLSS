@@ -4,7 +4,7 @@
   @include flex-layout($align: stretch, $justify: space-between);
   @include default-transition;
   background-color: var(--main-bg);
-  padding-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-sm);
 
   .input-container {
     @include flex-layout($gap: var(--spacing-md));
@@ -12,16 +12,51 @@
     .program-field {
       width: 15rem;
     }
-  
+
     .year-level-field {
-      width: 8rem;
+      width: 10rem;
     }
-  
+
     .sections-field {
       width: 10rem;
-  
+
       mat-icon {
         cursor: pointer;
+      }
+    }
+
+    .curriculum-field {
+      width: 10rem;
+    }
+  }
+
+  .object-container {
+    @include flex-layout($align: stretch);
+
+    .active-year-sem-container {
+      @include flex-layout(
+        $direction: column,
+        $align: flex-start,
+        $gap: var(--spacing-xxs)
+      );
+
+      @include gradient-primary(315deg);
+      padding: 0 var(--spacing-md);
+      border-radius: var(--border-radius-md);
+      color: white;
+      cursor: pointer;
+
+      .text,
+      .label {
+        @include reset-styles;
+      }
+
+      .text {
+        font-weight: 500;
+      }
+
+      .label {
+        opacity: var(--opacity-semi-opaque);
       }
     }
   }

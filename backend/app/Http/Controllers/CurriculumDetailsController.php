@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Curriculum;
@@ -10,7 +11,6 @@ class CurriculumDetailsController extends Controller
     public function getCurriculumDetails($curriculumYear)
     {
         $curriculum = Curriculum::where('curriculum_year', $curriculumYear)
-            ->where('status', 'active')
             ->firstOrFail();
 
         $curriculaPrograms = CurriculaProgram::where('curriculum_id', $curriculum->curriculum_id)

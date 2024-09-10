@@ -1,0 +1,10 @@
+@import "../../../styles/mixins.scss";
+
+.loading-container {
+  @include flex-layout($direction: column);
+  height: 100%;
+
+  mat-progress-bar {
+    max-width: 50%;
+  }
+}

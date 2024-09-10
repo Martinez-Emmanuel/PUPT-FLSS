@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
@@ -13,7 +13,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { TableDialogComponent } from '../../shared/table-dialog/table-dialog.component';
 
 export interface InputField {
-  type: 'text' | 'select' | 'date' | 'number' | 'section';
+  type: 'text' | 'select' | 'date' | 'number';
   label: string;
   placeholder?: string;
   options?: any[];
@@ -35,7 +35,7 @@ export interface InputField {
   templateUrl: './table-header.component.html',
   styleUrls: ['./table-header.component.scss'],
 })
-export class TableHeaderComponent {
+export class TableHeaderComponent implements OnInit, OnChanges {
   @Input() inputFields: InputField[] = [];
   @Input() addButtonLabel = 'Add';
   @Input() addIconName = 'add';
@@ -43,15 +43,20 @@ export class TableHeaderComponent {
   @Input() showExportButton = true;
   @Input() showExportDialog = false;
   @Input() showAddButton = true;
+  @Input() showActiveYearAndSem = false;
+  @Input() showButtons = true;
   @Input() selectedValues: { [key: string]: any } = {};
   @Input() customExportOptions: { all: string; current: string } | null = null;
   @Input() searchLabel = 'Search';
+  @Input() activeYear = '';
+  @Input() activeSemester = '';
 
   @Output() add = new EventEmitter<void>();
   @Output() inputChange = new EventEmitter<{ [key: string]: any }>();
-  @Output() sectionChange = new EventEmitter<number>();
   @Output() export = new EventEmitter<'all' | 'current' | undefined>();
   @Output() search = new EventEmitter<string>();
+  @Output() activeYearSemClick = new EventEmitter<void>();
+  @Output() addAcademicYear = new EventEmitter<void>();
 
   form: FormGroup;
 
@@ -60,9 +65,22 @@ export class TableHeaderComponent {
   }
 
   ngOnInit() {
+    this.initializeForm();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['inputFields'] || changes['selectedValues']) {
+      this.initializeForm();
+    }
+  }
+
+  private initializeForm() {
+    this.form = this.fb.group({});
     this.inputFields.forEach((field) => {
       const initialValue =
-        this.selectedValues[field.key] || (field.type === 'section' ? 1 : '');
+        this.selectedValues[field.key] !== undefined
+          ? this.selectedValues[field.key]
+          : '';
       this.form.addControl(field.key, this.fb.control(initialValue));
     });
 
@@ -95,17 +113,12 @@ export class TableHeaderComponent {
     }
   }
 
-  incrementSection(field: InputField) {
-    const currentValue = this.form.get(field.key)?.value || 1;
-    this.form.get(field.key)?.setValue(currentValue + 1);
-    this.sectionChange.emit(currentValue + 1);
+  onActiveYearSemClick(): void {
+    this.activeYearSemClick.emit();
   }
 
-  decrementSection(field: InputField) {
-    const currentValue = this.form.get(field.key)?.value || 1;
-    if (currentValue > 1) {
-      this.form.get(field.key)?.setValue(currentValue - 1);
-      this.sectionChange.emit(currentValue - 1);
-    }
+  onAddAcademicYearClick(): void {
+    this.addAcademicYear.emit();
   }
+
 }

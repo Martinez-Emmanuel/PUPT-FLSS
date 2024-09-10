@@ -4,7 +4,7 @@
   @include reset-styles;
 }
 
-.scheduling-container {
+.academic-year-container {
   @include default-transition;
   @include flex-layout(
     $direction: column,
@@ -15,7 +15,7 @@
   height: 100%;
 }
 
-.scheduling-table-container {
+.academic-year-table-container {
   @include flex-layout($direction: column, $align: none, $justify: none);
   @include hide-scrollbar;
   overflow: auto;
@@ -28,7 +28,7 @@
     flex-direction: column;
     background-color: var(--neutral-light);
     max-height: 50rem;
-  
+
     .custom-table {
       @include default-transition;
       background-color: var(--neutral-light);
@@ -37,11 +37,11 @@
         color: var(--primary-text);
       }
     }
-
+       
     .index {
       padding: 0 var(--spacing-md);
     }
-  
+
     .custom-header {
       text-wrap: nowrap;
       background-color: var(--primary-one);
@@ -52,17 +52,26 @@
       position: sticky;
       top: 0;
       z-index: 2;
+
     }
-  
+
     .custom-cell {
       padding: var(--spacing-sm);
       text-align: center;
 
       .edit-button {
         color: var(--secondary-text);
-  
+
         &:hover {
           background-color: var(--secondary-hover);
+        }
+      }
+
+      .remove-button {
+        color: var(--primary-text);
+
+        &:hover {
+          background-color: var(--primary-hover);
         }
       }
     }

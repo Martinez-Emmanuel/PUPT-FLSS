@@ -29,6 +29,7 @@
     .header-name {
       @include flex-layout($direction: column);
       text-align: center;
+      line-height: var(--line-height-md);
 
       .university-name,
       .system-name {
@@ -129,7 +130,7 @@
 
         .account-text {
           text-align: right;
-          line-height: var(--line-height-normal);
+          line-height: var(--line-height-sm);
 
           .account-name {
             font-weight: 600;
@@ -150,6 +151,7 @@
             border-radius: 50%;
             cursor: pointer;
             transition: all 0.3s ease;
+            @include gradient-primary-border;
 
             &:hover {
               box-shadow: 0 0 0 3px var(--neutral-hover);
@@ -209,8 +211,8 @@
     @include default-transition;
     flex: 1;
     background-color: var(--main-bg);
-    border-radius: var(--border-radius-md);
-    padding: var(--spacing-md);
+    border-radius: var(--border-radius-lg);
+    padding: var(--spacing-lg);
     overflow: auto;
     width: 100%;
   }

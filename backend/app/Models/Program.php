@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -32,8 +33,19 @@ class Program extends Model
     {
         return $this->hasMany(CourseAssignment::class, 'program_id', 'program_id');
     }
+
     public function curriculaPrograms()
     {
         return $this->hasMany(CurriculaProgram::class, 'program_id', 'program_id');
+    }
+
+    public function programYearLevelCurricula()
+    {
+        return $this->hasMany(ProgramYearLevelCurricula::class, 'program_id', 'program_id');
+    }
+
+    public function sectionsPerProgramYear()
+    {
+        return $this->hasMany(SectionsPerProgramYear::class, 'program_id', 'program_id');
     }
 }
