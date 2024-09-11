@@ -181,10 +181,10 @@ export class CurriculumDetailComponent implements OnInit {
   
   
   updateHeaderInputFields() {
-    const yearLevelOptions = [1, 2, 3, 4, 5];
-    if (yearLevelOptions.length === 0) {
-    console.error('No year level options available.');
-  }
+    const selectedProgram = this.getProgram();
+    const yearLevelOptions = selectedProgram 
+      ? Array.from({ length: selectedProgram.number_of_years }, (_, i) => i + 1)
+      : [];
 
   this.headerInputFields = [
     {
@@ -256,16 +256,17 @@ export class CurriculumDetailComponent implements OnInit {
   onInputChange(values: { [key: string]: any }) {
     console.log('Input Change Detected:', values);
 
+      // Update selected program if a new program is selected
+    if (values['program'] !== undefined) {
+      this.selectedProgram = values['program'];
+      this.updateHeaderInputFields();
+      console.log('Updated selectedProgram:', this.selectedProgram);
+    }
+
     // Update selected year if a new year level is selected
     if (values['yearLevel'] !== undefined) {
         this.selectedYear = values['yearLevel'];
         console.log('Updated selectedYear:', this.selectedYear);
-    }
-
-    // Update selected program if a new program is selected
-    if (values['program'] !== undefined) {
-        this.selectedProgram = values['program'];
-        console.log('Updated selectedProgram:', this.selectedProgram);
     }
 
     // Proceed only if both selectedProgram and selectedYear are defined
