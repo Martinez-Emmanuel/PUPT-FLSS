@@ -70,7 +70,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.loadSampleData();
+    // this.loadSampleData();
   }
 
   ngOnDestroy() {
@@ -78,36 +78,36 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  loadSampleData() {
-    this.schedulingService
-      .getAcademicYears()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((academicYears) => {
-        this.academicYearOptions = academicYears.map((ay) => ay.year);
-        this.headerInputFields[0].options = this.academicYearOptions;
-        this.selectedAcademicYear = this.academicYearOptions[0];
-        this.filterProgramsByAcademicYear(this.selectedAcademicYear);
-      });
+  // loadSampleData() {
+  //   this.schedulingService
+  //     .getAcademicYears()
+  //     .pipe(takeUntil(this.destroy$))
+  //     .subscribe((academicYears) => {
+  //       this.academicYearOptions = academicYears.map((ay) => ay.year);
+  //       this.headerInputFields[0].options = this.academicYearOptions;
+  //       this.selectedAcademicYear = this.academicYearOptions[0];
+  //       this.filterProgramsByAcademicYear(this.selectedAcademicYear);
+  //     });
 
-    this.schedulingService
-      .getPrograms()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((programs) => {
-        this.programs = programs.map((program) => ({
-          program_code: program.code,
-          program_title: program.title,
-          year_levels: program.number_of_years,
-          sections: this.getSectionsByProgram(
-            program.code,
-            program.number_of_years
-          ),
-          curriculums: this.getCurriculumsByProgram(
-            program.code,
-            program.number_of_years
-          ),
-        }));
-      });
-  }
+  //   this.schedulingService
+  //     .getPrograms()
+  //     .pipe(takeUntil(this.destroy$))
+  //     .subscribe((programs) => {
+  //       this.programs = programs.map((program) => ({
+  //         program_code: program.code,
+  //         program_title: program.title,
+  //         year_levels: program.number_of_years,
+  //         sections: this.getSectionsByProgram(
+  //           program.code,
+  //           program.number_of_years
+  //         ),
+  //         curriculums: this.getCurriculumsByProgram(
+  //           program.code,
+  //           program.number_of_years
+  //         ),
+  //       }));
+  //     });
+  // }
 
   private getSectionsByProgram(
     programCode: string,
@@ -125,25 +125,25 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     return sections;
   }
 
-  private getCurriculumsByProgram(
-    programCode: string,
-    numberOfYears: number
-  ): { [yearLevel: string]: string } {
-    const curriculums: { [yearLevel: string]: string } = {};
-    this.schedulingService
-      .getActiveYearAndSemester()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(({ activeYear }) => {
-        const mapping =
-          this.schedulingService['mockData'].curriculumMapping[activeYear]?.[
-            programCode
-          ];
-        for (let year = 1; year <= numberOfYears; year++) {
-          curriculums[year.toString()] = mapping ? mapping[year] : '2022';
-        }
-      });
-    return curriculums;
-  }
+  // private getCurriculumsByProgram(
+  //   programCode: string,
+  //   numberOfYears: number
+  // ): { [yearLevel: string]: string } {
+  //   const curriculums: { [yearLevel: string]: string } = {};
+  //   this.schedulingService
+  //     .getActiveYearAndSemester()
+  //     .pipe(takeUntil(this.destroy$))
+  //     .subscribe(({ activeYear }) => {
+  //       const mapping =
+  //         this.schedulingService['mockData'].curriculumMapping[activeYear]?.[
+  //           programCode
+  //         ];
+  //       for (let year = 1; year <= numberOfYears; year++) {
+  //         curriculums[year.toString()] = mapping ? mapping[year] : '2022';
+  //       }
+  //     });
+  //   return curriculums;
+  // }
 
   private addNewAcademicYear(newAcademicYear: string): void {
     this.academicYearOptions.push(newAcademicYear);
@@ -161,48 +161,48 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
       : '';
   }
 
-  filterProgramsByAcademicYear(academicYear: AcademicYear) {
-    this.schedulingService
-      .getAcademicYears()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((academicYears) => {
-        const selectedYearData = academicYears.find(
-          (ay) => ay.year === academicYear
-        );
+  // filterProgramsByAcademicYear(academicYear: AcademicYear) {
+  //   this.schedulingService
+  //     .getAcademicYears()
+  //     .pipe(takeUntil(this.destroy$))
+  //     .subscribe((academicYears) => {
+  //       const selectedYearData = academicYears.find(
+  //         (ay) => ay.year === academicYear
+  //       );
 
-        if (selectedYearData) {
-          const programCodes = selectedYearData.programs;
+  //       if (selectedYearData) {
+  //         const programCodes = selectedYearData.programs;
 
-          this.schedulingService
-            .getPrograms()
-            .pipe(takeUntil(this.destroy$))
-            .subscribe((programs) => {
-              const programsForYear = programs.filter((program) =>
-                programCodes.includes(program.code)
-              );
+  //         this.schedulingService
+  //           .getPrograms()
+  //           .pipe(takeUntil(this.destroy$))
+  //           .subscribe((programs) => {
+  //             const programsForYear = programs.filter((program) =>
+  //               programCodes.includes(program.code)
+  //             );
 
-              this.programs = programsForYear.map((program) => ({
-                program_code: program.code,
-                program_title: program.title,
-                year_levels: program.number_of_years,
-                sections: this.getSectionsByProgram(
-                  program.code,
-                  program.number_of_years
-                ),
-                curriculums: this.getCurriculumsByProgram(
-                  program.code,
-                  program.number_of_years
-                ),
-              }));
-            });
-        }
-      });
-  }
+  //             this.programs = programsForYear.map((program) => ({
+  //               program_code: program.code,
+  //               program_title: program.title,
+  //               year_levels: program.number_of_years,
+  //               sections: this.getSectionsByProgram(
+  //                 program.code,
+  //                 program.number_of_years
+  //               ),
+  //               curriculums: this.getCurriculumsByProgram(
+  //                 program.code,
+  //                 program.number_of_years
+  //               ),
+  //             }));
+  //           });
+  //       }
+  //     });
+  // }
 
   onInputChange(values: { [key: string]: any }) {
-    if (values['academicYear'])
-      this.selectedAcademicYear = values['academicYear'];
-    this.filterProgramsByAcademicYear(this.selectedAcademicYear);
+    // if (values['academicYear'])
+    //   this.selectedAcademicYear = values['academicYear'];
+    // this.filterProgramsByAcademicYear(this.selectedAcademicYear);
   }
 
   onManageYearLevels(program: Program) {
