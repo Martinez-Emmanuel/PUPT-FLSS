@@ -15,6 +15,7 @@ use App\Models\Curriculum;
 class AcademicYearController extends Controller
 {
 
+
     public function getAcademicYearsForDropdown()
     {
         // Fetch academic years and their corresponding semesters
