@@ -34,12 +34,12 @@ Route::delete('/remove-program', [AcademicYearController::class, 'removeProgramF
 Route::delete('/delete-ay', [AcademicYearController::class, 'deleteAcademicYear']);
 
 
-Route::get('/academic-years', [AcademicYearController::class, 'getAcademicYearsWithSemesters']);
-Route::get('/active-academic-year', [AcademicYearController::class, 'getActiveAcademicYear']);
-Route::get('/active-programs', [AcademicYearController::class, 'getActivePrograms']);
-Route::get('/active-year-levels', [AcademicYearController::class, 'getActiveYearLevels']);
-Route::get('/active-sections', [AcademicYearController::class, 'getActiveSections']);
-Route::post('/sections-count', [AcademicYearController::class, 'getSectionsCountByProgramYearLevel']);
+// Route::get('/academic-years', [AcademicYearController::class, 'getAcademicYearsWithSemesters']);
+// Route::get('/active-academic-year', [AcademicYearController::class, 'getActiveAcademicYear']);
+// Route::get('/active-programs', [AcademicYearController::class, 'getActivePrograms']);
+// Route::get('/active-year-levels', [AcademicYearController::class, 'getActiveYearLevels']);
+// Route::get('/active-sections', [AcademicYearController::class, 'getActiveSections']);
+// Route::post('/sections-count', [AcademicYearController::class, 'getSectionsCountByProgramYearLevel']);
 
 //Get all Program and Year Level and Semester with year for superadmin
 Route::get('/curricula-details/{curriculumYear}/', [CurriculumDetailsController::class, 'getCurriculumDetails']);
