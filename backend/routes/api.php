@@ -25,9 +25,10 @@ Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
 Route::get('/academic-years-dropdown', [AcademicYearController::class, 'getAcademicYearsForDropdown']);
 Route::post('/set-active-ay-sem', [AcademicYearController::class, 'setActiveAcademicYearAndSemester']);
 Route::get('/active-year-levels-curricula', [AcademicYearController::class, 'getActiveYearLevelsCurricula']);
+
+Route::post('/fetch-ay-prog-details', [AcademicYearController::class, 'fetchProgramDetailsByAcademicYear']);
 Route::post('/add-academic-year', [AcademicYearController::class, 'addAcademicYear']);
 Route::post('/update-yr-lvl-curricula', [AcademicYearController::class, 'updateYearLevelCurricula']);
-Route::post('/fetch-ay-prog-details', [AcademicYearController::class, 'fetchProgramDetailsByAcademicYear']);
 
 
 

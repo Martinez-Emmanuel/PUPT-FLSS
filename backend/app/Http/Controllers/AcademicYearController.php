@@ -165,6 +165,7 @@ class AcademicYearController extends Controller
 
     public function getAcademicYearsForDropdown()
     {
+        // Fetch academic years and their corresponding semesters
         $academicYears = AcademicYear::join('active_semesters', 'academic_years.academic_year_id', '=', 'active_semesters.academic_year_id')
             ->join('semesters', 'active_semesters.semester_id', '=', 'semesters.semester_id')
             ->select(
@@ -176,9 +177,43 @@ class AcademicYearController extends Controller
             ->orderBy('academic_years.year_start')
             ->orderBy('semesters.semester')
             ->get();
-
-        return response()->json($academicYears);
+    
+        // Group the semesters under their corresponding academic year
+        $groupedAcademicYears = [];
+    
+        foreach ($academicYears as $year) {
+            // If the academic year doesn't exist in the array, initialize it
+            if (!isset($groupedAcademicYears[$year->academic_year_id])) {
+                $groupedAcademicYears[$year->academic_year_id] = [
+                    'academic_year_id' => $year->academic_year_id,
+                    'academic_year' => $year->academic_year,
+                    'semesters' => []
+                ];
+            }
+    
+            // Map the semester_number to the correct label (1 -> "1st Semester", 2 -> "2nd Semester", 3 -> "Summer Semester")
+            $semesterLabel = '';
+            if ($year->semester_number == 1) {
+                $semesterLabel = '1st Semester';
+            } elseif ($year->semester_number == 2) {
+                $semesterLabel = '2nd Semester';
+            } elseif ($year->semester_number == 3) {
+                $semesterLabel = 'Summer Semester';
+            }
+    
+            // Add the semester to the academic year's 'semesters' array
+            $groupedAcademicYears[$year->academic_year_id]['semesters'][] = [
+                'semester_id' => $year->semester_id,
+                'semester_number' => $semesterLabel
+            ];
+        }
+    
+        // Reset keys to make the array a proper list
+        $groupedAcademicYears = array_values($groupedAcademicYears);
+    
+        return response()->json($groupedAcademicYears);
     }
+    
 
     public function setActiveAcademicYearAndSemester(Request $request)
     {
