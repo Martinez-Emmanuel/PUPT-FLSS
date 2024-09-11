@@ -163,8 +163,6 @@ class AcademicYearController extends Controller
         }
     
         return response()->json($response);
-
-
     }
     public function addAcademicYear(Request $request)
     {
