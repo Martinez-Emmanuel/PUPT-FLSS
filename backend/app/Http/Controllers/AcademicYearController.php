@@ -501,80 +501,80 @@ class AcademicYearController extends Controller
 
 
     public function updateSections(Request $request)
-{
-    // Validate the incoming request
-    $request->validate([
-        'academic_year_id' => 'required|integer',
-        'program_id' => 'required|integer',
-        'year_level' => 'required|integer',
-        'number_of_sections' => 'required|integer|min:1'
-    ]);
+    {
+        // Validate the incoming request
+        $request->validate([
+            'academic_year_id' => 'required|integer',
+            'program_id' => 'required|integer',
+            'year_level' => 'required|integer',
+            'number_of_sections' => 'required|integer|min:1'
+        ]);
 
-    $academicYearId = $request->input('academic_year_id');
-    $programId = $request->input('program_id');
-    $yearLevel = $request->input('year_level');
-    $requestedSections = $request->input('number_of_sections');
+        $academicYearId = $request->input('academic_year_id');
+        $programId = $request->input('program_id');
+        $yearLevel = $request->input('year_level');
+        $requestedSections = $request->input('number_of_sections');
 
-    try {
-        // Step 1: Get the existing number of sections for the specified academic year, program, and year level
-        $existingSections = SectionsPerProgramYear::where('academic_year_id', $academicYearId)
-            ->where('program_id', $programId)
-            ->where('year_level', $yearLevel)
-            ->get();
-
-        $currentSectionCount = $existingSections->count();
-
-        if ($currentSectionCount == $requestedSections) {
-            // No changes needed
-            return response()->json([
-                'message' => 'The number of sections is already correct. No changes were made.',
-            ], 200);
-        }
-
-        // Step 2: If the user requests more sections, add the difference
-        if ($requestedSections > $currentSectionCount) {
-            $sectionsToAdd = $requestedSections - $currentSectionCount;
-
-            // Generate new section names and add them
-            for ($i = 1; $i <= $sectionsToAdd; $i++) {
-                $newSection = new SectionsPerProgramYear();
-                $newSection->academic_year_id = $academicYearId;
-                $newSection->program_id = $programId;
-                $newSection->year_level = $yearLevel;
-                $newSection->section_name = 'Section ' . ($currentSectionCount + $i); // Create new section names like "Section 3", "Section 4", etc.
-                $newSection->save();
-            }
-
-            return response()->json([
-                'message' => $sectionsToAdd . ' sections were added successfully.',
-            ], 201);
-
-        } elseif ($requestedSections < $currentSectionCount) {
-            // Step 3: If the user requests fewer sections, delete the extra ones
-            $sectionsToDelete = $currentSectionCount - $requestedSections;
-
-            // Get the extra sections to delete
-            $sectionsToRemove = SectionsPerProgramYear::where('academic_year_id', $academicYearId)
+        try {
+            // Step 1: Get the existing number of sections for the specified academic year, program, and year level
+            $existingSections = SectionsPerProgramYear::where('academic_year_id', $academicYearId)
                 ->where('program_id', $programId)
                 ->where('year_level', $yearLevel)
-                ->orderBy('sections_per_program_year_id', 'desc') // Remove the latest added sections
-                ->take($sectionsToDelete)
                 ->get();
 
-            foreach ($sectionsToRemove as $section) {
-                $section->delete();
+            $currentSectionCount = $existingSections->count();
+
+            if ($currentSectionCount == $requestedSections) {
+                // No changes needed
+                return response()->json([
+                    'message' => 'The number of sections is already correct. No changes were made.',
+                ], 200);
             }
 
-            return response()->json([
-                'message' => $sectionsToDelete . ' sections were removed successfully.',
-            ], 200);
-        }
+            // Step 2: If the user requests more sections, add the difference
+            if ($requestedSections > $currentSectionCount) {
+                $sectionsToAdd = $requestedSections - $currentSectionCount;
 
-    } catch (\Exception $e) {
-        return response()->json([
-            'message' => 'An error occurred: ' . $e->getMessage(),
-        ], 500);
-    }
+                // Generate new section names and add them
+                for ($i = 1; $i <= $sectionsToAdd; $i++) {
+                    $newSection = new SectionsPerProgramYear();
+                    $newSection->academic_year_id = $academicYearId;
+                    $newSection->program_id = $programId;
+                    $newSection->year_level = $yearLevel;
+                    $newSection->section_name = 'Section ' . ($currentSectionCount + $i); // Create new section names like "Section 3", "Section 4", etc.
+                    $newSection->save();
+                }
+
+                return response()->json([
+                    'message' => $sectionsToAdd . ' sections were added successfully.',
+                ], 201);
+
+            } elseif ($requestedSections < $currentSectionCount) {
+                // Step 3: If the user requests fewer sections, delete the extra ones
+                $sectionsToDelete = $currentSectionCount - $requestedSections;
+
+                // Get the extra sections to delete
+                $sectionsToRemove = SectionsPerProgramYear::where('academic_year_id', $academicYearId)
+                    ->where('program_id', $programId)
+                    ->where('year_level', $yearLevel)
+                    ->orderBy('sections_per_program_year_id', 'desc') // Remove the latest added sections
+                    ->take($sectionsToDelete)
+                    ->get();
+
+                foreach ($sectionsToRemove as $section) {
+                    $section->delete();
+                }
+
+                return response()->json([
+                    'message' => $sectionsToDelete . ' sections were removed successfully.',
+                ], 200);
+            }
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 
 
@@ -617,6 +617,56 @@ class AcademicYearController extends Controller
             // Rollback the transaction if any error occurs
             DB::rollBack();
     
+            return response()->json([
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function deleteAcademicYear(Request $request)
+    {
+        // Validate the incoming request
+        $request->validate([
+            'academic_year_id' => 'required|integer',
+        ]);
+
+        $academicYearId = $request->input('academic_year_id');
+
+        try {
+            // Start the transaction
+            DB::beginTransaction();
+
+            // Step 1: Remove Year Levels associated with this academic year
+            ProgramYearLevelCurricula::where('academic_year_id', $academicYearId)
+                ->delete();
+
+            // Step 2: Remove Sections associated with this academic year
+            SectionsPerProgramYear::where('academic_year_id', $academicYearId)
+                ->delete();
+
+            // Step 3: Remove Active Semesters associated with this academic year
+            ActiveSemester::where('academic_year_id', $academicYearId)
+                ->delete();
+
+            // Step 4: Remove Academic Year Curricula (curriculum assignments for this academic year)
+            AcademicYearCurricula::where('academic_year_id', $academicYearId)
+                ->delete();
+
+            // Step 5: Remove the academic year itself
+            AcademicYear::where('academic_year_id', $academicYearId)
+                ->delete();
+
+            // Commit the transaction after everything is deleted
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Academic year and all related data were removed successfully.'
+            ], 200);
+
+        } catch (\Exception $e) {
+            // Rollback the transaction if any error occurs
+            DB::rollBack();
+
             return response()->json([
                 'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);

@@ -31,7 +31,7 @@ Route::post('/add-academic-year', [AcademicYearController::class, 'addAcademicYe
 Route::post('/update-yr-lvl-curricula', [AcademicYearController::class, 'updateYearLevelCurricula']);
 Route::post('/update-sections', [AcademicYearController::class, 'updateSections']);
 Route::delete('/remove-program', [AcademicYearController::class, 'removeProgramFromAcademicYear']);
-
+Route::delete('/delete-ay', [AcademicYearController::class, 'deleteAcademicYear']);
 
 
 Route::get('/academic-years', [AcademicYearController::class, 'getAcademicYearsWithSemesters']);
