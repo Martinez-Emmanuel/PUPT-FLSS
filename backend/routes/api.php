@@ -27,6 +27,7 @@ Route::post('/set-active-ay-sem', [AcademicYearController::class, 'setActiveAcad
 Route::get('/active-year-levels-curricula', [AcademicYearController::class, 'getActiveYearLevelsCurricula']);
 Route::post('/add-academic-year', [AcademicYearController::class, 'addAcademicYear']);
 Route::post('/update-yr-lvl-curricula', [AcademicYearController::class, 'updateYearLevelCurricula']);
+Route::post('/fetch-ay-prog-details', [AcademicYearController::class, 'fetchProgramDetailsByAcademicYear']);
 
 
 

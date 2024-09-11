@@ -412,4 +412,55 @@ class AcademicYearController extends Controller
             return response()->json(['message' => 'An error occurred: ' . $e->getMessage()], 500);
         }
     }
+
+    public function fetchProgramDetailsByAcademicYear(Request $request)
+    {
+        // Validate the incoming request
+        $request->validate([
+            'academic_year_id' => 'required|integer'
+        ]);
+    
+        $academicYearId = $request->input('academic_year_id');
+    
+        try {
+            // Step 1: Fetch programs associated with the given academic year
+            $programs = Program::select('programs.program_id', 'programs.program_code', 'programs.program_title')
+                ->distinct()
+                ->join('program_year_level_curricula as pylc', 'programs.program_id', '=', 'pylc.program_id')
+                ->where('pylc.academic_year_id', $academicYearId)
+                ->get();
+    
+            // Step 2: Fetch year levels and sections for each program
+            foreach ($programs as $program) {
+                $yearLevels = ProgramYearLevelCurricula::select('year_level', 'curriculum_id')
+                    ->where('academic_year_id', $academicYearId)
+                    ->where('program_id', $program->program_id)
+                    ->get();
+    
+                // For each year level, fetch the corresponding number of sections
+                foreach ($yearLevels as $yearLevel) {
+                    $sectionsCount = SectionsPerProgramYear::where('academic_year_id', $academicYearId)
+                        ->where('program_id', $program->program_id)
+                        ->where('year_level', $yearLevel->year_level)
+                        ->count();
+    
+                    $yearLevel->number_of_sections = $sectionsCount;
+                }
+    
+                // Attach year levels and section data to the program
+                $program->year_levels = $yearLevels;
+            }
+    
+            return response()->json([
+                'message' => 'Programs with year levels and sections fetched successfully.',
+                'academic_year_id' => $academicYearId,
+                'programs' => $programs
+            ], 200);
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'An error occurred: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
