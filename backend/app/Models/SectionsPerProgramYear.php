@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class SectionsPerProgramYear extends Model
 {
     use HasFactory;
-
+    protected $table = 'sections_per_program_year';
     protected $primaryKey = 'sections_per_program_year_id';
 
     protected $fillable = [

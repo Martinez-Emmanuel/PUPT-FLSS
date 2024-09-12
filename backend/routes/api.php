@@ -14,10 +14,32 @@ use App\Http\Controllers\YearLevelController;
 use App\Http\Controllers\CurriculumDetailsController;
 use App\Http\Controllers\ProgramFetchController;
 use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AcademicYearController;
+
 // Public routes
 Route::post('login', [AuthController::class, 'login'])->name('login');
 Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
 
+
+
+Route::get('/academic-years-dropdown', [AcademicYearController::class, 'getAcademicYearsForDropdown']);
+Route::post('/set-active-ay-sem', [AcademicYearController::class, 'setActiveAcademicYearAndSemester']);
+Route::get('/active-year-levels-curricula', [AcademicYearController::class, 'getActiveYearLevelsCurricula']);
+
+Route::post('/fetch-ay-prog-details', [AcademicYearController::class, 'fetchProgramDetailsByAcademicYear']);
+Route::post('/add-academic-year', [AcademicYearController::class, 'addAcademicYear']);
+Route::post('/update-yr-lvl-curricula', [AcademicYearController::class, 'updateYearLevelCurricula']);
+Route::post('/update-sections', [AcademicYearController::class, 'updateSections']);
+Route::delete('/remove-program', [AcademicYearController::class, 'removeProgramFromAcademicYear']);
+Route::delete('/delete-ay', [AcademicYearController::class, 'deleteAcademicYear']);
+
+
+// Route::get('/academic-years', [AcademicYearController::class, 'getAcademicYearsWithSemesters']);
+// Route::get('/active-academic-year', [AcademicYearController::class, 'getActiveAcademicYear']);
+// Route::get('/active-programs', [AcademicYearController::class, 'getActivePrograms']);
+// Route::get('/active-year-levels', [AcademicYearController::class, 'getActiveYearLevels']);
+// Route::get('/active-sections', [AcademicYearController::class, 'getActiveSections']);
+// Route::post('/sections-count', [AcademicYearController::class, 'getSectionsCountByProgramYearLevel']);
 
 //Get all Program and Year Level and Semester with year for superadmin
 Route::get('/curricula-details/{curriculumYear}/', [CurriculumDetailsController::class, 'getCurriculumDetails']);
