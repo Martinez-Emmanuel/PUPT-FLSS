@@ -3,11 +3,14 @@ import { HttpClient } from '@angular/common/http'; // Import HttpClient for API 
 import { Observable } from 'rxjs';
 
 export interface Program {
-  id: number;
-  code: string;
-  title: string;
-  number_of_years: number;
+  program_id: number;
+  program_code: string;
+  program_title: string;
+  year_levels: YearLevel[];  // Array of YearLevel objects
+  sections: { [yearLevel: string]: number };
+  curriculums: { [yearLevel: string]: string };
 }
+
 
 export interface SectionsByProgram {
   [program: string]: {
@@ -17,6 +20,7 @@ export interface SectionsByProgram {
 
 export interface Curriculum {
   id: number;
+  curriculum_year: string;
   name: string;
 }
 
@@ -38,9 +42,6 @@ export interface Schedule {
   section: string;
 }
 
-// export type Semester = '1st Semester' | '2nd Semester' | 'Summer Semester';
-// export type AcademicYear = `${number}-${number}`;
-
 export interface Semester {
   semester_id: number;
   semester_number: string;
@@ -52,6 +53,12 @@ export interface AcademicYear {
   semesters: Semester[];
 }
 
+export interface YearLevel {
+  year_level: number;
+  curriculum_id: number;
+  curriculum_year: string;
+  number_of_sections: number;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -72,8 +79,6 @@ export class SchedulingService {
     return this.http.get<{ activeYear: string, activeSemester: string }>(`${this.apiUrl}/get-active-year-semester`);
   }
   
-  
-
   setActiveYearAndSemester(
     activeYear: number,  // Expect the academic_year_id
     activeSemester: number  // Expect the semester_id
@@ -84,20 +89,65 @@ export class SchedulingService {
       semester_id: activeSemester,   // Send the semester ID
     });
   }
+
+  // Fetch program details with year levels and curriculum versions for a specific academic year
+  fetchProgramDetailsByAcademicYear(payload: { academic_year_id: number }): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/fetch-ay-prog-details`, payload);
+  }
+
+  // Update year levels' curricula for a specific academic year and program
+ // Ensure this method is sending the correct program_id in the payload
+  updateYearLevelsCurricula(academicYearId: number, programId: number, yearLevels: YearLevel[]): Observable<any> {
+    const payload = {
+      academic_year_id: academicYearId,
+      program_id: programId,  // Ensure program_id is being sent correctly here
+      year_levels: yearLevels.map((yl) => ({
+          year_level: yl.year_level,
+          curriculum_id: yl.curriculum_id
+      }))
+    }
+    return this.http.post<any>(`${this.apiUrl}/update-yr-lvl-curricula`, payload);
+  }
+
+  deleteAcademicYear(academicYearId: number): Observable<any> {
+    // Make sure to log the ID being sent
+    console.log('Deleting academic year with ID:', academicYearId);
+  
+    return this.http.request('DELETE', `${this.apiUrl}/delete-ay`, {
+      body: { academic_year_id: academicYearId }
+    });
+  }
+  
+  
+  
+  
+  
+  
+  
   
 
-  // Other service methods...
 
+  // Update the number of sections per program year level
+  updateSections(academicYearId: number, programId: number, yearLevel: number, numberOfSections: number): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/update-sections`, {
+      academic_year_id: academicYearId,
+      program_id: programId,
+      year_level: yearLevel,
+      number_of_sections: numberOfSections
+    });
+  }
+
+  // Fetch all programs
   getPrograms(): Observable<Program[]> {
     return this.http.get<Program[]>(`${this.apiUrl}/programs`);
   }
 
+  // Fetch sections by program and year
   getSections(program: string, year: number): Observable<string[]> {
     return this.http.get<string[]>(
       `${this.apiUrl}/programs/${program}/year/${year}/sections`
     );
   }
 
-  // You can modify other mock data-related methods to use backend API calls
-  // according to your backend endpoints.
+  // Other service methods...
 }

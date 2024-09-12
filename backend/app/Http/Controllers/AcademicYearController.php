@@ -30,10 +30,10 @@ class AcademicYearController extends Controller
             ->orderBy('academic_years.year_start')
             ->orderBy('semesters.semester')
             ->get();
-    
+
         // Group the semesters under their corresponding academic year
         $groupedAcademicYears = [];
-    
+
         foreach ($academicYears as $year) {
             // If the academic year doesn't exist in the array, initialize it
             if (!isset($groupedAcademicYears[$year->academic_year_id])) {
@@ -43,7 +43,7 @@ class AcademicYearController extends Controller
                     'semesters' => []
                 ];
             }
-    
+
             // Map the semester_number to the correct label (1 -> "1st Semester", 2 -> "2nd Semester", 3 -> "Summer Semester")
             $semesterLabel = '';
             if ($year->semester_number == 1) {
@@ -53,20 +53,20 @@ class AcademicYearController extends Controller
             } elseif ($year->semester_number == 3) {
                 $semesterLabel = 'Summer Semester';
             }
-    
+
             // Add the semester to the academic year's 'semesters' array
             $groupedAcademicYears[$year->academic_year_id]['semesters'][] = [
                 'semester_id' => $year->semester_id,
                 'semester_number' => $semesterLabel
             ];
         }
-    
+
         // Reset keys to make the array a proper list
         $groupedAcademicYears = array_values($groupedAcademicYears);
-    
+
         return response()->json($groupedAcademicYears);
     }
-    
+
 
     public function setActiveAcademicYearAndSemester(Request $request)
     {
@@ -112,22 +112,22 @@ class AcademicYearController extends Controller
             ->join('academic_years as ay', 'pylc.academic_year_id', '=', 'ay.academic_year_id')
             ->join('active_semesters as ase', 'ay.academic_year_id', '=', 'ase.academic_year_id')
             ->join('semesters as s', 'ase.semester_id', '=', 's.semester_id')
-            ->join('sections_per_program_year as sp', function($join) {
+            ->join('sections_per_program_year as sp', function ($join) {
                 $join->on('pylc.program_id', '=', 'sp.program_id')
-                     ->on('pylc.year_level', '=', 'sp.year_level')
-                     ->on('pylc.academic_year_id', '=', 'sp.academic_year_id');
+                    ->on('pylc.year_level', '=', 'sp.year_level')
+                    ->on('pylc.academic_year_id', '=', 'sp.academic_year_id');
             })
             ->where('ase.is_active', 1)
             ->orderBy('p.program_id')
             ->orderBy('pylc.year_level')
             ->get();
-    
+
         $response = [];
-    
+
         foreach ($activeYearLevels as $row) {
             // Find or create program entry
             $programIndex = array_search($row->program_id, array_column($response, 'program_id'));
-    
+
             if ($programIndex === false) {
                 $response[] = [
                     'program_id' => $row->program_id,
@@ -138,10 +138,10 @@ class AcademicYearController extends Controller
                 ];
                 $programIndex = count($response) - 1;
             }
-    
+
             // Check if year level already exists under the program
             $yearLevelIndex = array_search($row->year_level, array_column($response[$programIndex]['year_levels'], 'year_level'));
-    
+
             if ($yearLevelIndex === false) {
                 // If not found, add the year level and increment the year_level_count
                 $response[$programIndex]['year_levels'][] = [
@@ -151,25 +151,25 @@ class AcademicYearController extends Controller
                     'sections' => []
                 ];
                 $yearLevelIndex = count($response[$programIndex]['year_levels']) - 1;
-                
+
                 // Increment the year level count for the program
                 $response[$programIndex]['year_level_count']++;
             }
-    
+
             // Add sections under the year level
             $response[$programIndex]['year_levels'][$yearLevelIndex]['sections'][] = [
                 'section_id' => $row->section_id,
                 'section_name' => $row->section_name
             ];
         }
-    
+
         return response()->json($response);
     }
     public function addAcademicYear(Request $request)
     {
         // Start a transaction to ensure atomicity
         DB::beginTransaction();
-    
+
         try {
             // Step 1: Insert into academic_years table
             $academicYear = new AcademicYear();
@@ -177,20 +177,20 @@ class AcademicYearController extends Controller
             $academicYear->year_end = $request->input('year_end');
             $academicYear->is_active = 0; // Set default is_active as 0
             $academicYear->save();
-    
+
             // Get the newly created academic_year_id
             $newAcademicYearId = $academicYear->academic_year_id;
-    
+
             // Step 2: Insert into academic_year_curricula (for each active curriculum)
             $activeCurricula = Curriculum::where('status', 'active')->get(); // Fetch active curricula
-    
+
             foreach ($activeCurricula as $curriculum) {
                 $academicYearCurricula = new AcademicYearCurricula();
                 $academicYearCurricula->academic_year_id = $newAcademicYearId;
                 $academicYearCurricula->curriculum_id = $curriculum->curriculum_id;
                 $academicYearCurricula->save();
             }
-    
+
             // Step 3: Insert into active_semesters (3 default semesters with is_active = 0)
             for ($semesterId = 1; $semesterId <= 3; $semesterId++) {
                 $activeSemester = new ActiveSemester();
@@ -199,17 +199,17 @@ class AcademicYearController extends Controller
                 $activeSemester->is_active = 0; // Default value
                 $activeSemester->save();
             }
-    
+
             // Step 4: Insert into program_year_level_curricula for each active program and year level
             $activePrograms = Program::where('status', 'active')->get(); // Fetch active programs
-    
+
             foreach ($activePrograms as $program) {
                 // Generate 4 year levels per program
                 for ($yearLevel = 1; $yearLevel <= 4; $yearLevel++) {
                     // Determine curriculum_id based on year level (custom logic here)
                     // Assuming 2018 curriculum has id=1 and 2022 curriculum has id=2
                     $curriculumId = ($yearLevel <= 2) ? 2 : 1;
-    
+
                     $programYearLevelCurricula = new ProgramYearLevelCurricula();
                     $programYearLevelCurricula->academic_year_id = $newAcademicYearId;
                     $programYearLevelCurricula->program_id = $program->program_id;
@@ -218,34 +218,34 @@ class AcademicYearController extends Controller
                     $programYearLevelCurricula->save();
                 }
             }
-    
-        // Step 5: Insert into sections_per_program_year for each program and year level
-        foreach ($activePrograms as $program) {
-            // Generate "Section 1" for all year levels in each program
-            for ($yearLevel = 1; $yearLevel <= 4; $yearLevel++) {
-                $section = new SectionsPerProgramYear();
-                $section->academic_year_id = $newAcademicYearId;
-                $section->program_id = $program->program_id;
-                $section->year_level = $yearLevel;
-                $section->section_name = 'Section 1'; // Always use "Section 1"
-                $section->save();
+
+            // Step 5: Insert into sections_per_program_year for each program and year level
+            foreach ($activePrograms as $program) {
+                // Generate "Section 1" for all year levels in each program
+                for ($yearLevel = 1; $yearLevel <= 4; $yearLevel++) {
+                    $section = new SectionsPerProgramYear();
+                    $section->academic_year_id = $newAcademicYearId;
+                    $section->program_id = $program->program_id;
+                    $section->year_level = $yearLevel;
+                    $section->section_name = 'Section 1'; // Always use "Section 1"
+                    $section->save();
+                }
             }
-        }
 
 
-    
+
             // Commit the transaction
             DB::commit();
-    
+
             return response()->json([
                 'message' => 'Academic year added successfully with related data.',
                 'academic_year_id' => $newAcademicYearId
             ], 201);
-    
+
         } catch (\Exception $e) {
             // Rollback the transaction in case of any error
             DB::rollback();
-    
+
             return response()->json([
                 'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
@@ -305,9 +305,9 @@ class AcademicYearController extends Controller
         $request->validate([
             'academic_year_id' => 'required|integer'
         ]);
-    
+
         $academicYearId = $request->input('academic_year_id');
-    
+
         try {
             // Step 1: Fetch programs associated with the given academic year
             $programs = Program::select('programs.program_id', 'programs.program_code', 'programs.program_title')
@@ -315,34 +315,39 @@ class AcademicYearController extends Controller
                 ->join('program_year_level_curricula as pylc', 'programs.program_id', '=', 'pylc.program_id')
                 ->where('pylc.academic_year_id', $academicYearId)
                 ->get();
-    
+
             // Step 2: Fetch year levels and sections for each program
             foreach ($programs as $program) {
-                $yearLevels = ProgramYearLevelCurricula::select('year_level', 'curriculum_id')
-                    ->where('academic_year_id', $academicYearId)
-                    ->where('program_id', $program->program_id)
+                $yearLevels = ProgramYearLevelCurricula::select(
+                    'program_year_level_curricula.year_level',
+                    'program_year_level_curricula.curriculum_id',
+                    'curricula.curriculum_year'
+                )
+                    ->join('curricula', 'program_year_level_curricula.curriculum_id', '=', 'curricula.curriculum_id') // Join with curricula table to get curriculum_year
+                    ->where('program_year_level_curricula.academic_year_id', $academicYearId)
+                    ->where('program_year_level_curricula.program_id', $program->program_id)
                     ->get();
-    
+
                 // For each year level, fetch the corresponding number of sections
                 foreach ($yearLevels as $yearLevel) {
                     $sectionsCount = SectionsPerProgramYear::where('academic_year_id', $academicYearId)
                         ->where('program_id', $program->program_id)
                         ->where('year_level', $yearLevel->year_level)
                         ->count();
-    
+
                     $yearLevel->number_of_sections = $sectionsCount;
                 }
-    
+
                 // Attach year levels and section data to the program
                 $program->year_levels = $yearLevels;
             }
-    
+
             return response()->json([
                 'message' => 'Programs with year levels and sections fetched successfully.',
                 'academic_year_id' => $academicYearId,
                 'programs' => $programs
             ], 200);
-    
+
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'An error occurred: ' . $e->getMessage()
@@ -437,37 +442,37 @@ class AcademicYearController extends Controller
             'academic_year_id' => 'required|integer',
             'program_id' => 'required|integer'
         ]);
-    
+
         $academicYearId = $request->input('academic_year_id');
         $programId = $request->input('program_id');
-    
+
         try {
             // Start the transaction
             DB::beginTransaction();
-    
+
             // Step 1: Remove Year Levels associated with this program and academic year
             ProgramYearLevelCurricula::where('academic_year_id', $academicYearId)
                 ->where('program_id', $programId)
                 ->delete();
-    
+
             // Step 2: Remove Sections associated with this program, year levels, and academic year
             SectionsPerProgramYear::where('academic_year_id', $academicYearId)
                 ->where('program_id', $programId)
                 ->delete();
-    
+
             // Note: Active semesters are not being removed
-    
+
             // Commit the transaction after everything is deleted
             DB::commit();
-    
+
             return response()->json([
                 'message' => 'Program and its associated year levels and sections removed successfully.'
             ], 200);
-    
+
         } catch (\Exception $e) {
             // Rollback the transaction if any error occurs
             DB::rollBack();
-    
+
             return response()->json([
                 'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
@@ -523,5 +528,5 @@ class AcademicYearController extends Controller
             ], 500);
         }
     }
-    
+
 }

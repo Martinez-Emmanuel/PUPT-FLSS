@@ -146,15 +146,15 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       });
   }
 
-  private updateYearLevels() {
-    const selectedProgram = this.programs.find(
-      (p) => p.code === this.selectedProgram
-    );
-    this.headerInputFields[1].options = selectedProgram
-      ? Array.from({ length: selectedProgram.number_of_years }, (_, i) => i + 1)
-      : [];
-    this.selectedYear = 1;
-  }
+  // private updateYearLevels() {
+  //   const selectedProgram = this.programs.find(
+  //     (p) => p.code === this.selectedProgram
+  //   );
+  //   this.headerInputFields[1].options = selectedProgram
+  //     ? Array.from({ length: selectedProgram.number_of_years }, (_, i) => i + 1)
+  //     : [];
+  //   this.selectedYear = 1;
+  // }
 
   // private setProgramOptionsForYear(
   //   academicYear: AcademicYear,
