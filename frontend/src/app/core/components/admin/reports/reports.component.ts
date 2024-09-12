@@ -1,22 +1,27 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MatTabsModule } from '@angular/material/tabs';
-import { MatIconModule } from '@angular/material/icon';
-import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { RouterModule, Router, ActivatedRoute } from '@angular/router';
+
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [CommonModule, MatTabsModule, MatIconModule, RouterModule, MatSymbolDirective],
+  imports: [
+    CommonModule,
+    MatTabsModule,
+    RouterModule,
+    MatSymbolDirective,
+  ],
   templateUrl: './reports.component.html',
-  styleUrl: './reports.component.scss'
+  styleUrl: './reports.component.scss',
+  encapsulation: ViewEncapsulation.None,
 })
 export class ReportsComponent implements OnInit {
   constructor(private router: Router, private route: ActivatedRoute) {}
 
   ngOnInit() {
-    // Navigate to the default tab (faculty) if no specific route is active
     if (this.route.firstChild === null) {
       this.router.navigate(['faculty'], { relativeTo: this.route });
     }

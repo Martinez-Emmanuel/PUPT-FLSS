@@ -1,8 +1,12 @@
 <div class="reports-main">
+  <div class="reports-content">
+    <router-outlet></router-outlet>
+  </div>
   <mat-tab-group
     animationDuration="250ms"
     (selectedTabChange)="onTabChange($event)"
     class="reports-tab"
+    headerPosition="below"
   >
     <mat-tab>
       <ng-template mat-tab-label>
@@ -29,8 +33,4 @@
       </ng-template>
     </mat-tab>
   </mat-tab-group>
-
-  <div class="reports-content">
-    <router-outlet></router-outlet>
-  </div>
 </div>

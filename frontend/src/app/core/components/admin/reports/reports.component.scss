@@ -6,7 +6,7 @@
     $direction: column,
     $align: stretch,
     $justify: flex-start,
-    $gap: var(--spacing-sm),
+    $gap: var(--spacing-md)
   );
 }
 
@@ -16,5 +16,4 @@
 
 .reports-content {
   height: inherit;
-  border: 1px solid grey;
 }
