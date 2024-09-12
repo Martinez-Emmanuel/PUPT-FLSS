@@ -144,7 +144,7 @@
       </header>
     </mat-toolbar>
     <!-- Main Content -->
-    <div class="sidenav-main">
+    <div class="sidenav-main" [ngClass]="{'reports-view': isReportsView}">
       <router-outlet></router-outlet>
     </div>
   </mat-sidenav-content>
