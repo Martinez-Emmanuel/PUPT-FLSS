@@ -110,13 +110,19 @@ export class SchedulingService {
   }
 
   deleteAcademicYear(academicYearId: number): Observable<any> {
-    // Make sure to log the ID being sent
-    console.log('Deleting academic year with ID:', academicYearId);
-  
+    // Ensure that academicYearId is included in the request body for the DELETE method
     return this.http.request('DELETE', `${this.apiUrl}/delete-ay`, {
       body: { academic_year_id: academicYearId }
     });
   }
+  
+  removeProgramFromAcademicYear(academicYearId: number, programId: number): Observable<any> {
+    // The DELETE method will send both the academic_year_id and program_id as the body of the request
+    return this.http.request('DELETE', `${this.apiUrl}/remove-program`, {
+      body: { academic_year_id: academicYearId, program_id: programId }
+    });
+  }
+  
   
   
   
@@ -128,14 +134,20 @@ export class SchedulingService {
 
 
   // Update the number of sections per program year level
+  // Updated method in SchedulingService to accept multiple year levels
+  // Updated method to accept multiple year levels and their respective sections
+  // Updated method to send a single year level and number of sections at a time
   updateSections(academicYearId: number, programId: number, yearLevel: number, numberOfSections: number): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/update-sections`, {
       academic_year_id: academicYearId,
       program_id: programId,
-      year_level: yearLevel,
-      number_of_sections: numberOfSections
+      year_level: yearLevel,  // Send year level
+      number_of_sections: numberOfSections  // Send number of sections
     });
   }
+
+
+
 
   // Fetch all programs
   getPrograms(): Observable<Program[]> {

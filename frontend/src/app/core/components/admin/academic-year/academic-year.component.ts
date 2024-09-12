@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, Observable } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
@@ -342,97 +342,162 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     });
   }
   
-  
-  
 
   onManageSections(program: Program) {
-    // const fields: DialogFieldConfig[] = [];
-
-    // for (let i = 0; i < program.year_levels; i++) {
-    //   const yearLevelKey = `yearLevel${i + 1}`;
-    //   const sectionsKey = `numberOfSections${i + 1}`;
-
-    //   fields.push({
-    //     label: `Year Level ${i + 1}`,
-    //     formControlName: yearLevelKey,
-    //     type: 'text',
-    //     required: true,
-    //     disabled: true,
-    //   });
-
-    //   fields.push({
-    //     label: `Number of Sections`,
-    //     formControlName: sectionsKey,
-    //     type: 'number',
-    //     required: true,
-    //     min: 1,
-    //   });
-    // }
-
-    // const initialValue = fields.reduce((acc, field) => {
-    //   if (field.type === 'text') {
-    //     acc[field.formControlName] = `${parseInt(
-    //       field.formControlName.replace('yearLevel', '')
-    //     )}`;
-    //   } else if (field.type === 'number') {
-    //     const yearLevelIndex = field.formControlName.replace(
-    //       'numberOfSections',
-    //       ''
-    //     );
-    //     acc[field.formControlName] = program.sections[yearLevelIndex] || 1;
-    //   }
-    //   return acc;
-    // }, {} as { [key: string]: any });
-
-    // const dialogRef = this.dialog.open(TableDialogComponent, {
-    //   data: {
-    //     title: `Manage ${program.program_code} Sections`,
-    //     fields,
-    //     isEdit: true,
-    //     initialValue,
-    //     useHorizontalLayout: true,
-    //   },
-    //   disableClose: true,
-    // });
-
-    // dialogRef.afterClosed().subscribe((result) => {
-    //   if (result) {
-    //     for (let i = 0; i < program.year_levels; i++) {
-    //       const sectionsKey = `numberOfSections${i + 1}`;
-    //       program.sections[(i + 1).toString()] = result[sectionsKey];
-    //     }
-    //     this.programs = [...this.programs];
-    //     this.snackBar.open('Sections updated successfully!', 'Close', {
-    //       duration: 3000,
-    //     });
-    //   }
-    // });
+    const fields: DialogFieldConfig[] = [];
+  
+    // Ensure program.year_levels is an array
+    if (!Array.isArray(program.year_levels)) {
+      console.error('Expected year_levels to be an array, but got:', program.year_levels);
+      return;
+    }
+  
+    // Loop through year levels to dynamically create fields for section numbers
+    program.year_levels.forEach((yearLevelObj: YearLevel) => {
+      const yearLevelKey = `yearLevel${yearLevelObj.year_level}`;
+      const sectionsKey = `numberOfSections${yearLevelObj.year_level}`;
+  
+      // Add a text field for the year level (disabled since it's static)
+      fields.push({
+        label: `Year Level ${yearLevelObj.year_level}`,
+        formControlName: yearLevelKey,
+        type: 'text',
+        required: true,
+        disabled: true,
+      });
+  
+      // Add a number input field for sections
+      fields.push({
+        label: `Number of Sections`,
+        formControlName: sectionsKey,
+        type: 'number',
+        required: true,
+        min: 1,
+      });
+    });
+  
+    // Initial values for the dialog
+    const initialValue = fields.reduce((acc, field) => {
+      if (field.type === 'text') {
+        acc[field.formControlName] = field.label.replace('Year Level ', '');
+      } else if (field.type === 'number') {
+        const yearLevel = parseInt(field.formControlName.replace('numberOfSections', ''), 10);
+        acc[field.formControlName] = program.sections[yearLevel.toString()] || 1;
+      }
+      return acc;
+    }, {} as { [key: string]: any });
+  
+    // Open dialog with fields and initial values
+    const dialogRef = this.dialog.open(TableDialogComponent, {
+      data: {
+        title: `Manage ${program.program_code} Sections`,
+        fields,
+        isEdit: true,
+        initialValue,
+        useHorizontalLayout: true,
+      },
+      disableClose: true,
+    });
+  
+    // After dialog is closed
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        let changesMade = false;  // Track whether any changes were made
+  
+        // Loop through each year level and compare sections
+        program.year_levels.forEach((yearLevelObj) => {
+          const sectionsKey = `numberOfSections${yearLevelObj.year_level}`;
+          const numberOfSections = result[sectionsKey];
+  
+          // Only make an API call if the number of sections has changed
+          if (numberOfSections !== program.sections[yearLevelObj.year_level.toString()]) {
+            changesMade = true;  // Set flag that changes were made
+  
+            if (this.selectedAcademicYearId != null) {
+              // Make the API call for each year level
+              this.schedulingService
+                .updateSections(this.selectedAcademicYearId, program.program_id, yearLevelObj.year_level, numberOfSections)
+                .subscribe(
+                  (response) => {
+                    // Notify success for each individual update
+                    console.log(`Year Level ${yearLevelObj.year_level} updated successfully!`);
+                  },
+                  (error) => {
+                    console.error(`Failed to update Year Level ${yearLevelObj.year_level}`, error);
+                  }
+                );
+            } else {
+              console.error('selectedAcademicYearId is null or undefined.');
+            }
+          }
+        });
+  
+        // If changes were made, show a success message after all updates
+        if (changesMade) {
+          this.snackBar.open('Sections updated successfully!', 'Close', { duration: 3000 });
+          this.fetchProgramsForAcademicYear(this.selectedAcademicYear);  // Refresh the data
+        } else {
+          this.snackBar.open('No changes detected!', 'Close', { duration: 3000 });
+        }
+      }
+    });
   }
+  
+  
+  
+  
+  
 
-  onRemoveProgram(element: Program) {
+  onRemoveProgram(program: Program) {
+    // Open confirmation dialog before deleting the program
     const dialogData: DialogData = {
       title: 'Confirm Delete',
-      content:
-        'Are you sure you want to delete this? This action cannot be undone.',
+      content: `Are you sure you want to delete the program "${program.program_code}"? This action cannot be undone.`,
       actionText: 'Delete',
       cancelText: 'Cancel',
       action: 'Delete',
     };
-
+  
     const dialogRef = this.dialog.open(DialogGenericComponent, {
       data: dialogData,
       disableClose: true,
     });
-
+  
     dialogRef.afterClosed().subscribe((result) => {
       if (result === 'Delete') {
-        this.programs = this.programs.filter((p) => p !== element);
-        this.snackBar.open('Program deleted successfully!', 'Close', {
-          duration: 3000,
-        });
+        // Ensure selectedAcademicYearId exists
+        if (this.selectedAcademicYearId != null) {
+          // Call the backend service to remove the program
+          this.schedulingService
+            .removeProgramFromAcademicYear(this.selectedAcademicYearId, program.program_id)
+            .subscribe(
+              (response) => {
+                // On success, remove the program from the frontend list
+                this.programs = this.programs.filter((p) => p.program_id !== program.program_id);
+  
+                // Show a success message
+                this.snackBar.open('Program deleted successfully!', 'Close', {
+                  duration: 3000,
+                });
+  
+                // Optionally, you can refresh the program list
+                this.fetchProgramsForAcademicYear(this.selectedAcademicYear);
+              },
+              (error) => {
+                // Handle error response
+                console.error('Error deleting the program:', error);
+                this.snackBar.open('Failed to delete the program.', 'Close', {
+                  duration: 3000,
+                });
+              }
+            );
+        } else {
+          console.error('selectedAcademicYearId is null or undefined.');
+        }
       }
     });
   }
+  
 
   openAddAcademicYearDialog(): void {
     const dialogConfig: DialogConfig = {
@@ -493,29 +558,69 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     );
   }
 
+  academicYearMap: { [name: string]: number } = {};
+
   openManageAcademicYearDialog(): void {
-    const dialogConfig: DialogConfig = {
-      title: 'Manage Academic Years',
-      isManageList: true,
-      //academicYearList: [...this.academicYearOptions],
-      fields: [],
-      isEdit: false,
-    };
+  this.schedulingService.getAcademicYears().subscribe(
+    (academicYears) => {
+      // Create a map to store academic year names and their corresponding IDs
+      this.academicYearMap = {};
+      const academicYearNames = academicYears.map((year: any) => {
+        this.academicYearMap[year.academic_year] = year.academic_year_id;
+        return year.academic_year; // Only pass the names to the dialog
+      });
 
-    const dialogRef = this.dialog.open(TableDialogComponent, {
-      data: dialogConfig,
-      disableClose: true,
-    });
+      const dialogConfig: DialogConfig = {
+        title: 'Manage Academic Years',
+        isManageList: true,
+        // Pass the list of academic year names (strings only)
+        academicYearList: academicYearNames,
+        fields: [],
+        isEdit: false,
+      };
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result && result.deletedYear) {
-        // this.removeAcademicYear(result.deletedYear);
-        this.snackBar.open('Academic year removed successfully!', 'Close', {
+      const dialogRef = this.dialog.open(TableDialogComponent, {
+        data: dialogConfig,
+        disableClose: true,
+      });
+
+      dialogRef.afterClosed().subscribe((result) => {
+        if (result && result.deletedYear) {
+          // Use the academic year name to get the corresponding ID from the map
+          const deletedYearId = this.academicYearMap[result.deletedYear];
+          if (deletedYearId) {
+            this.deleteAcademicYear(deletedYearId); // Pass the academic_year_id to the delete function
+          }
+        }
+      });
+    },
+    (error) => {
+      console.error('Error fetching academic years:', error);
+      this.snackBar.open('Failed to fetch academic years.', 'Close', {
+        duration: 3000,
+      });
+    }
+  );
+}
+  
+  deleteAcademicYear(academicYearId: number): void {
+    this.schedulingService.deleteAcademicYear(academicYearId).subscribe(
+      (response) => {
+        this.snackBar.open('Academic year deleted successfully!', 'Close', {
+          duration: 3000,
+        });
+        // Refresh the academic year list after successful deletion
+        this.loadAcademicYears();
+      },
+      (error) => {
+        console.error('Error deleting academic year:', error);
+        this.snackBar.open('Failed to delete academic year.', 'Close', {
           duration: 3000,
         });
       }
-    });
+    );
   }
+  
 
   private handleError(message: string) {
     return (error: any) => {
