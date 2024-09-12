@@ -41,7 +41,7 @@
               "sourceMap": false,
               "fileReplacements": [
                 {
-                  "replace": "src/environments/environment.ts",
+                  "replace": "src/environments/environment.dev.ts",
                   "with": "src/environments/environment.prod.ts"
                 }
               ],
@@ -54,8 +54,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "5kB",
-                  "maximumError": "9kB"
+                  "maximumWarning": "10kB",
+                  "maximumError": "12kB"
                 }
               ]
             },
