@@ -1,1 +1,11 @@
-<p>report-faculty works!</p>
+<div class="report-header" [@fadeAnimation]>
+  <app-table-header
+    [inputFields]="inputFields"
+    [showButtons]="false"
+    [showActiveYearAndSem]="true"
+    [activeYear]="activeYear"
+    [activeSemester]="activeSemester"
+    (activeYearSemClick)="onActiveYearSemClick()"
+    (inputChange)="onInputChange($event)"
+  ></app-table-header>
+</div>
