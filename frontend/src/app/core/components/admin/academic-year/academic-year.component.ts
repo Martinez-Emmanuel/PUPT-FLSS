@@ -16,17 +16,6 @@ import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animati
 import { CurriculumService } from '../../../services/superadmin/curriculum/curriculum.service';
 import { YearLevel,Program, SchedulingService } from '../../../services/admin/scheduling/scheduling.service';
 
-// interface Program {
-//   program_id: number;
-//   program_code: string;
-//   program_title: string;
-//   year_levels: number;
-//   sections: { [yearLevel: string]: number };
-//   curriculums: { [yearLevel: string]: string };
-// }
-
-type AcademicYear = string;
-
 @Component({
   selector: 'app-academic-year',
   standalone: true,
@@ -46,8 +35,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
   // academicYearOptions: AcademicYear[] = [];
   academicYearOptions: { academic_year_id: number; academic_year: string }[] = [];
   selectedAcademicYear = '';
-  selectedAcademicYearId: number | null = null;  // Initialize with null or 0
-  // Add this to store the academic year ID
+  selectedAcademicYearId: number | null = null; 
   private destroy$ = new Subject<void>();
 
   headerInputFields: InputField[] = [
@@ -72,7 +60,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private schedulingService: SchedulingService,
-    private curriculumService: CurriculumService // Add this line
+    private curriculumService: CurriculumService 
   ) {}
 
   ngOnInit() {
@@ -108,7 +96,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     );
   
     if (!selectedYear) {
-      return; // Exit early if no matching year is found
+      return; 
     }
     
     this.selectedAcademicYearId = selectedYear.academic_year_id;  // Assign the ID
@@ -123,7 +111,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
             program_id: program.program_id,
             program_code: program.program_code,
             program_title: program.program_title,
-            year_levels: program.year_levels,  // Make sure this is an array
+            year_levels: program.year_levels,  
             sections: this.getSectionsByProgram(program)
           }));
         }
@@ -133,10 +121,6 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
       });
   }
   
-
-  
-  
-
   getSectionsByProgram(program: any): { [yearLevel: string]: number } {
     const sections: { [yearLevel: string]: number } = {};
     program.year_levels.forEach((yearLevel: any) => {
@@ -145,81 +129,6 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     return sections;
   }
   
-
-  // private getCurriculumsByProgram(
-  //   programCode: string,
-  //   numberOfYears: number
-  // ): { [yearLevel: string]: string } {
-  //   const curriculums: { [yearLevel: string]: string } = {};
-  //   this.schedulingService
-  //     .getActiveYearAndSemester()
-  //     .pipe(takeUntil(this.destroy$))
-  //     .subscribe(({ activeYear }) => {
-  //       const mapping =
-  //         this.schedulingService['mockData'].curriculumMapping[activeYear]?.[
-  //           programCode
-  //         ];
-  //       for (let year = 1; year <= numberOfYears; year++) {
-  //         curriculums[year.toString()] = mapping ? mapping[year] : '2022';
-  //       }
-  //     });
-  //   return curriculums;
-  // }
-
-  // private addNewAcademicYear(newAcademicYear: string): void {
-  //   this.academicYearOptions.push(newAcademicYear);
-  //   this.headerInputFields[0].options = [...this.academicYearOptions];
-  //   this.selectedAcademicYear = newAcademicYear;
-  // }
-
-  // private removeAcademicYear(year: string): void {
-  //   this.academicYearOptions = this.academicYearOptions.filter(
-  //     (y) => y !== year
-  //   );
-  //   this.headerInputFields[0].options = [...this.academicYearOptions];
-  //   this.selectedAcademicYear = this.academicYearOptions.length
-  //     ? this.academicYearOptions[0]
-  //     : '';
-  // }
-
-  // filterProgramsByAcademicYear(academicYear: AcademicYear) {
-  //   this.schedulingService
-  //     .getAcademicYears()
-  //     .pipe(takeUntil(this.destroy$))
-  //     .subscribe((academicYears) => {
-  //       const selectedYearData = academicYears.find(
-  //         (ay) => ay.year === academicYear
-  //       );
-
-  //       if (selectedYearData) {
-  //         const programCodes = selectedYearData.programs;
-
-  //         this.schedulingService
-  //           .getPrograms()
-  //           .pipe(takeUntil(this.destroy$))
-  //           .subscribe((programs) => {
-  //             const programsForYear = programs.filter((program) =>
-  //               programCodes.includes(program.code)
-  //             );
-
-  //             this.programs = programsForYear.map((program) => ({
-  //               program_code: program.code,
-  //               program_title: program.title,
-  //               year_levels: program.number_of_years,
-  //               sections: this.getSectionsByProgram(
-  //                 program.code,
-  //                 program.number_of_years
-  //               ),
-  //               curriculums: this.getCurriculumsByProgram(
-  //                 program.code,
-  //                 program.number_of_years
-  //               ),
-  //             }));
-  //           });
-  //       }
-  //     });
-  // }
-
   onInputChange(values: { [key: string]: any }) {
     if (values['academicYear']) {
       this.selectedAcademicYear = values['academicYear'];
@@ -443,11 +352,6 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     });
   }
   
-  
-  
-  
-  
-
   onRemoveProgram(program: Program) {
     // Open confirmation dialog before deleting the program
     const dialogData: DialogData = {
@@ -522,35 +426,44 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
       useHorizontalLayout: true,
       initialValue: { yearStart: '', yearEnd: '' },
     };
-
+  
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: dialogConfig,
       disableClose: true,
     });
-
+  
     dialogRef.afterClosed().subscribe((result) => {
       if (result && result.yearStart && result.yearEnd) {
         if (
           this.isValidYear(result.yearStart) &&
           this.isValidYear(result.yearEnd)
         ) {
-          const newAcademicYear = `${result.yearStart} - ${result.yearEnd}`;
-          // this.addNewAcademicYear(newAcademicYear);
-          this.snackBar.open('New academic year added successfully!', 'Close', {
-            duration: 3000,
-          });
+          // Call the backend API to add the new academic year
+          this.schedulingService.addAcademicYear(result.yearStart, result.yearEnd)
+            .subscribe(
+              (response) => {
+                this.snackBar.open('New academic year added successfully!', 'Close', {
+                  duration: 3000,
+                });
+                this.loadAcademicYears(); // Refresh the list of academic years
+              },
+              (error) => {
+                this.snackBar.open('Failed to add academic year.', 'Close', {
+                  duration: 3000,
+                });
+              }
+            );
         } else {
           this.snackBar.open(
             'Invalid year format. Please enter valid 4-digit years.',
             'Close',
-            {
-              duration: 3000,
-            }
+            { duration: 3000 }
           );
         }
       }
     });
   }
+  
 
   private isValidYear(year: string): boolean {
     return (

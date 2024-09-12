@@ -1,12 +1,13 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http'; // Import HttpClient for API requests
+import { HttpClient } from '@angular/common/http'; 
 import { Observable } from 'rxjs';
+import { environment } from '../../../../../environments/environment.dev';
 
 export interface Program {
   program_id: number;
   program_code: string;
   program_title: string;
-  year_levels: YearLevel[];  // Array of YearLevel objects
+  year_levels: YearLevel[]; 
   sections: { [yearLevel: string]: number };
   curriculums: { [yearLevel: string]: string };
 }
@@ -64,102 +65,94 @@ export interface YearLevel {
   providedIn: 'root',
 })
 export class SchedulingService {
-  // Base URL for the backend API
-  private apiUrl = 'http://127.0.0.1:8000/api'; // Update this if needed to match your API's base URL
+  private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
   // Fetch academic years from the backend
   getAcademicYears(): Observable<any[]> {
-    // Call your backend API to get academic years
-    return this.http.get<any[]>(`${this.apiUrl}/academic-years-dropdown`);
-  }
-
-  getActiveYearAndSemester(): Observable<{ activeYear: string, activeSemester: string }> {
-    return this.http.get<{ activeYear: string, activeSemester: string }>(`${this.apiUrl}/get-active-year-semester`);
+    return this.http.get<any[]>(`${this.baseUrl}/academic-years-dropdown`);
   }
   
+  // Set the active academic year and semester
   setActiveYearAndSemester(
-    activeYear: number,  // Expect the academic_year_id
-    activeSemester: number  // Expect the semester_id
+    activeYear: number,  
+    activeSemester: number  
   ): Observable<void> {
-    // Update the active year and semester via the backend
-    return this.http.post<void>(`${this.apiUrl}/set-active-ay-sem`, {
-      academic_year_id: activeYear,  // Send the ID, not the entire object
-      semester_id: activeSemester,   // Send the semester ID
+    return this.http.post<void>(`${this.baseUrl}/set-active-ay-sem`, {
+      academic_year_id: activeYear,  
+      semester_id: activeSemester,  
     });
   }
 
   // Fetch program details with year levels and curriculum versions for a specific academic year
-  fetchProgramDetailsByAcademicYear(payload: { academic_year_id: number }): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/fetch-ay-prog-details`, payload);
+  fetchProgramDetailsByAcademicYear(
+    payload: { academic_year_id: number }): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/fetch-ay-prog-details`, payload);
   }
 
   // Update year levels' curricula for a specific academic year and program
- // Ensure this method is sending the correct program_id in the payload
-  updateYearLevelsCurricula(academicYearId: number, programId: number, yearLevels: YearLevel[]): Observable<any> {
+  updateYearLevelsCurricula(
+    academicYearId: number, 
+    programId: number, yearLevels: YearLevel[]): 
+    Observable<any> {
     const payload = {
       academic_year_id: academicYearId,
-      program_id: programId,  // Ensure program_id is being sent correctly here
+      program_id: programId,  
       year_levels: yearLevels.map((yl) => ({
           year_level: yl.year_level,
           curriculum_id: yl.curriculum_id
       }))
     }
-    return this.http.post<any>(`${this.apiUrl}/update-yr-lvl-curricula`, payload);
+    return this.http.post<any>(`${this.baseUrl}/update-yr-lvl-curricula`, 
+      payload);
   }
 
+  //Delete academic year
   deleteAcademicYear(academicYearId: number): Observable<any> {
-    // Ensure that academicYearId is included in the request body for the DELETE method
-    return this.http.request('DELETE', `${this.apiUrl}/delete-ay`, {
+    return this.http.request('DELETE', `${this.baseUrl}/delete-ay`, {
       body: { academic_year_id: academicYearId }
     });
   }
   
-  removeProgramFromAcademicYear(academicYearId: number, programId: number): Observable<any> {
-    // The DELETE method will send both the academic_year_id and program_id as the body of the request
-    return this.http.request('DELETE', `${this.apiUrl}/remove-program`, {
+  // Delete a program from an academic year
+  removeProgramFromAcademicYear(
+    academicYearId: number, 
+    programId: number): Observable<any> {
+    return this.http.request('DELETE', `${this.baseUrl}/remove-program`, {
       body: { academic_year_id: academicYearId, program_id: programId }
     });
   }
-  
-  
-  
-  
-  
-  
-  
-  
-  
 
+  // Add new academic year
+  addAcademicYear(yearStart: string, yearEnd: string): Observable<any> {
+    const payload = { year_start: yearStart, year_end: yearEnd };
+    return this.http.post<any>(`${this.baseUrl}/add-academic-year`, payload);
+  }
 
-  // Update the number of sections per program year level
-  // Updated method in SchedulingService to accept multiple year levels
-  // Updated method to accept multiple year levels and their respective sections
-  // Updated method to send a single year level and number of sections at a time
-  updateSections(academicYearId: number, programId: number, yearLevel: number, numberOfSections: number): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/update-sections`, {
+  // Edit section on a specific year level
+  updateSections(
+    academicYearId: number, 
+    programId: number, 
+    yearLevel: number, 
+    numberOfSections: number): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/update-sections`, {
       academic_year_id: academicYearId,
       program_id: programId,
-      year_level: yearLevel,  // Send year level
-      number_of_sections: numberOfSections  // Send number of sections
+      year_level: yearLevel,  
+      number_of_sections: numberOfSections  
     });
   }
 
-
-
-
-  // Fetch all programs
-  getPrograms(): Observable<Program[]> {
-    return this.http.get<Program[]>(`${this.apiUrl}/programs`);
-  }
+  // // Fetch all programs
+  // getPrograms(): Observable<Program[]> {
+  //   return this.http.get<Program[]>(`${this.baseUrl}/programs`);
+  // }
 
   // Fetch sections by program and year
   getSections(program: string, year: number): Observable<string[]> {
     return this.http.get<string[]>(
-      `${this.apiUrl}/programs/${program}/year/${year}/sections`
+      `${this.baseUrl}/programs/${program}/year/${year}/sections`
     );
   }
-
-  // Other service methods...
 }
