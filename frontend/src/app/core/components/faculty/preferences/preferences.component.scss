@@ -104,7 +104,7 @@
   }
 }
 
-#courses_list, 
+#courses_list,
 #programs_list {
   flex: 1;
   overflow: hidden;
@@ -125,9 +125,9 @@
   }
 }
 
-.section-label {
-  display: flex;
-  align-items: center;
+.cards-label {
+  @include flex-layout($justify: flex-start, $gap: var(--spacing-sm));
+  font-weight: 500;
   margin-bottom: 1rem;
 
   button {
@@ -135,18 +135,17 @@
   }
 }
 
-.course-card, 
+.course-card,
 .program-card {
   @include default-transition;
   @include gradient-soft-secondary(30deg);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  @include flex-layout($justify: space-between);
   padding: var(--spacing-sm);
   margin-bottom: var(--spacing-xs);
   border-radius: var(--border-radius-sm);
+  cursor: pointer;
 
-  .course-info, 
+  .course-info,
   .program-info {
     display: flex;
     flex-direction: column;
@@ -155,24 +154,41 @@
 
   .course-code,
   .course-title,
-  .program-name {
+  .program-code {
     color: var(--neutral-base);
   }
 
   .course-code {
-    font-weight: 700;
+    font-weight: 600;
     font-size: var(--font-size-sm);
   }
 
-  .course-title,
-  .program-name {
+  .course-title {
     font-weight: 400;
     font-size: var(--font-size-md);
+  }
+
+  .program-code {
+    font-weight: 600;
+    font-size: var(--font-size-md);
+  }
+
+  .program-title {
+    font-weight: 400;
   }
 
   .add-button {
     @include flex-layout;
     color: var(--neutral-base);
+  }
+}
+
+.arrow_back {
+  cursor: pointer;
+  border-radius: 100%;
+
+  &:hover {
+    background-color: var(--neutral-bar);
   }
 }
 

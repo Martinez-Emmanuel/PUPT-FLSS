@@ -3,7 +3,9 @@
   <div class="preferences-row-one">
     <div id="preferences_title">
       <h1>Set Preferences</h1>
-      <p>Submit your preferred subjects and schedule for the upcoming semester.</p>
+      <p>
+        Submit your preferred subjects and schedule for the upcoming semester.
+      </p>
     </div>
 
     <div id="units_container">
@@ -26,84 +28,80 @@
           <mat-label>Search</mat-label>
           <input matInput />
           <span mat-symbol="search" matPrefix></span>
-        <button mat-icon-button [matMenuTriggerFor]="filterMenu" matSuffix>
-          <mat-icon>filter_list</mat-icon>
-        </button>
+
+          <!-- Conditionally show the filter button only when showProgramSelection is false -->
+          <button
+            mat-icon-button
+            [matMenuTriggerFor]="filterMenu"
+            matSuffix
+            *ngIf="!showProgramSelection"
+          >
+            <mat-icon>filter_list</mat-icon>
+          </button>
         </mat-form-field>
       </div>
 
       <mat-menu #filterMenu="matMenu">
-        @for (year of yearLevels; track year) {
-          <button mat-menu-item (click)="filterByYear(year)">
-            Year Level: {{ year }}
-          </button>
-        }
+        <button mat-menu-item *ngFor="let year of yearLevels" (click)="filterByYear(year)">
+          Year Level: {{ year }}
+        </button>
       </mat-menu>
 
-      <!-- Programs List --> 
-      @if (showProgramSelection) {
-      <div id="programs_list">
-        <h3 class="section-label">Select a Program</h3>
+      <!-- Programs List -->
+      <div *ngIf="showProgramSelection" id="programs_list">
+        <h3 class="cards-label">
+          <span mat-symbol="school"></span>Select a Program
+        </h3>
         <div class="programs-scroll-container">
           <!-- Display spinner while loading programs -->
-          @if (loadingPrograms) {
-            <div class="progress-wrapper">
-              <mat-spinner diameter="40"></mat-spinner>
-            </div>
-          }
+          <div class="progress-wrapper" *ngIf="loadingPrograms || programsLoading">
+            <mat-spinner diameter="40" strokeWidth="2.75"></mat-spinner>
+          </div>
           <!-- Display programs when loaded -->
-          @else {
-            <div [@cardEntranceAnimation]="programs.length">
-              @for (program of programs; track program.program_id) {
-                <div class="program-card" (click)="selectProgram(program)">
-                  <div class="program-info">
-                    <span class="program-name">{{ program.name }}</span>
-                  </div>
-                </div>
-              }
+          <div [@cardEntranceAnimation]="programs.length" *ngIf="!loadingPrograms && !programsLoading">
+            <div class="program-card" *ngFor="let program of programs" (click)="selectProgram(program)">
+              <div class="program-info">
+                <span class="program-code">{{ program.code }}</span>
+                <span class="program-title">{{ program.title }}</span>
+              </div>
             </div>
-          }
+          </div>
         </div>
       </div>
-      } @else {
+
       <!-- Courses List -->
-      <div id="courses_list">
-        <h3 class="section-label"> 
-          <button mat-icon-button (click)="backToProgramSelection()">
-            <mat-icon>arrow_back</mat-icon>
-          </button>
-          {{ selectedProgram?.name }} Courses
+      <div *ngIf="!showProgramSelection" id="courses_list">
+        <h3 class="cards-label">
+          <span
+            class="arrow_back"
+            mat-symbol="arrow_back"
+            (click)="backToProgramSelection()"
+          ></span>
+          {{ selectedProgram?.code }} Courses
         </h3>
         <div class="courses-scroll-container">
           <!-- Display spinner while loading -->
-          @if (loading) {
-            <div class="progress-wrapper">
-              <mat-spinner diameter="40"></mat-spinner>
-            </div>
-          }
+          <div class="progress-wrapper" *ngIf="loading">
+            <mat-spinner diameter="40"></mat-spinner>
+          </div>
           <!-- Display courses when loaded -->
-          @else {
-            <div [@cardEntranceAnimation]="filteredCourses.length">
-              @for (course of filteredCourses; track course.course_id) { 
-              <div class="course-card" (click)="addCourseToTable(course)">
-                <div class="course-info">
-                  <span class="course-code">{{ course.course_code }}</span>
-                  <span class="course-title">{{ course.course_title }}</span>
-                </div>
-                <button
-                  mat-icon-button
-                  class="add-button"
-                  (click)="addCourseToTable(course)"
-                >
-                  <span mat-symbol="add" variant="outlined" size="20px"></span>
-                </button>
+          <div [@cardEntranceAnimation]="filteredCourses.length" *ngIf="!loading">
+            <div class="course-card" *ngFor="let course of filteredCourses" (click)="addCourseToTable(course)">
+              <div class="course-info">
+                <span class="course-code">{{ course.course_code }}</span>
+                <span class="course-title">{{ course.course_title }}</span>
               </div>
-            } 
+              <button
+                mat-icon-button
+                class="add-button"
+                (click)="addCourseToTable(course)"
+              >
+                <span mat-symbol="add" variant="outlined" size="20px"></span>
+              </button>
             </div>
-          }
+          </div>
         </div>
       </div>
-      }
     </div>
 
     <!-- Preferences Table -->
@@ -166,11 +164,9 @@
               name="preferredDay"
             >
               <option value="" disabled selected>Select day</option>
-              @for (day of daysOfWeek; track day) {
-                <option [value]="day">
-                  {{ day }}
-                </option>
-              }
+              <option *ngFor="let day of daysOfWeek" [value]="day">
+                {{ day }}
+              </option>
             </select>
           </td>
         </ng-container>

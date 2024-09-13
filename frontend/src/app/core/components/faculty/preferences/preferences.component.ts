@@ -65,6 +65,7 @@ interface TableData extends Course {
 })
 export class PreferencesComponent implements OnInit, OnDestroy {
   programs: Program[] = [];
+  programsLoading = false;
   courses: Course[] = [];
   filteredCourses: Course[] = [];
   selectedProgram: Program | undefined;
@@ -125,16 +126,22 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   
   private loadPrograms() {
     this.loadingPrograms = true;
+    this.programsLoading = true;  // Step 1: Set programsLoading to true to clear the list temporarily
+
     this.preferencesService.getPrograms().subscribe({
       next: (programs) => {
-        this.programs = programs;
-        this.loadingPrograms = false;
-        this.cdr.markForCheck();
-
+        // Step 2: After a delay, populate programs and reset loading states
+        setTimeout(() => {
+          this.programs = programs;
+          this.loadingPrograms = false;
+          this.programsLoading = false;  // Step 3: Set programsLoading back to false
+          this.cdr.markForCheck();
+        }, 0);
       },
       error: (error) => {
         console.error('Error loading programs:', error);
         this.loadingPrograms = false;
+        this.programsLoading = false;
         this.cdr.markForCheck();
       },
     });
