@@ -3,6 +3,7 @@ import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 import { MatDialog } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { Subject, fromEvent } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
@@ -19,12 +20,13 @@ import { CookieService } from 'ngx-cookie-service';
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
   standalone: true,
-  imports: [RouterModule, CommonModule, MatSymbolDirective],
+  imports: [RouterModule, CommonModule, MatTooltipModule, MatSymbolDirective],
 })
 export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private isInitialLoad = true;
   private resizeObserver!: ResizeObserver;
+  private documentClickListener!: () => void;
   public isDropdownOpen = false;
 
   public facultyName: string | null = '';
@@ -70,6 +72,7 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     this.setupResizeObserver();
+    this.setupDocumentClickListener();
   }
 
   ngOnDestroy() {
@@ -78,6 +81,7 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
+    this.removeDocumentClickListener();
   }
 
   private loadFacultyInfo(): void {
@@ -85,8 +89,13 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
     this.facultyEmail = this.cookieService.get('faculty_email');
   }
 
-  toggleDropdown() {
+  toggleDropdown(event: Event) {
+    event.stopPropagation();
     this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  closeDropdown() {
+    this.isDropdownOpen = false;
   }
 
   toggleTheme() {
@@ -115,6 +124,25 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     this.resizeObserver.observe(navbar);
+  }
+
+  private setupDocumentClickListener() {
+    this.documentClickListener = this.renderer.listen('document', 'click', (event: Event) => {
+      const dropdownElement = this.el.nativeElement.querySelector('.dropdown-menu');
+      const profileIconElement = this.el.nativeElement.querySelector('.profile-icon');
+      
+      if (!dropdownElement?.contains(event.target as Node) && !profileIconElement?.contains(event.target as Node)) {
+        this.ngZone.run(() => {
+          this.closeDropdown();
+        });
+      }
+    });
+  }
+
+  private removeDocumentClickListener() {
+    if (this.documentClickListener) {
+      this.documentClickListener();
+    }
   }
 
   updateSliderPosition() {
@@ -156,6 +184,7 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
         cancelText: 'Cancel',
         action: 'Log Out',
       } as DialogData,
+      disableClose: true,
     });
 
     confirmDialogRef.afterClosed().subscribe((result) => {

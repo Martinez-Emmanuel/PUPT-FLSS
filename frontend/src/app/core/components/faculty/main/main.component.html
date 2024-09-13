@@ -36,7 +36,7 @@
           src="assets/images/default_profile_icon.png"
           alt="Profile Icon"
           class="profile-icon"
-          (click)="toggleDropdown()"
+          (click)="toggleDropdown($event)"
           matTooltip="Click to open settings"
           matTooltipPosition="below"
         />
@@ -60,7 +60,7 @@
       </div>
     </div>
   </header>
-  
+
   <main class="faculty-main-content">
     <router-outlet></router-outlet>
   </main>
