@@ -28,49 +28,49 @@
           <mat-label>Search</mat-label>
           <input matInput />
           <span mat-symbol="search" matPrefix></span>
-
-          <!-- Conditionally show the filter button only when showProgramSelection is false -->
-          <button
-            mat-icon-button
-            [matMenuTriggerFor]="filterMenu"
-            matSuffix
-            *ngIf="!showProgramSelection"
-          >
+          @if (!showProgramSelection) {
+          <button mat-icon-button [matMenuTriggerFor]="filterMenu" matSuffix>
             <mat-icon>filter_list</mat-icon>
           </button>
+          }
         </mat-form-field>
       </div>
-
       <mat-menu #filterMenu="matMenu">
-        <button mat-menu-item *ngFor="let year of yearLevels" (click)="filterByYear(year)">
+        @for (year of yearLevels; track year) {
+        <button mat-menu-item (click)="filterByYear(year)">
           Year Level: {{ year }}
         </button>
+        }
       </mat-menu>
-
       <!-- Programs List -->
-      <div *ngIf="showProgramSelection" id="programs_list">
+      @if (showProgramSelection) {
+      <div id="programs_list">
         <h3 class="cards-label">
           <span mat-symbol="school"></span>Select a Program
         </h3>
         <div class="programs-scroll-container">
-          <!-- Display spinner while loading programs -->
-          <div class="progress-wrapper" *ngIf="loadingPrograms || programsLoading">
+          @if (loadingPrograms || programsLoading) {
+          <div class="progress-wrapper">
             <mat-spinner diameter="40" strokeWidth="2.75"></mat-spinner>
           </div>
-          <!-- Display programs when loaded -->
-          <div [@cardEntranceAnimation]="programs.length" *ngIf="!loadingPrograms && !programsLoading">
-            <div class="program-card" *ngFor="let program of programs" (click)="selectProgram(program)">
+          } @else {
+          <div [@cardEntranceAnimation]="programs.length">
+            @for (program of programs; track program) {
+            <div class="program-card" (click)="selectProgram(program)">
               <div class="program-info">
                 <span class="program-code">{{ program.code }}</span>
                 <span class="program-title">{{ program.title }}</span>
               </div>
             </div>
+            }
           </div>
+          }
         </div>
       </div>
-
+      }
       <!-- Courses List -->
-      <div *ngIf="!showProgramSelection" id="courses_list">
+      @if (!showProgramSelection) {
+      <div id="courses_list">
         <h3 class="cards-label">
           <span
             class="arrow_back"
@@ -80,13 +80,14 @@
           {{ selectedProgram?.code }} Courses
         </h3>
         <div class="courses-scroll-container">
-          <!-- Display spinner while loading -->
-          <div class="progress-wrapper" *ngIf="loading">
+          @if (loading) {
+          <div class="progress-wrapper">
             <mat-spinner diameter="40"></mat-spinner>
           </div>
-          <!-- Display courses when loaded -->
-          <div [@cardEntranceAnimation]="filteredCourses.length" *ngIf="!loading">
-            <div class="course-card" *ngFor="let course of filteredCourses" (click)="addCourseToTable(course)">
+          } @else {
+          <div [@cardEntranceAnimation]="filteredCourses.length">
+            @for (course of filteredCourses; track course) {
+            <div class="course-card">
               <div class="course-info">
                 <span class="course-code">{{ course.course_code }}</span>
                 <span class="course-title">{{ course.course_title }}</span>
@@ -99,9 +100,12 @@
                 <span mat-symbol="add" variant="outlined" size="20px"></span>
               </button>
             </div>
+            }
           </div>
+          }
         </div>
       </div>
+      }
     </div>
 
     <!-- Preferences Table -->
