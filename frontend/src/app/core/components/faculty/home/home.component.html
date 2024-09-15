@@ -1,28 +1,36 @@
 <div class="faculty-home-container" [@fadeAnimation]>
-  <!--Home first row-->
+  <!-- Home first row -->
   <div class="home-row-one">
-    <!--Home greertings-->
+    <!-- Home greetings -->
     <div id="home_greetings">
-      <h1>Hello, {{ facultyName }} </h1>
-      <p>Here's your schedule and other key information for the semester.</p>
+      <h1>Hello, {{ facultyName }}</h1>
+      <p>
+        Here's your class schedule for this month and other key information for
+        the semester.
+      </p>
     </div>
-    <!--Active Semester-->
-    <div id="active_semester">
-      <!--Active Semester Text-->
-      <div id="semester_text">
-        <span mat-symbol="school"></span>
-        <span>1st Semester, A.Y. 2024-2025</span>
-      </div>
 
-      <!--Active Semester Progress Bar-->
-      <div id="semester_bar">
-        <div id="progress_base"></div>
-        <div id="progress_fill"></div>
-      </div>
+    <!-- Calendar -->
+    <div class="faculty-calendar">
+      <full-calendar [options]="calendarOptions"></full-calendar>
     </div>
   </div>
 
+  <!-- Home second row -->
   <div class="home-row-two">
-    <!--Calendar will be here-->
+    <!-- Active Semester -->
+    <div class="active-year-sem-container">
+      <p class="text">
+        A.Y. {{ activeYear }},
+        {{ activeSemester }}
+      </p>
+      <p class="label">Active Academic Year & Semester</p>
+    </div>
+
+    <!--Announcement-->
+    <div class="faculty-announcement">
+      <img src="../../../../../assets/images/empty.svg" />
+      <span>No announcement yet.</span>
+    </div>
   </div>
 </div>
