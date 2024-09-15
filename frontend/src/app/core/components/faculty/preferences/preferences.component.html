@@ -36,6 +36,7 @@
           }
         </mat-form-field>
       </div>
+      <!--Filter Menu-->
       <mat-menu #filterMenu="matMenu">
         @for (year of yearLevels; track year) {
         <button mat-menu-item (click)="filterByYear(year)">

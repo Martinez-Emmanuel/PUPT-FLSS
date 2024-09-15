@@ -61,7 +61,7 @@ interface TableData extends Course {
     MatProgressSpinnerModule,
     MatSortModule,
     MatMenuModule,
-  ],
+  ],  
   templateUrl: './preferences.component.html',
   styleUrls: ['./preferences.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -93,7 +93,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   readonly yearLevels: number[] = [1, 2, 3, 4];
 
   // State Management Properties
-  units = 0; // Renamed from totalUnits to units
+  units = 0;
 
   constructor(
     private readonly themeService: ThemeService,
