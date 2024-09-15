@@ -92,9 +92,9 @@
 
     .university-name,
     .system-name {
-      font-family: "Trajan Pro";
+      font-family: var(--font-header);
       font-size: var(--font-size-md);
-      font-weight: 700;
+      font-weight: 600;
     }
 
     .university-name {

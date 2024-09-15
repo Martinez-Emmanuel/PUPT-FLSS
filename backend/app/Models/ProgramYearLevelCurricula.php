@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class ProgramYearLevelCurricula extends Model
 {
     use HasFactory;
-
+    protected $table = 'program_year_level_curricula';
     protected $primaryKey = 'program_year_level_curricula_id';
 
     protected $fillable = [

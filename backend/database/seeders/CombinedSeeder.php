@@ -8,17 +8,17 @@ use App\Models\ActiveSemester;
 use App\Models\Semester;
 use App\Models\YearLevel;
 use App\Models\CurriculaProgram;
-
+use App\Models\AcademicYearCurricula;
+use App\Models\ProgramYearLevelCurricula;
+use App\Models\Curriculum;
 class CombinedSeeder extends Seeder
 {
     public function run()
     {
         // Step 1: Seed Academic Years
         $academicYears = [
-            ['academic_year_id' => 1, 'year_start' => 2022, 'year_end' => 2023, 'is_active' => 1],
-            ['academic_year_id' => 2, 'year_start' => 2021, 'year_end' => 2022, 'is_active' => 0],
-            ['academic_year_id' => 3, 'year_start' => 2020, 'year_end' => 2021, 'is_active' => 0],
-            ['academic_year_id' => 4, 'year_start' => 2018, 'year_end' => 2019, 'is_active' => 0],
+            ['academic_year_id' => 1, 'year_start' => 2023, 'year_end' => 2024, 'is_active' => 0],
+            ['academic_year_id' => 2, 'year_start' => 2024, 'year_end' => 2025, 'is_active' => 1],
         ];
 
         foreach ($academicYears as $academicYear) {
@@ -27,7 +27,6 @@ class CombinedSeeder extends Seeder
                 'updated_at' => now(),
             ]));
         }
-
         // Step 2: Seed Year Levels
         $curriculaPrograms = [
             ['curriculum_id' => 1, 'program_id' => 1, 'label' => 'BSIT 2018'],
@@ -72,19 +71,54 @@ class CombinedSeeder extends Seeder
             }
         }
 
-        // Step 4: Seed Active Semesters
-        $activeSemestersData = [
-            ['academic_year_id' => 1, 'semester_id' => 1, 'is_active' => 0],
-            ['academic_year_id' => 1, 'semester_id' => 2, 'is_active' => 0],
-            ['academic_year_id' => 3, 'semester_id' => 4, 'is_active' => 1],
-            ['academic_year_id' => 2, 'semester_id' => 5, 'is_active' => 0],
+         // Step 3: Seed Active Semesters (based on the screenshot data)
+         $activeSemesters = [
+            ['active_semester_id' => 1, 'academic_year_id' => 2, 'semester_id' => 1, 'is_active' => 1],
+            ['active_semester_id' => 2, 'academic_year_id' => 1, 'semester_id' => 1, 'is_active' => 0],
+            ['active_semester_id' => 3, 'academic_year_id' => 1, 'semester_id' => 2, 'is_active' => 0],
+            ['active_semester_id' => 4, 'academic_year_id' => 1, 'semester_id' => 3, 'is_active' => 0],
         ];
 
-        foreach ($activeSemestersData as $data) {
-            ActiveSemester::create(array_merge($data, [
+        foreach ($activeSemesters as $activeSemester) {
+            ActiveSemester::create(array_merge($activeSemester, [
                 'created_at' => now(),
                 'updated_at' => now(),
             ]));
         }
+
+         // Step 5: Seed Academic Year Curricula (Based on the new screenshot)
+         $academicYearCurricula = [
+            ['academic_year_id' => 1, 'curriculum_id' => 1],
+            ['academic_year_id' => 1, 'curriculum_id' => 2],
+            ['academic_year_id' => 2, 'curriculum_id' => 1],
+            ['academic_year_id' => 2, 'curriculum_id' => 2],
+        ];
+
+        foreach ($academicYearCurricula as $yearCurricula) {
+            AcademicYearCurricula::create(array_merge($yearCurricula, [
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]));
+        }
+
+        // Data from the screenshot
+        $programYearLevelCurricula = [
+            ['program_year_level_curricula_id' => 1, 'academic_year_id' => 2, 'program_id' => 1, 'year_level' => 1, 'curriculum_id' => 2],
+            ['program_year_level_curricula_id' => 2, 'academic_year_id' => 2, 'program_id' => 1, 'year_level' => 2, 'curriculum_id' => 2],
+            ['program_year_level_curricula_id' => 3, 'academic_year_id' => 2, 'program_id' => 1, 'year_level' => 3, 'curriculum_id' => 1],
+            ['program_year_level_curricula_id' => 4, 'academic_year_id' => 2, 'program_id' => 1, 'year_level' => 4, 'curriculum_id' => 1],
+            ['program_year_level_curricula_id' => 5, 'academic_year_id' => 2, 'program_id' => 2, 'year_level' => 1, 'curriculum_id' => 2],
+            ['program_year_level_curricula_id' => 6, 'academic_year_id' => 2, 'program_id' => 2, 'year_level' => 2, 'curriculum_id' => 2],
+            ['program_year_level_curricula_id' => 7, 'academic_year_id' => 2, 'program_id' => 2, 'year_level' => 3, 'curriculum_id' => 1],
+            ['program_year_level_curricula_id' => 8, 'academic_year_id' => 2, 'program_id' => 2, 'year_level' => 4, 'curriculum_id' => 1],
+        ];
+
+        foreach ($programYearLevelCurricula as $record) {
+            ProgramYearLevelCurricula::create(array_merge($record, [
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]));
+        }
+        
     }
 }

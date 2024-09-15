@@ -1,12 +1,34 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule, Router, ActivatedRoute } from '@angular/router';
+
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 @Component({
   selector: 'app-reports',
   standalone: true,
-  imports: [],
+  imports: [
+    CommonModule,
+    MatTabsModule,
+    RouterModule,
+    MatSymbolDirective,
+  ],
   templateUrl: './reports.component.html',
-  styleUrl: './reports.component.scss'
+  styleUrl: './reports.component.scss',
+  encapsulation: ViewEncapsulation.None,
 })
-export class ReportsComponent {
+export class ReportsComponent implements OnInit {
+  constructor(private router: Router, private route: ActivatedRoute) {}
 
+  ngOnInit() {
+    if (this.route.firstChild === null) {
+      this.router.navigate(['faculty'], { relativeTo: this.route });
+    }
+  }
+
+  onTabChange(event: any) {
+    const tabRoutes = ['faculty', 'programs', 'rooms'];
+    this.router.navigate([tabRoutes[event.index]], { relativeTo: this.route });
+  }
 }

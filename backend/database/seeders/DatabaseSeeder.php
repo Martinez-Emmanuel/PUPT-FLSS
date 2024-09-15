@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             RoomSeeder::class,
             CombinedSeeder::class,
             CourseAssignmentSeeder::class,
+            SectionsPerProgramYearSeeder::class,
             // CurriculumProgramSeeder::class,
         ]);
     }

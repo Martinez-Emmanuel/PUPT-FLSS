@@ -35,9 +35,9 @@ export const cardEntranceAnimation = trigger('cardEntranceAnimation', [
       ':enter',
       [
         style({ opacity: 0, transform: 'translateY(15px)' }),
-        stagger('50ms', [
+        stagger('75ms', [
           animate(
-            '300ms ease-out',
+            '400ms ease-out',
             style({ opacity: 1, transform: 'translateY(0)' })
           ),
         ]),
