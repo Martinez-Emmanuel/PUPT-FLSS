@@ -22,6 +22,14 @@
   box-sizing: border-box;
 }
 
+/* Sticky Object */
+@mixin sticky($top: 0, $bottom: 0, $z-index: 2) {
+  position: sticky;
+  top: $top;
+  bottom: $bottom;
+  z-index: $z-index;
+}
+
 /* Default page transition. Add the true parameter (optional) to include text */
 @mixin default-transition($include-color: false) {
   transition: background-color 0.3s ease;
@@ -60,6 +68,15 @@
 /* Primary Gradient for text */
 @mixin gradient-primary-text($degree: 90deg) {
   @include gradient-primary($degree);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+}
+
+/* Primary Gradient for text */
+@mixin gradient-secondary-text($degree: 90deg) {
+  @include gradient-secondary($degree);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;

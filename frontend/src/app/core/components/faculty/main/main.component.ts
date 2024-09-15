@@ -1,8 +1,9 @@
-import { Component, AfterViewInit, ElementRef, Renderer2, OnDestroy, NgZone } from '@angular/core';
+import { Component, AfterViewInit, ElementRef, Renderer2, OnDestroy, NgZone, OnInit } from '@angular/core';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 
 import { MatDialog } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { Subject, fromEvent } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
@@ -14,19 +15,22 @@ import { ThemeService } from '../../../services/theme/theme.service';
 import { AuthService } from '../../../services/auth/auth.service';
 import { CookieService } from 'ngx-cookie-service';
 
-
 @Component({
   selector: 'app-main',
   templateUrl: './main.component.html',
   styleUrls: ['./main.component.scss'],
   standalone: true,
-  imports: [RouterModule, CommonModule, MatSymbolDirective],
+  imports: [RouterModule, CommonModule, MatTooltipModule, MatSymbolDirective],
 })
-export class MainComponent implements AfterViewInit, OnDestroy {
+export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private isInitialLoad = true;
   private resizeObserver!: ResizeObserver;
+  private documentClickListener!: () => void;
   public isDropdownOpen = false;
+
+  public facultyName: string | null = '';
+  public facultyEmail: string | null = '';
 
   constructor(
     private el: ElementRef,
@@ -38,6 +42,10 @@ export class MainComponent implements AfterViewInit, OnDestroy {
     private dialog: MatDialog,
     private cookieService: CookieService
   ) {}
+
+  ngOnInit(): void {
+    this.loadFacultyInfo();
+  }
 
   ngAfterViewInit() {
     this.setupSlider();
@@ -64,6 +72,7 @@ export class MainComponent implements AfterViewInit, OnDestroy {
     });
 
     this.setupResizeObserver();
+    this.setupDocumentClickListener();
   }
 
   ngOnDestroy() {
@@ -72,10 +81,21 @@ export class MainComponent implements AfterViewInit, OnDestroy {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
+    this.removeDocumentClickListener();
   }
 
-  toggleDropdown() {
+  private loadFacultyInfo(): void {
+    this.facultyName = this.cookieService.get('user_name');
+    this.facultyEmail = this.cookieService.get('faculty_email');
+  }
+
+  toggleDropdown(event: Event) {
+    event.stopPropagation();
     this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  closeDropdown() {
+    this.isDropdownOpen = false;
   }
 
   toggleTheme() {
@@ -104,6 +124,25 @@ export class MainComponent implements AfterViewInit, OnDestroy {
     });
 
     this.resizeObserver.observe(navbar);
+  }
+
+  private setupDocumentClickListener() {
+    this.documentClickListener = this.renderer.listen('document', 'click', (event: Event) => {
+      const dropdownElement = this.el.nativeElement.querySelector('.dropdown-menu');
+      const profileIconElement = this.el.nativeElement.querySelector('.profile-icon');
+      
+      if (!dropdownElement?.contains(event.target as Node) && !profileIconElement?.contains(event.target as Node)) {
+        this.ngZone.run(() => {
+          this.closeDropdown();
+        });
+      }
+    });
+  }
+
+  private removeDocumentClickListener() {
+    if (this.documentClickListener) {
+      this.documentClickListener();
+    }
   }
 
   updateSliderPosition() {
@@ -139,13 +178,15 @@ export class MainComponent implements AfterViewInit, OnDestroy {
     const confirmDialogRef = this.dialog.open(DialogGenericComponent, {
       data: {
         title: 'Log Out',
-        content: 'Are you sure you want to log out? This will end your current session.',
+        content:
+          'Are you sure you want to log out? This will end your current session.',
         actionText: 'Log Out',
         cancelText: 'Cancel',
         action: 'Log Out',
       } as DialogData,
+      disableClose: true,
     });
-  
+
     confirmDialogRef.afterClosed().subscribe((result) => {
       console.log('Dialog result:', result);
       if (result === 'Log Out') {
@@ -157,11 +198,11 @@ export class MainComponent implements AfterViewInit, OnDestroy {
           } as DialogData,
           disableClose: true,
         });
-  
+
         this.authService.logout().subscribe({
           next: (response) => {
             console.log('Logout successful', response);
-            
+
             this.authService.clearCookies();
 
             loadingDialogRef.close();
@@ -170,7 +211,7 @@ export class MainComponent implements AfterViewInit, OnDestroy {
           error: (error) => {
             console.error('Logout failed', error);
             loadingDialogRef.close();
-          }
+          },
         });
       }
     });

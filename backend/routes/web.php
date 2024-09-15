@@ -18,3 +18,11 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::get('/test-email', [FacultyController::class, 'testEmail']);
+// routes/web.php
+Route::get('/test-preferences-submitted', function () {
+    $data = [
+        'faculty_name' => 'Juan Dela Cruz',
+    ];
+
+    return view('emails.preferences_submitted', $data);
+});

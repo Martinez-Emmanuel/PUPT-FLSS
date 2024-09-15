@@ -46,6 +46,37 @@ export const ADMIN_ROUTES: Routes = [
         loadComponent: () =>
           import('./reports/reports.component').then((m) => m.ReportsComponent),
         data: { pageTitle: 'Reports' },
+        children: [
+          {
+            path: 'faculty',
+            loadComponent: () =>
+              import('./reports/report-faculty/report-faculty.component').then(
+                (m) => m.ReportFacultyComponent
+              ),
+            data: { pageTitle: 'Reports' },
+          },
+          {
+            path: 'programs',
+            loadComponent: () =>
+              import(
+                './reports/report-programs/report-programs.component'
+              ).then((m) => m.ReportProgramsComponent),
+            data: { pageTitle: 'Reports' },
+          },
+          {
+            path: 'rooms',
+            loadComponent: () =>
+              import('./reports/report-rooms/report-rooms.component').then(
+                (m) => m.ReportRoomsComponent
+              ),
+            data: { pageTitle: 'Reports' },
+          },
+          {
+            path: '',
+            redirectTo: 'faculty',
+            pathMatch: 'full',
+          },
+        ],
       },
       {
         path: 'help',

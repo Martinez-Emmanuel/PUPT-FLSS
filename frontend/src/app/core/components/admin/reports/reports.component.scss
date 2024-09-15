@@ -1,0 +1,19 @@
+@import "../../../../../styles/mixins.scss";
+
+.reports-main {
+  height: 100%;
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-md)
+  );
+}
+
+.tab-label {
+  @include flex-layout($gap: var(--spacing-xs));
+}
+
+.reports-content {
+  height: inherit;
+}

@@ -25,7 +25,8 @@ export interface YearLevel {
 
 export interface Program {
   program_id: number; 
-  name: string;
+  title: string;
+  code: string;
   year_levels: YearLevel[];
 }
 
@@ -37,7 +38,8 @@ export class PreferencesService {
     programs: [
       {
         program_id: 1,
-        name: "BSIT",
+        code: "BSIT-TG",
+        title: "Bachelor of Science in Information Technology",
         year_levels: [
           {
             year: 1,
@@ -342,8 +344,9 @@ export class PreferencesService {
         ]
       },
       {
-        program_id: 2, // Assigning a unique ID to the BSA program
-        name: "BSA",
+        program_id: 2,
+        code: "BSA-TG",
+        title: "Bachelor of Science in Accountancy",
         year_levels: [
           {
             year: 1,
@@ -655,7 +658,7 @@ export class PreferencesService {
   }
 
   getCourses(programName: string, year: number, semester: number | string): Observable<Course[]> {
-    const program = this.mockData.programs.find(p => p.name === programName);
+    const program = this.mockData.programs.find(p => p.code === programName);
     if (program) {
       const yearLevel = program.year_levels.find(y => y.year === year);
       if (yearLevel) {

@@ -20,6 +20,7 @@ import { slideInAnimation, fadeAnimation } from '../../../animations/animations'
 import { AuthService } from '../../../services/auth/auth.service';
 import { ThemeService } from '../../../services/theme/theme.service';
 import { CookieService } from 'ngx-cookie-service';
+
 @Component({
   selector: 'app-main',
   templateUrl: './main.component.html',
@@ -40,21 +41,14 @@ import { CookieService } from 'ngx-cookie-service';
 })
 export class MainComponent implements OnInit, AfterViewInit {
   @ViewChild('drawer') drawer!: MatSidenav;
+  isReportsView: boolean = false;
 
   private breakpointObserver = inject(BreakpointObserver);
   public showSidenav = false;
   public isDropdownOpen = false;
-  public pageTitle = 'Dashboard';
+  public pageTitle = '';
   public accountName: string;
   public accountRole: string;
-
-  private routeTitleMap: Record<string, string> = {
-    dashboard: 'Dashboard',
-    programs: 'Programs',
-    courses: 'Courses',
-    curriculum: 'Curriculum',
-    rooms: 'Rooms',
-  };
 
   isHandset$: Observable<boolean> = this.breakpointObserver
     .observe(Breakpoints.Handset)
@@ -73,6 +67,11 @@ export class MainComponent implements OnInit, AfterViewInit {
   ) {
     this.accountName = this.cookieService.get('user_name');
     this.accountRole = this.toTitleCase(this.cookieService.get('user_role'));
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        this.isReportsView = event.urlAfterRedirects.includes('/reports');
+      });
   }
 
   ngOnInit(): void {
@@ -104,22 +103,9 @@ export class MainComponent implements OnInit, AfterViewInit {
   }
 
   private setPageTitle(): void {
-    const childRoute = this.findDeepestChild(this.route);
     const pageTitle =
-      childRoute?.snapshot.data['pageTitle'] ||
-      this.routeTitleMap[this.router.url.split('/').pop() || ''] ||
-      'Dashboard';
-    this.pageTitle = childRoute?.snapshot.data['curriculumYear']
-      ? `${pageTitle} ${childRoute.snapshot.data['curriculumYear']}`
-      : pageTitle;
-  }
-
-  private findDeepestChild(route: ActivatedRoute): ActivatedRoute | null {
-    let child = route.firstChild;
-    while (child?.firstChild) {
-      child = child.firstChild;
-    }
-    return child;
+      this.route.snapshot.firstChild?.data['pageTitle'];
+    this.pageTitle = pageTitle;
   }
 
   public logout() {

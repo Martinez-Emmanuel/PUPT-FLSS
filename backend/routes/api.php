@@ -33,6 +33,9 @@ Route::post('/update-sections', [AcademicYearController::class, 'updateSections'
 Route::delete('/remove-program', [AcademicYearController::class, 'removeProgramFromAcademicYear']);
 Route::delete('/delete-ay', [AcademicYearController::class, 'deleteAcademicYear']);
 
+Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
+Route::post('/pref-submitted-email', [FacultyController::class, 'sendPreferencesSubmittedEmail']);
+Route::post('/subj-schedule-set', [FacultyController::class, 'sendSubjectsScheduleSetEmail']);
 
 // Route::get('/academic-years', [AcademicYearController::class, 'getAcademicYearsWithSemesters']);
 // Route::get('/active-academic-year', [AcademicYearController::class, 'getActiveAcademicYear']);

@@ -43,7 +43,7 @@
 
     .university-name,
     .system-name {
-      font-family: "Trajan Pro";
+      font-family: var(--font-header);
       font-size: var(--font-size-md);
       font-weight: 600;
     }
@@ -57,7 +57,7 @@
     align-self: center;
     align-items: stretch;
     gap: var(--spacing-md);
-    background-color: var(--neutral-light);
+    background-color: var(--neutral-mid);
     border-radius: var(--border-radius-xl);
     position: relative;
     display: flex;
@@ -116,6 +116,7 @@
     gap: var(--spacing-lg);
 
     .account-text {
+      font-size: var(--font-size-mdx);
       text-align: right;
 
       .account-name {
