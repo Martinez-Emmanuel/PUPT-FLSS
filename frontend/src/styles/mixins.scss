@@ -74,6 +74,15 @@
   font-family: "Inter Tight", "Helvetica Neue", sans-serif;
 }
 
+/* Primary Gradient for text */
+@mixin gradient-secondary-text($degree: 90deg) {
+  @include gradient-secondary($degree);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+}
+
 /* Primary Gradient for border */
 @mixin gradient-primary-border($width: 2px, $degree: 90deg) {
   border: $width solid transparent;
