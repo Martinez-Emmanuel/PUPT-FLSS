@@ -9,9 +9,7 @@
 }
 
 .home-row-one {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+  @include flex-layout($justify: space-between);
 
   #home_greetings {
     display: flex;

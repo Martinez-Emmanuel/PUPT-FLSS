@@ -31,7 +31,7 @@ export class HomeComponent implements OnInit {
     this.loadFacultyInfo();
   }
 
-  logout(): void {
+  public logout(): void {
     this.authService.logout().subscribe({
       next: (response) => {
         console.log('Logout successful', response);
