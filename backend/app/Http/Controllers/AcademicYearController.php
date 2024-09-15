@@ -169,7 +169,7 @@ class AcademicYearController extends Controller
     {
         // Start a transaction to ensure atomicity
         DB::beginTransaction();
-
+    
         try {
             // Step 1: Insert into academic_years table
             $academicYear = new AcademicYear();
@@ -177,20 +177,20 @@ class AcademicYearController extends Controller
             $academicYear->year_end = $request->input('year_end');
             $academicYear->is_active = 0; // Set default is_active as 0
             $academicYear->save();
-
+    
             // Get the newly created academic_year_id
             $newAcademicYearId = $academicYear->academic_year_id;
-
+    
             // Step 2: Insert into academic_year_curricula (for each active curriculum)
-            $activeCurricula = Curriculum::where('status', 'active')->get(); // Fetch active curricula
-
+            $activeCurricula = Curriculum::where('status', 'active')->orderBy('curriculum_year', 'asc')->get(); // Fetch active curricula sorted by year
+    
             foreach ($activeCurricula as $curriculum) {
                 $academicYearCurricula = new AcademicYearCurricula();
                 $academicYearCurricula->academic_year_id = $newAcademicYearId;
                 $academicYearCurricula->curriculum_id = $curriculum->curriculum_id;
                 $academicYearCurricula->save();
             }
-
+    
             // Step 3: Insert into active_semesters (3 default semesters with is_active = 0)
             for ($semesterId = 1; $semesterId <= 3; $semesterId++) {
                 $activeSemester = new ActiveSemester();
@@ -199,30 +199,31 @@ class AcademicYearController extends Controller
                 $activeSemester->is_active = 0; // Default value
                 $activeSemester->save();
             }
-
+    
             // Step 4: Insert into program_year_level_curricula for each active program and year level
-
-            // Fetch all active curricula sorted by curriculum year (ascending)
-            $curricula = Curriculum::where('status', 'active')->orderBy('curriculum_year', 'asc')->get();
-
+    
             // Fetch all active programs
             $activePrograms = Program::where('status', 'active')->get();
-
+    
             foreach ($activePrograms as $program) {
-                // Generate 4 year levels per program
-                for ($yearLevel = 1; $yearLevel <= 4; $yearLevel++) {
-                    // Determine the curriculum_id based on the year level
+                // Fetch the number of years dynamically for each program
+                $numberOfYears = $program->number_of_years;
+    
+                // Generate year levels based on the number of years for each program
+                for ($yearLevel = 1; $yearLevel <= $numberOfYears; $yearLevel++) {
+                    // Determine the curriculum_id based on year level
+    
+                    // Assign the curriculum dynamically based on the current year level and the available curricula
                     $curriculumId = null;
-
-                    // Logic: Use different curricula depending on year level
-                    if ($yearLevel <= $curricula->count()) {
-                        // If the year level is within the range of available curricula, select the appropriate one
-                        $curriculumId = $curricula[$yearLevel - 1]->curriculum_id;
+                    if ($yearLevel <= $activeCurricula->count()) {
+                        // Assign curriculum in sequence based on the year level
+                        $curriculumId = $activeCurricula[$yearLevel - 1]->curriculum_id;
                     } else {
-                        // For year levels greater than the number of available curricula, use the last available curriculum
-                        $curriculumId = $curricula->last()->curriculum_id;
+                        // If the year level exceeds the available curricula, use the latest curriculum
+                        $curriculumId = $activeCurricula->last()->curriculum_id;
                     }
-
+    
+                    // Insert into the program_year_level_curricula table
                     $programYearLevelCurricula = new ProgramYearLevelCurricula();
                     $programYearLevelCurricula->academic_year_id = $newAcademicYearId;
                     $programYearLevelCurricula->program_id = $program->program_id;
@@ -231,11 +232,14 @@ class AcademicYearController extends Controller
                     $programYearLevelCurricula->save();
                 }
             }
-
+    
             // Step 5: Insert into sections_per_program_year for each program and year level
             foreach ($activePrograms as $program) {
+                // Fetch the number of years dynamically for each program
+                $numberOfYears = $program->number_of_years;
+    
                 // Generate "Section 1" for all year levels in each program
-                for ($yearLevel = 1; $yearLevel <= 4; $yearLevel++) {
+                for ($yearLevel = 1; $yearLevel <= $numberOfYears; $yearLevel++) {
                     $section = new SectionsPerProgramYear();
                     $section->academic_year_id = $newAcademicYearId;
                     $section->program_id = $program->program_id;
@@ -244,24 +248,25 @@ class AcademicYearController extends Controller
                     $section->save();
                 }
             }
-
+    
             // Commit the transaction
             DB::commit();
-
+    
             return response()->json([
                 'message' => 'Academic year added successfully with related data.',
                 'academic_year_id' => $newAcademicYearId
             ], 201);
-
+    
         } catch (\Exception $e) {
             // Rollback the transaction in case of any error
             DB::rollback();
-
+    
             return response()->json([
                 'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
         }
     }
+    
 
     public function updateYearLevelCurricula(Request $request)
     {
