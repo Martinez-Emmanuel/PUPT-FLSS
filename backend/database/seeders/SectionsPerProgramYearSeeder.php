@@ -21,7 +21,8 @@ class SectionsPerProgramYearSeeder extends Seeder
             ['sections_per_program_year_id' => 7, 'academic_year_id' => 2, 'program_id' => 2, 'year_level' => 1, 'section_name' => 'Section 1B'],
             ['sections_per_program_year_id' => 8, 'academic_year_id' => 2, 'program_id' => 2, 'year_level' => 2, 'section_name' => 'Section 1'],
             ['sections_per_program_year_id' => 9, 'academic_year_id' => 2, 'program_id' => 2, 'year_level' => 3, 'section_name' => 'Section 1'],
-            ['sections_per_program_year_id' => 10, 'academic_year_id' => 2, 'program_id' => 2, 'year_level' => 2, 'section_name' => 'Section 1'],
+            ['sections_per_program_year_id' => 10, 'academic_year_id' => 2, 'program_id' => 2, 'year_level' => 4, 'section_name' => 'Section 1'],
+            ['sections_per_program_year_id' => 11, 'academic_year_id' => 2, 'program_id' => 2, 'year_level' => 2, 'section_name' => 'Section 1'],
         ];
 
         foreach ($sectionsPerProgramYear as $record) {

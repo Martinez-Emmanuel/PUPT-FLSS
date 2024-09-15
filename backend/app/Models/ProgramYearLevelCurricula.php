@@ -32,4 +32,11 @@ class ProgramYearLevelCurricula extends Model
     {
         return $this->belongsTo(Curriculum::class, 'curriculum_id', 'curriculum_id');
     }
+
+    public function sectionsPerProgramYear()
+    {
+        return $this->hasMany(SectionsPerProgramYear::class, 'program_id', 'program_id')
+            ->where('year_level', $this->year_level)
+            ->where('academic_year_id', $this->academic_year_id);
+    }
 }

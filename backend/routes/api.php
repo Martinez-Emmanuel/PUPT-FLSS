@@ -36,7 +36,7 @@ Route::delete('/delete-ay', [AcademicYearController::class, 'deleteAcademicYear'
 Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
 Route::post('/pref-submitted-email', [FacultyController::class, 'sendPreferencesSubmittedEmail']);
 Route::post('/subj-schedule-set', [FacultyController::class, 'sendSubjectsScheduleSetEmail']);
-
+Route::get('/active-programs-courses', [AcademicYearController::class, 'getActiveProgramsCourses']);
 // Route::get('/academic-years', [AcademicYearController::class, 'getAcademicYearsWithSemesters']);
 // Route::get('/active-academic-year', [AcademicYearController::class, 'getActiveAcademicYear']);
 // Route::get('/active-programs', [AcademicYearController::class, 'getActivePrograms']);
