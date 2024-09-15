@@ -127,3 +127,51 @@ body {
 [mat-flat-button] {
   color: white !important;
 }
+
+/* Full Calendar Styling */
+
+// Increase border radius on table's buttons
+.fc .fc-button {
+  border-top-left-radius: var(--border-radius-xl);
+  border-bottom-left-radius: var(--border-radius-xl);
+  border-top-right-radius: var(--border-radius-xl);
+  border-bottom-right-radius: var(--border-radius-xl);
+
+  padding: var(--spacing-xs) var(--spacing-md);
+}
+
+// Remove shadow from table's buttons when focused
+.fc .fc-button:not(:disabled) {
+  box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0rem !important;
+}
+
+// Make text white for active buttons
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  color: white;
+}
+
+// Customize calendar month title
+.fc-toolbar-title {
+  @include gradient-primary-text(315deg);
+  font-weight: 600;
+}
+
+// Increase border radius on table
+.fc-scrollgrid  {
+  border-radius: var(--border-radius-md);
+  background-color: var(--neutral-space);
+}
+
+.fc {
+  --fc-border-color: var(--neutral-option);
+  --fc-button-text-color: var(--neutral-base);
+  --fc-button-bg-color: transparent;
+  --fc-button-border-color: transparent;
+  --fc-button-hover-bg-color: #a7a7a78d;
+  --fc-button-hover-border-color: transparent;
+  --fc-button-active-bg-color: var(--primary-one);
+  --fc-button-bg-color: var(--neutral-mid);
+  --fc-button-active-border-color: transparent;
+
+  --fc-today-bg-color: var(--primary-one-fade);
+}
