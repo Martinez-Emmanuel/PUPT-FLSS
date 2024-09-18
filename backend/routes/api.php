@@ -35,6 +35,7 @@ Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
 Route::post('/pref-submitted-email', [FacultyController::class, 'sendPreferencesSubmittedEmail']);
 Route::post('/subj-schedule-set', [FacultyController::class, 'sendSubjectsScheduleSetEmail']);
 Route::get('/get-assigned-courses', [AcademicYearController::class, 'getAssignedCourses']);
+Route::get('/get-assigned-courses-sem', [AcademicYearController::class, 'getAssignedCoursesBySem']);
 // Route::get('/academic-years', [AcademicYearController::class, 'getAcademicYearsWithSemesters']);
 // Route::get('/active-academic-year', [AcademicYearController::class, 'getActiveAcademicYear']);
 // Route::get('/active-programs', [AcademicYearController::class, 'getActivePrograms']);
@@ -124,7 +125,9 @@ Route::middleware(['auth:sanctum', 'super_admin'])->group(function () {
 
 });
 
-Route::post('/submitPreference', [PreferenceController::class, 'submitPreference']);
+Route::post('/submit-pref', [PreferenceController::class, 'submitPreference']);
+Route::get('/submitted-pref', [PreferenceController::class, 'getPreferences']);
+Route::get('/submitted-pref-sem', [PreferenceController::class, 'getPreferencesForActiveSemester']);
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
@@ -132,7 +135,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Preference API
 
     // Route::get('/submittedPreferences', [PreferenceController::class, 'getAllSubmittedPreferences']);
-    Route::get('/submittedPreferences', [PreferenceController::class, 'getAllSubmittedPreferences']);
+
     // Email API
     // Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
 
