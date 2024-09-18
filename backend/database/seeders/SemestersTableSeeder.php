@@ -3,45 +3,350 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\Semester;
-use App\Models\YearLevel;
+use Illuminate\Support\Facades\DB;
 
 class SemestersTableSeeder extends Seeder
 {
     public function run()
     {
-        // Fetch all Year Levels
-        $bsitYearLevels2018 = YearLevel::where('curricula_program_id', 1)->get();
-        $bsaYearLevels2018 = YearLevel::where('curricula_program_id', 2)->get();
-        $bsitYearLevels2022 = YearLevel::where('curricula_program_id', 3)->get();
-        $bsaYearLevels2022 = YearLevel::where('curricula_program_id', 4)->get();
-
-        // Create Semesters for each Year Level in BSIT 2018
-        foreach ($bsitYearLevels2018 as $yearLevel) {
-            for ($semester = 1; $semester <= 3; $semester++) {
-                Semester::create(['year_level_id' => $yearLevel->year_level_id, 'semester' => $semester]);
-            }
-        }
-
-        // Create Semesters for each Year Level in BSA 2018
-        foreach ($bsaYearLevels2018 as $yearLevel) {
-            for ($semester = 1; $semester <= 3; $semester++) {
-                Semester::create(['year_level_id' => $yearLevel->year_level_id, 'semester' => $semester]);
-            }
-        }
-
-        // Create Semesters for each Year Level in BSIT 2022
-        foreach ($bsitYearLevels2022 as $yearLevel) {
-            for ($semester = 1; $semester <= 2; $semester++) {
-                Semester::create(['year_level_id' => $yearLevel->year_level_id, 'semester' => $semester]);
-            }
-        }
-
-        // Create Semesters for each Year Level in BSA 2022
-        foreach ($bsaYearLevels2022 as $yearLevel) {
-            for ($semester = 1; $semester <= 2; $semester++) {
-                Semester::create(['year_level_id' => $yearLevel->year_level_id, 'semester' => $semester]);
-            }
-        }
+        DB::table('semesters')->insert([
+            [
+                'semester_id' => 1,
+                'year_level_id' => 1,
+                'semester' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 2,
+                'year_level_id' => 1,
+                'semester' => 2,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 3,
+                'year_level_id' => 1,
+                'semester' => 3,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 4,
+                'year_level_id' => 2,
+                'semester' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 5,
+                'year_level_id' => 2,
+                'semester' => 2,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 6,
+                'year_level_id' => 2,
+                'semester' => 3,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 7,
+                'year_level_id' => 3,
+                'semester' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 8,
+                'year_level_id' => 3,
+                'semester' => 2,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 9,
+                'year_level_id' => 3,
+                'semester' => 3,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 10,
+                'year_level_id' => 4,
+                'semester' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 11,
+                'year_level_id' => 4,
+                'semester' => 2,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 12,
+                'year_level_id' => 4,
+                'semester' => 3,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 13,
+                'year_level_id' => 5,
+                'semester' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 14,
+                'year_level_id' => 5,
+                'semester' => 2,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 15,
+                'year_level_id' => 5,
+                'semester' => 3,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 16,
+                'year_level_id' => 6,
+                'semester' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 17,
+                'year_level_id' => 6,
+                'semester' => 2,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 18,
+                'year_level_id' => 6,
+                'semester' => 3,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 19,
+                'year_level_id' => 7,
+                'semester' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 20,
+                'year_level_id' => 7,
+                'semester' => 2,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 21,
+                'year_level_id' => 7,
+                'semester' => 3,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 22,
+                'year_level_id' => 8,
+                'semester' => 1,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 23,
+                'year_level_id' => 8,
+                'semester' => 2,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
+                'semester_id' => 24,
+                'year_level_id' => 8,
+                'semester' => 3,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            // New data from the SQL dump
+            [
+                'semester_id' => 49,
+                'year_level_id' => 17,
+                'semester' => 1,
+                'created_at' => '2024-09-17 16:20:15',
+                'updated_at' => '2024-09-17 16:20:15',
+            ],
+            [
+                'semester_id' => 50,
+                'year_level_id' => 17,
+                'semester' => 2,
+                'created_at' => '2024-09-17 16:20:15',
+                'updated_at' => '2024-09-17 16:20:15',
+            ],
+            [
+                'semester_id' => 51,
+                'year_level_id' => 17,
+                'semester' => 3,
+                'created_at' => '2024-09-17 16:20:15',
+                'updated_at' => '2024-09-17 16:20:15',
+            ],
+            [
+                'semester_id' => 52,
+                'year_level_id' => 18,
+                'semester' => 1,
+                'created_at' => '2024-09-17 16:20:15',
+                'updated_at' => '2024-09-17 16:20:15',
+            ],
+            [
+                'semester_id' => 53,
+                'year_level_id' => 18,
+                'semester' => 2,
+                'created_at' => '2024-09-17 16:20:15',
+                'updated_at' => '2024-09-17 16:20:15',
+            ],
+            [
+                'semester_id' => 54,
+                'year_level_id' => 18,
+                'semester' => 3,
+                'created_at' => '2024-09-17 16:20:15',
+                'updated_at' => '2024-09-17 16:20:15',
+            ],
+            [
+                'semester_id' => 55,
+                'year_level_id' => 19,
+                'semester' => 1,
+                'created_at' => '2024-09-17 16:20:15',
+                'updated_at' => '2024-09-17 16:20:15',
+            ],
+            [
+                'semester_id' => 56,
+                'year_level_id' => 19,
+                'semester' => 2,
+                'created_at' => '2024-09-17 16:20:15',
+                'updated_at' => '2024-09-17 16:20:15',
+            ],
+            [
+                'semester_id' => 57,
+                'year_level_id' => 19,
+                'semester' => 3,
+                'created_at' => '2024-09-17 16:20:15',
+                'updated_at' => '2024-09-17 16:20:15',
+            ],
+            [
+                'semester_id' => 58,
+                'year_level_id' => 20,
+                'semester' => 1,
+                'created_at' => '2024-09-17 16:20:15',
+                'updated_at' => '2024-09-17 16:20:15',
+            ],
+            [
+                'semester_id' => 59,
+                'year_level_id' => 20,
+                'semester' => 2,
+                'created_at' => '2024-09-17 16:20:15',
+                'updated_at' => '2024-09-17 16:20:15',
+            ],
+            [
+                'semester_id' => 60,
+                'year_level_id' => 20,
+                'semester' => 3,
+                'created_at' => '2024-09-17 16:20:15',
+                'updated_at' => '2024-09-17 16:20:15',
+            ],
+            [
+                'semester_id' => 61,
+                'year_level_id' => 21,
+                'semester' => 1,
+                'created_at' => '2024-09-17 16:20:15',
+                'updated_at' => '2024-09-17 16:20:15',
+            ],
+            [
+                'semester_id' => 62,
+                'year_level_id' => 21,
+                'semester' => 2,
+                'created_at' => '2024-09-17 16:20:15',
+                'updated_at' => '2024-09-17 16:20:15',
+            ],
+            [
+                'semester_id' => 63,
+                'year_level_id' => 21,
+                'semester' => 3,
+                'created_at' => '2024-09-17 16:20:15',
+                'updated_at' => '2024-09-17 16:20:15',
+            ],
+            [
+                'semester_id' => 64,
+                'year_level_id' => 22,
+                'semester' => 1,
+                'created_at' => '2024-09-17 16:20:15',
+                'updated_at' => '2024-09-17 16:20:15',
+            ],
+            [
+                'semester_id' => 65,
+                'year_level_id' => 22,
+                'semester' => 2,
+                'created_at' => '2024-09-17 16:20:15',
+                'updated_at' => '2024-09-17 16:20:15',
+            ],
+            [
+                'semester_id' => 66,
+                'year_level_id' => 22,
+                'semester' => 3,
+                'created_at' => '2024-09-17 16:20:15',
+                'updated_at' => '2024-09-17 16:20:15',
+            ],
+            [
+                'semester_id' => 67,
+                'year_level_id' => 23,
+                'semester' => 1,
+                'created_at' => '2024-09-17 16:20:16',
+                'updated_at' => '2024-09-17 16:20:16',
+            ],
+            [
+                'semester_id' => 68,
+                'year_level_id' => 23,
+                'semester' => 2,
+                'created_at' => '2024-09-17 16:20:16',
+                'updated_at' => '2024-09-17 16:20:16',
+            ],
+            [
+                'semester_id' => 69,
+                'year_level_id' => 23,
+                'semester' => 3,
+                'created_at' => '2024-09-17 16:20:16',
+                'updated_at' => '2024-09-17 16:20:16',
+            ],
+            [
+                'semester_id' => 70,
+                'year_level_id' => 24,
+                'semester' => 1,
+                'created_at' => '2024-09-17 16:20:16',
+                'updated_at' => '2024-09-17 16:20:16',
+            ],
+            [
+                'semester_id' => 71,
+                'year_level_id' => 24,
+                'semester' => 2,
+                'created_at' => '2024-09-17 16:20:16',
+                'updated_at' => '2024-09-17 16:20:16',
+            ],
+            [
+                'semester_id' => 72,
+                'year_level_id' => 24,
+                'semester' => 3,
+                'created_at' => '2024-09-17 16:20:16',
+                'updated_at' => '2024-09-17 16:20:16',
+            ],
+        ]);
     }
 }
