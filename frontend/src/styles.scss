@@ -41,6 +41,7 @@
   --spacing-xxs: 0.25rem;
   --spacing-xs: 0.5rem;
   --spacing-sm: 0.75rem;
+  --spacing-smx: 0.85rem;
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
@@ -81,6 +82,7 @@
   --duration-extra-long: 0.7s;
 
   // Dialog Sizes
+  --dialog-small: 20rem;
   --dialog-base: 25rem;
   --dialog-medium: 30rem;
 
@@ -112,6 +114,13 @@ body {
 * {
   font-family: var(--font-base);
   @include custom-scrollbar;
+}
+
+
+/* Custom Styling applied globally */
+
+.dialog-generic-logout {
+  width: var(--dialog-small);
 }
 
 .mdc-text-field--filled {

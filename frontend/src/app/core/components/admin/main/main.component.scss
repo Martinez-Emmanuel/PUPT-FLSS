@@ -39,7 +39,7 @@
       }
 
       .university-name {
-        color: var(--primary-one);
+        color: var(--primary-text);
       }
     }
   }
@@ -123,83 +123,53 @@
         font-weight: 600;
       }
 
-      .header-account {
-        @include flex-layout;
-        font-size: var(--font-size-md);
-        gap: var(--spacing-lg);
+      .admin-panel {
+        @include flex-layout($align: stretch, $gap: var(--spacing-sm));
 
-        .account-text {
-          text-align: right;
-          line-height: var(--line-height-sm);
+        .admin-settings {
+          @include flex-layout($gap: var(--spacing-sm));
 
-          .account-name {
-            font-weight: 600;
+          .panel-button {
+            @include flex-layout;
+            background-color: var(--neutral-option);
+            border-radius: 50%;
+            padding: var(--spacing-smx);
+            cursor: pointer;
           }
 
-          .account-role {
-            opacity: var(--opacity-semi-opaque);
+          mat-icon {
+            color: var(--neutral-base);
           }
         }
 
-        .profile-dropdown {
-          @include flex-layout;
-          position: relative;
+        .admin-account {
+          @include flex-layout(
+            $direction: row-reverse,
+            $gap: var(--spacing-md)
+          );
+          font-size: var(--font-size-md);
 
-          .profile-icon {
-            width: 3rem;
-            height: 3rem;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            @include gradient-primary-border;
+          .account-text {
+            text-align: left;
+            line-height: var(--line-height-sm);
 
-            &:hover {
-              box-shadow: 0 0 0 3px var(--neutral-hover);
+            .account-name {
+              font-weight: 500;
+            }
+
+            .account-role {
+              opacity: var(--opacity-semi-opaque);
             }
           }
 
-          .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background-color: var(--neutral-light);
-            box-shadow: var(--shadow-level-1);
-            border-radius: var(--border-radius-md);
+          .profile-dropdown {
+            @include flex-layout;
+            position: relative;
 
-            .dropdown-item {
-              @include ellipsis;
-              display: flex;
-              align-items: center;
-              gap: var(--spacing-xs);
-              padding: var(--spacing-md);
-              color: var(--neutral-base);
-              transition: background-color 0.3s ease;
-              border-radius: var(--border-radius-sm);
-              font-weight: 500;
-              cursor: pointer;
-
-              &:hover {
-                background-color: var(--neutral-option);
-              }
-
-              &.logout {
-                color: var(--primary-one);
-
-                span.material-symbols-rounded {
-                  color: var(--primary-one);
-                }
-
-                &:hover {
-                  background-color: var(--primary-fade);
-                }
-              }
-
-              span.material-symbols-rounded {
-                display: flex;
-                align-items: center;
-                font-size: var(--font-size-lg);
-                font-weight: 500;
-              }
+            .profile-icon {
+              width: 3rem;
+              height: 3rem;
+              border-radius: 50%;
             }
           }
         }

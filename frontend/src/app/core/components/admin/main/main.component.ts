@@ -12,6 +12,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
+import { MatRippleModule } from '@angular/material/core';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
@@ -35,6 +37,8 @@ import { CookieService } from 'ngx-cookie-service';
     MatSidenavModule,
     MatListModule,
     MatIconModule,
+    MatRippleModule,
+    MatTooltipModule,
     MatSymbolDirective,
   ],
   animations: [fadeAnimation, slideInAnimation],
@@ -45,7 +49,6 @@ export class MainComponent implements OnInit, AfterViewInit {
 
   private breakpointObserver = inject(BreakpointObserver);
   public showSidenav = false;
-  public isDropdownOpen = false;
   public pageTitle = '';
   public accountName: string;
   public accountRole: string;
@@ -94,10 +97,6 @@ export class MainComponent implements OnInit, AfterViewInit {
     this.themeService.toggleTheme();
   }
 
-  toggleDropdown() {
-    this.isDropdownOpen = !this.isDropdownOpen;
-  }
-
   private toTitleCase(str: string): string {
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
@@ -122,6 +121,8 @@ export class MainComponent implements OnInit, AfterViewInit {
         cancelText: 'Cancel',
         action: 'Log Out',
       },
+      disableClose: true,
+      panelClass: 'dialog-generic-logout'
     });
 
     confirmDialogRef.afterClosed().subscribe((result) => {
