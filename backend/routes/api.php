@@ -20,8 +20,6 @@ use App\Http\Controllers\AcademicYearController;
 Route::post('login', [AuthController::class, 'login'])->name('login');
 Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
 
-
-
 Route::get('/academic-years-dropdown', [AcademicYearController::class, 'getAcademicYearsForDropdown']);
 Route::post('/set-active-ay-sem', [AcademicYearController::class, 'setActiveAcademicYearAndSemester']);
 Route::get('/active-year-levels-curricula', [AcademicYearController::class, 'getActiveYearLevelsCurricula']);
@@ -36,7 +34,7 @@ Route::delete('/delete-ay', [AcademicYearController::class, 'deleteAcademicYear'
 Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
 Route::post('/pref-submitted-email', [FacultyController::class, 'sendPreferencesSubmittedEmail']);
 Route::post('/subj-schedule-set', [FacultyController::class, 'sendSubjectsScheduleSetEmail']);
-Route::get('/active-programs-courses', [AcademicYearController::class, 'getActiveProgramsCourses']);
+Route::get('/get-assigned-courses', [AcademicYearController::class, 'getAssignedCourses']);
 // Route::get('/academic-years', [AcademicYearController::class, 'getAcademicYearsWithSemesters']);
 // Route::get('/active-academic-year', [AcademicYearController::class, 'getActiveAcademicYear']);
 // Route::get('/active-programs', [AcademicYearController::class, 'getActivePrograms']);
