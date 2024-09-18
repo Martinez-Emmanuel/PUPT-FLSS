@@ -37,9 +37,11 @@ export class LoginComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
 
   readonly backgroundImages = [
-    'assets/images/pup_img_2.jpg',
-    'assets/images/pup_img_4.jpg',
-    'assets/images/pup_img_5.jpg',
+    'assets/images/pupt_img_1.webp',
+    'assets/images/pupt_img_2.webp',
+    'assets/images/pupt_img_3.webp',
+    'assets/images/pupt_img_4.webp',
+    'assets/images/pupt_img_5.webp',
   ];
 
   readonly slideshowImages = this.backgroundImages.map(

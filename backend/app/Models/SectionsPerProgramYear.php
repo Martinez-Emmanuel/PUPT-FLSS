@@ -32,4 +32,8 @@ class SectionsPerProgramYear extends Model
     {
         return $this->hasMany(SectionCourse::class, 'sections_per_program_year_id', 'sections_per_program_year_id');
     }
+    public function programYearLevelCurricula()
+    {
+        return $this->belongsTo(ProgramYearLevelCurricula::class, 'program_year_level_curricula_id');
+    }
 }
