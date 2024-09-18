@@ -37,6 +37,74 @@ class PreferenceController extends Controller
     }
     
 
+    public function getPreferences()
+    {
+        // Fetch all preferences with related data
+        $preferences = Preference::with([
+            'faculty.user',
+            'academicYear',
+            'activeSemester',
+            'course'
+        ])->get();
+    
+        // Group by faculty_id first
+        $groupedByFaculty = $preferences->groupBy('faculty_id');
+    
+        $formattedPreferences = $groupedByFaculty->mapWithKeys(function ($facultyPreferences, $facultyId) {
+            // Use the first preference to get general faculty details
+            $facultyDetails = $facultyPreferences->first()->faculty->user;
+    
+            // Now group by academic year and semester
+            $academicYears = $facultyPreferences->groupBy([
+                'academic_year_id',
+                'semester_id'
+            ])->mapWithKeys(function ($years, $academicYearId) {
+                return [
+                    "academic_year_id_{$academicYearId}" => [
+                        "academic_year_id" => $academicYearId,  // Include the actual academic_year_id for frontend use
+                        "semesters" => $years->mapWithKeys(function ($semesters, $semesterId) {
+                            return [
+                                "semester_id_{$semesterId}" => [
+                                    "semester_id" => $semesterId,  // Include the actual semester_id for frontend use
+                                    "courses" => $semesters->map(function ($preference) {
+                                        return [
+                                            'course_details' => [
+                                                'course_id' => $preference->course->course_id ?? 'N/A',
+                                                'course_code' => $preference->course->course_code ?? 'N/A',
+                                                'course_title' => $preference->course->course_title ?? 'N/A',
+                                            ],
+                                            'preferred_day' => $preference->preferred_day,
+                                            'preferred_time' => $preference->preferred_time,
+                                            'created_at' => $preference->created_at->toDateTimeString(),
+                                            'updated_at' => $preference->updated_at->toDateTimeString()
+                                        ];
+                                    })->toArray()
+                                ]
+                            ];
+                        })
+                    ]
+                ];
+            });
+    
+            // Construct the output for this faculty
+            return [
+                "faculty_{$facultyId}" => [
+                    'faculty_id' => $facultyId,
+                    'faculty_name' => $facultyDetails->name ?? 'N/A',
+                    'faculty_code' => $facultyDetails->code ?? 'N/A',
+                    'faculty_role' => $facultyDetails->role ?? 'N/A',
+                    'faculty_status' => $facultyDetails->status ?? 'N/A',
+                    'academic_years' => $academicYears
+                ]
+            ];
+        });
+    
+        // Return formatted preferences in JSON format
+        return response()->json([
+            'preferences' => $formattedPreferences
+        ], 200, [], JSON_PRETTY_PRINT);
+    }
+    
     public function getPreferencesForActiveSemester()
     {
         // Get the active semester from the active_semesters table
