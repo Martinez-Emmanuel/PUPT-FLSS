@@ -111,28 +111,37 @@
           <div class="admin-settings">
             <!-- Night Mode Button -->
             <div
-              class="panel-button"
-              matTooltip="Switch app theme"
+              class="panel-button theme"
+              [matTooltip]="
+                (themeService.isDarkTheme$ | async)
+                  ? 'Switch to light mode'
+                  : 'Switch to dark mode'
+              "
               matRipple
               (click)="toggleTheme()"
             >
               <span
                 [mat-symbol]="
                   (themeService.isDarkTheme$ | async)
-                    ? 'light_mode'
-                    : 'dark_mode'
+                    ? 'dark_mode'
+                    : 'light_mode'
+                "
+                [ngClass]="
+                  (themeService.isDarkTheme$ | async)
+                    ? 'dark-icon'
+                    : 'light-icon'
                 "
               ></span>
             </div>
 
             <!-- Settings Button -->
-            <div class="panel-button" matTooltip="Settings" matRipple>
+            <div class="panel-button settings" matTooltip="Settings" matRipple>
               <span mat-symbol="settings"></span>
             </div>
 
             <!-- Logout Button -->
             <div
-              class="panel-button"
+              class="panel-button logout"
               matTooltip="Log out"
               matRipple
               (click)="logout()"

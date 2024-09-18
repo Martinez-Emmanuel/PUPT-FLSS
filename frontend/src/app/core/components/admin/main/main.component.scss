@@ -135,6 +135,14 @@
             border-radius: 50%;
             padding: var(--spacing-smx);
             cursor: pointer;
+
+            .light-icon {
+              color: var(--primary-one);
+            }
+
+            .dark-icon {
+              color: var(--secondary-text);
+            }
           }
 
           mat-icon {
