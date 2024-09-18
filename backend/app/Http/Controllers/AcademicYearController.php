@@ -72,24 +72,36 @@ class AcademicYearController extends Controller
     {
         $academicYearId = $request->input('academic_year_id');
         $semesterId = $request->input('semester_id');
-
+    
+        // Validate the incoming request
         $request->validate([
             'academic_year_id' => 'required|integer|exists:academic_years,academic_year_id',
             'semester_id' => 'required|integer|exists:semesters,semester_id',
         ]);
-
+    
+        // Deactivate all current active semesters
         ActiveSemester::query()->update(['is_active' => 0]);
-
+    
+        // Deactivate all academic years
+        DB::table('academic_years')->update(['is_active' => 0]);
+    
+        // Update the given academic year and semester to active in ActiveSemester
         ActiveSemester::where('academic_year_id', $academicYearId)
             ->where('semester_id', $semesterId)
             ->update(['is_active' => 1]);
-
+    
+        // Activate the selected academic year
+        DB::table('academic_years')
+            ->where('academic_year_id', $academicYearId)
+            ->update(['is_active' => 1]);
+    
         return response()->json([
             'message' => 'Active academic year and semester updated successfully',
             'academic_year_id' => $academicYearId,
             'semester_id' => $semesterId
         ]);
     }
+    
 
     public function getActiveYearLevelsCurricula()
     {
@@ -283,7 +295,6 @@ class AcademicYearController extends Controller
 
     public function getAssignedCoursesBySem()
     {
-
         $activeSemester = DB::table('active_semesters')
             ->where('is_active', 1)
             ->first();
@@ -318,7 +329,7 @@ class AcademicYearController extends Controller
                 $join->on('pylc.program_id', '=', 'cp.program_id')
                     ->on('pylc.curriculum_id', '=', 'cp.curriculum_id');
             })
-            ->leftJoin('year_levels as yl', function ($join) use ($activeSemester) {
+            ->leftJoin('year_levels as yl', function ($join) {
                 $join->on('cp.curricula_program_id', '=', 'yl.curricula_program_id')
                     ->on('pylc.year_level', '=', 'yl.year');
             })
@@ -356,7 +367,13 @@ class AcademicYearController extends Controller
                 $programIndex = count($response['programs']) - 1;
             }
     
-            $yearLevelIndex = array_search($row->year_level, array_column($response['programs'][$programIndex]['year_levels'], 'year_level'));
+            $yearLevelIndex = false;
+            foreach ($response['programs'][$programIndex]['year_levels'] as $index => $yearLevel) {
+                if ($yearLevel['year_level'] == $row->year_level && $yearLevel['curriculum_year'] == $row->curriculum_year) {
+                    $yearLevelIndex = $index;
+                    break;
+                }
+            }
     
             if ($yearLevelIndex === false) {
                 $response['programs'][$programIndex]['year_levels'][] = [
