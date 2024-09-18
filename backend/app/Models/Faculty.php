@@ -26,7 +26,7 @@ class Faculty extends Authenticatable
 
     public function user()
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class, 'user_id');
     }
 
     public function setFacultyPasswordAttribute($value)
@@ -37,5 +37,9 @@ class Faculty extends Authenticatable
     public function schedules()
     {
         return $this->hasMany(Schedule::class, 'faculty_id', 'id');
+    }
+    public function preferences()
+    {
+        return $this->hasMany(Preference::class, 'faculty_id');
     }
 }
