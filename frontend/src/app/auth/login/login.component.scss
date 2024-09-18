@@ -98,7 +98,7 @@
     }
 
     .university-name {
-      color: var(--primary-one);
+      color: var(--primary-text);
     }
   }
 
@@ -116,7 +116,7 @@
       h1 {
         @include gradient-primary-text(315deg);
         width: fit-content;
-        font-size: var(--font-size-3xl);
+        font-size: var(--font-size-2xxl);
         margin: 0;
       }
 
@@ -204,7 +204,7 @@
     gap: var(--spacing-lg);
 
     #terms_text {
-      font-size: var(--font-size-md);
+      font-size: var(--font-size-sm);
       text-align: center;
 
       span {
@@ -238,6 +238,7 @@
     align-items: center;
     min-height: var(--spacing-lg);
     margin-top: var(--spacing-xxs);
+    margin-left: var(--spacing-sm);
     visibility: hidden;
     overflow: hidden;
     gap: var(--spacing-xxs);
