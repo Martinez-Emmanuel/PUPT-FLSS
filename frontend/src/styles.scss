@@ -22,6 +22,7 @@
 
   --font-size-xs: 0.65rem;
   --font-size-sm: 0.875rem;
+  --font-size-smx: 0.925rem;
   --font-size-md: 1rem;
   --font-size-mdx: 1.1rem;
   --font-size-lg: 1.25rem;
@@ -118,6 +119,10 @@ body {
 
 
 /* Custom Styling applied globally */
+
+span[mat-symbol] {
+  user-select: none;
+}
 
 .dialog-generic-logout {
   width: var(--dialog-small);

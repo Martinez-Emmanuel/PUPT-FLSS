@@ -138,10 +138,12 @@
 
             .light-icon {
               color: var(--primary-one);
+              user-select: none;
             }
 
             .dark-icon {
               color: var(--secondary-text);
+              user-select: none;
             }
           }
 
@@ -155,7 +157,7 @@
             $direction: row-reverse,
             $gap: var(--spacing-sm)
           );
-          font-size: var(--font-size-md);
+          font-size: var(--font-size-smx);
           background-color: var(--neutral-option);
           border-radius: var(--border-radius-xl);
           padding: 0 var(--spacing-md) 0 var(--spacing-xs);
@@ -181,6 +183,7 @@
               width: 2.5rem;
               height: 2.5rem;
               border-radius: 50%;
+              user-select: none;
             }
           }
         }
