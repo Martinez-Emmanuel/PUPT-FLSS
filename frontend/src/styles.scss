@@ -133,6 +133,10 @@ body {
   font-family: var(--font-base) !important;
 }
 
+.mat-mdc-menu-item-text {
+  font-family: var(--font-base) !important;
+}
+
 [mat-flat-button] {
   color: white !important;
 }
