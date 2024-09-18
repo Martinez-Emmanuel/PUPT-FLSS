@@ -145,13 +145,16 @@
         .admin-account {
           @include flex-layout(
             $direction: row-reverse,
-            $gap: var(--spacing-md)
+            $gap: var(--spacing-sm)
           );
           font-size: var(--font-size-md);
+          background-color: var(--neutral-option);
+          border-radius: var(--border-radius-xl);
+          padding: 0 var(--spacing-md) 0 var(--spacing-xs);
 
           .account-text {
             text-align: left;
-            line-height: var(--line-height-md);
+            line-height: var(--line-height-sm);
 
             .account-name {
               font-weight: 500;
@@ -167,8 +170,8 @@
             position: relative;
 
             .profile-icon {
-              width: 3rem;
-              height: 3rem;
+              width: 2.5rem;
+              height: 2.5rem;
               border-radius: 50%;
             }
           }
