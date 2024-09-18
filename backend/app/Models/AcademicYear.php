@@ -36,4 +36,8 @@ class AcademicYear extends Model
     {
         return $this->hasMany(SectionsPerProgramYear::class, 'academic_year_id', 'academic_year_id');
     }
+    public function preferences()
+    {
+        return $this->hasMany(Preference::class, 'academic_year_id');
+    }
 }
