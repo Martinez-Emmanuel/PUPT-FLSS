@@ -32,6 +32,8 @@ Route::post('/update-yr-lvl-curricula', [AcademicYearController::class, 'updateY
 Route::post('/update-sections', [AcademicYearController::class, 'updateSections']);
 Route::delete('/remove-program', [AcademicYearController::class, 'removeProgramFromAcademicYear']);
 Route::delete('/delete-ay', [AcademicYearController::class, 'deleteAcademicYear']);
+Route::get('/active-year-semester', [AcademicYearController::class, 'getActiveYearAndSemester']);
+
 
 Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
 Route::post('/pref-submitted-email', [FacultyController::class, 'sendPreferencesSubmittedEmail']);
