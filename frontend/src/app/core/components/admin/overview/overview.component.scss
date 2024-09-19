@@ -204,13 +204,13 @@
                 var(--gradient-light-end) 100%
               );
               -webkit-background-clip: text;
+              background-clip: text;
               -webkit-text-fill-color: transparent;
               font-size: var(--font-size-2xxl);
             }
 
             .desc {
               font-size: var(--font-size-xsx);
-              //   color: var(--primary-text);
             }
           }
         }

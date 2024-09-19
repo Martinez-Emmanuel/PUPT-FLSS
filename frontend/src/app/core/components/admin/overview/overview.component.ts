@@ -13,8 +13,7 @@ import { fadeAnimation } from '../../../animations/animations';
   animations: [fadeAnimation],
 })
 export class OverviewComponent implements OnInit, AfterViewInit {
-
-  activeYear  = '2024-2025';
+  activeYear = '2024-2025';
   activeSemester = '1st Semester';
 
   preferencesProgress: number = 75;
