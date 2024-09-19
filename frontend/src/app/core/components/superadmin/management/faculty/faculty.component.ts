@@ -1,21 +1,20 @@
-import {
-  Component,
-  OnInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-} from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
-import {
-  TableDialogComponent,
-  DialogConfig,
-} from '../../../../../shared/table-dialog/table-dialog.component';
-import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
-import { TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
-import { FacultyService, Faculty } from '../../../../services/superadmin/management/faculty/faculty.service';
+
 import { catchError, of } from 'rxjs';
+
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
+import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
+import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
+import { InputField, TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
+
+import { FacultyService, Faculty } from '../../../../services/superadmin/management/faculty/faculty.service';
+
+import { fadeAnimation } from '../../../../animations/animations';
+
 
 @Component({
   selector: 'app-faculty',
@@ -28,6 +27,7 @@ import { catchError, of } from 'rxjs';
   ],
   templateUrl: './faculty.component.html',
   styleUrls: ['./faculty.component.scss'],
+  animations: [fadeAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FacultyComponent implements OnInit {
@@ -47,6 +47,14 @@ export class FacultyComponent implements OnInit {
   ];
 
   displayedColumns: string[] = ['index', 'code', 'name', 'faculty_email', 'faculty_type', 'faculty_unit', 'status', 'action'];
+
+  headerInputFields: InputField[] = [
+    {
+      type: 'text',
+      label: 'Search Curriculum',
+      key: 'search',
+    },
+  ];
 
   constructor(
     private cdr: ChangeDetectorRef,

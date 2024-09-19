@@ -22,6 +22,7 @@
 
   --font-size-xs: 0.65rem;
   --font-size-sm: 0.875rem;
+  --font-size-smx: 0.925rem;
   --font-size-md: 1rem;
   --font-size-mdx: 1.1rem;
   --font-size-lg: 1.25rem;
@@ -41,6 +42,7 @@
   --spacing-xxs: 0.25rem;
   --spacing-xs: 0.5rem;
   --spacing-sm: 0.75rem;
+  --spacing-smx: 0.85rem;
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
@@ -81,6 +83,7 @@
   --duration-extra-long: 0.7s;
 
   // Dialog Sizes
+  --dialog-small: 20rem;
   --dialog-base: 25rem;
   --dialog-medium: 30rem;
 
@@ -114,6 +117,17 @@ body {
   @include custom-scrollbar;
 }
 
+
+/* Custom Styling applied globally */
+
+span[mat-symbol] {
+  user-select: none;
+}
+
+.dialog-generic-logout {
+  width: var(--dialog-small);
+}
+
 .mdc-text-field--filled {
   // when appearance="fill"
   border-top-left-radius: 10px !important;
@@ -121,6 +135,10 @@ body {
 }
 
 .mdc-list-item__primary-text {
+  font-family: var(--font-base) !important;
+}
+
+.mat-mdc-menu-item-text {
   font-family: var(--font-base) !important;
 }
 

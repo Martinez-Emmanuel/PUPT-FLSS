@@ -1,9 +1,10 @@
-<div class="admin-management-container">
+<div class="admin-management-container" [@fadeAnimation]>
   <!-- Table Header -->
   <div class="admin-header-container">
     <app-table-header
       [searchLabel]="'Search Admins'"
       [addButtonLabel]="'Add Admin'"
+      [inputFields]="headerInputFields"
       (search)="onSearch($event)"
       (add)="openAddAdminDialog()"
     ></app-table-header>

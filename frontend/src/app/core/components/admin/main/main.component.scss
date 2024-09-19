@@ -8,13 +8,13 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: var(--neutral-sidebar);
+  background-color: var(--admin-bg);
   @include default-transition;
 }
 
 .sidenav-bar {
   width: 16rem;
-  background-color: var(--neutral-sidebar);
+  background-color: var(--admin-bg);
   padding: var(--spacing-sm) var(--spacing-md);
   @include default-transition;
 
@@ -39,7 +39,7 @@
       }
 
       .university-name {
-        color: var(--primary-one);
+        color: var(--primary-text);
       }
     }
   }
@@ -123,83 +123,67 @@
         font-weight: 600;
       }
 
-      .header-account {
-        @include flex-layout;
-        font-size: var(--font-size-md);
-        gap: var(--spacing-lg);
+      .admin-panel {
+        @include flex-layout($align: stretch, $gap: var(--spacing-sm));
 
-        .account-text {
-          text-align: right;
-          line-height: var(--line-height-sm);
+        .admin-settings {
+          @include flex-layout($gap: var(--spacing-sm));
 
-          .account-name {
-            font-weight: 600;
-          }
-
-          .account-role {
-            opacity: var(--opacity-semi-opaque);
-          }
-        }
-
-        .profile-dropdown {
-          @include flex-layout;
-          position: relative;
-
-          .profile-icon {
-            width: 3rem;
-            height: 3rem;
+          .panel-button {
+            @include flex-layout;
+            background-color: var(--neutral-option);
             border-radius: 50%;
+            padding: var(--spacing-smx);
             cursor: pointer;
-            transition: all 0.3s ease;
-            @include gradient-primary-border;
 
-            &:hover {
-              box-shadow: 0 0 0 3px var(--neutral-hover);
+            .light-icon {
+              color: var(--primary-one);
+              user-select: none;
+            }
+
+            .dark-icon {
+              color: var(--secondary-text);
+              user-select: none;
             }
           }
 
-          .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            right: 0;
-            background-color: var(--neutral-light);
-            box-shadow: var(--shadow-level-1);
-            border-radius: var(--border-radius-md);
+          mat-icon {
+            color: var(--neutral-base);
+          }
+        }
 
-            .dropdown-item {
-              @include ellipsis;
-              display: flex;
-              align-items: center;
-              gap: var(--spacing-xs);
-              padding: var(--spacing-md);
-              color: var(--neutral-base);
-              transition: background-color 0.3s ease;
-              border-radius: var(--border-radius-sm);
+        .admin-account {
+          @include flex-layout(
+            $direction: row-reverse,
+            $gap: var(--spacing-sm)
+          );
+          font-size: var(--font-size-smx);
+          background-color: var(--neutral-option);
+          border-radius: var(--border-radius-xl);
+          padding: 0 var(--spacing-md) 0 var(--spacing-xs);
+
+          .account-text {
+            text-align: left;
+            line-height: var(--line-height-sm);
+
+            .account-name {
               font-weight: 500;
-              cursor: pointer;
+            }
 
-              &:hover {
-                background-color: var(--neutral-option);
-              }
+            .account-role {
+              opacity: var(--opacity-semi-opaque);
+            }
+          }
 
-              &.logout {
-                color: var(--primary-one);
+          .profile-dropdown {
+            @include flex-layout;
+            position: relative;
 
-                span.material-symbols-rounded {
-                  color: var(--primary-one);
-                }
-
-                &:hover {
-                  background-color: var(--primary-fade);
-                }
-              }
-
-              span.material-symbols-rounded {
-                display: flex;
-                align-items: center;
-                font-size: var(--font-size-lg);
-                font-weight: 500;
-              }
+            .profile-icon {
+              width: 2.5rem;
+              height: 2.5rem;
+              border-radius: 50%;
+              user-select: none;
             }
           }
         }

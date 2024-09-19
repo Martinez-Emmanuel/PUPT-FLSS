@@ -32,7 +32,7 @@
       </div>
 
       <!-- Form Fields -->
-      <form id="form_fields" [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <form id="form_fields" [formGroup]="loginForm" (ngSubmit)="onSubmit()" (keydown.enter)="onEnterPressed()">
         <div class="input-group">
           <div class="input-container">
             <span mat-symbol="person" class="input-icon"></span>
