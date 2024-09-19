@@ -185,6 +185,7 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
         action: 'Log Out',
       } as DialogData,
       disableClose: true,
+      panelClass: 'dialog-generic-logout'
     });
 
     confirmDialogRef.afterClosed().subscribe((result) => {

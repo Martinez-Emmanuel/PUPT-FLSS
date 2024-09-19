@@ -138,6 +138,8 @@ export class MainComponent implements OnInit, AfterViewInit {
         cancelText: 'Cancel',
         action: 'Log Out',
       },
+      disableClose: true,
+      panelClass: 'dialog-generic-logout'
     });
 
     confirmDialogRef.afterClosed().subscribe((result) => {

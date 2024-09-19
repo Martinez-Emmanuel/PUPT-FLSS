@@ -1,9 +1,4 @@
-import {
-  Component,
-  OnInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-} from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -12,17 +7,13 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 
 
-import {
-  TableDialogComponent,
-  DialogConfig,
-} from '../../../../../shared/table-dialog/table-dialog.component';
+import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
-import { TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
+import { InputField, TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
 
-import {
-  AdminService,
-  User,
-} from '../../../../services/superadmin/management/admin/admin.service';
+import { AdminService, User } from '../../../../services/superadmin/management/admin/admin.service';
+
+import { fadeAnimation } from '../../../../animations/animations';
 
 @Component({
   selector: 'app-admin',
@@ -35,6 +26,7 @@ import {
   ],
   templateUrl: './admin.component.html',
   styleUrls: ['./admin.component.scss'],
+  animations: [fadeAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminComponent implements OnInit {
@@ -61,6 +53,14 @@ export class AdminComponent implements OnInit {
     'role', 
     'status', 
     'action'
+  ];
+
+  headerInputFields: InputField[] = [
+    {
+      type: 'text',
+      label: 'Search Curriculum',
+      key: 'search',
+    },
   ];
   
 

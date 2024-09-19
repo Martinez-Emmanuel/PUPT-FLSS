@@ -109,6 +109,12 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.updateBackgroundImage(index);
   }
 
+  onEnterPressed(): void {
+    if (this.loginForm.valid && !this.isLoading) {
+      this.onSubmit();
+    }
+  }
+
   private updateBackgroundImage(index: number): void {
     this.currentBackgroundImage = `url(${this.backgroundImages[index]})`;
     const loginContainer =
