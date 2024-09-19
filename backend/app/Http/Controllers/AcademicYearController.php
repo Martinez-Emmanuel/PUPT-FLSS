@@ -72,36 +72,36 @@ class AcademicYearController extends Controller
     {
         $academicYearId = $request->input('academic_year_id');
         $semesterId = $request->input('semester_id');
-
+    
         // Validate the incoming request
         $request->validate([
             'academic_year_id' => 'required|integer|exists:academic_years,academic_year_id',
             'semester_id' => 'required|integer|exists:semesters,semester_id',
         ]);
-
+    
         // Deactivate all current active semesters
         ActiveSemester::query()->update(['is_active' => 0]);
-
+    
         // Deactivate all academic years
         DB::table('academic_years')->update(['is_active' => 0]);
-
+    
         // Update the given academic year and semester to active in ActiveSemester
         ActiveSemester::where('academic_year_id', $academicYearId)
             ->where('semester_id', $semesterId)
             ->update(['is_active' => 1]);
-
+    
         // Activate the selected academic year
         DB::table('academic_years')
             ->where('academic_year_id', $academicYearId)
             ->update(['is_active' => 1]);
-
+    
         return response()->json([
             'message' => 'Active academic year and semester updated successfully',
             'academic_year_id' => $academicYearId,
             'semester_id' => $semesterId
         ]);
     }
-
+    
 
     public function getActiveYearLevelsCurricula()
     {
@@ -150,7 +150,6 @@ class AcademicYearController extends Controller
                 $programIndex = count($response) - 1;
             }
 
-            // Check if year level already exists under the program
             $yearLevelIndex = array_search($row->year_level, array_column($response[$programIndex]['year_levels'], 'year_level'));
 
             if ($yearLevelIndex === false) {
@@ -162,17 +161,14 @@ class AcademicYearController extends Controller
                 ];
                 $yearLevelIndex = count($response[$programIndex]['year_levels']) - 1;
 
-                // Increment the year level count for the program
                 $response[$programIndex]['year_level_count']++;
             }
 
-            // Add sections under the year level
             $response[$programIndex]['year_levels'][$yearLevelIndex]['sections'][] = [
                 'section_id' => $row->section_id,
                 'section_name' => $row->section_name
             ];
         }
-
 
         return response()->json($response);
     }
@@ -193,10 +189,10 @@ class AcademicYearController extends Controller
                 'co.course_id',
                 'co.course_code',
                 'co.course_title',
-                'co.lec_hours',
-                'co.lab_hours',
-                'co.units',
-                'co.tuition_hours'
+                'co.lec_hours',      
+                'co.lab_hours',      
+                'co.units',         
+                'co.tuition_hours'   
             )
             ->join('programs as p', 'pylc.program_id', '=', 'p.program_id')
             ->join('curricula as c', 'pylc.curriculum_id', '=', 'c.curriculum_id')
@@ -219,12 +215,12 @@ class AcademicYearController extends Controller
             ->orderBy('pylc.year_level')
             ->orderBy('s.semester')
             ->get();
-
+    
         $response = [];
-
+    
         foreach ($assignedCourses as $row) {
             $programIndex = array_search($row->program_id, array_column($response, 'program_id'));
-
+    
             if ($programIndex === false) {
                 $response[] = [
                     'program_id' => $row->program_id,
@@ -234,9 +230,9 @@ class AcademicYearController extends Controller
                 ];
                 $programIndex = count($response) - 1;
             }
-
+    
             $yearLevelKey = $row->year_level . '-' . $row->curriculum_id;
-
+    
             $yearLevelIndex = false;
             foreach ($response[$programIndex]['year_levels'] as $index => $yearLevel) {
                 if ($yearLevel['year_level'] == $row->year_level && $yearLevel['curriculum_id'] == $row->curriculum_id) {
@@ -244,7 +240,7 @@ class AcademicYearController extends Controller
                     break;
                 }
             }
-
+    
             if ($yearLevelIndex === false) {
                 $response[$programIndex]['year_levels'][] = [
                     'year_level' => $row->year_level,
@@ -254,7 +250,7 @@ class AcademicYearController extends Controller
                 ];
                 $yearLevelIndex = count($response[$programIndex]['year_levels']) - 1;
             }
-
+    
             if ($row->semester !== null) {
                 $semesterIndex = false;
                 foreach ($response[$programIndex]['year_levels'][$yearLevelIndex]['semesters'] as $index => $semester) {
@@ -263,7 +259,7 @@ class AcademicYearController extends Controller
                         break;
                     }
                 }
-
+    
                 if ($semesterIndex === false) {
                     $response[$programIndex]['year_levels'][$yearLevelIndex]['semesters'][] = [
                         'semester' => $row->semester,
@@ -271,41 +267,41 @@ class AcademicYearController extends Controller
                     ];
                     $semesterIndex = count($response[$programIndex]['year_levels'][$yearLevelIndex]['semesters']) - 1;
                 }
-
+    
                 if ($row->course_id !== null) {
                     $response[$programIndex]['year_levels'][$yearLevelIndex]['semesters'][$semesterIndex]['courses'][] = [
                         'course_id' => $row->course_id,
                         'course_code' => $row->course_code,
                         'course_title' => $row->course_title,
-                        'lec_hours' => $row->lec_hours,
-                        'lab_hours' => $row->lab_hours,
-                        'units' => $row->units,
-                        'tuition_hours' => $row->tuition_hours
+                        'lec_hours' => $row->lec_hours,  
+                        'lab_hours' => $row->lab_hours, 
+                        'units' => $row->units,           
+                        'tuition_hours' => $row->tuition_hours 
                     ];
                 }
             }
         }
-
+    
         foreach ($response as &$program) {
             $program['year_levels'] = array_values($program['year_levels']);
             foreach ($program['year_levels'] as &$yearLevel) {
                 $yearLevel['semesters'] = array_values($yearLevel['semesters']);
             }
         }
-
+    
         return response()->json($response);
     }
-
+    
     public function getAssignedCoursesBySem()
     {
         $activeSemester = DB::table('active_semesters')
             ->where('is_active', 1)
             ->first();
-
+    
         if (!$activeSemester) {
             return response()->json(['error' => 'No active semester found'], 404);
         }
-
+    
         // Fetch courses for each program and year level matching the curriculum_id in the current academic year
         $assignedCourses = DB::table('program_year_level_curricula as pylc')
             ->select(
@@ -321,10 +317,10 @@ class AcademicYearController extends Controller
                 'co.course_id',
                 'co.course_code',
                 'co.course_title',
-                'co.lec_hours',
-                'co.lab_hours',
-                'co.units',
-                'co.tuition_hours'
+                'co.lec_hours',       
+                'co.lab_hours',     
+                'co.units',       
+                'co.tuition_hours'   
             )
             ->join('programs as p', 'pylc.program_id', '=', 'p.program_id')
             ->join('curricula as c', 'pylc.curriculum_id', '=', 'c.curriculum_id')
@@ -351,19 +347,19 @@ class AcademicYearController extends Controller
             ->orderBy('pylc.year_level')
             ->orderBy('s.semester')
             ->get();
-
+    
         // Response structure
         $response = [
             'active_semester_id' => $activeSemester->active_semester_id,
-            'academic_year_id' => $activeSemester->academic_year_id,
-            'semester_id' => $activeSemester->semester_id,
-            'programs' => []
+            'academic_year_id'   => $activeSemester->academic_year_id,
+            'semester_id'        => $activeSemester->semester_id,
+            'programs'           => []
         ];
-
+    
         // Build the response based on fetched data
         foreach ($assignedCourses as $row) {
             $programIndex = array_search($row->program_id, array_column($response['programs'], 'program_id'));
-
+    
             if ($programIndex === false) {
                 $response['programs'][] = [
                     'program_id' => $row->program_id,
@@ -373,7 +369,7 @@ class AcademicYearController extends Controller
                 ];
                 $programIndex = count($response['programs']) - 1;
             }
-
+    
             // Group by year_level and curriculum_id
             $yearLevelIndex = false;
             foreach ($response['programs'][$programIndex]['year_levels'] as $index => $yearLevel) {
@@ -382,7 +378,7 @@ class AcademicYearController extends Controller
                     break;
                 }
             }
-
+    
             if ($yearLevelIndex === false) {
                 $response['programs'][$programIndex]['year_levels'][] = [
                     'year_level' => $row->year_level,
@@ -395,26 +391,26 @@ class AcademicYearController extends Controller
                 ];
                 $yearLevelIndex = count($response['programs'][$programIndex]['year_levels']) - 1;
             }
-
+    
             // Add the courses for the corresponding curriculum
             if ($row->course_id !== null) {
                 $response['programs'][$programIndex]['year_levels'][$yearLevelIndex]['semester']['courses'][] = [
                     'course_id' => $row->course_id,
                     'course_code' => $row->course_code,
                     'course_title' => $row->course_title,
-                    'lec_hours' => $row->lec_hours,
-                    'lab_hours' => $row->lab_hours,
-                    'units' => $row->units,
+                    'lec_hours' => $row->lec_hours,     
+                    'lab_hours' => $row->lab_hours,    
+                    'units' => $row->units,            
                     'tuition_hours' => $row->tuition_hours
                 ];
             }
         }
-
+    
         return response()->json($response);
     }
-
-
-
+    
+    
+    
     public function addAcademicYear(Request $request)
     {
         // Start a transaction to ensure atomicity
@@ -584,14 +580,9 @@ class AcademicYearController extends Controller
 
             // Step 2: Fetch year levels and sections for each program
             foreach ($programs as $program) {
-                $yearLevels = ProgramYearLevelCurricula::select(
-                    'program_year_level_curricula.year_level',
-                    'program_year_level_curricula.curriculum_id',
-                    'curricula.curriculum_year'
-                )
-                    ->join('curricula', 'program_year_level_curricula.curriculum_id', '=', 'curricula.curriculum_id') // Join with curricula table to get curriculum_year
-                    ->where('program_year_level_curricula.academic_year_id', $academicYearId)
-                    ->where('program_year_level_curricula.program_id', $program->program_id)
+                $yearLevels = ProgramYearLevelCurricula::select('year_level', 'curriculum_id')
+                    ->where('academic_year_id', $academicYearId)
+                    ->where('program_id', $program->program_id)
                     ->get();
 
                 // For each year level, fetch the corresponding number of sections
@@ -794,28 +785,5 @@ class AcademicYearController extends Controller
             ], 500);
         }
     }
-
-    public function getActiveYearAndSemester()
-    {
-        $activeSemester = DB::table('active_semesters')
-            ->join('academic_years', 'active_semesters.academic_year_id', '=', 'academic_years.academic_year_id')
-            ->join('semesters', 'active_semesters.semester_id', '=', 'semesters.semester_id')
-            ->where('active_semesters.is_active', 1)
-            ->select(
-                DB::raw("CONCAT(academic_years.year_start, '-', academic_years.year_end) as academic_year"),
-                'semesters.semester as semester_number'
-            )
-            ->first();
-
-        if ($activeSemester) {
-            return response()->json([
-                'activeYear' => $activeSemester->academic_year,
-                'activeSemester' => $activeSemester->semester_number
-            ]);
-        }
-
-        return response()->json(['message' => 'No active academic year and semester found'], 404);
-    }
-
 
 }

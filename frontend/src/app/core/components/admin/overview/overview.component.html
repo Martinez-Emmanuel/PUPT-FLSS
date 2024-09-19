@@ -1,1 +1,119 @@
-<p>admin overview works!</p>
+<div class="overview-container" [@fadeAnimation]>
+  <!--Overview Header-->
+  <header class="overview-header-container">
+    <div class="overview-greetings">
+      <h1 id="admin_name">Hello, Admin Marissa!</h1>
+      <p id="description">
+        Here's the key overview of the loading and scheduling this semester.
+      </p>
+    </div>
+    <div class="active-year-sem-container">
+      <p class="text">A.Y. {{ activeYear }}, {{ activeSemester }}</p>
+      <p class="label">Active Year & Semester</p>
+    </div>
+  </header>
+
+  <!--Overview Main-->
+  <main class="overview-main-container">
+    <!--Cluster One-->
+    <div class="main-cluster-one">
+      <!--Quick Stats-->
+      <div class="quick-stats">
+        <!-- Content for Preferences Submitted -->
+        <div class="stats preferences card">
+          <img
+            src="../../../../../assets/images/faculty.svg"
+            alt="Preferences Icon"
+            class="stats-icon"
+          />
+          <div class="stats-info">
+            <h2 class="card-title">Preferences Submitted</h2>
+            <div class="progress-bar">
+              <div class="progress" id="preferences-progress"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Content for Scheduling Progress -->
+        <div class="stats scheduling card">
+          <img
+            src="../../../../../assets/images/schedule.svg"
+            alt="Scheduling Icon"
+            class="stats-icon"
+          />
+          <div class="stats-info">
+            <h2 class="card-title">Scheduling Progress</h2>
+            <div class="progress-bar">
+              <div class="progress" id="scheduling-progress"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Content for Room Utilization -->
+        <div class="stats room-utilization card">
+          <img
+            src="../../../../../assets/images/rooms.svg"
+            alt="Room Utilization Icon"
+            class="stats-icon"
+          />
+          <div class="stats-info">
+            <h2 class="card-title">Room Utilization</h2>
+            <div class="progress-bar">
+              <div class="progress" id="room-utilization-progress"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!--Schedule Overview-->
+      <div class="schedule-overview card">
+        <!-- Content for Schedule Overview -->
+        <h2 class="card-title">
+          <span mat-symbol="date_range"></span>Schedule Overview
+        </h2>
+      </div>
+    </div>
+
+    <!--Cluster Two-->
+    <div class="main-cluster-two">
+      <!--Action Center -->
+      <div class="action-center card">
+        <!--Title-->
+        <h2 class="card-title"><span mat-symbol="tune"></span>Action Center</h2>
+        <!--Action Items-->
+        <div class="action-items">
+          <!--Item Group One-->
+          <div class="item-group one">
+            <!--Action: Email Faculty-->
+            <div class="item send-email">
+              <span mat-symbol="email"></span>
+              <span class="desc">Send Email to Faculty</span>
+            </div>
+            <!--Action: Toggle Faculty Submission-->
+            <div class="item faculty-pref">
+              <span mat-symbol="toggle_on"></span>
+              <span class="desc">Toggle Faculty Submission</span>
+            </div>
+          </div>
+          <!--Item Group two-->
+          <div class="item-group two">
+            <!--Action: Publish Schedule-->
+            <div class="item publish-sched">
+              <span mat-symbol="schedule_send"></span>
+              <span class="desc">Publish Load and Schedule</span>
+            </div>
+            <!--Action: Open Generate Report-->
+            <div class="item generate-report">
+              <span mat-symbol="assessment"></span>
+              <span class="desc">Generate the Reports</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="recent-activities card">
+        <h2 class="card-title">
+          <span mat-symbol="history"></span>Recent Activities
+        </h2>
+        <!-- Content for Recent Activities -->
+      </div>
+    </div>
+  </main>
+</div>
