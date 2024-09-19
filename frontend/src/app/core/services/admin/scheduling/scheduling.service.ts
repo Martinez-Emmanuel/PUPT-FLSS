@@ -12,6 +12,10 @@ export interface Program {
   curriculums: { [yearLevel: string]: string };
 }
 
+export interface Section {
+  section_id: number;
+  section_name: string;
+}
 
 export interface SectionsByProgram {
   [program: string]: {
@@ -59,6 +63,7 @@ export interface YearLevel {
   curriculum_id: number;
   curriculum_year: string;
   number_of_sections: number;
+  sections: Section[];
 }
 
 @Injectable({
@@ -155,4 +160,21 @@ export class SchedulingService {
       `${this.baseUrl}/programs/${program}/year/${year}/sections`
     );
   }
+
+  getActiveYearAndSemester(): Observable<{ activeYear: string, activeSemester: number }> {
+    return this.http.get<{ activeYear: string, activeSemester: number }>(
+      `${this.baseUrl}/active-year-semester`
+    );
+  }
+
+  getProgramsFromYearLevels(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/active-year-levels-curricula`);
+  }
+
+  getActiveYearLevelsCurricula(): Observable<any[]> {
+    return this.http.get<any[]>(`${this.baseUrl}/active-year-levels-curricula`);
+  }
+  
+
+
 }

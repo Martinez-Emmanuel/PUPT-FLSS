@@ -795,4 +795,27 @@ class AcademicYearController extends Controller
         }
     }
 
+    public function getActiveYearAndSemester()
+    {
+        $activeSemester = DB::table('active_semesters')
+            ->join('academic_years', 'active_semesters.academic_year_id', '=', 'academic_years.academic_year_id')
+            ->join('semesters', 'active_semesters.semester_id', '=', 'semesters.semester_id')
+            ->where('active_semesters.is_active', 1)
+            ->select(
+                DB::raw("CONCAT(academic_years.year_start, '-', academic_years.year_end) as academic_year"),
+                'semesters.semester as semester_number'
+            )
+            ->first();
+
+        if ($activeSemester) {
+            return response()->json([
+                'activeYear' => $activeSemester->academic_year,
+                'activeSemester' => $activeSemester->semester_number
+            ]);
+        }
+
+        return response()->json(['message' => 'No active academic year and semester found'], 404);
+    }
+
+
 }
