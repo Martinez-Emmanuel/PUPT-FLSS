@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject, takeUntil, Observable } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
@@ -13,17 +13,8 @@ import { TableDialogComponent, DialogConfig, DialogFieldConfig } from '../../../
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
 
 import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
-import { SchedulingService } from '../../../services/admin/scheduling/scheduling.service';
-
-interface Program {
-  program_code: string;
-  program_title: string;
-  year_levels: number;
-  sections: { [yearLevel: string]: number };
-  curriculums: { [yearLevel: string]: string };
-}
-
-type AcademicYear = string;
+import { CurriculumService } from '../../../services/superadmin/curriculum/curriculum.service';
+import { YearLevel,Program, SchedulingService } from '../../../services/admin/scheduling/scheduling.service';
 
 @Component({
   selector: 'app-academic-year',
@@ -41,8 +32,10 @@ type AcademicYear = string;
 })
 export class AcademicYearComponent implements OnInit, OnDestroy {
   programs: Program[] = [];
-  academicYearOptions: AcademicYear[] = [];
+  // academicYearOptions: AcademicYear[] = [];
+  academicYearOptions: { academic_year_id: number; academic_year: string }[] = [];
   selectedAcademicYear = '';
+  selectedAcademicYearId: number | null = null; 
   private destroy$ = new Subject<void>();
 
   headerInputFields: InputField[] = [
@@ -66,11 +59,12 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
   constructor(
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private schedulingService: SchedulingService
+    private schedulingService: SchedulingService,
+    private curriculumService: CurriculumService 
   ) {}
 
   ngOnInit() {
-    this.loadSampleData();
+    this.loadAcademicYears();
   }
 
   ngOnDestroy() {
@@ -78,216 +72,194 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  loadSampleData() {
-    this.schedulingService
-      .getAcademicYears()
+  loadAcademicYears() {
+    this.schedulingService.getAcademicYears()
       .pipe(takeUntil(this.destroy$))
       .subscribe((academicYears) => {
-        this.academicYearOptions = academicYears.map((ay) => ay.year);
-        this.headerInputFields[0].options = this.academicYearOptions;
-        this.selectedAcademicYear = this.academicYearOptions[0];
-        this.filterProgramsByAcademicYear(this.selectedAcademicYear);
-      });
-
-    this.schedulingService
-      .getPrograms()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((programs) => {
-        this.programs = programs.map((program) => ({
-          program_code: program.code,
-          program_title: program.title,
-          year_levels: program.number_of_years,
-          sections: this.getSectionsByProgram(
-            program.code,
-            program.number_of_years
-          ),
-          curriculums: this.getCurriculumsByProgram(
-            program.code,
-            program.number_of_years
-          ),
+        // Map the backend response to an array of objects with academic_year_id and academic_year
+        this.academicYearOptions = academicYears.map((ay) => ({
+          academic_year_id: ay.academic_year_id,   // ID from the backend
+          academic_year: ay.academic_year          // Displayed string like '2023-2024'
         }));
+  
+        this.headerInputFields[0].options = this.academicYearOptions.map(ay => ay.academic_year);
       });
   }
-
-  private getSectionsByProgram(
-    programCode: string,
-    numberOfYears: number
-  ): { [yearLevel: string]: number } {
-    const sections: { [yearLevel: string]: number } = {};
-    for (let year = 1; year <= numberOfYears; year++) {
-      this.schedulingService
-        .getSections(programCode, year)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe((sectionsList) => {
-          sections[year.toString()] = sectionsList.length;
-        });
+  
+  fetchProgramsForAcademicYear(academicYear: string) {
+    const selectedYear = this.academicYearOptions.find(
+      (year) => year.academic_year === academicYear
+    );
+  
+    if (!selectedYear) {
+      return; 
     }
+    
+    this.selectedAcademicYearId = selectedYear.academic_year_id;  
+
+    this.schedulingService.fetchProgramDetailsByAcademicYear({ academic_year_id: selectedYear.academic_year_id })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((response) => {
+        if (response.programs) {
+          this.programs = response.programs.map((program: any) => ({
+            program_id: program.program_id,
+            program_code: program.program_code,
+            program_title: program.program_title,
+            year_levels: program.year_levels,  
+            sections: this.getSectionsByProgram(program)
+          }));
+        }
+      }, error => {
+        console.error("Error fetching program details: ", error);
+      });
+  }
+  
+  getSectionsByProgram(program: any): { [yearLevel: string]: number } {
+    const sections: { [yearLevel: string]: number } = {};
+    program.year_levels.forEach((yearLevel: any) => {
+      sections[yearLevel.year_level] = yearLevel.number_of_sections;
+    });
     return sections;
   }
-
-  private getCurriculumsByProgram(
-    programCode: string,
-    numberOfYears: number
-  ): { [yearLevel: string]: string } {
-    const curriculums: { [yearLevel: string]: string } = {};
-    this.schedulingService
-      .getActiveYearAndSemester()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(({ activeYear }) => {
-        const mapping =
-          this.schedulingService['mockData'].curriculumMapping[activeYear]?.[
-            programCode
-          ];
-        for (let year = 1; year <= numberOfYears; year++) {
-          curriculums[year.toString()] = mapping ? mapping[year] : '2022';
-        }
-      });
-    return curriculums;
-  }
-
-  private addNewAcademicYear(newAcademicYear: string): void {
-    this.academicYearOptions.push(newAcademicYear);
-    this.headerInputFields[0].options = [...this.academicYearOptions];
-    this.selectedAcademicYear = newAcademicYear;
-  }
-
-  private removeAcademicYear(year: string): void {
-    this.academicYearOptions = this.academicYearOptions.filter(
-      (y) => y !== year
-    );
-    this.headerInputFields[0].options = [...this.academicYearOptions];
-    this.selectedAcademicYear = this.academicYearOptions.length
-      ? this.academicYearOptions[0]
-      : '';
-  }
-
-  filterProgramsByAcademicYear(academicYear: AcademicYear) {
-    this.schedulingService
-      .getAcademicYears()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((academicYears) => {
-        const selectedYearData = academicYears.find(
-          (ay) => ay.year === academicYear
-        );
-
-        if (selectedYearData) {
-          const programCodes = selectedYearData.programs;
-
-          this.schedulingService
-            .getPrograms()
-            .pipe(takeUntil(this.destroy$))
-            .subscribe((programs) => {
-              const programsForYear = programs.filter((program) =>
-                programCodes.includes(program.code)
-              );
-
-              this.programs = programsForYear.map((program) => ({
-                program_code: program.code,
-                program_title: program.title,
-                year_levels: program.number_of_years,
-                sections: this.getSectionsByProgram(
-                  program.code,
-                  program.number_of_years
-                ),
-                curriculums: this.getCurriculumsByProgram(
-                  program.code,
-                  program.number_of_years
-                ),
-              }));
-            });
-        }
-      });
-  }
-
+  
   onInputChange(values: { [key: string]: any }) {
-    if (values['academicYear'])
+    if (values['academicYear']) {
       this.selectedAcademicYear = values['academicYear'];
-    this.filterProgramsByAcademicYear(this.selectedAcademicYear);
-  }
-
-  onManageYearLevels(program: Program) {
-    const curriculumVersions = ['2018', '2022', '2024'];
-    const fields: DialogFieldConfig[] = [];
-
-    for (let i = 0; i < program.year_levels; i++) {
-      const yearLevelKey = `yearLevel${i + 1}`;
-      const curriculumKey = `curriculumVersion${i + 1}`;
-
-      fields.push({
-        label: `Year Level ${i + 1}`,
-        formControlName: yearLevelKey,
-        type: 'text',
-        required: true,
-        disabled: true,
-      });
-
-      fields.push({
-        label: `Curriculum`,
-        formControlName: curriculumKey,
-        type: 'select',
-        options: curriculumVersions,
-        required: true,
-      });
+      this.fetchProgramsForAcademicYear(this.selectedAcademicYear);
     }
+  }
+  
+  
+  onManageYearLevels(program: Program) {
+    const fields: DialogFieldConfig[] = [];
+  
+    console.log('Fetched Program ID:', program.program_id);
+  
+    this.curriculumService.getCurricula().subscribe((curricula) => {
+      console.log(curricula); // Logging the curricula to see the data
+  
+      // Create a mapping between curriculum_id and curriculum_year
+      const curriculumOptions = curricula.map((curriculum) => ({
+        year: curriculum.curriculum_year,
+        id: curriculum.curriculum_id
+      }));
 
-    const initialValue = fields.reduce((acc, field) => {
-      if (field.type === 'text') {
-        acc[field.formControlName] = `${parseInt(
-          field.formControlName.replace('yearLevel', '')
-        )}`;
-      } else if (field.type === 'select') {
-        const yearLevelIndex = field.formControlName.replace(
-          'curriculumVersion',
-          ''
-        );
-        acc[field.formControlName] = program.curriculums[yearLevelIndex] || '';
+       // Ensure the year levels are sorted numerically
+      const sortedYearLevels = program.year_levels.sort((a: YearLevel, b: YearLevel) => a.year_level - b.year_level);
+  
+      if (!Array.isArray(program.year_levels)) {
+        console.error('Expected year_levels to be an array, but got:', program.year_levels);
+        return;
       }
-      return acc;
-    }, {} as { [key: string]: any });
-
-    const dialogRef = this.dialog.open(TableDialogComponent, {
-      data: {
-        title: `Manage ${program.program_code} Year Levels`,
-        fields,
-        isEdit: true,
-        initialValue,
-        useHorizontalLayout: true,
-      },
-      disableClose: true,
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        for (let i = 0; i < program.year_levels; i++) {
-          const curriculumKey = `curriculumVersion${i + 1}`;
-          program.curriculums[(i + 1).toString()] = result[curriculumKey];
-        }
-
-        this.programs = [...this.programs];
-
-        console.log('Updated Curriculum Versions:', result);
-        this.snackBar.open('Year levels updated successfully!', 'Close', {
-          duration: 3000,
+  
+      // Iterate over each year level and create dialog fields
+      program.year_levels.forEach((yearLevelObj: YearLevel, index: number) => {
+        const yearLevel = yearLevelObj.year_level;
+        const yearLevelKey = `yearLevel${yearLevel}`;
+        const curriculumKey = `curriculumVersion${yearLevel}`;
+  
+        fields.push({
+          label: `Year Level ${yearLevel}`,
+          formControlName: yearLevelKey,
+          type: 'text',
+          required: true,
+          disabled: true,
         });
-      }
+  
+        fields.push({
+          label: `Curriculum Year`,
+          formControlName: curriculumKey,
+          type: 'select',
+          options: curriculumOptions.map(option => option.year), // Populate dropdown options
+          required: true,
+        });
+      });
+  
+      const initialValue = fields.reduce((acc, field) => {
+        if (field.type === 'text') {
+          acc[field.formControlName] = field.label.replace('Year Level ', '');
+        } else if (field.type === 'select') {
+          const yearLevel = parseInt(field.formControlName.replace('curriculumVersion', ''), 10);
+          const yearLevelObj = sortedYearLevels.find((yl) => yl.year_level === yearLevel);
+          acc[field.formControlName] = yearLevelObj ? yearLevelObj.curriculum_year : '';
+        }
+        return acc;
+      }, {} as { [key: string]: any });
+  
+      const dialogRef = this.dialog.open(TableDialogComponent, {
+        data: {
+          title: `Manage ${program.program_code} Year Levels`,
+          fields,
+          isEdit: true,
+          initialValue,
+          useHorizontalLayout: true,
+        },
+        disableClose: true,
+      });
+  
+      dialogRef.afterClosed().subscribe((result) => {
+        if (result) {
+          if (!Array.isArray(program.year_levels)) {
+            console.error('Expected year_levels to be an array after dialog close.');
+            return;
+          }
+  
+          const updatedYearLevels = program.year_levels.map((yearLevelObj) => {
+            const curriculumKey = `curriculumVersion${yearLevelObj.year_level}`;
+            const selectedCurriculumYear = result[curriculumKey];
+  
+            // Find the corresponding curriculum ID for the selected curriculum year
+            const matchingCurriculum = curricula.find((c) => c.curriculum_year === selectedCurriculumYear);
+  
+            return {
+              ...yearLevelObj,
+              curriculum_year: selectedCurriculumYear,
+              curriculum_id: matchingCurriculum ? matchingCurriculum.curriculum_id : yearLevelObj.curriculum_id,
+            };
+          });
+  
+          if (this.selectedAcademicYearId != null) {
+            this.schedulingService
+              .updateYearLevelsCurricula(this.selectedAcademicYearId, program.program_id, updatedYearLevels)
+              .subscribe(
+                (response) => {
+                  this.snackBar.open('Year levels updated successfully!', 'Close', { duration: 3000 });
+                  this.fetchProgramsForAcademicYear(this.selectedAcademicYear);
+                },
+                (error) => {
+                  console.error('Failed to update year levels:', error);
+                }
+              );
+          } else {
+            console.error('selectedAcademicYearId is null or undefined.');
+          }
+        }
+      });
     });
   }
+  
+  
 
   onManageSections(program: Program) {
     const fields: DialogFieldConfig[] = [];
-
-    for (let i = 0; i < program.year_levels; i++) {
-      const yearLevelKey = `yearLevel${i + 1}`;
-      const sectionsKey = `numberOfSections${i + 1}`;
-
+  
+    if (!Array.isArray(program.year_levels)) {
+      console.error('Expected year_levels to be an array, but got:', program.year_levels);
+      return;
+    }
+  
+    program.year_levels.forEach((yearLevelObj: YearLevel) => {
+      const yearLevelKey = `yearLevel${yearLevelObj.year_level}`;
+      const sectionsKey = `numberOfSections${yearLevelObj.year_level}`;
+  
       fields.push({
-        label: `Year Level ${i + 1}`,
+        label: `Year Level ${yearLevelObj.year_level}`,
         formControlName: yearLevelKey,
         type: 'text',
         required: true,
         disabled: true,
       });
-
+  
       fields.push({
         label: `Number of Sections`,
         formControlName: sectionsKey,
@@ -295,23 +267,18 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
         required: true,
         min: 1,
       });
-    }
-
+    });
+  
     const initialValue = fields.reduce((acc, field) => {
       if (field.type === 'text') {
-        acc[field.formControlName] = `${parseInt(
-          field.formControlName.replace('yearLevel', '')
-        )}`;
+        acc[field.formControlName] = field.label.replace('Year Level ', '');
       } else if (field.type === 'number') {
-        const yearLevelIndex = field.formControlName.replace(
-          'numberOfSections',
-          ''
-        );
-        acc[field.formControlName] = program.sections[yearLevelIndex] || 1;
+        const yearLevel = parseInt(field.formControlName.replace('numberOfSections', ''), 10);
+        acc[field.formControlName] = program.sections[yearLevel.toString()] || 1;
       }
       return acc;
     }, {} as { [key: string]: any });
-
+  
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: {
         title: `Manage ${program.program_code} Sections`,
@@ -322,45 +289,87 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
       },
       disableClose: true,
     });
-
+  
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        for (let i = 0; i < program.year_levels; i++) {
-          const sectionsKey = `numberOfSections${i + 1}`;
-          program.sections[(i + 1).toString()] = result[sectionsKey];
-        }
-        this.programs = [...this.programs];
-        this.snackBar.open('Sections updated successfully!', 'Close', {
-          duration: 3000,
+        let changesMade = false; 
+        program.year_levels.forEach((yearLevelObj) => {
+          const sectionsKey = `numberOfSections${yearLevelObj.year_level}`;
+          const numberOfSections = result[sectionsKey];
+  
+          if (numberOfSections !== program.sections[yearLevelObj.year_level.toString()]) {
+            changesMade = true;  
+  
+            if (this.selectedAcademicYearId != null) {
+              this.schedulingService
+                .updateSections(this.selectedAcademicYearId, program.program_id, yearLevelObj.year_level, numberOfSections)
+                .subscribe(
+                  (response) => {
+                    console.log(`Year Level ${yearLevelObj.year_level} updated successfully!`);
+                  },
+                  (error) => {
+                    console.error(`Failed to update Year Level ${yearLevelObj.year_level}`, error);
+                  }
+                );
+            } else {
+              console.error('selectedAcademicYearId is null or undefined.');
+            }
+          }
         });
+
+        if (changesMade) {
+          this.snackBar.open('Sections updated successfully!', 'Close', { duration: 3000 });
+          this.fetchProgramsForAcademicYear(this.selectedAcademicYear);  
+        } else {
+          this.snackBar.open('No changes detected!', 'Close', { duration: 3000 });
+        }
       }
     });
   }
-
-  onRemoveProgram(element: Program) {
+  
+  onRemoveProgram(program: Program) {
     const dialogData: DialogData = {
       title: 'Confirm Delete',
-      content:
-        'Are you sure you want to delete this? This action cannot be undone.',
+      content: `Are you sure you want to delete the program "${program.program_code}"? This action cannot be undone.`,
       actionText: 'Delete',
       cancelText: 'Cancel',
       action: 'Delete',
     };
-
+  
     const dialogRef = this.dialog.open(DialogGenericComponent, {
       data: dialogData,
       disableClose: true,
     });
-
+  
     dialogRef.afterClosed().subscribe((result) => {
       if (result === 'Delete') {
-        this.programs = this.programs.filter((p) => p !== element);
-        this.snackBar.open('Program deleted successfully!', 'Close', {
-          duration: 3000,
-        });
+        if (this.selectedAcademicYearId != null) {
+          this.schedulingService
+            .removeProgramFromAcademicYear(this.selectedAcademicYearId, program.program_id)
+            .subscribe(
+              (response) => {
+                this.programs = this.programs.filter((p) => p.program_id !== program.program_id);
+  
+                this.snackBar.open('Program deleted successfully!', 'Close', {
+                  duration: 3000,
+                });
+  
+                this.fetchProgramsForAcademicYear(this.selectedAcademicYear);
+              },
+              (error) => {
+                console.error('Error deleting the program:', error);
+                this.snackBar.open('Failed to delete the program.', 'Close', {
+                  duration: 3000,
+                });
+              }
+            );
+        } else {
+          console.error('selectedAcademicYearId is null or undefined.');
+        }
       }
     });
   }
+  
 
   openAddAcademicYearDialog(): void {
     const dialogConfig: DialogConfig = {
@@ -385,35 +394,43 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
       useHorizontalLayout: true,
       initialValue: { yearStart: '', yearEnd: '' },
     };
-
+  
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: dialogConfig,
       disableClose: true,
     });
-
+  
     dialogRef.afterClosed().subscribe((result) => {
       if (result && result.yearStart && result.yearEnd) {
         if (
           this.isValidYear(result.yearStart) &&
           this.isValidYear(result.yearEnd)
         ) {
-          const newAcademicYear = `${result.yearStart} - ${result.yearEnd}`;
-          this.addNewAcademicYear(newAcademicYear);
-          this.snackBar.open('New academic year added successfully!', 'Close', {
-            duration: 3000,
-          });
+          this.schedulingService.addAcademicYear(result.yearStart, result.yearEnd)
+            .subscribe(
+              (response) => {
+                this.snackBar.open('New academic year added successfully!', 'Close', {
+                  duration: 3000,
+                });
+                this.loadAcademicYears(); 
+              },
+              (error) => {
+                this.snackBar.open('Failed to add academic year.', 'Close', {
+                  duration: 3000,
+                });
+              }
+            );
         } else {
           this.snackBar.open(
             'Invalid year format. Please enter valid 4-digit years.',
             'Close',
-            {
-              duration: 3000,
-            }
+            { duration: 3000 }
           );
         }
       }
     });
   }
+  
 
   private isValidYear(year: string): boolean {
     return (
@@ -421,29 +438,65 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     );
   }
 
+  academicYearMap: { [name: string]: number } = {};
+
   openManageAcademicYearDialog(): void {
-    const dialogConfig: DialogConfig = {
-      title: 'Manage Academic Years',
-      isManageList: true,
-      academicYearList: [...this.academicYearOptions],
-      fields: [],
-      isEdit: false,
-    };
+  this.schedulingService.getAcademicYears().subscribe(
+    (academicYears) => {
+      this.academicYearMap = {};
+      const academicYearNames = academicYears.map((year: any) => {
+        this.academicYearMap[year.academic_year] = year.academic_year_id;
+        return year.academic_year; 
+      });
 
-    const dialogRef = this.dialog.open(TableDialogComponent, {
-      data: dialogConfig,
-      disableClose: true,
-    });
+      const dialogConfig: DialogConfig = {
+        title: 'Manage Academic Years',
+        isManageList: true,
+        academicYearList: academicYearNames,
+        fields: [],
+        isEdit: false,
+      };
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result && result.deletedYear) {
-        this.removeAcademicYear(result.deletedYear);
-        this.snackBar.open('Academic year removed successfully!', 'Close', {
+      const dialogRef = this.dialog.open(TableDialogComponent, {
+        data: dialogConfig,
+        disableClose: true,
+      });
+
+      dialogRef.afterClosed().subscribe((result) => {
+        if (result && result.deletedYear) {
+          const deletedYearId = this.academicYearMap[result.deletedYear];
+          if (deletedYearId) {
+            this.deleteAcademicYear(deletedYearId); 
+          }
+        }
+      });
+    },
+    (error) => {
+      console.error('Error fetching academic years:', error);
+      this.snackBar.open('Failed to fetch academic years.', 'Close', {
+        duration: 3000,
+      });
+    }
+  );
+}
+  
+  deleteAcademicYear(academicYearId: number): void {
+    this.schedulingService.deleteAcademicYear(academicYearId).subscribe(
+      (response) => {
+        this.snackBar.open('Academic year deleted successfully!', 'Close', {
+          duration: 3000,
+        });
+        this.loadAcademicYears();
+      },
+      (error) => {
+        console.error('Error deleting academic year:', error);
+        this.snackBar.open('Failed to delete academic year.', 'Close', {
           duration: 3000,
         });
       }
-    });
+    );
   }
+  
 
   private handleError(message: string) {
     return (error: any) => {
