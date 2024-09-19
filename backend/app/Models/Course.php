@@ -29,4 +29,8 @@ class Course extends Model
     {
         return $this->hasMany(CourseRequirement::class, 'course_id', 'course_id');
     }
+    public function preferences()
+    {
+        return $this->hasMany(Preference::class, 'course_id');
+    }
 }
