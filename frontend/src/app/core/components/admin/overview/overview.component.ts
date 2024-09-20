@@ -1,19 +1,20 @@
-import {
-  Component,
-  OnInit,
-  AfterViewInit,
-  ChangeDetectorRef,
-} from '@angular/core';
+import { Component, OnInit, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+
 import { MatDialog } from '@angular/material/dialog';
-import { MatDialogModule } from '@angular/material/dialog'; // Import the MatDialogModule
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarRef } from '@angular/material/snack-bar';
+
 import { DialogGenericComponent } from '../../../../shared/dialog-generic/dialog-generic.component';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
+
+import { OverviewService } from '../../../services/admin/overview/overview.service';
+
 import { fadeAnimation } from '../../../animations/animations';
 
 @Component({
   selector: 'app-overview',
   standalone: true,
-  imports: [MatSymbolDirective, MatDialogModule], // Import MatDialogModule here
+  imports: [MatSymbolDirective, MatDialogModule],
   templateUrl: './overview.component.html',
   styleUrl: './overview.component.scss',
   animations: [fadeAnimation],
@@ -22,11 +23,16 @@ export class OverviewComponent implements OnInit, AfterViewInit {
   activeYear = '2024-2025';
   activeSemester = '1st Semester';
 
-  preferencesProgress: number = 75;
-  schedulingProgress: number = 60;
-  roomUtilizationProgress: number = 90;
+  preferencesProgress = 75;
+  schedulingProgress = 60;
+  roomUtilizationProgress = 90;
 
-  constructor(private cdr: ChangeDetectorRef, public dialog: MatDialog) {}
+  constructor(
+    private cdr: ChangeDetectorRef,
+    public dialog: MatDialog,
+    private snackBar: MatSnackBar,
+    private overviewService: OverviewService
+  ) {}
 
   ngOnInit() {
     this.updateProgressBars(0);
@@ -57,7 +63,6 @@ export class OverviewComponent implements OnInit, AfterViewInit {
 
   updateProgressBar(id: string, value: number) {
     const progressElement = document.getElementById(`${id}-progress`);
-
     if (progressElement) {
       progressElement.style.width = `${value}%`;
     }
@@ -85,6 +90,30 @@ export class OverviewComponent implements OnInit, AfterViewInit {
   }
 
   sendEmailToFaculty() {
-    console.log('Sending email to all faculty...');
+    const sendingSnackBarRef: MatSnackBarRef<any> = this.snackBar.open(
+      'Sending emails. Please wait...',
+      'Close',
+      { duration: undefined }
+    );
+
+    this.overviewService.sendEmails().subscribe({
+      next: () => {
+        sendingSnackBarRef.dismiss();
+        this.snackBar.open('Emails sent successfully!', 'Close', {
+          duration: 3000,
+        });
+      },
+      error: (error) => {
+        sendingSnackBarRef.dismiss();
+        this.snackBar.open(
+          'Failed to send emails. Please try again.',
+          'Close',
+          {
+            duration: 3000,
+          }
+        );
+        console.error('Error sending email:', error);
+      },
+    });
   }
 }
