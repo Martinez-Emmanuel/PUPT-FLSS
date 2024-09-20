@@ -14,6 +14,7 @@
   );
 
   .card {
+    @include default-transition;
     background-color: var(--admin-bg);
     border-radius: var(--border-radius-sm);
     padding: var(--spacing-md);
@@ -38,7 +39,7 @@
     );
 
     #admin_name {
-      @include gradient-primary-text;
+      @include gradient-primary-text(315deg);
       font-weight: 600;
     }
 
@@ -53,7 +54,6 @@
       $align: flex-start,
       $gap: var(--spacing-xxs)
     );
-    // align-self: center;
 
     @include gradient-primary(315deg);
     padding: 0 var(--spacing-md);
@@ -172,20 +172,15 @@
       .action-items {
         @include flex-layout($direction: column, $gap: var(--spacing-md));
         flex: 1;
-        // border: 1px solid purple;
+        user-select: none;
 
         .item-group {
           @include flex-layout($align: stretch);
           flex: 1;
 
-          &.one {
-            @include flex-layout($align: stretch, $gap: var(--spacing-sm));
-            // border: 1px solid #60f47e;
-          }
-
+          &.one,
           &.two {
             @include flex-layout($align: stretch, $gap: var(--spacing-sm));
-            // border: 1px solid gold;
           }
 
           .item {
@@ -196,21 +191,35 @@
             background-color: var(--main-bg);
             text-align: center;
             cursor: pointer;
+            box-shadow: var(--shadow-level-0);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
 
             span[mat-symbol] {
-              background: linear-gradient(
-                90deg,
-                var(--gradient-light-start) 0%,
-                var(--gradient-light-end) 100%
-              );
-              -webkit-background-clip: text;
-              background-clip: text;
-              -webkit-text-fill-color: transparent;
+              @include gradient-primary-text;
+              font-family: "Material Symbols Rounded";
               font-size: var(--font-size-2xxl);
             }
 
             .desc {
               font-size: var(--font-size-xsx);
+            }
+
+            /* Action Items Hover */
+            &:hover {
+              @include gradient-primary;
+
+              span[mat-symbol] {
+                background: none;
+                -webkit-text-fill-color: white;
+              }
+
+              .desc {
+                color: white;
+              }
+            }
+
+            &:active {
+              transform: scale(0.96);
             }
           }
         }
