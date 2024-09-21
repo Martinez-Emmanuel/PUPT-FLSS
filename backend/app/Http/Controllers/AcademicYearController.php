@@ -318,6 +318,7 @@ class AcademicYearController extends Controller
                 'ay.year_start',
                 'ay.year_end',
                 's.semester',
+                'course_assignment_id',
                 'co.course_id',
                 'co.course_code',
                 'co.course_title',
