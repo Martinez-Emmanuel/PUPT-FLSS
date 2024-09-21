@@ -40,7 +40,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   selectedSection = '1';
 
   activeYear: string = ''; 
-  activeSemester: string = ''; 
+  // activeSemester: string = ''; 
+  activeSemester: number = 0; // Initialize it as a number
+
   
   private destroy$ = new Subject<void>();
 
@@ -94,17 +96,18 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
   private loadActiveYearAndSemester() {
     this.schedulingService
-    .getActiveYearAndSemester()
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: ({ activeYear, activeSemester }) => {
-        this.activeYear = activeYear;
-        this.activeSemester = this.mapSemesterNumberToLabel(activeSemester);  
-      },
-      error: this.handleError('Error fetching active year and semester'),
-    });
+      .getActiveYearAndSemester()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ({ activeYear, activeSemester }) => {
+          this.activeYear = activeYear;
+          this.activeSemester = activeSemester; 
+          console.log('Active Semester Set:', this.activeSemester);
+        },
+        error: this.handleError('Error fetching active year and semester'),
+      });
   }
-
+  
   // Helper function to map the semester number to the corresponding label
   private mapSemesterNumberToLabel(semesterNumber: number): string {
     switch (semesterNumber) {
@@ -327,7 +330,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       console.log('Available Year Levels:', this.yearLevelOptions);
   
       // Set the options for year level select dropdown
-      this.headerInputFields.find(field => field.key === 'yearLevel')!.options = this.yearLevelOptions.map(
+      this.headerInputFields.find(
+        field => field.key === 'yearLevel')!.options =
+        this.yearLevelOptions.map(
         year => `Year ${year.year_level}`
       );
     } else {
@@ -356,7 +361,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       return; 
     }
   
-    // Find the selected section
     const selectedSectionDisplay = values['section'];
     const selectedSection = this.sectionOptions.find(
       section => section.section_name === selectedSectionDisplay
@@ -366,7 +370,11 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       console.log('Selected Section ID:', selectedSection.section_id);
   
       // Fetch and display courses for the selected program, year level, and section
-      this.fetchCourses(selectedProgram.id, selectedYearLevel.year_level, selectedSection.section_id);
+      this.fetchCourses(
+        selectedProgram.id,
+        selectedYearLevel.year_level, 
+        selectedSection.section_id
+      );
     } else {
       console.log('No section found.');
     }
@@ -374,24 +382,39 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   
 
   fetchCourses(programId: number, yearLevel: number, sectionId: number) {
-    this.schedulingService.getAssignedCoursesByProgramYearAndSection(programId, yearLevel, sectionId)
+    this.schedulingService.getAssignedCoursesByProgramYearAndSection(
+      programId, 
+      yearLevel, sectionId
+    )
       .subscribe(
         (response) => {
-          // Find the specific program based on the programId
-          const program = response.programs.find((p: Program) => p.program_id === programId);
+          const program = response.programs.find(
+            (p: Program) => p.program_id === programId);
+          console.log('Selected Program:', program);
   
           if (program) {
-            // Find the specific year level based on the yearLevel
-            const yearLevelData = program.year_levels.find((yl: YearLevel) => yl.year_level === yearLevel);
+            const yearLevelData = program.year_levels.find(
+              (yl: YearLevel) => yl.year_level === yearLevel);
+            console.log('Selected Year Level:', yearLevelData);
   
-            // If yearLevelData and its semester courses exist, update the schedules array
-            if (yearLevelData && yearLevelData.semester && yearLevelData.semester.courses) {
-              this.schedules = yearLevelData.semester.courses;
+            if (yearLevelData) {
+              console.log('Semester Data:', yearLevelData.semesters);
+  
+              const activeSemester = yearLevelData.semesters.find(
+                (sem: Semester) => sem.semester === this.activeSemester 
+              );
+              console.log('Active Semester:', activeSemester);
+  
+              if (activeSemester && activeSemester.courses) {
+                this.schedules = activeSemester.courses;
+              } else {
+                console.error('No courses found for the selected year level and semester');
+              }
             } else {
-              console.error('No courses found for the selected year level and semester');
+              console.error('No year level found');
             }
           } else {
-            console.error('No program found with the given program ID');
+            console.error('No program found');
           }
         },
         (error) => {
@@ -402,7 +425,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         }
       );
   }
-  
+    
   openEditDialog(element: Schedule) {
     const dialogConfig: DialogConfig = {
       title: 'Edit Schedule Details',

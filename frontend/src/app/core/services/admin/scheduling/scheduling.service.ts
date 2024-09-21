@@ -51,12 +51,14 @@ export interface Semester {
   semester_id: number;
   semester_number: string;
   courses: Schedule[];
+  semester:number;
 }
 
 export interface AcademicYear {
   academic_year_id: number;
   academic_year: string;
   semesters: Semester[];
+  
 }
 
 export interface YearLevel {
@@ -67,7 +69,7 @@ export interface YearLevel {
   sections: Section[];
   semester?: {
     semester: number;
-    courses: Schedule[];  // Assuming Schedule[] is the correct type for courses
+    courses: Schedule[];  
   };
 }
 
@@ -184,7 +186,7 @@ export class SchedulingService {
   
   getAssignedCoursesByProgramYearAndSection(programId: number, yearLevel: number, sectionId: number): Observable<any> {
     return this.http.get<any>(
-      `${this.baseUrl}/get-assigned-courses-sem`, // Adjust the endpoint if necessary
+      `${this.baseUrl}/get-assigned-courses-sem`, 
       {
         params: {
           programId: programId.toString(),
