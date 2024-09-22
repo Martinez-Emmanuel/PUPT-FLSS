@@ -8,22 +8,23 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('preferences', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('faculty_id');
+            $table->bigIncrements('preferences_id');
             
-            $table->unsignedInteger('academic_year_id'); // Assuming this is already fixed based on previous discussions
-            $table->unsignedInteger('semester_id'); // Data type is aligned with 'active_semesters'
+            $table->unsignedBigInteger('faculty_id');
+            $table->unsignedInteger('active_semester_id');
+            $table->unsignedInteger('course_assignment_id');
 
-            $table->unsignedInteger('course_id'); 
-            $table->string('preferred_day');
-            $table->string('preferred_time');
+            $table->enum('preferred_day', ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']);
+            $table->time('preferred_start_time');
+            $table->time('preferred_end_time');
+
             $table->timestamps();
 
-            // Foreign key constraints
+            $table->unique(['faculty_id', 'active_semester_id', 'course_assignment_id'], 'unique_preference');
+
             $table->foreign('faculty_id')->references('id')->on('faculty')->onDelete('cascade');
-            $table->foreign('course_id')->references('course_id')->on('courses')->onDelete('cascade');
-            $table->foreign('academic_year_id')->references('academic_year_id')->on('academic_years')->onDelete('cascade');
-            $table->foreign('semester_id')->references('semester_id')->on('active_semesters')->onDelete('cascade'); // Adjusted to reference 'active_semesters'
+            $table->foreign('active_semester_id')->references('active_semester_id')->on('active_semesters')->onDelete('cascade');
+            $table->foreign('course_assignment_id')->references('course_assignment_id')->on('course_assignments')->onDelete('cascade');
         });
     }
 
