@@ -1,6 +1,7 @@
--- PUPT-FLSS 2025 Official Database Schema (Version 1.1)
+-- PUPT-FLSS 2025 Official Database Schema (Version 1.2)
 -- Key Changes from the previous partial version:
--- (*) Enhanced 'preferences' table
+-- (+) Add start and end date for a unique acad year and sem through
+-- active_semesters table
 
 -- Table structure for table `users`
 CREATE TABLE `users` (
@@ -135,6 +136,8 @@ CREATE TABLE `active_semesters` (
   `academic_year_id` int(10) UNSIGNED DEFAULT NULL,
   `semester_id` int(10) UNSIGNED DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT 0,
+  `start_date` date NOT NULL,
+  `end_date` date NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`active_semester_id`),
