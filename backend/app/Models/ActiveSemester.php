@@ -15,6 +15,8 @@ class ActiveSemester extends Model
         'academic_year_id',
         'semester_id',
         'is_active',
+        'start_date',
+        'end_date',
     ];
 
     public function academicYear()
