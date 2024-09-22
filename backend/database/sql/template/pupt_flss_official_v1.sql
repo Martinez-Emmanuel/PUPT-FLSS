@@ -1,7 +1,6 @@
--- PUPT-FLSS 2025 Official Database Schema (Version 1.0)
+-- PUPT-FLSS 2025 Official Database Schema (Version 1.1)
 -- Key Changes from the previous partial version:
--- (-) Removed 'Sections' Table
--- (+) Added five new tables (see line 195 and onwards)
+-- (*) Enhanced 'preferences' table
 
 -- Table structure for table `users`
 CREATE TABLE `users` (
@@ -179,16 +178,20 @@ CREATE TABLE `course_requirements` (
 
 -- Table structure for table `preferences`
 CREATE TABLE `preferences` (
-  `id` bigint(20) UNSIGNED NOT NULL,
+  `preferences_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `faculty_id` bigint(20) UNSIGNED NOT NULL,
-  `course_id` int(10) UNSIGNED NOT NULL,
-  `preferred_day` varchar(191) NOT NULL,
-  `preferred_time` varchar(191) NOT NULL,
+  `active_semester_id` int(10) UNSIGNED NOT NULL,
+  `course_assignment_id` int(10) UNSIGNED NOT NULL,
+  `preferred_day` enum('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') NOT NULL,
+  `preferred_start_time` time NOT NULL,
+  `preferred_end_time` time NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `unique_preference` (`faculty_id`, `active_semester_id`, `course_assignment_id`),
   FOREIGN KEY (`faculty_id`) REFERENCES `faculty` (`id`) ON DELETE CASCADE,
-  FOREIGN KEY (`course_id`) REFERENCES `courses` (`course_id`) ON DELETE CASCADE
+  FOREIGN KEY (`active_semester_id`) REFERENCES `active_semesters` (`active_semester_id`) ON DELETE CASCADE,
+  FOREIGN KEY (`course_assignment_id`) REFERENCES `course_assignments` (`course_assignment_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
