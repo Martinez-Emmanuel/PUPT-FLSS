@@ -58,7 +58,7 @@ export class AdminComponent implements OnInit {
   headerInputFields: InputField[] = [
     {
       type: 'text',
-      label: 'Search Curriculum',
+      label: 'Search Admin',
       key: 'search',
     },
   ];

@@ -21,10 +21,9 @@ import { fadeAnimation } from '../../../../animations/animations';
 export class ReportRoomsComponent {
   inputFields: InputField[] = [
     {
-      type: 'select',
-      label: 'Room',
-      key: 'room',
-      options: ['Room A101', 'Room A102', 'Room A201', 'Room A202'],
+      type: 'text',
+      label: 'Search Rooms',
+      key: 'search',
     },
   ];
 
