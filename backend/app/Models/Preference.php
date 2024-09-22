@@ -9,36 +9,31 @@ class Preference extends Model
 {
     use HasFactory;
 
+    protected $table = 'preferences';
+
+    protected $primaryKey = 'preferences_id';
+
     protected $fillable = [
         'faculty_id',
-        'academic_year_id',
-        'semester_id',
-        'course_id',
+        'active_semester_id',
+        'course_assignment_id',
         'preferred_day',
-        'preferred_time',
+        'preferred_start_time',
+        'preferred_end_time',
     ];
 
-    // Relationship with Faculty
     public function faculty()
     {
         return $this->belongsTo(Faculty::class, 'faculty_id');
     }
 
-    // Relationship with Course
-    public function course()
-    {
-        return $this->belongsTo(Course::class, 'course_id');
-    }
-
-    // Relationship with Academic Year
-    public function academicYear()
-    {
-        return $this->belongsTo(AcademicYear::class, 'academic_year_id');
-    }
-
-    // Relationship with Active Semester
     public function activeSemester()
     {
-        return $this->belongsTo(ActiveSemester::class, 'semester_id');
+        return $this->belongsTo(ActiveSemester::class, 'active_semester_id');
+    }
+    
+    public function courseAssignment()
+    {
+        return $this->belongsTo(CourseAssignment::class, 'course_assignment_id');
     }
 }

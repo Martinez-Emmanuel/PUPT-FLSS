@@ -26,8 +26,9 @@ class ActiveSemester extends Model
     {
         return $this->belongsTo(Semester::class, 'semester_id', 'semester_id');
     }
+
     public function preferences()
     {
-        return $this->hasMany(Preference::class, 'semester_id');
+        return $this->hasMany(Preference::class, 'active_semester_id', 'active_semester_id');
     }
 }
