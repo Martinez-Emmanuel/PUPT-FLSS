@@ -302,7 +302,7 @@ export class CurriculumDetailComponent implements OnInit {
         .flatMap(program => program.year_levels)
         .flatMap(yearLevel => yearLevel.semesters)
         .flatMap(sem => sem.courses)
-        .map(course => course.course_title) || [];
+        .map(course => `${course.course_code} - ${course.course_title}`) || [];
 
     const dialogConfig = this.getCourseDialogConfig(course);
     const dialogRef = this.dialog.open(TableDialogComponent, {
@@ -474,7 +474,7 @@ export class CurriculumDetailComponent implements OnInit {
         .flatMap(program => program.year_levels)
         .flatMap(yearLevel => yearLevel.semesters)
         .flatMap(sem => sem.courses)
-        .find(course => course.course_title === courseTitle);
+        .find(course => `${course.course_code} - ${course.course_title}` === courseTitle);
     return course?.course_id;
   }
 
@@ -671,7 +671,7 @@ export class CurriculumDetailComponent implements OnInit {
         .flatMap(program => program.year_levels)
         .flatMap(yearLevel => yearLevel.semesters)
         .flatMap(sem => sem.courses)
-        .map(course => course.course_title) || [];
+        .map(course => `${course.course_code} - ${course.course_title}`) || [];
 
     return {
         title: course ? 'Edit Course' : 'Add Course',
