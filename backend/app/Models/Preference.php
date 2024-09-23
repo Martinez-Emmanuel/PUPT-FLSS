@@ -36,4 +36,16 @@ class Preference extends Model
     {
         return $this->belongsTo(CourseAssignment::class, 'course_assignment_id');
     }
+    public function course()
+    {
+        return $this->hasOneThrough(
+            Course::class,
+            CourseAssignment::class,
+            'course_assignment_id', // Foreign key on the CourseAssignment table
+            'course_id',            // Foreign key on the Course table
+            'course_assignment_id', // Local key on the Preferences table
+            'course_id'             // Local key on the CourseAssignment table
+        );
+    }
+
 }
