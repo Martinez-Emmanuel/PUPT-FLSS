@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Preference;
 use Illuminate\Support\Facades\DB;  
+use App\Models\ActiveSemester;
 class PreferenceController extends Controller
 {
 
@@ -12,22 +13,22 @@ class PreferenceController extends Controller
     {
         $validatedData = $request->validate([
             'faculty_id' => 'required|exists:faculty,id',
-            'academic_year_id' => 'required|exists:academic_years,academic_year_id',
-            'semester_id' => 'required|exists:active_semesters,semester_id',
+            'active_semester_id' => 'required|exists:active_semesters,active_semester_id',
             'preferences' => 'required|array',
-            'preferences.*.course_id' => 'required|exists:courses,course_id',
+            'preferences.*.course_assignment_id' => 'required|exists:course_assignments,course_assignment_id',
             'preferences.*.preferred_day' => 'required|string',
-            'preferences.*.preferred_time' => 'required|string',
+            'preferences.*.preferred_start_time' => 'required|string',
+            'preferences.*.preferred_end_time' => 'required|string',
         ]);
     
         foreach ($request->preferences as $preference) {
             Preference::create([
-                'faculty_id' => $request->faculty_id,               
-                'academic_year_id' => $request->academic_year_id,   
-                'semester_id' => $request->semester_id,            
-                'course_id' => $preference['course_id'],         
-                'preferred_day' => $preference['preferred_day'],    
-                'preferred_time' => $preference['preferred_time'], 
+                'faculty_id' => $request->faculty_id,
+                'active_semester_id' => $request->active_semester_id,
+                'course_assignment_id' => $preference['course_assignment_id'],
+                'preferred_day' => $preference['preferred_day'],
+                'preferred_start_time' => $preference['preferred_start_time'],
+                'preferred_end_time' => $preference['preferred_end_time'],
             ]);
         }
     
@@ -36,57 +37,51 @@ class PreferenceController extends Controller
         ], 201);
     }
     
+    
 
     public function getPreferences()
     {
-        // Fetch all preferences with related data
         $preferences = Preference::with([
             'faculty.user',
-            'academicYear',
-            'activeSemester',
-            'course'
+            'activeSemester.academicYear',
+            'activeSemester.semester',
+            'courseAssignment.course' 
         ])->get();
     
-        // Group by faculty_id first
-        $groupedByFaculty = $preferences->groupBy('faculty_id');
-    
-        $formattedPreferences = $groupedByFaculty->mapWithKeys(function ($facultyPreferences, $facultyId) {
-            // Use the first preference to get general faculty details
+        $formattedPreferences = $preferences->groupBy('faculty_id')->mapWithKeys(function ($facultyPreferences, $facultyId) {
             $facultyDetails = $facultyPreferences->first()->faculty->user;
     
-            // Now group by academic year and semester
-            $academicYears = $facultyPreferences->groupBy([
-                'academic_year_id',
-                'semester_id'
-            ])->mapWithKeys(function ($years, $academicYearId) {
+            $semesters = $facultyPreferences->groupBy('active_semester_id')->mapWithKeys(function ($semesterPreferences, $activeSemesterId) {
+                $semesterDetails = $semesterPreferences->first()->activeSemester;
+    
                 return [
-                    "academic_year_id_{$academicYearId}" => [
-                        "academic_year_id" => $academicYearId,  // Include the actual academic_year_id for frontend use
-                        "semesters" => $years->mapWithKeys(function ($semesters, $semesterId) {
+                    "active_semester_id_{$activeSemesterId}" => [
+                        'active_semester_id' => $activeSemesterId,
+                        'academic_year_id' => $semesterDetails->academicYear->academic_year_id ?? 'N/A',
+                        'academic_year' => $semesterDetails->academicYear->year_start . '-' . $semesterDetails->academicYear->year_end ?? 'N/A',
+                        'semester_id' => $semesterDetails->semester->semester_id ?? 'N/A',
+                        'courses' => $semesterPreferences->map(function ($preference) {
+                            $courseAssignment = $preference->courseAssignment;
+                            $course = $courseAssignment->course ?? null;
+    
                             return [
-                                "semester_id_{$semesterId}" => [
-                                    "semester_id" => $semesterId,  // Include the actual semester_id for frontend use
-                                    "courses" => $semesters->map(function ($preference) {
-                                        return [
-                                            'course_details' => [
-                                                'course_id' => $preference->course->course_id ?? 'N/A',
-                                                'course_code' => $preference->course->course_code ?? 'N/A',
-                                                'course_title' => $preference->course->course_title ?? 'N/A',
-                                            ],
-                                            'preferred_day' => $preference->preferred_day,
-                                            'preferred_time' => $preference->preferred_time,
-                                            'created_at' => $preference->created_at->toDateTimeString(),
-                                            'updated_at' => $preference->updated_at->toDateTimeString()
-                                        ];
-                                    })->toArray()
-                                ]
+                                'course_assignment_id' => $courseAssignment->course_assignment_id ?? 'N/A',
+                                'course_details' => [
+                                    'course_id' => $course->course_id ?? 'N/A',
+                                    'course_code' => $course->course_code ?? 'N/A',
+                                    'course_title' => $course->course_title ?? 'N/A',
+                                ],
+                                'preferred_day' => $preference->preferred_day,
+                                'preferred_start_time' => $preference->preferred_start_time,
+                                'preferred_end_time' => $preference->preferred_end_time,
+                                'created_at' => $preference->created_at->toDateTimeString(),
+                                'updated_at' => $preference->updated_at->toDateTimeString()
                             ];
-                        })
+                        })->toArray()
                     ]
                 ];
             });
     
-            // Construct the output for this faculty
             return [
                 "faculty_{$facultyId}" => [
                     'faculty_id' => $facultyId,
@@ -94,75 +89,83 @@ class PreferenceController extends Controller
                     'faculty_code' => $facultyDetails->code ?? 'N/A',
                     'faculty_role' => $facultyDetails->role ?? 'N/A',
                     'faculty_status' => $facultyDetails->status ?? 'N/A',
-                    'academic_years' => $academicYears
+                    'active_semesters' => $semesters
                 ]
             ];
         });
     
-        // Return formatted preferences in JSON format
         return response()->json([
             'preferences' => $formattedPreferences
         ], 200, [], JSON_PRETTY_PRINT);
     }
     
+    
+    
     public function getPreferencesForActiveSemester()
     {
-        // Get the active semester from the active_semesters table
-        $activeSemester = DB::table('active_semesters')
+        $activeSemester = ActiveSemester::with(['academicYear', 'semester'])
             ->where('is_active', 1)
             ->first();
     
-        // If no active semester is found, return an error message
         if (!$activeSemester) {
             return response()->json(['error' => 'No active semester found'], 404);
         }
     
-
         $preferences = Preference::with([
-            'faculty.user',    
-            'academicYear',    
-            'course'           
+            'faculty.user',
+            'courseAssignment.course' 
         ])
-        ->where('academic_year_id', $activeSemester->academic_year_id)
-        ->where('semester_id', $activeSemester->semester_id)
+        ->where('active_semester_id', $activeSemester->active_semester_id)
         ->get();
     
-        // Restructure the preferences to remove redundancy
-        $groupedPreferences = $preferences->groupBy('faculty_id')->map(function ($facultyPreferences) use ($activeSemester) {
+        
+        $groupedPreferences = $preferences->groupBy('faculty_id')->mapWithKeys(function ($facultyPreferences) use ($activeSemester) {
             $faculty = $facultyPreferences->first()->faculty;
+            $facultyUser = $faculty->user;
+    
+            $courses = $facultyPreferences->map(function ($preference) {
+                $courseAssignment = $preference->courseAssignment;
+                $course = $courseAssignment ? $courseAssignment->course : null;
+    
+                return [
+                    'course_assignment_id' => $courseAssignment->course_assignment_id ?? 'N/A',
+                    'course_details' => [
+                        'course_id' => $course->course_id ?? 'N/A',
+                        'course_code' => $course ? $course->course_code : null,
+                        'course_title' => $course ? $course->course_title : null
+                    ],
+                    'preferred_day' => $preference->preferred_day,
+                    'preferred_start_time' => $preference->preferred_start_time,
+                    'preferred_end_time' => $preference->preferred_end_time,
+                    'created_at' => $preference->created_at->toDateTimeString(),
+                    'updated_at' => $preference->updated_at->toDateTimeString()
+                ];
+            });
+    
             return [
-                'faculty_id' => $faculty->id,
-                'faculty_name' => $faculty->user->name ?? 'N/A',
-                'faculty_code' => $faculty->user->code ?? 'N/A',
-                'faculty_role' => $faculty->user->role ?? 'N/A',
-                'faculty_status' => $faculty->user->status ?? 'N/A',
-                'academic_year_id' => $activeSemester->academic_year_id,
-                'semester' => [
-                    'semester_label' => $this->getSemesterLabel($activeSemester->semester_id), 
-                    'semester_id' => $activeSemester->semester_id,
-                    'courses' => $facultyPreferences->map(function ($preference) {
-                        return [
-                            'course_details' => [
-                                'course_id' => $preference->course->course_id,
-                                'course_code' => $preference->course->course_code,
-                                'course_title' => $preference->course->course_title
-                            ],
-                            'preferred_day' => $preference->preferred_day,
-                            'preferred_time' => $preference->preferred_time,
-                            'created_at' => $preference->created_at->toDateTimeString(),
-                            'updated_at' => $preference->updated_at->toDateTimeString()
-                        ];
-                    })
+                "faculty_{$faculty->id}" => [
+                    'faculty_id' => $faculty->id,
+                    'faculty_name' => $facultyUser->name ?? 'N/A',
+                    'faculty_code' => $facultyUser->code ?? 'N/A',
+                    'faculty_role' => $facultyUser->role ?? 'N/A',
+                    'faculty_status' => $facultyUser->status ?? 'N/A',
+                    'active_semesters' => [
+                        "active_semester_id_{$activeSemester->active_semester_id}" => [
+                            'active_semester_id' => $activeSemester->active_semester_id,
+                            'academic_year_id' => $activeSemester->academic_year_id,
+                            'academic_year' => $activeSemester->academicYear->year_start . '-' . $activeSemester->academicYear->year_end,
+                            'semester_id' => $activeSemester->semester_id,
+                            'semester_label' => $this->getSemesterLabel($activeSemester->semester_id),
+                            'courses' => $courses->toArray()
+                        ]
+                    ]
                 ]
             ];
         });
     
         return response()->json([
-            'active_semester_id' => $activeSemester->active_semester_id,
-            'academic_year_id' => $activeSemester->academic_year_id,
-            'semester_id' => $activeSemester->semester_id,
             'preferences' => $groupedPreferences
-        ]);
+        ], 200, [], JSON_PRETTY_PRINT);
     }
     
     private function getSemesterLabel($semesterId)
