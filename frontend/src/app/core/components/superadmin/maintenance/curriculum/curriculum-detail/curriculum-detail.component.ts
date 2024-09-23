@@ -492,7 +492,7 @@ export class CurriculumDetailComponent implements OnInit {
               title: 'Manage Programs',
               isEdit: false,
               fields: allPrograms.map(program => ({
-                label: program.program_code,
+                label: `${program.program_code} - ${program.program_title}`,
                 formControlName: program.program_code,
                 type: 'checkbox' as 'text' | 'number' | 'select' | 'checkbox',
                 required: false,
