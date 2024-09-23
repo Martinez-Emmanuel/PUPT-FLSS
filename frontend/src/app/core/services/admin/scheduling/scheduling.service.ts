@@ -67,10 +67,7 @@ export interface YearLevel {
   curriculum_year: string;
   number_of_sections: number;
   sections: Section[];
-  semester?: {
-    semester: number;
-    courses: Schedule[];  
-  };
+  semesters: Semester[];
 }
 
 
