@@ -21,6 +21,7 @@
   --font-header: "Trajan Pro", serif;
 
   --font-size-xs: 0.65rem;
+  --font-size-xsx: 0.8rem;
   --font-size-sm: 0.875rem;
   --font-size-smx: 0.925rem;
   --font-size-md: 1rem;
@@ -36,6 +37,7 @@
   // Line heights
   --line-height-sm: 1.25;
   --line-height-md: 1.5;
+  --line-height-mdx: 1.6;
   --line-height-lg: 1.75;
 
   // Spacing
@@ -59,6 +61,7 @@
   --border-radius-xl: 2rem;
 
   // Box Shadow
+  --shadow-level-0: 0 2px 4px rgba(0, 0, 0, 0.04);
   --shadow-level-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
   --shadow-level-2: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   --shadow-level-3: 0 10px 20px rgba(0, 0, 0, 0.19),

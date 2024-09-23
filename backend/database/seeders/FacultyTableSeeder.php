@@ -13,14 +13,14 @@ class FacultyTableSeeder extends Seeder
             [
                 'id' => 1,
                 'user_id' => 1,
-                'faculty_email' => 'emmanuel.martinez@example.com',
+                'faculty_email' => 'emmanuellmartinez013@gmail.com',
                 'faculty_type' => 'full-time',
                 'faculty_unit' => '25',
             ],
             [
                 'id' => 2,
                 'user_id' => 4,
-                'faculty_email' => 'adrian.naoe@example.com',
+                'faculty_email' => 'Adriannaoe7@gmail.com',
                 'faculty_type' => 'part-time',
                 'faculty_unit' => '25',
             ],

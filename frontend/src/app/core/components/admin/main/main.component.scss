@@ -29,7 +29,7 @@
     .header-name {
       @include flex-layout($direction: column);
       text-align: center;
-      line-height: var(--line-height-md);
+      line-height: var(--line-height-mdx);
 
       .university-name,
       .system-name {

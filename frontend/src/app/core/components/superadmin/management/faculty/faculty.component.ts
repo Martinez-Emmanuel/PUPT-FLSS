@@ -51,7 +51,7 @@ export class FacultyComponent implements OnInit {
   headerInputFields: InputField[] = [
     {
       type: 'text',
-      label: 'Search Curriculum',
+      label: 'Search Faculty',
       key: 'search',
     },
   ];
