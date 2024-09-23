@@ -1,7 +1,10 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
+import {
+  TableHeaderComponent,
+  InputField,
+} from '../../../../../shared/table-header/table-header.component';
 
 import { fadeAnimation } from '../../../../animations/animations';
 
@@ -11,15 +14,14 @@ import { fadeAnimation } from '../../../../animations/animations';
   imports: [CommonModule, TableHeaderComponent],
   templateUrl: './report-faculty.component.html',
   styleUrls: ['./report-faculty.component.scss'],
-  animations: [fadeAnimation]
+  animations: [fadeAnimation],
 })
 export class ReportFacultyComponent {
   inputFields: InputField[] = [
     {
-      key: 'faculty',
-      type: 'select',
-      label: 'Faculty',
-      options: ['Faculty 1', 'Faculty 2', 'Faculty 3'],
+      type: 'text',
+      label: 'Search Faculty',
+      key: 'search',
     },
   ];
 

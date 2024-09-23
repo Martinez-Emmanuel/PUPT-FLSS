@@ -15,6 +15,8 @@ class ActiveSemester extends Model
         'academic_year_id',
         'semester_id',
         'is_active',
+        'start_date',
+        'end_date',
     ];
 
     public function academicYear()
@@ -26,8 +28,9 @@ class ActiveSemester extends Model
     {
         return $this->belongsTo(Semester::class, 'semester_id', 'semester_id');
     }
+
     public function preferences()
     {
-        return $this->hasMany(Preference::class, 'semester_id');
+        return $this->hasMany(Preference::class, 'active_semester_id', 'active_semester_id');
     }
 }

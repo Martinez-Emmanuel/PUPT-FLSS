@@ -45,7 +45,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   ];
 
   readonly slideshowImages = this.backgroundImages.map(
-    (img) => `assets/images/slideshow/${img.split('/').pop()}`
+    (img) => `assets/images/${img.split('/').pop()}`
   );
 
   currentBackgroundImage: string;

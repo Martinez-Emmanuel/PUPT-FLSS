@@ -13,6 +13,8 @@ return new class extends Migration {
             $table->unsignedInteger('academic_year_id')->nullable();
             $table->unsignedInteger('semester_id')->nullable();
             $table->boolean('is_active')->default(false);
+            $table->date('start_date');
+            $table->date('end_date');
             $table->timestamps();
 
             // Foreign key constraints

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -34,5 +35,10 @@ class CourseAssignment extends Model
     public function sectionCourses()
     {
         return $this->hasMany(SectionCourse::class, 'course_assignment_id', 'course_assignment_id');
+    }
+
+    public function preferences()
+    {
+        return $this->hasMany(Preference::class, 'course_assignment_id', 'course_assignment_id');
     }
 }
