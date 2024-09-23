@@ -25,17 +25,19 @@ class AcademicYearController extends Controller
                 'academic_years.academic_year_id',
                 \DB::raw("CONCAT(academic_years.year_start, '-', academic_years.year_end) as academic_year"),
                 'semesters.semester_id',
-                'semesters.semester as semester_number'
+                'semesters.semester as semester_number',
+                'active_semesters.start_date',  
+                'active_semesters.end_date'   
             )
             ->orderBy('academic_years.year_start')
             ->orderBy('semesters.semester')
             ->get();
-
-        // Group the semesters under their corresponding academic year
+    
+     
         $groupedAcademicYears = [];
-
+    
         foreach ($academicYears as $year) {
-            // If the academic year doesn't exist in the array, initialize it
+           
             if (!isset($groupedAcademicYears[$year->academic_year_id])) {
                 $groupedAcademicYears[$year->academic_year_id] = [
                     'academic_year_id' => $year->academic_year_id,
@@ -43,8 +45,8 @@ class AcademicYearController extends Controller
                     'semesters' => []
                 ];
             }
-
-            // Map the semester_number to the correct label (1 -> "1st Semester", 2 -> "2nd Semester", 3 -> "Summer Semester")
+    
+            
             $semesterLabel = '';
             if ($year->semester_number == 1) {
                 $semesterLabel = '1st Semester';
@@ -53,19 +55,22 @@ class AcademicYearController extends Controller
             } elseif ($year->semester_number == 3) {
                 $semesterLabel = 'Summer Semester';
             }
-
-            // Add the semester to the academic year's 'semesters' array
+    
+            
             $groupedAcademicYears[$year->academic_year_id]['semesters'][] = [
                 'semester_id' => $year->semester_id,
-                'semester_number' => $semesterLabel
+                'semester_number' => $semesterLabel,
+                'start_date' => $year->start_date,  
+                'end_date' => $year->end_date        
             ];
         }
-
-        // Reset keys to make the array a proper list
+    
+  
         $groupedAcademicYears = array_values($groupedAcademicYears);
-
+    
         return response()->json($groupedAcademicYears);
     }
+    
 
 
     public function setActiveAcademicYearAndSemester(Request $request)
