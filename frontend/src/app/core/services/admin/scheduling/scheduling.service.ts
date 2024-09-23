@@ -30,7 +30,7 @@ export interface Curriculum {
 }
 
 export interface Schedule {
-  id: number;
+  course_id: number;
   course_code: string;
   course_title: string;
   lec_hours: number;
@@ -50,12 +50,15 @@ export interface Schedule {
 export interface Semester {
   semester_id: number;
   semester_number: string;
+  courses: Schedule[];
+  semester:number;
 }
 
 export interface AcademicYear {
   academic_year_id: number;
   academic_year: string;
   semesters: Semester[];
+  
 }
 
 export interface YearLevel {
@@ -64,7 +67,10 @@ export interface YearLevel {
   curriculum_year: string;
   number_of_sections: number;
   sections: Section[];
+  semesters: Semester[];
 }
+
+
 
 @Injectable({
   providedIn: 'root',
@@ -173,6 +179,19 @@ export class SchedulingService {
 
   getActiveYearLevelsCurricula(): Observable<any[]> {
     return this.http.get<any[]>(`${this.baseUrl}/active-year-levels-curricula`);
+  }
+  
+  getAssignedCoursesByProgramYearAndSection(programId: number, yearLevel: number, sectionId: number): Observable<any> {
+    return this.http.get<any>(
+      `${this.baseUrl}/get-assigned-courses-sem`, 
+      {
+        params: {
+          programId: programId.toString(),
+          yearLevel: yearLevel.toString(),
+          sectionId: sectionId.toString(),
+        },
+      }
+    );
   }
   
 

@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable, of, Subject } from 'rxjs';
 import { takeUntil, switchMap } from 'rxjs/operators';
@@ -35,13 +35,15 @@ import {
 })
 export class SchedulingComponent implements OnInit, OnDestroy {
   schedules: Schedule[] = [];
-  selectedProgram = '';
+  selectedProgram = '1';
   selectedYear = 1;
   selectedSection = '1';
+  selectedCurriculumId: number | null = null;  // Add this line
 
   activeYear: string = ''; 
-  activeSemester: string = ''; 
-  
+  // activeSemester: string = ''; 
+  activeSemester: number = 0; // Initialize it as a number
+
   private destroy$ = new Subject<void>();
 
   headerInputFields: InputField[] = this.initializeHeaderInputFields();
@@ -78,7 +80,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   constructor(
     private schedulingService: SchedulingService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef 
   ) {}
 
   ngOnInit() {
@@ -93,17 +96,18 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
   private loadActiveYearAndSemester() {
     this.schedulingService
-    .getActiveYearAndSemester()
-    .pipe(takeUntil(this.destroy$))
-    .subscribe({
-      next: ({ activeYear, activeSemester }) => {
-        this.activeYear = activeYear;
-        this.activeSemester = this.mapSemesterNumberToLabel(activeSemester);  
-      },
-      error: this.handleError('Error fetching active year and semester'),
-    });
+      .getActiveYearAndSemester()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: ({ activeYear, activeSemester }) => {
+          this.activeYear = activeYear;
+          this.activeSemester = activeSemester; 
+          console.log('Active Semester Set:', this.activeSemester);
+        },
+        error: this.handleError('Error fetching active year and semester'),
+      });
   }
-
+  
   // Helper function to map the semester number to the corresponding label
   private mapSemesterNumberToLabel(semesterNumber: number): string {
     switch (semesterNumber) {
@@ -117,6 +121,11 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         return 'Unknown Semester';
     }
   }
+
+  get activeSemesterLabel(): string {
+    return this.mapSemesterNumberToLabel(this.activeSemester);
+  }
+  
 
   private loadPrograms() {
     this.schedulingService.getActiveYearLevelsCurricula().subscribe((data) => {
@@ -134,7 +143,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         (p => p.display);
     });
   }
-  
+
   // private initializeComponent() {
   //   this.schedulingService
   //     .getInitialData()
@@ -313,6 +322,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     const selectedProgramDisplay = values['program'];
     const selectedYearLevelDisplay = values['yearLevel'];
   
+    // Find the selected program
     const selectedProgram = this.programOptions.find(
       p => p.display === selectedProgramDisplay
     );
@@ -320,46 +330,124 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     if (selectedProgram) {
       console.log('Selected Program ID:', selectedProgram.id);
       this.yearLevelOptions = selectedProgram.year_levels;
-
-      console.log('Available Year Levels:', this.yearLevelOptions);
-
-      this.headerInputFields
-      .find(field => field.key === 'yearLevel')!
-      .options = this.yearLevelOptions.map(
+  
+      // Set the options for year level select dropdown
+      this.headerInputFields.find(
+        field => field.key === 'yearLevel')!.options =
+        this.yearLevelOptions.map(
         year => `Year ${year.year_level}`
-      );    
+      );
+    } else {
+      console.log('No program found.');
+      return; // Exit the function if no program is selected
     }
   
-    // If year level is selected, log the corresponding year level ID
-    const selectedYearLevel = this.yearLevelOptions.find
-      (year => `Year ${year.year_level}` === selectedYearLevelDisplay);
+    // Find the selected year level
+    const selectedYearLevel = this.yearLevelOptions.find(
+      year => `Year ${year.year_level}` === selectedYearLevelDisplay
+    );
   
     if (selectedYearLevel) {
       console.log('Selected Year Level:', selectedYearLevel);
   
+      // **Update selectedCurriculumId**
+      this.selectedCurriculumId = selectedYearLevel.curriculum_id; 
+  
       // Set the sections based on the selected year level
       this.sectionOptions = selectedYearLevel.sections;
   
-      this.headerInputFields.find
-        (field => field.key === 'section')!.options = this.sectionOptions.map(
-        section => section.section_name
-      );
+      this.headerInputFields.find(
+        field => field.key === 'section'
+      )!.options = this.sectionOptions.map(section => section.section_name);
   
-      // Log to ensure the correct sections are being displayed
-      console.log('Available Sections for Selected Year Level:',
-      this.sectionOptions);
+      console.log('Available Sections for Selected Year Level:', this.sectionOptions);
+    } else {
+      console.log('No year level found.');
+      return;
     }
   
-    // If a section is selected, log the corresponding section ID
     const selectedSectionDisplay = values['section'];
-    const selectedSection = this.sectionOptions.find
-      (section => section.section_name === selectedSectionDisplay);
+    const selectedSection = this.sectionOptions.find(
+      section => section.section_name === selectedSectionDisplay
+    );
   
     if (selectedSection) {
       console.log('Selected Section ID:', selectedSection.section_id);
+  
+      this.fetchCourses(
+        selectedProgram.id,
+        selectedYearLevel.year_level, 
+        selectedSection.section_id
+      );
+    } else {
+      console.log('No section found.');
     }
   }
   
+
+
+  fetchCourses(programId: number, yearLevel: number, sectionId: number) {
+    this.schedulingService.getAssignedCoursesByProgramYearAndSection(
+      programId, 
+      yearLevel, 
+      sectionId
+    )
+      .subscribe(
+        (response) => {
+          const program = response.programs.find(
+            (p: Program) => p.program_id === programId
+          );
+          console.log('Selected Program:', program);
+  
+          if (program) {
+            // Reset schedules before pushing new data
+            this.schedules = [];
+
+            const selectedYearLevel = program.year_levels.find(
+              (yearLevelData: YearLevel) => 
+                yearLevelData.year_level === yearLevel && 
+                yearLevelData.curriculum_id === this.selectedCurriculumId 
+            );
+  
+            if (selectedYearLevel) {
+              console.log('Selected Year Level:', selectedYearLevel);
+  
+              // Iterate through each semester within the selected year level
+              selectedYearLevel.semesters.forEach((semester: Semester) => {
+                console.log('Semester:', semester);
+  
+                // Only consider courses from the active semester
+                if (semester.semester === this.activeSemester) {
+                  if (semester.courses && semester.courses.length > 0) {
+                    // Add courses to the schedules array
+                    this.schedules.push(...semester.courses);
+                    console.log('Courses added:', semester.courses);
+                  } else {
+                    console.log('No courses found for this semester');
+                  }
+                }
+              });
+            } else {
+              console.error(
+                'No matching year level found for the selected curriculum'
+              );
+            }
+  
+            // Log final schedules after filtering
+            console.log('Final Schedules:', this.schedules);
+          } else {
+            console.error('No program found');
+          }
+        },
+        (error) => {
+          console.error('Error fetching courses', error);
+          this.snackBar.open('Failed to fetch courses. Please try again.', 'Close', {
+            duration: 3000,
+          });
+        }
+      );
+  }
+   
   openEditDialog(element: Schedule) {
     const dialogConfig: DialogConfig = {
       title: 'Edit Schedule Details',
@@ -409,20 +497,20 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         room: element.room || '',
       },
     };
-  
+
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: dialogConfig,
       disableClose: true,
       autoFocus: false,
     });
-  
+
     dialogRef.componentInstance.startTimeChange.subscribe(
       (startTime: string) => {
       const startIndex = this.timeOptions.indexOf(startTime);
       const validEndTimes = this.timeOptions.slice(startIndex + 1);
       dialogRef.componentInstance.updateEndTimeOptions(validEndTimes);
     });
-  
+
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         const updatedSchedule: Schedule = {
@@ -434,91 +522,113 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       }
     });
   }
-  
+
 
   openActiveYearSemesterDialog() {
     this.schedulingService.getAcademicYears().subscribe(
       (academicYears: AcademicYear[]) => {
-
-      const academicYearOptions = academicYears.map
-        ((year: AcademicYear) => year.academic_year); 
+        const academicYearOptions = academicYears.map(
+          (year: AcademicYear) => year.academic_year
+        );
+ 
+        if (academicYears[0]?.semesters?.length) {
+          const semesterOptions = academicYears[0]?.semesters.map(
+            (semester: Semester) => semester.semester_number 
+          );
   
-      const semesterOptions = academicYears[0]?.semesters.map
-      ((semester: Semester) => semester.semester_number); 
+          const fields = [
+            {
+              label: 'Academic Year',
+              formControlName: 'academicYear',
+              type: 'select',
+              options: academicYearOptions,
+              required: true,
+            },
+            {
+              label: 'Semester',
+              formControlName: 'semester',
+              type: 'select',
+              options: semesterOptions,
+              required: true,
+            },
+          ];
   
-      const fields = [
-        {
-          label: 'Academic Year',
-          formControlName: 'academicYear',
-          type: 'select',
-          options: academicYearOptions, 
-          required: true,
-        },
-        {
-          label: 'Semester',
-          formControlName: 'semester',
-          type: 'select',
-          options: semesterOptions, 
-          required: true,
-        },
-      ];
+          const initialValue = {
+            academicYear: this.activeYear || academicYearOptions[0] || '',
+            semester: this.activeSemesterLabel || semesterOptions[0] || '',
+          };
   
-      const initialValue = {
-        academicYear: this.activeYear || academicYearOptions[0] || '', 
-        semester: this.activeSemester || semesterOptions[0] || '', 
-      };
+          const dialogRef = this.dialog.open(TableDialogComponent, {
+            data: {
+              title: 'Set Active Year and Semester',
+              fields: fields,
+              initialValue: initialValue,
+            },
+            disableClose: true,
+          });
   
-      const dialogRef = this.dialog.open(TableDialogComponent, {
-        data: {
-          title: 'Set Active Year and Semester', 
-          fields: fields,
-          initialValue: initialValue,
-        },
-        disableClose: true,
-      });
-
-      dialogRef.componentInstance.form.get
-        ('academicYear')?.valueChanges.subscribe((selectedYear: string) => {
-        const selectedYearObj = academicYears.find
-          ((year) => year.academic_year === selectedYear);
-        if (selectedYearObj) {
-          dialogRef.componentInstance.form.get('semester')?.setValue(null); 
-          dialogRef.componentInstance.data.fields[1].options = selectedYearObj
-          .semesters.map(
-            (semester: Semester) => semester.semester_number
+          dialogRef.componentInstance.form
+            .get('academicYear')
+            ?.valueChanges.subscribe((selectedYear: string) => {
+              const selectedYearObj = academicYears.find(
+                (year) => year.academic_year === selectedYear
+              );
+              if (selectedYearObj) {
+                dialogRef.componentInstance.form.get('semester')?.setValue(null);
+                dialogRef.componentInstance.data.fields[1].options =
+                  selectedYearObj.semesters.map(
+                    (semester: Semester) => semester.semester_number 
+                  );
+              }
+            });
+  
+          dialogRef.afterClosed().subscribe((result) => {
+            if (result) {
+              const selectedYearObj = academicYears.find(
+                (year) => year.academic_year === result.academicYear
+              );
+              const selectedSemesterObj = selectedYearObj?.semesters.find(
+                (semester) => semester.semester_number === result.semester
+              );
+  
+              if (selectedYearObj && selectedSemesterObj) {
+                this.schedulingService
+                  .setActiveYearAndSemester(
+                    selectedYearObj.academic_year_id,
+                    selectedSemesterObj.semester_id 
+                  )
+                  .pipe(takeUntil(this.destroy$))
+                  .subscribe({
+                    next: () => {
+                      this.activeYear = result.academicYear;
+                      this.activeSemester = selectedSemesterObj.semester_id; 
+  
+                      this.loadPrograms();
+                      this.cdr.detectChanges();
+  
+                      this.snackBar.open(
+                        'Active year and semester updated successfully',
+                        'Close',
+                        {
+                          duration: 3000,
+                        }
+                      );
+                      // Optionally reload the entire page
+                      window.location.reload();
+                    },
+                    error: this.handleError(
+                      'Error setting active year and semester'
+                    ),
+                  });
+              }
+            }
+          });
+        } else {
+          console.error(
+            'No semesters available for the selected academic year.'
           );
         }
-      });
-
-      dialogRef.afterClosed().subscribe((result) => {
-        if (result) {
-          const selectedYearObj = academicYears.find
-          ((year) => year.academic_year === result.academicYear);
-          const selectedSemesterObj = selectedYearObj?.semesters.find
-          ((semester) => semester.semester_number === result.semester);
-  
-          if (selectedYearObj && selectedSemesterObj) {
-          this.schedulingService
-            .setActiveYearAndSemester
-            (selectedYearObj.academic_year_id,
-              selectedSemesterObj.semester_id
-            ) 
-            .pipe(takeUntil(this.destroy$)) 
-            .subscribe({
-            next: () => {
-              this.activeYear = result.academicYear;
-              this.activeSemester = result.semester;
-              this.snackBar.open(
-                'Active year and semester updated successfully', 
-                'Close', {
-                    duration: 3000,
-                  });
-            },
-            error: this.handleError('Error setting active year and semester'), 
-            });
-          }
-        }
-      });
-    });
+      }
+    );
   }
-}  
+}
