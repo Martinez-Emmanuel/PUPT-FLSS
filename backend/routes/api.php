@@ -16,6 +16,7 @@ use App\Http\Controllers\ProgramFetchController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\SchedulingController;
+use App\Http\Controllers\ScheduleController;
 
 
 // Public routes
@@ -41,7 +42,8 @@ Route::post('/subj-schedule-set', [FacultyController::class, 'sendSubjectsSchedu
 Route::get('/get-assigned-courses', [AcademicYearController::class, 'getAssignedCourses']);
 Route::get('/get-assigned-courses-sem', [AcademicYearController::class, 'getAssignedCoursesBySem']);
 
-
+Route::get('/populate-schedules', [ScheduleController::class, 'autoAssignCoursesToSections']);
+Route::post('/assign-schedule', [SchedulingController::class, 'assignSchedule']);
 //Get all Program and Year Level and Semester with year for superadmin
 Route::get('/curricula-details/{curriculumYear}/', [CurriculumDetailsController::class, 'getCurriculumDetails']);
 
