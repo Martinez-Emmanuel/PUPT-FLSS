@@ -1,4 +1,12 @@
 <div class="scheduling-container">
+  <!--Display while loading-->
+  @if (isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
+
+  <!--Scheduling Header-->
   <div class="scheduling-header-container" [@fadeAnimation]>
     <app-table-header
       [inputFields]="headerInputFields"
@@ -18,6 +26,7 @@
     ></app-table-header>
   </div>
 
+  <!--Scheduling Table-->
   <div class="scheduling-table-container" [@pageFloatUpAnimation]>
     <div class="table-container">
       <table mat-table [dataSource]="schedules" class="custom-table">
@@ -141,4 +150,5 @@
       </table>
     </div>
   </div>
+  }
 </div>

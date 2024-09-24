@@ -1,16 +1,18 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable, Subject, forkJoin, of } from 'rxjs';
-import { takeUntil, switchMap, tap } from 'rxjs/operators';
+import { takeUntil, switchMap, tap, map, catchError } from 'rxjs/operators';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 import { TableHeaderComponent, InputField } from '../../../../shared/table-header/table-header.component';
 import { TableDialogComponent, DialogConfig } from '../../../../shared/table-dialog/table-dialog.component';
+import { LoadingComponent } from '../../../../shared/loading/loading.component';
 import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
 
 import { SchedulingService, Schedule, Program, AcademicYear, Semester, YearLevel } from '../../../services/admin/scheduling/scheduling.service';
@@ -38,9 +40,11 @@ interface SectionOption {
   imports: [
     CommonModule,
     TableHeaderComponent,
+    LoadingComponent,
     MatTableModule,
     MatButtonModule,
     MatIconModule,
+    MatProgressBarModule,
   ],
   templateUrl: './scheduling.component.html',
   styleUrls: ['./scheduling.component.scss'],
@@ -77,6 +81,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
   displayedColumns: string[] = [];
   headerInputFields: InputField[] = [];
+  isLoading = true;
 
   private destroy$ = new Subject<void>();
 
@@ -92,16 +97,19 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     this.initializeDisplayedColumns();
     this.generateTimeOptions();
 
-    // Load active year/semester and programs in parallel, then set defaults
+    // Load active year/semester and programs in parallel, then set defaults and fetch courses
     forkJoin({
       activeYearSemester: this.loadActiveYearAndSemester(),
       programs: this.loadPrograms(),
     })
       .pipe(
         takeUntil(this.destroy$),
-        tap(() => this.setDefaultSelections())
+        switchMap(() => this.setDefaultSelections())
       )
       .subscribe({
+        next: () => {
+          this.isLoading = false;
+        },
         error: this.handleError('Error initializing scheduling component'),
       });
   }
@@ -166,7 +174,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         this.activeSemester = activeSemester;
         console.log('Active Semester Set:', this.activeSemester);
       }),
-      switchMap(() => of(void 0)) // Convert to Observable<void>
+      map(() => void 0)
     );
   }
 
@@ -186,7 +194,11 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           (field) => field.key === 'program'
         )!.options = this.programOptions.map((p) => p.display);
       }),
-      switchMap(() => of(this.programOptions))
+      map(() => this.programOptions),
+      catchError((error) => {
+        this.handleError('Failed to load programs')(error);
+        return of([]);
+      })
     );
   }
 
@@ -194,7 +206,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   // Selection and Data Handling
   // ====================
 
-  private setDefaultSelections(): void {
+  private setDefaultSelections(): Observable<void> {
     if (this.programOptions.length > 0) {
       const defaultProgram = this.programOptions[0];
       this.selectedProgram = defaultProgram.display;
@@ -218,16 +230,17 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           this.selectedSection = this.sectionOptions[0].section_name;
         }
 
-        this.onInputChange({
+        return this.onInputChange({
           program: this.selectedProgram,
           yearLevel: this.selectedYear,
           section: this.selectedSection,
         });
       }
     }
+    return of(void 0);
   }
 
-  onInputChange(values: { [key: string]: any }): void {
+  onInputChange(values: { [key: string]: any }): Observable<void> {
     const selectedProgramDisplay = values['program'];
     const selectedYearLevel = values['yearLevel'];
     const selectedSectionDisplay = values['section'];
@@ -238,7 +251,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
     if (!selectedProgram) {
       console.log('No program found.');
-      return;
+      return of(void 0);
     }
 
     console.log('Selected Program ID:', selectedProgram.id);
@@ -253,7 +266,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
     if (!selectedYearLevelObj) {
       console.log('No year level found.');
-      return;
+      return of(void 0);
     }
 
     console.log('Selected Year Level:', selectedYearLevelObj);
@@ -274,32 +287,27 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
     if (!selectedSection) {
       console.log('No section found.');
-      return;
+      return of(void 0);
     }
 
     console.log('Selected Section ID:', selectedSection.section_id);
 
-    this.fetchCourses(
+    return this.fetchCourses(
       selectedProgram.id,
       selectedYearLevel,
       selectedSection.section_id
-    );
+    ).pipe(map(() => void 0));
   }
 
   private fetchCourses(
     programId: number,
     yearLevel: number,
     sectionId: number
-  ): void {
-    this.schedulingService
-      .getAssignedCoursesByProgramYearAndSection(
-        programId,
-        yearLevel,
-        sectionId
-      )
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (response) => {
+  ): Observable<Schedule[]> {
+    return this.schedulingService
+      .getAssignedCoursesByProgramYearAndSection(programId, yearLevel, sectionId)
+      .pipe(
+        tap((response) => {
           const program = response.programs.find(
             (p: Program) => p.program_id === programId
           );
@@ -341,9 +349,13 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           });
 
           console.log('Final Schedules:', this.schedules);
-        },
-        error: this.handleError('Failed to fetch courses'),
-      });
+        }),
+        map(() => this.schedules),
+        catchError((error) => {
+          this.handleError('Failed to fetch courses')(error);
+          return of([]);
+        })
+      );
   }
 
   // ====================
