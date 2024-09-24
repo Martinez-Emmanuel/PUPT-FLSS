@@ -26,18 +26,16 @@ class AcademicYearController extends Controller
                 \DB::raw("CONCAT(academic_years.year_start, '-', academic_years.year_end) as academic_year"),
                 'semesters.semester_id',
                 'semesters.semester as semester_number',
-                'active_semesters.start_date',  
-                'active_semesters.end_date'   
+                'active_semesters.start_date',
+                'active_semesters.end_date'
             )
-            ->orderBy('academic_years.year_start')
+            ->orderBy('academic_years.year_start', 'desc')
             ->orderBy('semesters.semester')
             ->get();
     
-     
         $groupedAcademicYears = [];
     
         foreach ($academicYears as $year) {
-           
             if (!isset($groupedAcademicYears[$year->academic_year_id])) {
                 $groupedAcademicYears[$year->academic_year_id] = [
                     'academic_year_id' => $year->academic_year_id,
@@ -46,7 +44,6 @@ class AcademicYearController extends Controller
                 ];
             }
     
-            
             $semesterLabel = '';
             if ($year->semester_number == 1) {
                 $semesterLabel = '1st Semester';
@@ -56,22 +53,20 @@ class AcademicYearController extends Controller
                 $semesterLabel = 'Summer Semester';
             }
     
-            
             $groupedAcademicYears[$year->academic_year_id]['semesters'][] = [
                 'semester_id' => $year->semester_id,
                 'semester_number' => $semesterLabel,
-                'start_date' => $year->start_date,  
-                'end_date' => $year->end_date        
+                'start_date' => $year->start_date,
+                'end_date' => $year->end_date
             ];
         }
     
-  
         $groupedAcademicYears = array_values($groupedAcademicYears);
     
         return response()->json($groupedAcademicYears);
     }
     
-
+    
 
     public function setActiveAcademicYearAndSemester(Request $request)
     {
