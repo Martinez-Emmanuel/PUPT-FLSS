@@ -212,6 +212,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       this.selectedProgram = defaultProgram.display;
       this.yearLevelOptions = defaultProgram.year_levels;
 
+      this.headerInputFields.find((field) => field.key === 'program')!.options =
+        this.programOptions.map((p) => p.display);
+
       this.headerInputFields.find(
         (field) => field.key === 'yearLevel'
       )!.options = this.yearLevelOptions.map((year) => year.year_level);
@@ -230,17 +233,17 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           this.selectedSection = this.sectionOptions[0].section_name;
         }
 
-        return this.onInputChange({
-          program: this.selectedProgram,
-          yearLevel: this.selectedYear,
-          section: this.selectedSection,
-        });
+        return this.fetchCourses(
+          defaultProgram.id,
+          this.selectedYear,
+          this.sectionOptions[0].section_id
+        ).pipe(map(() => void 0));
       }
     }
     return of(void 0);
   }
 
-  onInputChange(values: { [key: string]: any }): Observable<void> {
+  onInputChange(values: { [key: string]: any }): void {
     const selectedProgramDisplay = values['program'];
     const selectedYearLevel = values['yearLevel'];
     const selectedSectionDisplay = values['section'];
@@ -251,7 +254,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
     if (!selectedProgram) {
       console.log('No program found.');
-      return of(void 0);
+      return;
     }
 
     console.log('Selected Program ID:', selectedProgram.id);
@@ -266,7 +269,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
     if (!selectedYearLevelObj) {
       console.log('No year level found.');
-      return of(void 0);
+      return;
     }
 
     console.log('Selected Year Level:', selectedYearLevelObj);
@@ -287,16 +290,21 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
     if (!selectedSection) {
       console.log('No section found.');
-      return of(void 0);
+      return;
     }
 
     console.log('Selected Section ID:', selectedSection.section_id);
 
-    return this.fetchCourses(
+    this.fetchCourses(
       selectedProgram.id,
       selectedYearLevel,
       selectedSection.section_id
-    ).pipe(map(() => void 0));
+    ).subscribe({
+      next: () => {
+        // TODO: perform any additional actions after fetching courses
+      },
+      error: this.handleError('Failed to fetch courses'),
+    });
   }
 
   private fetchCourses(
@@ -305,7 +313,11 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     sectionId: number
   ): Observable<Schedule[]> {
     return this.schedulingService
-      .getAssignedCoursesByProgramYearAndSection(programId, yearLevel, sectionId)
+      .getAssignedCoursesByProgramYearAndSection(
+        programId,
+        yearLevel,
+        sectionId
+      )
       .pipe(
         tap((response) => {
           const program = response.programs.find(
@@ -534,18 +546,23 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                         this.activeSemester = selectedSemesterObj.semester_id;
 
                         this.loadPrograms()
-                          .pipe(tap(() => this.setDefaultSelections()))
-                          .subscribe();
+                          .pipe(switchMap(() => this.setDefaultSelections()))
+                          .subscribe({
+                            next: () => {
+                              this.cdr.detectChanges();
 
-                        this.cdr.detectChanges();
-
-                        this.snackBar.open(
-                          'Active year and semester updated successfully',
-                          'Close',
-                          {
-                            duration: 3000,
-                          }
-                        );
+                              this.snackBar.open(
+                                'Active year and semester has been updated successfully!',
+                                'Close',
+                                {
+                                  duration: 3000,
+                                }
+                              );
+                            },
+                            error: this.handleError(
+                              'Error loading programs after setting active year and semester'
+                            ),
+                          });
                       },
                       error: this.handleError(
                         'Error setting active year and semester'
