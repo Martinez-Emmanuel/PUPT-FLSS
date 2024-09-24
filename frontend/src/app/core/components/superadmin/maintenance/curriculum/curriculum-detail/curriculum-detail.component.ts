@@ -48,7 +48,7 @@ export class CurriculumDetailComponent implements OnInit {
   public selectedProgram: string = '';
   public selectedYear: number = 1;
   public selectedSemesters: Semester[] = [];
-  public ccustomExportOptions: { all: string; current: string } | null = null;
+  public customExportOptions: { all: string; current: string } | null = null;
   private destroy$ = new Subject<void>();
   public loading: boolean = true;
 
@@ -107,7 +107,9 @@ export class CurriculumDetailComponent implements OnInit {
      }
 
      // Fetch all programs when the component initializes
+     
      this.fetchAllPrograms();
+     
   }
  
   fetchAllPrograms() {
@@ -156,6 +158,7 @@ export class CurriculumDetailComponent implements OnInit {
               this.updateHeaderInputFields();
               this.updateProgramDropdown(this.selectedPrograms);
               this.updateSelectedSemesters();
+              this.updateCustomExportOptions();
             },
             error: (error) => {
               console.error('Error fetching associated programs:', error);
@@ -260,6 +263,7 @@ export class CurriculumDetailComponent implements OnInit {
     if (values['program'] !== undefined) {
       this.selectedProgram = values['program'];
       this.updateHeaderInputFields();
+      this.updateCustomExportOptions(); // Add this line to update export options
       console.log('Updated selectedProgram:', this.selectedProgram);
     }
 
@@ -774,11 +778,15 @@ export class CurriculumDetailComponent implements OnInit {
 
   //export
   showPreview: boolean = false;
-  customExportOptions = {
-    all: 'Export entire curriculum',
-    current: 'Export selected program'
-  };
+  updateCustomExportOptions() {
+    this.customExportOptions = {
+      all: 'Export entire curriculum',
+      current: `Export ${this.selectedProgram} program curriculum`
+    };
+    this.cdr.detectChanges();
+  }
 
+  
   onExport(option: string | undefined) : void {
     if (option === 'all') {
       // Export all programs
@@ -788,7 +796,6 @@ export class CurriculumDetailComponent implements OnInit {
       this.generatePDF(true, false);  // `exportAll` set to false
     }
   }
-
   generatePDF(showPreview: boolean = false, exportAll: boolean = false): void {
     const doc = new jsPDF('p', 'mm', 'letter') as any;
     const pageWidth = doc.internal.pageSize.width;
@@ -868,7 +875,9 @@ export class CurriculumDetailComponent implements OnInit {
       return;
     }
 
-    for (const yearLevel of program.year_levels) {
+    const sortedYearLevels = program.year_levels.sort((a, b) => a.year - b.year);
+
+    for (const yearLevel of sortedYearLevels) {
       let yearLevelHasCourses = false;
 
       for (const semester of yearLevel.semesters) {
@@ -895,7 +904,9 @@ export class CurriculumDetailComponent implements OnInit {
         doc.text(`${program.name} - ${yearLevel.year}`, 10, currentY);
         currentY += 7;
 
-        for (const semester of yearLevel.semesters) {
+        const sortedSemesters = yearLevel.semesters.sort((a, b) => a.semester - b.semester);
+
+        for (const semester of sortedSemesters) {
           const tableData = semester.courses.map((course) => [
             course.course_code || 'N/A',
             course.pre_req || 'None',
