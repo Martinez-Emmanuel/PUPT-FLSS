@@ -14,10 +14,10 @@ import { TableDialogComponent, DialogConfig } from '../../../../shared/table-dia
 import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
 
 import {
-   SchedulingService, Schedule,
-    Program, AcademicYear, 
-    Semester, YearLevel 
-  } from '../../../services/admin/scheduling/scheduling.service';
+  SchedulingService, Schedule,
+  Program, AcademicYear,
+  Semester, YearLevel
+} from '../../../services/admin/scheduling/scheduling.service';
 
 @Component({
   selector: 'app-scheduling',
@@ -36,13 +36,12 @@ import {
 export class SchedulingComponent implements OnInit, OnDestroy {
   schedules: Schedule[] = [];
   selectedProgram = '1';
-  selectedYear: string = '1'; // Changed from number to string
+  selectedYear: number = 1; // Maintain as number
   selectedSection = '1';
-  selectedCurriculumId: number | null = null;  // Add this line
+  selectedCurriculumId: number | null = null;
 
-  activeYear: string = ''; 
-  // activeSemester: string = ''; 
-  activeSemester: number = 0; // Initialize it as a number
+  activeYear: string = '';
+  activeSemester: number = 0; // Initialize as number
 
   private destroy$ = new Subject<void>();
 
@@ -102,37 +101,38 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       const defaultProgram = this.programOptions[0];
       this.selectedProgram = defaultProgram.display;
       this.yearLevelOptions = defaultProgram.year_levels;
-
+  
       // Set the options for year level select dropdown
       this.headerInputFields.find(field => field.key === 'yearLevel')!.options =
-        this.yearLevelOptions.map(year => `${year.year_level}`);
-
+        this.yearLevelOptions.map(year => year.year_level); // Keep as number
+  
       // Select the first year level by default
       if (this.yearLevelOptions.length > 0) {
         const defaultYearLevel = this.yearLevelOptions[0];
-        this.selectedYear = defaultYearLevel.year_level.toString(); // Changed to string
+        this.selectedYear = defaultYearLevel.year_level; // Number
         this.selectedCurriculumId = defaultYearLevel.curriculum_id;
         this.sectionOptions = defaultYearLevel.sections;
-
+  
         // Set the sections dropdown options
         this.headerInputFields.find(
           field => field.key === 'section'
         )!.options = this.sectionOptions.map(section => section.section_name);
-
+  
         // Select the first section by default
         if (this.sectionOptions.length > 0) {
           this.selectedSection = this.sectionOptions[0].section_name;
         }
-
+  
         // Trigger input change to fetch the schedules
         this.onInputChange({
           program: this.selectedProgram,
-          yearLevel: this.selectedYear, // Already a string
+          yearLevel: this.selectedYear, // Number
           section: this.selectedSection,
         });
       }
     }
   }
+  
 
 
   private loadActiveYearAndSemester() {
@@ -187,8 +187,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       if (callback) {
         callback();
       }
-    });
+    }, this.handleError('Error loading programs'));
   }
+  
   
   private handleError(message: string) {
     return (error: any) => {
@@ -248,7 +249,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
   onInputChange(values: { [key: string]: any }) {
     const selectedProgramDisplay = values['program'];
-    const selectedYearLevelDisplay = values['yearLevel'];
+    const selectedYearLevel = values['yearLevel']; // Number
+    const selectedSectionDisplay = values['section'];
 
     // Find the selected program
     const selectedProgram = this.programOptions.find(
@@ -263,7 +265,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       this.headerInputFields.find(
         field => field.key === 'yearLevel')!.options =
         this.yearLevelOptions.map(
-        year => `${year.year_level}`
+        year => year.year_level // Numbers
       );
     } else {
       console.log('No program found.');
@@ -271,18 +273,18 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     }
 
     // Find the selected year level
-    const selectedYearLevel = this.yearLevelOptions.find(
-      year => `${year.year_level}` === selectedYearLevelDisplay
+    const selectedYearLevelObj = this.yearLevelOptions.find(
+      year => year.year_level === selectedYearLevel
     );
 
-    if (selectedYearLevel) {
-      console.log('Selected Year Level:', selectedYearLevel);
+    if (selectedYearLevelObj) {
+      console.log('Selected Year Level:', selectedYearLevelObj);
 
       // **Update selectedCurriculumId**
-      this.selectedCurriculumId = selectedYearLevel.curriculum_id; 
+      this.selectedCurriculumId = selectedYearLevelObj.curriculum_id; 
 
       // Set the sections based on the selected year level
-      this.sectionOptions = selectedYearLevel.sections;
+      this.sectionOptions = selectedYearLevelObj.sections;
 
       this.headerInputFields.find(
         field => field.key === 'section'
@@ -294,7 +296,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const selectedSectionDisplay = values['section'];
     const selectedSection = this.sectionOptions.find(
       section => section.section_name === selectedSectionDisplay
     );
@@ -304,7 +305,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
       this.fetchCourses(
         selectedProgram.id,
-        parseInt(selectedYearLevel.year_level.toString(), 10), // Ensure it's a number
+        selectedYearLevel, // Number
         selectedSection.section_id
       );
     } else {
@@ -458,12 +459,12 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         const academicYearOptions = academicYears.map(
           (year: AcademicYear) => year.academic_year
         );
- 
+  
         if (academicYears[0]?.semesters?.length) {
           const semesterOptions = academicYears[0]?.semesters.map(
             (semester: Semester) => semester.semester_number 
           );
-
+  
           const fields = [
             {
               label: 'Academic Year',
@@ -480,12 +481,12 @@ export class SchedulingComponent implements OnInit, OnDestroy {
               required: true,
             },
           ];
-
+  
           const initialValue = {
             academicYear: this.activeYear || academicYearOptions[0] || '',
             semester: this.activeSemesterLabel || semesterOptions[0] || '',
           };
-
+  
           const dialogRef = this.dialog.open(TableDialogComponent, {
             data: {
               title: 'Set Active Year and Semester',
@@ -494,7 +495,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
             },
             disableClose: true,
           });
-
+  
           dialogRef.componentInstance.form
             .get('academicYear')
             ?.valueChanges.subscribe((selectedYear: string) => {
@@ -509,7 +510,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                   );
               }
             });
-
+  
           dialogRef.afterClosed().subscribe((result) => {
             if (result) {
               const selectedYearObj = academicYears.find(
@@ -518,7 +519,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
               const selectedSemesterObj = selectedYearObj?.semesters.find(
                 (semester) => semester.semester_number === result.semester
               );
-
+  
               if (selectedYearObj && selectedSemesterObj) {
                 this.schedulingService
                   .setActiveYearAndSemester(
@@ -530,10 +531,14 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                     next: () => {
                       this.activeYear = result.academicYear;
                       this.activeSemester = selectedSemesterObj.semester_id; 
-
-                      this.loadPrograms();
+  
+                      // **Pass setDefaultSelections as a callback here**
+                      this.loadPrograms(() => {
+                        this.setDefaultSelections();
+                      });
+  
                       this.cdr.detectChanges();
-
+  
                       this.snackBar.open(
                         'Active year and semester updated successfully',
                         'Close',
@@ -541,8 +546,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                           duration: 3000,
                         }
                       );
-                      // Optionally reload the entire page
-                      window.location.reload();
+                      // Removed window.location.reload();
                     },
                     error: this.handleError(
                       'Error setting active year and semester'
@@ -559,4 +563,5 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       }
     );
   }
+  
 }
