@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subject, takeUntil } from 'rxjs';
+import { forkJoin, Subject, takeUntil } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
@@ -15,6 +15,7 @@ import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-ge
 import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
 import { CurriculumService } from '../../../services/superadmin/curriculum/curriculum.service';
 import { YearLevel, Program, SchedulingService } from '../../../services/admin/scheduling/scheduling.service';
+import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 @Component({
   selector: 'app-academic-year',
@@ -25,6 +26,7 @@ import { YearLevel, Program, SchedulingService } from '../../../services/admin/s
     MatTableModule,
     MatButtonModule,
     MatIconModule,
+    LoadingComponent,
   ],
   templateUrl: './academic-year.component.html',
   styleUrls: ['./academic-year.component.scss'],
@@ -32,11 +34,11 @@ import { YearLevel, Program, SchedulingService } from '../../../services/admin/s
 })
 export class AcademicYearComponent implements OnInit, OnDestroy {
   programs: Program[] = [];
-  academicYearOptions: { academic_year_id: number; academic_year: string }[] =
-    [];
+  academicYearOptions: { academic_year_id: number; academic_year: string }[] = [];
   selectedAcademicYear = '';
   selectedAcademicYearId: number | null = null;
   private destroy$ = new Subject<void>();
+  isLoading = true;
 
   headerInputFields: InputField[] = [
     {
@@ -64,12 +66,53 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.loadAcademicYears();
+    this.loadData();
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  loadData() {
+    this.isLoading = true;
+    forkJoin({
+      academicYears: this.schedulingService.getAcademicYears(),
+      curricula: this.curriculumService.getCurricula()
+    }).pipe(takeUntil(this.destroy$)).subscribe(
+      ({ academicYears, curricula }) => {
+        this.academicYearOptions = academicYears.map((ay) => ({
+          academic_year_id: ay.academic_year_id,
+          academic_year: ay.academic_year,
+        }));
+
+        this.headerInputFields[0].options = this.academicYearOptions.map(
+          (ay) => ay.academic_year
+        );
+
+        if (this.academicYearOptions.length > 0) {
+          const latestAcademicYear = this.academicYearOptions[0].academic_year;
+          const latestAcademicYearId = this.academicYearOptions[0].academic_year_id;
+
+          this.selectedAcademicYear = latestAcademicYear;
+          this.selectedAcademicYearId = latestAcademicYearId;
+
+          this.fetchProgramsForAcademicYear(latestAcademicYear);
+        } else {
+          this.isLoading = false;
+          this.snackBar.open('No academic years available.', 'Close', {
+            duration: 3000,
+          });
+        }
+      },
+      (error) => {
+        this.isLoading = false;
+        console.error('Error loading data:', error);
+        this.snackBar.open('Failed to load data.', 'Close', {
+          duration: 3000,
+        });
+      }
+    );
   }
 
   loadAcademicYears() {
@@ -123,6 +166,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     );
 
     if (!selectedYear) {
+      this.isLoading = false;
       return;
     }
 
@@ -144,8 +188,10 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
               sections: this.getSectionsByProgram(program),
             }));
           }
+          this.isLoading = false;
         },
         (error) => {
+          this.isLoading = false;
           console.error('Error fetching program details: ', error);
           this.snackBar.open('Failed to fetch program details.', 'Close', {
             duration: 3000,
