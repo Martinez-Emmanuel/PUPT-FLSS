@@ -127,6 +127,10 @@ span[mat-symbol] {
   user-select: none;
 }
 
+.loading-wrapper {
+  height: 100%;
+}
+
 .dialog-generic-logout {
   width: var(--dialog-small);
 }
