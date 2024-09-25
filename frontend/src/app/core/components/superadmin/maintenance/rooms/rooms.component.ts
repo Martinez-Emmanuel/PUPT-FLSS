@@ -247,7 +247,7 @@ export class RoomsComponent implements OnInit {
           label: 'Status',
           formControlName: 'status',
           type: 'select',
-          options: ['Active', 'Inactive'],
+          options: ['Available', 'Unavailable'],
           required: true,
         },
       ],
@@ -291,9 +291,7 @@ export class RoomsComponent implements OnInit {
             result.room_id = room.room_id;
         }
         this.updateRoom(result);
-    } else {
-        console.error('Dialog result is null or no room selected');
-    }
+    } 
   });
   }
 
