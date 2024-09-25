@@ -72,36 +72,44 @@ class AcademicYearController extends Controller
     {
         $academicYearId = $request->input('academic_year_id');
         $semesterId = $request->input('semester_id');
-
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+    
         // Validate the incoming request
         $request->validate([
             'academic_year_id' => 'required|integer|exists:academic_years,academic_year_id',
             'semester_id' => 'required|integer|exists:semesters,semester_id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
         ]);
-
+    
         // Deactivate all current active semesters
         ActiveSemester::query()->update(['is_active' => 0]);
-
+    
         // Deactivate all academic years
         DB::table('academic_years')->update(['is_active' => 0]);
-
+    
         // Update the given academic year and semester to active in ActiveSemester
         ActiveSemester::where('academic_year_id', $academicYearId)
             ->where('semester_id', $semesterId)
-            ->update(['is_active' => 1]);
-
+            ->update([
+                'is_active' => 1,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ]);
+    
         // Activate the selected academic year
         DB::table('academic_years')
             ->where('academic_year_id', $academicYearId)
             ->update(['is_active' => 1]);
-
+    
         return response()->json([
             'message' => 'Active academic year and semester updated successfully',
             'academic_year_id' => $academicYearId,
             'semester_id' => $semesterId
         ]);
     }
-
+    
 
     public function getActiveYearLevelsCurricula()
     {
@@ -751,19 +759,21 @@ class AcademicYearController extends Controller
             ->where('active_semesters.is_active', 1)
             ->select(
                 DB::raw("CONCAT(academic_years.year_start, '-', academic_years.year_end) as academic_year"),
-                'semesters.semester as semester_number'
+                'semesters.semester as semester_number',
+                'active_semesters.start_date',
+                'active_semesters.end_date'
             )
             ->first();
-
+    
         if ($activeSemester) {
             return response()->json([
                 'activeYear' => $activeSemester->academic_year,
-                'activeSemester' => $activeSemester->semester_number
+                'activeSemester' => $activeSemester->semester_number,
+                'startDate' => $activeSemester->start_date,
+                'endDate' => $activeSemester->end_date
             ]);
         }
-
+    
         return response()->json(['message' => 'No active academic year and semester found'], 404);
     }
-
-
 }
