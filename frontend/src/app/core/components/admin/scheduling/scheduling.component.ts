@@ -523,7 +523,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
             disableClose: true,
           });
 
-          // Update semester options and start/end dates when the year changes
+          // Update semester options and start & end dates when the year changes
           dialogRef.componentInstance.form
             .get('academicYear')
             ?.valueChanges.pipe(takeUntil(this.destroy$))
@@ -554,7 +554,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
               }
             });
 
-          // Update start and end date when the semester changes
+          // Update start & end date when the semester changes
           dialogRef.componentInstance.form
             .get('semester')
             ?.valueChanges.pipe(takeUntil(this.destroy$))
@@ -593,12 +593,12 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                 );
 
                 if (selectedYearObj && selectedSemesterObj) {
-                  const formattedStartDate = new Date(result.startDate)
-                    .toISOString()
-                    .split('T')[0];
-                  const formattedEndDate = new Date(result.endDate)
-                    .toISOString()
-                    .split('T')[0];
+                  const formattedStartDate = this.formatDateToYMD(
+                    new Date(result.startDate)
+                  );
+                  const formattedEndDate = this.formatDateToYMD(
+                    new Date(result.endDate)
+                  );
 
                   const loadingSnackbarRef = this.snackBar.open(
                     'Loading...',
@@ -691,5 +691,12 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
   get activeSemesterLabel(): string {
     return this.mapSemesterNumberToLabel(this.activeSemester);
+  }
+
+  private formatDateToYMD(date: Date): string {
+    const year = date.getFullYear();
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const day = date.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }

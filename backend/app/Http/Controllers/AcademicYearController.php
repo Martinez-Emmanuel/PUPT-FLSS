@@ -67,7 +67,6 @@ class AcademicYearController extends Controller
     }
     
     
-
     public function setActiveAcademicYearAndSemester(Request $request)
     {
         $academicYearId = $request->input('academic_year_id');
