@@ -8,44 +8,71 @@ use App\Models\Curriculum;
 
 class ProgramController extends Controller
 {
-    // List all programs
     public function index()
     {
-        $programs = Program::with('curricula', 'yearLevels')->get();
-        return response()->json($programs);
+        $programs = Program::with(['curricula', 'yearLevels'])->get();
+    
+        $formattedPrograms = $programs->map(function ($program) {
+            // Sort curricula by curriculum_year in ascending order
+            $sortedCurricula = $program->curricula->sortBy('curriculum_year');
+    
+            // Sort year levels by year in ascending order
+            $sortedYearLevels = $program->yearLevels->sortBy('year');
+    
+            // Get the curriculum years as an array
+            $curriculumYears = $sortedCurricula->pluck('curriculum_year')->toArray();
+    
+            // Format the program data including curricula_version
+            return [
+                'program_id' => $program->program_id,
+                'program_code' => $program->program_code,
+                'program_title' => $program->program_title,
+                'program_info' => $program->program_info,
+                'number_of_years' => $program->number_of_years,
+                'curricula_version' => implode(', ', $curriculumYears), // Comma-separated list of curriculum years
+                'status' => $program->status,
+                'created_at' => $program->created_at,
+                'updated_at' => $program->updated_at,
+                'curricula' => $sortedCurricula->values()->all(), // Return the sorted curricula
+                'year_levels' => $sortedYearLevels->values()->all() // Return the sorted year levels
+            ];
+        });
+    
+        return response()->json($formattedPrograms);
     }
+    
 
     public function store(Request $request)
-{
-    // Validate the request data
-    $validatedData = $request->validate([
-        'program_code' => 'required|string|max:10',
-        'program_title' => 'required|string|max:100',
-        'program_info' => 'required|string|max:255',
-        'status' => 'required|in:active,inactive',
-        'number_of_years' => 'required|integer|min:1',
-    ]);
+    {
+        // Validate the request data
+        $validatedData = $request->validate([
+            'program_code' => 'required|string|max:10',
+            'program_title' => 'required|string|max:100',
+            'program_info' => 'required|string|max:255',
+            'status' => 'required|in:active,inactive',
+            'number_of_years' => 'required|integer|min:1',
+        ]);
 
-    // Check for uniqueness of the program_title and program_info combination within the same program_code
-    $existingProgram = Program::where('program_code', $validatedData['program_code'])
-        ->where('program_title', $validatedData['program_title'])
-        ->where('program_info', $validatedData['program_info'])
-        ->first();
+        // Check for uniqueness of the program_title and program_info combination within the same program_code
+        $existingProgram = Program::where('program_code', $validatedData['program_code'])
+            ->where('program_title', $validatedData['program_title'])
+            ->where('program_info', $validatedData['program_info'])
+            ->first();
 
-    if ($existingProgram) {
+        if ($existingProgram) {
+            return response()->json([
+                'message' => 'A program with the same code, title, and info already exists.'
+            ], 422);
+        }
+
+        // Create the new program
+        $program = Program::create($validatedData);
+
         return response()->json([
-            'message' => 'A program with the same code, title, and info already exists.'
-        ], 422);
+            'message' => 'Program created successfully',
+            'program' => $program
+        ], 201);
     }
-
-    // Create the new program
-    $program = Program::create($validatedData);
-
-    return response()->json([
-        'message' => 'Program created successfully',
-        'program' => $program
-    ], 201);
-}
 
 
     // Show a specific program
@@ -102,4 +129,6 @@ class ProgramController extends Controller
 
         return response()->json($programs);
     }
+
+
 }
