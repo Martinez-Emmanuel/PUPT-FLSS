@@ -340,10 +340,12 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       '',
       '',
     ];
+    const isWholeDay = element.preferredTime === 'Whole Day';
+
     this.dialog
       .open(DialogTimeComponent, {
         width: '300px',
-        data: { startTime, endTime },
+        data: { startTime, endTime, isWholeDay },
       })
       .afterClosed()
       .subscribe((result) => {
