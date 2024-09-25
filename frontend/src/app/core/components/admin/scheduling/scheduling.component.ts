@@ -78,6 +78,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
   activeYear: string = '';
   activeSemester: number = 0;
+  startDate: string = '';
+  endDate: string = '';
 
   displayedColumns: string[] = [];
   headerInputFields: InputField[] = [];
@@ -169,9 +171,11 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
   private loadActiveYearAndSemester(): Observable<void> {
     return this.schedulingService.getActiveYearAndSemester().pipe(
-      tap(({ activeYear, activeSemester }) => {
+      tap(({ activeYear, activeSemester, startDate, endDate }) => {
         this.activeYear = activeYear;
         this.activeSemester = activeSemester;
+        this.startDate = startDate;
+        this.endDate = endDate;
         console.log('Active Semester Set:', this.activeSemester);
       }),
       map(() => void 0)
@@ -506,8 +510,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           const initialValue = {
             academicYear: this.activeYear || academicYearOptions[0] || '',
             semester: this.activeSemesterLabel || semesterOptions[0] || '',
-            startDate: null,
-            endDate: null,
+            startDate: this.startDate || null,
+            endDate: this.endDate || null,
           };
 
           const dialogRef = this.dialog.open(TableDialogComponent, {
@@ -519,6 +523,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
             disableClose: true,
           });
 
+          // Update semester options and start/end dates when the year changes
           dialogRef.componentInstance.form
             .get('academicYear')
             ?.valueChanges.pipe(takeUntil(this.destroy$))
@@ -532,6 +537,46 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                   selectedYearObj.semesters.map(
                     (semester: Semester) => semester.semester_number
                   );
+
+                // Automatically select the first semester and update dates
+                if (selectedYearObj.semesters.length > 0) {
+                  const firstSemester = selectedYearObj.semesters[0];
+                  dialogRef.componentInstance.form
+                    .get('semester')
+                    ?.setValue(firstSemester.semester_number);
+                  dialogRef.componentInstance.form
+                    .get('startDate')
+                    ?.setValue(firstSemester.start_date);
+                  dialogRef.componentInstance.form
+                    .get('endDate')
+                    ?.setValue(firstSemester.end_date);
+                }
+              }
+            });
+
+          // Update start and end date when the semester changes
+          dialogRef.componentInstance.form
+            .get('semester')
+            ?.valueChanges.pipe(takeUntil(this.destroy$))
+            .subscribe((selectedSemesterNumber: string) => {
+              const selectedYearObj = academicYears.find(
+                (year) =>
+                  year.academic_year ===
+                  dialogRef.componentInstance.form.get('academicYear')?.value
+              );
+              if (selectedYearObj) {
+                const selectedSemesterObj = selectedYearObj.semesters.find(
+                  (semester) =>
+                    semester.semester_number === selectedSemesterNumber
+                );
+                if (selectedSemesterObj) {
+                  dialogRef.componentInstance.form
+                    .get('startDate')
+                    ?.setValue(selectedSemesterObj.start_date);
+                  dialogRef.componentInstance.form
+                    .get('endDate')
+                    ?.setValue(selectedSemesterObj.end_date);
+                }
               }
             });
 
@@ -548,12 +593,34 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                 );
 
                 if (selectedYearObj && selectedSemesterObj) {
+                  const formattedStartDate = new Date(result.startDate)
+                    .toISOString()
+                    .split('T')[0];
+                  const formattedEndDate = new Date(result.endDate)
+                    .toISOString()
+                    .split('T')[0];
+
+                  const loadingSnackbarRef = this.snackBar.open(
+                    'Loading...',
+                    'Dismiss',
+                    {
+                      duration: undefined,
+                    }
+                  );
+
                   this.schedulingService
                     .setActiveYearAndSemester(
                       selectedYearObj.academic_year_id,
-                      selectedSemesterObj.semester_id
+                      selectedSemesterObj.semester_id,
+                      formattedStartDate,
+                      formattedEndDate
                     )
-                    .pipe(takeUntil(this.destroy$))
+                    .pipe(
+                      switchMap(() => {
+                        return this.loadActiveYearAndSemester();
+                      }),
+                      takeUntil(this.destroy$)
+                    )
                     .subscribe({
                       next: () => {
                         this.activeYear = result.academicYear;
@@ -564,23 +631,27 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                           .subscribe({
                             next: () => {
                               this.cdr.detectChanges();
-
+                              loadingSnackbarRef.dismiss();
                               this.snackBar.open(
-                                'Active year and semester has been updated successfully!',
+                                'Active year and semester have been updated successfully!',
                                 'Close',
-                                {
-                                  duration: 3000,
-                                }
+                                { duration: 3000 }
                               );
                             },
-                            error: this.handleError(
-                              'Error loading programs after setting active year and semester'
-                            ),
+                            error: (err) => {
+                              loadingSnackbarRef.dismiss();
+                              this.handleError(
+                                'Error loading programs after setting active year and semester'
+                              )(err);
+                            },
                           });
                       },
-                      error: this.handleError(
-                        'Error setting active year and semester'
-                      ),
+                      error: (err) => {
+                        loadingSnackbarRef.dismiss();
+                        this.handleError(
+                          'Error setting active year and semester'
+                        )(err);
+                      },
                     });
                 }
               }
