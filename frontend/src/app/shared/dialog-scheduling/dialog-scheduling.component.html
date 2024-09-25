@@ -1,0 +1,76 @@
+<div class="scheduling-dialog-container">
+  <!-- -----------------------------
+   Section 1: Suggested Faculty
+   ----------------------------- -->
+  <section class="section suggested-faculty">
+    <!--Title: Suggested Faculty-->
+    <div class="title">
+      <h2 class="dialog-title suggested">
+        <span mat-symbol="dynamic_form"></span> Suggested
+      </h2>
+      <span class="desc">*Based on submitted preferences</span>
+    </div>
+
+    <!--Content: Suggested Faculty-->
+    <mat-dialog-content class="content faculty-list">
+      @for (faculty of suggestedFaculty; track faculty.name) {
+      <div class="faculty-item">
+        <span class="faculty-name">{{ faculty.name }}</span>
+        <span class="faculty-time">{{ faculty.time }}</span>
+      </div>
+      }
+    </mat-dialog-content>
+  </section>
+
+  <!-- -----------------------------
+   Section 2: Edit Schedule Details
+   ----------------------------- -->
+  <section class="section edit-schedule-details">
+    <!--Title: Edit Schedule Details-->
+    <div class="title">
+      <h2 class="dialog-title scheduling">Edit Schedule Details</h2>
+      <span class="course-name">{{ selectedCourse }}</span>
+    </div>
+
+    <!--Content: Edit Schedule Details Forms-->
+    <mat-dialog-content class="content forms-list">
+      <!--Scheduling Form-->
+      <form [formGroup]="scheduleForm" class="scheduling-form-group">
+        <mat-form-field class="scheduling-forms">
+          <mat-label>Day</mat-label>
+          <input matInput formControlName="day" />
+        </mat-form-field>
+
+        <mat-form-field class="scheduling-forms">
+          <mat-label>Start Time</mat-label>
+          <input matInput type="time" formControlName="startTime" />
+        </mat-form-field>
+
+        <mat-form-field class="scheduling-forms">
+          <mat-label>End Time</mat-label>
+          <input matInput type="time" formControlName="endTime" />
+        </mat-form-field>
+
+        <mat-form-field class="scheduling-forms">
+          <mat-label>Professor</mat-label>
+          <input matInput formControlName="professor" />
+        </mat-form-field>
+
+        <mat-form-field class="scheduling-forms">
+          <mat-label>Room</mat-label>
+          <input matInput formControlName="room" />
+        </mat-form-field>
+      </form>
+    </mat-dialog-content>
+
+    <!-- Edit Schedule Details Actions -->
+    <mat-dialog-actions class="scheduling-dialog-actions">
+      <button class="cancel-button" mat-button (click)="onCancel()">
+        Cancel
+      </button>
+      <button class="action-button" mat-flat-button (click)="onAssign()">
+        Assign Schedule
+      </button>
+    </mat-dialog-actions>
+  </section>
+</div>

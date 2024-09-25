@@ -135,6 +135,14 @@ span[mat-symbol] {
   width: var(--dialog-small);
 }
 
+.mat-calendar-body-selected {
+  color: white !important;
+}
+
+.mat-calendar-body-today:not(.mat-calendar-body-selected):not(.mat-calendar-body-comparison-identical) {
+  border-color: var(--primary-text) !important;
+}
+
 .mdc-text-field--filled {
   // when appearance="fill"
   border-top-left-radius: 10px !important;

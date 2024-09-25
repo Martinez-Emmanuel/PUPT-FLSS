@@ -12,6 +12,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 import { TableHeaderComponent, InputField } from '../../../../shared/table-header/table-header.component';
 import { TableDialogComponent, DialogConfig } from '../../../../shared/table-dialog/table-dialog.component';
+import { DialogSchedulingComponent } from '../../../../shared/dialog-scheduling/dialog-scheduling.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
 
@@ -97,7 +98,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.initializeHeaderInputFields();
     this.initializeDisplayedColumns();
-    this.generateTimeOptions();
 
     // Load active year/semester and programs in parallel, then set defaults and fetch courses
     forkJoin({
@@ -148,21 +148,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       'room',
       'action',
     ];
-  }
-
-  private generateTimeOptions(): void {
-    for (let hour = 7; hour <= 21; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        if (hour === 21 && minute > 0) break;
-        const time = new Date(2023, 0, 1, hour, minute);
-        this.timeOptions.push(
-          time.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit',
-          })
-        );
-      }
-    }
   }
 
   // ====================
@@ -378,85 +363,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   // Dialog Methods
   // ====================
 
-  openEditDialog(element: Schedule): void {
-    const dialogConfig: DialogConfig = {
-      title: 'Edit Schedule Details',
-      fields: [
-        {
-          label: 'Day',
-          formControlName: 'day',
-          type: 'autocomplete',
-          options: this.dayOptions,
-          required: true,
-        },
-        {
-          label: 'Start Time',
-          formControlName: 'startTime',
-          type: 'autocomplete',
-          options: this.timeOptions,
-          required: true,
-        },
-        {
-          label: 'End Time',
-          formControlName: 'endTime',
-          type: 'autocomplete',
-          options: this.timeOptions,
-          required: true,
-        },
-        {
-          label: 'Professor',
-          formControlName: 'professor',
-          type: 'autocomplete',
-          options: this.professorOptions,
-          required: true,
-        },
-        {
-          label: 'Room',
-          formControlName: 'room',
-          type: 'autocomplete',
-          options: this.roomOptions,
-          required: true,
-        },
-      ],
-      isEdit: true,
-      initialValue: {
-        day: element.day || '',
-        startTime: element.time ? element.time.split(' - ')[0] : '',
-        endTime: element.time ? element.time.split(' - ')[1] : '',
-        professor: element.professor || '',
-        room: element.room || '',
-      },
-    };
-
-    const dialogRef = this.dialog.open(TableDialogComponent, {
-      data: dialogConfig,
-      disableClose: true,
-      autoFocus: false,
-    });
-
-    dialogRef.componentInstance.startTimeChange
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((startTime: string) => {
-        const startIndex = this.timeOptions.indexOf(startTime);
-        const validEndTimes = this.timeOptions.slice(startIndex + 1);
-        dialogRef.componentInstance.updateEndTimeOptions(validEndTimes);
-      });
-
-    dialogRef
-      .afterClosed()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((result) => {
-        if (result) {
-          const updatedSchedule: Schedule = {
-            ...element,
-            ...result,
-            time: `${result.startTime} - ${result.endTime}`,
-          };
-          // this.updateSchedule(updatedSchedule);
-        }
-      });
-  }
-
   openActiveYearSemesterDialog(): void {
     this.schedulingService
       .getAcademicYears()
@@ -661,6 +567,14 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       .subscribe({
         error: this.handleError('Error fetching academic years'),
       });
+  }
+
+  openEditDialog() {
+    this.dialog.open(DialogSchedulingComponent, {
+      maxWidth: '40rem',
+      width: '100%',
+      disableClose: true,
+    });
   }
 
   // ====================

@@ -1,0 +1,115 @@
+@import "../../../styles/mixins.scss";
+
+.scheduling-dialog-container {
+  @include flex-layout($align: stretch);
+
+  .title {
+    @include flex-layout(
+      $direction: column,
+      $justify: flex-start,
+      $align: flex-start,
+      $gap: var(--spacing-xxs)
+    );
+    padding: var(--spacing-lg) 0;
+
+    .course-name {
+      font-size: var(--font-size-sm);
+      color: var(--primary-text);
+    }
+
+    .desc {
+      font-size: var(--font-size-sm);
+      color: var(--secondary-text);
+    }
+
+    .dialog-title {
+      @include flex-layout($justify: flex-start, $gap: var(--spacing-xs));
+      font-weight: 500;
+
+      &.scheduling {
+        margin: 0;
+        color: var(--primary-text) !important;
+      }
+
+      &.suggested {
+        margin: 0;
+        color: var(--secondary-text) !important;
+      }
+    }
+  }
+
+  .section {
+    padding: 0 var(--spacing-lg);
+  }
+
+  .content {
+    @include reset-styles;
+  }
+}
+
+/* ------ Edit Schedule Section ------ */
+.edit-schedule-details {
+  flex: 3;
+
+  .content.forms-list {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $gap: var(--spacing-sm)
+    );
+
+    .scheduling-form-group {
+      @include flex-layout($direction: column, $align: stretch);
+    }
+  }
+
+  .scheduling-dialog-actions {
+    @include reset-styles;
+    padding: var(--spacing-lg) 0;
+
+    .cancel-button {
+      color: var(--primary-text) !important;
+    }
+
+    .action-button {
+      &:disabled {
+        color: var(--neutral-base) !important;
+        opacity: var(--opacity-semi-opaque);
+      }
+    }
+  }
+}
+
+/* ------ Suggested Faculty Section ------ */
+.suggested-faculty {
+  flex: 2;
+  background-color: var(--neutral-extra);
+
+  .content.faculty-list {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $gap: var(--spacing-sm)
+    );
+
+    .faculty-item {
+      @include flex-layout(
+        $direction: column,
+        $align: stretch,
+        $justify: flex-start
+      );
+      background-color: var(--neutral-extra-dark);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: var(--border-radius-sm);
+      cursor: pointer;
+
+      .faculty-name {
+        font-weight: 500;
+      }
+
+      .faculty-time {
+        opacity: var(--opacity-semi-opaque);
+      }
+    }
+  }
+}
