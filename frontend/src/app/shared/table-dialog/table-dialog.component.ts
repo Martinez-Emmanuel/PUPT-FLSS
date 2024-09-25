@@ -1,28 +1,9 @@
-import {
-  Component,
-  Output,
-  EventEmitter,
-  Inject,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-} from '@angular/core';
-import {
-  FormBuilder,
-  FormGroup,
-  Validators,
-  ReactiveFormsModule,
-  AbstractControl,
-  ValidationErrors,
-  ValidatorFn,
-} from '@angular/forms';
+import { Component, Output, EventEmitter, Inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
-import {
-  MAT_DIALOG_DATA,
-  MatDialogRef,
-  MatDialogModule,
-} from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -32,13 +13,15 @@ import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { provideNativeDateAdapter } from '@angular/material/core';
 
 import { TwoDigitInputDirective } from '../../core/imports/two-digit-input.directive';
 
 export interface DialogFieldConfig {
   label: string;
   formControlName: string;
-  type: 'text' | 'number' | 'select' | 'checkbox' | 'autocomplete';
+  type: 'text' | 'number' | 'select' | 'checkbox' | 'autocomplete' | 'date';
   options?: string[] | number[];
   maxLength?: number;
   required?: boolean;
@@ -66,7 +49,7 @@ export interface DialogConfig {
   standalone: true,
   templateUrl: './table-dialog.component.html',
   styleUrls: ['./table-dialog.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+  providers: [provideNativeDateAdapter()],
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -80,8 +63,11 @@ export interface DialogConfig {
     MatCheckboxModule,
     MatAutocompleteModule,
     MatIconModule,
+    MatDatepickerModule,
     TwoDigitInputDirective,
   ],
+
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableDialogComponent {
   form!: FormGroup;
@@ -123,6 +109,7 @@ export class TableDialogComponent {
     }
 
     this.initStartTimeControl();
+    this.addDateValidation();
     this.cdr.markForCheck();
   }
 
@@ -139,7 +126,12 @@ export class TableDialogComponent {
 
   private addFormControl(field: DialogFieldConfig): void {
     const validators = this.getValidators(field);
-    const initialValue = this.data.initialValue?.[field.formControlName] || '';
+    let initialValue = this.data.initialValue?.[field.formControlName] || '';
+
+    if (field.type === 'date' && initialValue) {
+      initialValue = new Date(initialValue);
+    }
+
     const control = this.fb.control(initialValue, { validators });
 
     if (field.disabled) {
@@ -210,19 +202,42 @@ export class TableDialogComponent {
     return isValid ? null : { whitespace: true };
   }
 
+  private addDateValidation(): void {
+    const startDateControl = this.form.get('startDate');
+    const endDateControl = this.form.get('endDate');
+
+    if (startDateControl && endDateControl) {
+      startDateControl.valueChanges.subscribe(() => {
+        endDateControl.updateValueAndValidity();
+      });
+
+      endDateControl.setValidators([
+        Validators.required,
+        this.endDateValidator.bind(this)
+      ]);
+    }
+  }
+
+  private endDateValidator(control: AbstractControl): ValidationErrors | null {
+    const endDate = control.value;
+    const startDate = this.form.get('startDate')?.value;
+
+    if (endDate && startDate && new Date(endDate) < new Date(startDate)) {
+      return { endDateBeforeStartDate: true };
+    }
+
+    return null;
+  }
+
   getErrorMessage(formControlName: string, label: string): string {
     const control = this.form.get(formControlName);
     if (!control) return '';
 
     if (control.hasError('required')) return `${label} is required.`;
     if (control.hasError('maxlength'))
-      return `${label} cannot exceed ${
-        control.getError('maxlength').requiredLength
-      } characters.`;
+      return `${label} cannot exceed ${control.getError('maxlength').requiredLength} characters.`;
     if (control.hasError('minlength'))
-      return `${label} must be exactly ${
-        control.getError('minlength').requiredLength
-      } characters.`;
+      return `${label} must be exactly ${control.getError('minlength').requiredLength} characters.`;
     if (control.hasError('pattern')) {
       return control.getError('pattern').requiredPattern === '/^\\d{4}$/'
         ? `${label} must be exactly 4 digits.`
@@ -233,6 +248,8 @@ export class TableDialogComponent {
     if (control.hasError('max'))
       return `${label} cannot exceed the maximum value.`;
     if (control.hasError('whitespace')) return `Your ${label} is invalid.`;
+    if (control.hasError('endDateBeforeStartDate'))
+      return `End Date cannot be earlier than Start Date.`;
 
     return '';
   }

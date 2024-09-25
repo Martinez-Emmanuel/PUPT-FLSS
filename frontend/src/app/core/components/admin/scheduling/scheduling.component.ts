@@ -489,11 +489,25 @@ export class SchedulingComponent implements OnInit, OnDestroy {
               options: semesterOptions,
               required: true,
             },
+            {
+              label: 'Start Date',
+              formControlName: 'startDate',
+              type: 'date',
+              required: true,
+            },
+            {
+              label: 'End Date',
+              formControlName: 'endDate',
+              type: 'date',
+              required: true,
+            },
           ];
 
           const initialValue = {
             academicYear: this.activeYear || academicYearOptions[0] || '',
             semester: this.activeSemesterLabel || semesterOptions[0] || '',
+            startDate: null,
+            endDate: null,
           };
 
           const dialogRef = this.dialog.open(TableDialogComponent, {
