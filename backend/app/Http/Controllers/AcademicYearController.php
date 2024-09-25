@@ -445,20 +445,15 @@ class AcademicYearController extends Controller
                 $academicYearCurricula->save();
             }
     
-            // Step 3: Insert into active_semesters (3 default semesters with is_active = 0)
+            // Step 3: Insert into active_semesters
             $semesterDates = $request->input('semester_dates', []);
-            for ($semesterId = 1; $semesterId <= 3; $semesterId++) {
+            foreach ($semesterDates as $semesterData) {
                 $activeSemester = new ActiveSemester();
                 $activeSemester->academic_year_id = $newAcademicYearId;
-                $activeSemester->semester_id = $semesterId;
-                $activeSemester->is_active = 0; // Default value
-                
-                // Add start_date and end_date if provided in the request
-                if (isset($semesterDates[$semesterId - 1])) {
-                    $activeSemester->start_date = $semesterDates[$semesterId - 1]['start_date'];
-                    $activeSemester->end_date = $semesterDates[$semesterId - 1]['end_date'];
-                }
-                
+                $activeSemester->semester_id = $semesterData['semester_id'];
+                $activeSemester->start_date = $semesterData['start_date'];
+                $activeSemester->end_date = $semesterData['end_date'];
+                $activeSemester->is_active = 0; 
                 $activeSemester->save();
             }
     
@@ -494,7 +489,7 @@ class AcademicYearController extends Controller
                     $section->academic_year_id = $newAcademicYearId;
                     $section->program_id = $program->program_id;
                     $section->year_level = $yearLevel;
-                    $section->section_name = 'Section 1'; // Always use "Section 1"
+                    $section->section_name = 'Section 1'; 
                     $section->save();
                 }
             }
