@@ -449,7 +449,7 @@ class AcademicYearController extends Controller
                     $section->academic_year_id = $newAcademicYearId;
                     $section->program_id = $program->program_id;
                     $section->year_level = $yearLevel;
-                    $section->section_name = 'Section 1'; // Always use "Section 1"
+                    $section->section_name = '1'; // Always use "Section 1"
                     $section->save();
                 }
             }
