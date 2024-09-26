@@ -117,7 +117,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       day: 'Wednesday',
       time: '01:00 PM - 06:00 PM',
     },
-  ];  
+  ];
 
   selectedProgram: string = '';
   selectedYear: number = 1;
@@ -383,20 +383,16 @@ export class SchedulingComponent implements OnInit, OnDestroy {
             return;
           }
 
-          console.log('Selected Year Level:', selectedYearLevel);
+          const semester = selectedYearLevel.semester;
 
-          selectedYearLevel.semesters.forEach((semester: Semester) => {
-            console.log('Semester:', semester);
-
-            if (semester.semester === this.activeSemester) {
-              if (semester.courses && semester.courses.length > 0) {
-                this.schedules.push(...semester.courses);
-                console.log('Courses added:', semester.courses);
-              } else {
-                console.log('No courses found for this semester');
-              }
+          if (semester.semester === this.activeSemester) {
+            if (semester.courses && semester.courses.length > 0) {
+              this.schedules.push(...semester.courses);
+              console.log('Courses added:', semester.courses);
+            } else {
+              console.log('No courses found for this semester');
             }
-          });
+          }
 
           console.log('Final Schedules:', this.schedules);
         }),
