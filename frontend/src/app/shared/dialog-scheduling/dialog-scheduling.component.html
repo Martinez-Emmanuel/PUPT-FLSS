@@ -8,11 +8,16 @@
       <span class="desc">*Based on submitted preferences</span>
     </div>
 
-    <mat-dialog-content class="content faculty-list">
-      <div *ngFor="let faculty of suggestedFaculty" class="faculty-item">
+    <mat-dialog-content
+      class="content faculty-list"
+      [@cardEntranceSide]="suggestedFaculty.length"
+    >
+      @for (faculty of suggestedFaculty; track faculty) {
+      <div class="faculty-item">
         <span class="faculty-name">{{ faculty.name }}</span>
         <span class="faculty-time">{{ faculty.day }}, {{ faculty.time }}</span>
       </div>
+      }
     </mat-dialog-content>
   </section>
 
@@ -39,13 +44,13 @@
             >calendar_today</mat-icon
           >
           <mat-select formControlName="day" required>
-            <mat-option *ngFor="let day of dayOptions" [value]="day">{{
-              day
-            }}</mat-option>
+            @for (day of dayOptions; track day) {
+            <mat-option [value]="day">{{ day }}</mat-option>
+            }
           </mat-select>
-          <mat-error *ngIf="scheduleForm.get('day')?.hasError('required')">
-            Day is required.
-          </mat-error>
+          @if (scheduleForm.get('day')?.hasError('required')) {
+          <mat-error> Day is required. </mat-error>
+          }
         </mat-form-field>
 
         <!-- Start and End Date Fields -->
@@ -63,15 +68,13 @@
               >access_time_filled</mat-icon
             >
             <mat-select formControlName="startTime" required>
-              <mat-option *ngFor="let time of timeOptions" [value]="time">
-                {{ time }}
-              </mat-option>
+              @for (time of timeOptions; track time) {
+              <mat-option [value]="time">{{ time }}</mat-option>
+              }
             </mat-select>
-            <mat-error
-              *ngIf="scheduleForm.get('startTime')?.hasError('required')"
-            >
-              Start time is required.
-            </mat-error>
+            @if (scheduleForm.get('startTime')?.hasError('required')) {
+            <mat-error> Start time is required. </mat-error>
+            }
           </mat-form-field>
 
           <!-- End Time Field -->
@@ -87,15 +90,13 @@
               >access_time_filled</mat-icon
             >
             <mat-select formControlName="endTime" required>
-              <mat-option *ngFor="let time of endTimeOptions" [value]="time">
-                {{ time }}
-              </mat-option>
+              @for (time of endTimeOptions; track time) {
+              <mat-option [value]="time">{{ time }}</mat-option>
+              }
             </mat-select>
-            <mat-error
-              *ngIf="scheduleForm.get('endTime')?.hasError('required')"
-            >
-              End time is required.
-            </mat-error>
+            @if (scheduleForm.get('endTime')?.hasError('required')) {
+            <mat-error> End time is required. </mat-error>
+            }
           </mat-form-field>
         </div>
 
@@ -109,18 +110,15 @@
             [matAutocomplete]="professorAuto"
           />
           <mat-autocomplete #professorAuto="matAutocomplete">
-            <mat-option
-              *ngFor="let professor of filteredProfessors | async"
-              [value]="professor"
-            >
+            @for (professor of filteredProfessors | async; track professor) {
+            <mat-option [value]="professor">
               {{ professor }}
             </mat-option>
+            }
           </mat-autocomplete>
-          <mat-error
-            *ngIf="scheduleForm.get('professor')?.hasError('required')"
-          >
-            Professor is required.
-          </mat-error>
+          @if (scheduleForm.get('professor')?.hasError('required')) {
+          <mat-error> Professor is required. </mat-error>
+          }
         </mat-form-field>
 
         <!-- Room Field -->
@@ -133,44 +131,49 @@
             [matAutocomplete]="roomAuto"
           />
           <mat-autocomplete #roomAuto="matAutocomplete">
-            <mat-option
-              *ngFor="let room of filteredRooms | async"
-              [value]="room"
-            >
+            @for (room of filteredRooms | async; track room) {
+            <mat-option [value]="room">
               {{ room }}
             </mat-option>
+            }
           </mat-autocomplete>
-          <mat-error *ngIf="scheduleForm.get('room')?.hasError('required')">
-            Room is required.
-          </mat-error>
+          @if (scheduleForm.get('room')?.hasError('required')) {
+          <mat-error> Room is required. </mat-error>
+          }
         </mat-form-field>
       </form>
 
       <!--Schedule Validator-->
       <div class="schedule-validator">
+        @if (!hasConflicts) {
         <!-- No conflicts detected message -->
-        <div *ngIf="!hasConflicts" class="validation-message no-conflict">
+        <div class="validation-message no-conflict">
           <span mat-symbol="check_circle"></span>
           <span>All good! No scheduling conflicts have been detected.</span>
         </div>
-
+        } @else {
         <!-- Conflicts detected message -->
-        <div *ngIf="hasConflicts" class="validation-message conflict">
+        <div class="validation-message conflict">
           <span mat-symbol="error"></span>
           <span>Warning: Scheduling conflicts have been detected.</span>
         </div>
+        }
       </div>
     </mat-dialog-content>
 
     <!-- Action Buttons -->
     <mat-dialog-actions class="scheduling-dialog-actions">
-      <!-- New Clear All button -->
-      <button mat-button class="clear-all-button" (click)="onClearAll()">
-        <!-- <mat-icon>clear_all</mat-icon>  -->
+      <!-- Clear All button -->
+      <button
+        class="clear-all-button"
+        (click)="onClearAll()"
+        matRipple
+        [matRippleColor]="'rgba(134,134,134,0.1)'"
+      >
         Clear All
       </button>
 
-      <!-- Existing buttons (Cancel and Assign Schedule) -->
+      <!-- Cancel and Assign Schedule Buttons -->
       <div class="action-buttons">
         <button class="cancel-button" mat-button (click)="onCancel()">
           Cancel

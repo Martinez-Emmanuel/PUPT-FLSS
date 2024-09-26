@@ -12,8 +12,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatRippleModule } from '@angular/material/core';
 
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
+
+import { cardEntranceSide } from '../../core/animations/animations';
 
 @Component({
   selector: 'app-dialog-scheduling',
@@ -28,10 +31,12 @@ import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
     ReactiveFormsModule,
     MatSelectModule,
     MatAutocompleteModule,
+    MatRippleModule,
     MatSymbolDirective,
   ],
   templateUrl: './dialog-scheduling.component.html',
   styleUrls: ['./dialog-scheduling.component.scss'],
+  animations: [cardEntranceSide],
 })
 export class DialogSchedulingComponent implements OnInit {
   scheduleForm: FormGroup;

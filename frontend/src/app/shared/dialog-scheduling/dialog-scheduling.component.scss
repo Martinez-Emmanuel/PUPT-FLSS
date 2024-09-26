@@ -57,8 +57,10 @@
     @include flex-layout(
       $direction: column,
       $align: stretch,
+      $justify: flex-start,
       $gap: var(--spacing-sm)
     );
+    @include hide-scrollbar;
 
     .scheduling-form-group {
       @include flex-layout(
@@ -120,7 +122,20 @@
     padding: var(--spacing-lg) 0;
 
     .clear-all-button {
-      color: var(--neutral-base) !important;
+      color: var(--neutral-base);
+      font-weight: 500;
+      font-size: var(--font-size-sm);
+      opacity: var(--opacity-semi-opaque);
+      border-radius: var(--border-radius-xl);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      background-color: transparent;
+      outline: none;
+      border: none;
+      cursor: pointer;
+
+      &:hover {
+        background-color: var(--neutral-option);
+      }
     }
 
     .action-buttons {
@@ -147,8 +162,12 @@
     @include flex-layout(
       $direction: column,
       $align: stretch,
+      $justify: flex-start,
       $gap: var(--spacing-sm)
     );
+    @include hide-scrollbar;
+    margin-bottom: var(--spacing-lg);
+    border-radius: var(--border-radius-sm);
 
     .faculty-item {
       @include flex-layout(
