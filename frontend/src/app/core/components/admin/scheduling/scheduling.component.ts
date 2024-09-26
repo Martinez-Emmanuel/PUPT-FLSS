@@ -15,7 +15,16 @@ import { TableDialogComponent } from '../../../../shared/table-dialog/table-dial
 import { DialogSchedulingComponent } from '../../../../shared/dialog-scheduling/dialog-scheduling.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
-import { SchedulingService, Schedule, Program, AcademicYear, Semester, YearLevel } from '../../../services/admin/scheduling/scheduling.service';
+import {
+  SchedulingService,
+  Schedule,
+  Program,
+  AcademicYear,
+  Semester,
+  YearLevel,
+  PopulateSchedulesResponse,
+  CourseResponse,
+} from '../../../services/admin/scheduling/scheduling.service';
 
 import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
 
@@ -65,7 +74,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     'John Dustin Santos',
     'Gecilie Almiranez',
     'Steven Villarosa',
-    'lady Modesto',
+    'Lady Modesto',
     'AJ San Luis',
   ];
   roomOptions: string[] = [
@@ -123,8 +132,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   selectedYear: number = 1;
   selectedSection: string = '';
   selectedCurriculumId: number | null = null;
-  selectedProgramInfo: string = 'BSIT-TG 1-1';
-  selectedCourseInfo: string = 'COMP101 - Intro to Programming'; // mock data
 
   activeYear: string = '';
   activeSemester: number = 0;
@@ -212,7 +219,11 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         this.endDate = endDate;
         console.log('Active Semester Set:', this.activeSemester);
       }),
-      map(() => void 0)
+      map(() => void 0),
+      catchError((error) => {
+        this.handleError('Failed to load active year and semester')(error);
+        return of(void 0);
+      })
     );
   }
 
@@ -292,6 +303,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
     if (!selectedProgram) {
       console.log('No program found.');
+      this.schedules = [];
       return;
     }
 
@@ -307,6 +319,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
     if (!selectedYearLevelObj) {
       console.log('No year level found.');
+      this.schedules = [];
       return;
     }
 
@@ -328,6 +341,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
     if (!selectedSection) {
       console.log('No section found.');
+      this.schedules = [];
       return;
     }
 
@@ -339,7 +353,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       selectedSection.section_id
     ).subscribe({
       next: () => {
-        // TODO: perform any additional actions after fetching courses
+        // No additional actions needed here
       },
       error: this.handleError('Failed to fetch courses'),
     });
@@ -350,58 +364,80 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     yearLevel: number,
     sectionId: number
   ): Observable<Schedule[]> {
-    return this.schedulingService
-      .getAssignedCoursesByProgramYearAndSection(
-        programId,
-        yearLevel,
-        sectionId
-      )
-      .pipe(
-        tap((response) => {
-          const program = response.programs.find(
-            (p: Program) => p.program_id === programId
-          );
-          console.log('Selected Program:', program);
-
-          if (!program) {
-            console.error('No program found');
-            return;
-          }
-
+    return this.schedulingService.populateSchedules().pipe(
+      tap((response: PopulateSchedulesResponse) => {
+        // Find the selected program
+        const program = response.programs.find(
+          (p) => p.program_id === programId
+        );
+        if (!program) {
+          console.error('Program not found');
           this.schedules = [];
+          return;
+        }
 
-          const selectedYearLevel = program.year_levels.find(
-            (yearLevelData: YearLevel) =>
-              yearLevelData.year_level === yearLevel &&
-              yearLevelData.curriculum_id === this.selectedCurriculumId
-          );
+        // Find the selected year level
+        const yearLevelData = program.year_levels.find(
+          (yl) => yl.year_level === yearLevel
+        );
+        if (!yearLevelData) {
+          console.error('Year level not found');
+          this.schedules = [];
+          return;
+        }
 
-          if (!selectedYearLevel) {
-            console.error(
-              'No matching year level found for the selected curriculum'
-            );
-            return;
-          }
+        // Find the active semester within the year level
+        const semesterData = yearLevelData.semesters.find(
+          (s) => s.semester === this.activeSemester
+        );
+        if (!semesterData) {
+          console.error('Semester not found');
+          this.schedules = [];
+          return;
+        }
 
-          const semester = selectedYearLevel.semester;
+        // Find the selected section within the semester
+        const sectionData = semesterData.sections.find(
+          (s) => s.section_name === this.selectedSection
+        );
+        if (!sectionData) {
+          console.error('Section not found');
+          this.schedules = [];
+          return;
+        }
 
-          if (semester.semester === this.activeSemester) {
-            if (semester.courses && semester.courses.length > 0) {
-              this.schedules.push(...semester.courses);
-              console.log('Courses added:', semester.courses);
-            } else {
-              console.log('No courses found for this semester');
-            }
-          }
+        // Map the courses to the Schedule interface
+        this.schedules = sectionData.courses.map((course: CourseResponse) => ({
+          course_id: course.course_id,
+          course_code: course.course_code,
+          course_title: course.course_title,
+          lec_hours: course.lec_hours,
+          lab_hours: course.lab_hours,
+          units: course.units,
+          tuition_hours: course.tuition_hours,
+          day: course.schedule?.day || 'Not set',
+          time: course.schedule
+            ? `${this.formatTimeFromString(
+                course.schedule.start_time
+              )} - ${this.formatTimeFromString(course.schedule.end_time)}`
+            : 'Not set',
+          professor: course.professor || 'Not set',
+          room: course.room?.room_code || 'Not set',
+          program: program.program_title,
+          program_code: program.program_code,
+          year: yearLevelData.year_level,
+          curriculum: yearLevelData.curriculum_year,
+          section: sectionData.section_name,
+        }));
 
-          console.log('Final Schedules:', this.schedules);
-        }),
-        map(() => this.schedules),
-        catchError((error) => {
-          this.handleError('Failed to fetch courses')(error);
-          return of([]);
-        })
-      );
+        console.log('Final Schedules:', this.schedules);
+      }),
+      map(() => this.schedules),
+      catchError((error) => {
+        this.handleError('Failed to fetch courses')(error);
+        return of([]);
+      })
+    );
   }
 
   // ====================
@@ -493,13 +529,13 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                 if (selectedYearObj.semesters.length > 0) {
                   const firstSemester = selectedYearObj.semesters[0];
                   dialogRef.componentInstance.form
-                    .get('semester')
+                    ?.get('semester')
                     ?.setValue(firstSemester.semester_number);
                   dialogRef.componentInstance.form
-                    .get('startDate')
+                    ?.get('startDate')
                     ?.setValue(firstSemester.start_date);
                   dialogRef.componentInstance.form
-                    .get('endDate')
+                    ?.get('endDate')
                     ?.setValue(firstSemester.end_date);
                 }
               }
@@ -507,7 +543,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
           // Update start & end date when the semester changes
           dialogRef.componentInstance.form
-            .get('semester')
+            ?.get('semester')
             ?.valueChanges.pipe(takeUntil(this.destroy$))
             .subscribe((selectedSemesterNumber: string) => {
               const selectedYearObj = academicYears.find(
@@ -523,10 +559,10 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
                 if (selectedSemesterObj) {
                   dialogRef.componentInstance.form
-                    .get('startDate')
+                    ?.get('startDate')
                     ?.setValue(selectedSemesterObj.start_date);
                   dialogRef.componentInstance.form
-                    .get('endDate')
+                    ?.get('endDate')
                     ?.setValue(selectedSemesterObj.end_date);
                 }
               }
@@ -616,6 +652,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   }
 
   openEditDialog(schedule: Schedule) {
+    const selectedProgramInfo = `${schedule.program_code} ${schedule.year}-${schedule.section}`;
+    const selectedCourseInfo = `${schedule.course_code} - ${schedule.course_title}`;
+    
     const dialogRef = this.dialog.open(DialogSchedulingComponent, {
       maxWidth: '45rem',
       width: '100%',
@@ -626,13 +665,13 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         endTimeOptions: this.timeOptions,
         professorOptions: this.professorOptions,
         roomOptions: this.roomOptions,
-        selectedProgramInfo: this.selectedProgramInfo,
-        selectedCourseInfo: this.selectedCourseInfo,
+        selectedProgramInfo: selectedProgramInfo,
+        selectedCourseInfo: selectedCourseInfo,
         suggestedFaculty: this.suggestedFaculty,
         existingSchedule: schedule,
       },
     });
-
+  
     dialogRef.componentInstance.scheduleForm.valueChanges
       .pipe(takeUntil(this.destroy$))
       .subscribe((formValues) => {
@@ -641,17 +680,17 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           const startIndex = this.timeOptions.indexOf(formValues.startTime);
           if (startIndex !== -1) {
             const filteredEndTimes = this.timeOptions.slice(startIndex + 1);
-            dialogRef.componentInstance.endTimeOptions = filteredEndTimes;
+            // Update the data object instead of directly accessing endTimeOptions
+            dialogRef.componentInstance.data.endTimeOptions = filteredEndTimes;
             this.cdr.detectChanges();
           }
         }
       });
-
+  
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         // TODO: Handle the assignment logic here
         console.log('Assigned Schedule:', result);
-        // You can add further processing or service calls here
         this.snackBar.open('Schedule assigned successfully!', 'Close', {
           duration: 3000,
         });
@@ -717,8 +756,19 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   private formatTime(hour: number, minute: number): string {
     const period = hour >= 12 ? 'PM' : 'AM';
     const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
-    const displayMinute = minute === 0 ? '00' : minute.toString();
+    const displayMinute =
+      minute === 0 ? '00' : minute.toString().padStart(2, '0');
     return `${displayHour}:${displayMinute} ${period}`;
+  }
+
+  private formatTimeFromString(timeStr: string | null | undefined): string {
+    if (!timeStr) {
+      return 'Not set';
+    }
+    const [hourStr, minuteStr, _] = timeStr.split(':');
+    const hour = parseInt(hourStr, 10);
+    const minute = parseInt(minuteStr, 10);
+    return this.formatTime(hour, minute);
   }
 
   protected get activeSemesterLabel(): string {
