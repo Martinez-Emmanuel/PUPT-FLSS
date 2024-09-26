@@ -61,8 +61,20 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   semesterOptions: Semester[] = [];
   programs: Program[] = [];
   timeOptions: string[] = [];
-  professorOptions: string[] = [];
-  roomOptions: string[] = [];
+  professorOptions: string[] = [
+    'John Dustin Santos',
+    'Gecilie Almiranez',
+    'Steven Villarosa',
+    'lady Modesto',
+    'AJ San Luis'
+  ];
+  roomOptions: string[] = [
+    'Room A201',
+    'Room A202',
+    'Room A203',
+    'DOST Lab',
+    'Aboitiz Lab',
+  ]; // mock data
   dayOptions: string[] = [
     'Monday',
     'Tuesday',
@@ -71,12 +83,16 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     'Friday',
     'Saturday',
     'Sunday',
-  ];
+  ]; // mock data
   endTimeOptions: string[] = [];
 
   suggestedFaculty = [
-    { name: 'Mr. Steven Villarosa', time: '07:30 AM - 12:30 PM' },
-    { name: 'Ms. Lady Modesto', time: '07:30 AM - 12:30 PM' },
+    {
+      name: 'Mr. Steven Villarosa',
+      day: 'Saturday',
+      time: '07:30 AM - 12:30 PM',
+    },
+    { name: 'Ms. Lady Modesto', day: 'Friday', time: '04:00 PM - 09:00 PM' },
   ]; // mock data
 
   selectedProgram: string = '';
@@ -109,7 +125,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     this.initializeDisplayedColumns();
     this.generateTimeOptions();
 
-    // Load active year/semester and programs in parallel, then set defaults and fetch courses
     forkJoin({
       activeYearSemester: this.loadActiveYearAndSemester(),
       programs: this.loadPrograms(),
@@ -131,9 +146,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // ====================
+  // ======================
   // Initialization Methods
-  // ====================
+  // ======================
 
   private initializeHeaderInputFields(): void {
     this.headerInputFields = [
@@ -201,9 +216,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     );
   }
 
-  // ====================
+  // ===========================
   // Selection and Data Handling
-  // ====================
+  // ===========================
 
   private setDefaultSelections(): Observable<void> {
     if (this.programOptions.length > 0) {
@@ -242,7 +257,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     return of(void 0);
   }
 
-  onInputChange(values: { [key: string]: any }): void {
+  protected onInputChange(values: { [key: string]: any }): void {
     const selectedProgramDisplay = values['program'];
     const selectedYearLevel = values['yearLevel'];
     const selectedSectionDisplay = values['section'];
@@ -659,10 +674,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     }
   }
 
-  get activeSemesterLabel(): string {
-    return this.mapSemesterNumberToLabel(this.activeSemester);
-  }
-
   private formatDateToYMD(date: Date): string {
     const year = date.getFullYear();
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
@@ -688,5 +699,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
     const displayMinute = minute === 0 ? '00' : minute.toString();
     return `${displayHour}:${displayMinute} ${period}`;
+  }
+
+  protected get activeSemesterLabel(): string {
+    return this.mapSemesterNumberToLabel(this.activeSemester);
   }
 }
