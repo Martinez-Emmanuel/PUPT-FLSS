@@ -10,9 +10,9 @@
 
     <mat-dialog-content
       class="content faculty-list"
-      [@cardEntranceSide]="suggestedFaculty.length"
+      [@cardEntranceSide]="data.suggestedFaculty.length"
     >
-      @for (faculty of suggestedFaculty; track faculty) {
+      @for (faculty of data.suggestedFaculty; track faculty) {
       <div class="faculty-item">
         <span class="faculty-name">{{ faculty.name }}</span>
         <span class="faculty-time">{{ faculty.day }}, {{ faculty.time }}</span>
@@ -25,8 +25,8 @@
   <section class="section edit-schedule-details">
     <div class="title">
       <h2 class="dialog-title scheduling">Edit Schedule Details</h2>
-      <span class="program-info">{{ selectedProgramInfo }}</span>
-      <span class="course-name">{{ selectedCourseInfo }}</span>
+      <div class="program-info">{{ data.selectedProgramInfo }}</div>
+      <div class="course-name">{{ data.selectedCourseInfo }}</div>
     </div>
 
     <mat-dialog-content class="content forms-list">
@@ -41,15 +41,17 @@
                 scheduleForm.get('day')?.invalid &&
                 scheduleForm.get('day')?.touched
             }"
-            >calendar_today</mat-icon
           >
+            calendar_today
+          </mat-icon>
           <mat-select formControlName="day" required>
-            @for (day of dayOptions; track day) {
+            @for (day of data.dayOptions; track day) {
             <mat-option [value]="day">{{ day }}</mat-option>
             }
           </mat-select>
-          @if (scheduleForm.get('day')?.hasError('required')) {
-          <mat-error> Day is required. </mat-error>
+          @if (scheduleForm.get('day')?.hasError('required') &&
+          scheduleForm.get('day')?.touched) {
+          <mat-error>Day is required.</mat-error>
           }
         </mat-form-field>
 
@@ -65,15 +67,17 @@
                   scheduleForm.get('startTime')?.invalid &&
                   scheduleForm.get('startTime')?.touched
               }"
-              >access_time_filled</mat-icon
             >
+              access_time_filled
+            </mat-icon>
             <mat-select formControlName="startTime" required>
-              @for (time of timeOptions; track time) {
+              @for (time of data.timeOptions; track time) {
               <mat-option [value]="time">{{ time }}</mat-option>
               }
             </mat-select>
-            @if (scheduleForm.get('startTime')?.hasError('required')) {
-            <mat-error> Start time is required. </mat-error>
+            @if (scheduleForm.get('startTime')?.hasError('required') &&
+            scheduleForm.get('startTime')?.touched) {
+            <mat-error>Start time is required.</mat-error>
             }
           </mat-form-field>
 
@@ -87,15 +91,17 @@
                   scheduleForm.get('endTime')?.invalid &&
                   scheduleForm.get('endTime')?.touched
               }"
-              >access_time_filled</mat-icon
             >
+              access_time_filled
+            </mat-icon>
             <mat-select formControlName="endTime" required>
-              @for (time of endTimeOptions; track time) {
+              @for (time of data.endTimeOptions; track time) {
               <mat-option [value]="time">{{ time }}</mat-option>
               }
             </mat-select>
-            @if (scheduleForm.get('endTime')?.hasError('required')) {
-            <mat-error> End time is required. </mat-error>
+            @if (scheduleForm.get('endTime')?.hasError('required') &&
+            scheduleForm.get('endTime')?.touched) {
+            <mat-error>End time is required.</mat-error>
             }
           </mat-form-field>
         </div>
@@ -110,14 +116,13 @@
             [matAutocomplete]="professorAuto"
           />
           <mat-autocomplete #professorAuto="matAutocomplete">
-            @for (professor of filteredProfessors | async; track professor) {
-            <mat-option [value]="professor">
-              {{ professor }}
-            </mat-option>
+            @for (professor of filteredProfessors$ | async; track professor) {
+            <mat-option [value]="professor">{{ professor }}</mat-option>
             }
           </mat-autocomplete>
-          @if (scheduleForm.get('professor')?.hasError('required')) {
-          <mat-error> Professor is required. </mat-error>
+          @if (scheduleForm.get('professor')?.hasError('required') &&
+          scheduleForm.get('professor')?.touched) {
+          <mat-error>Professor is required.</mat-error>
           }
         </mat-form-field>
 
@@ -131,14 +136,13 @@
             [matAutocomplete]="roomAuto"
           />
           <mat-autocomplete #roomAuto="matAutocomplete">
-            @for (room of filteredRooms | async; track room) {
-            <mat-option [value]="room">
-              {{ room }}
-            </mat-option>
+            @for (room of filteredRooms$ | async; track room) {
+            <mat-option [value]="room">{{ room }}</mat-option>
             }
           </mat-autocomplete>
-          @if (scheduleForm.get('room')?.hasError('required')) {
-          <mat-error> Room is required. </mat-error>
+          @if (scheduleForm.get('room')?.hasError('required') &&
+          scheduleForm.get('room')?.touched) {
+          <mat-error>Room is required.</mat-error>
           }
         </mat-form-field>
       </form>
@@ -146,13 +150,11 @@
       <!--Schedule Validator-->
       <div class="schedule-validator">
         @if (!hasConflicts) {
-        <!-- No conflicts detected message -->
         <div class="validation-message no-conflict">
           <span mat-symbol="check_circle"></span>
           <span>All good! No scheduling conflicts have been detected.</span>
         </div>
         } @else {
-        <!-- Conflicts detected message -->
         <div class="validation-message conflict">
           <span mat-symbol="error"></span>
           <span>Warning: Scheduling conflicts have been detected.</span>
@@ -163,7 +165,6 @@
 
     <!-- Action Buttons -->
     <mat-dialog-actions class="scheduling-dialog-actions">
-      <!-- Clear All button -->
       <button
         class="clear-all-button"
         (click)="onClearAll()"
@@ -172,8 +173,6 @@
       >
         Clear All
       </button>
-
-      <!-- Cancel and Assign Schedule Buttons -->
       <div class="action-buttons">
         <button class="cancel-button" mat-button (click)="onCancel()">
           Cancel
