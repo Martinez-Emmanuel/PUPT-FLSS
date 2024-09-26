@@ -12,6 +12,7 @@
     );
     padding: var(--spacing-lg) 0;
 
+    .program-info,
     .course-name {
       font-size: var(--font-size-sm);
       color: var(--primary-text);
@@ -49,7 +50,7 @@
 
 /* ------ Edit Schedule Section ------ */
 .edit-schedule-details {
-  flex: 3;
+  flex: 4;
 
   .content.forms-list {
     @include flex-layout(
@@ -59,7 +60,26 @@
     );
 
     .scheduling-form-group {
-      @include flex-layout($direction: column, $align: stretch);
+      @include flex-layout(
+        $direction: column,
+        $align: stretch,
+        $gap: var(--spacing-xs)
+      );
+
+      /* Icon color when the field is focused (primary-one color) */
+      .mat-focused .mat-icon {
+        color: var(--primary-one);
+      }
+
+      /* Icon color when the field is invalid (primary-warning color) */
+      .mat-focused .mat-icon.invalid-icon {
+        color: var(--primary-warning);
+      }
+
+      /* Maintain the invalid color when the field is touched and invalid */
+      .invalid-icon {
+        color: var(--primary-warning);
+      }
     }
   }
 

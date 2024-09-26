@@ -1,9 +1,6 @@
 <div class="scheduling-dialog-container">
-  <!-- -----------------------------
-   Section 1: Suggested Faculty
-   ----------------------------- -->
+  <!-- Section 1: Suggested Faculty -->
   <section class="section suggested-faculty">
-    <!--Title: Suggested Faculty-->
     <div class="title">
       <h2 class="dialog-title suggested">
         <span mat-symbol="dynamic_form"></span> Suggested
@@ -11,64 +8,143 @@
       <span class="desc">*Based on submitted preferences</span>
     </div>
 
-    <!--Content: Suggested Faculty-->
     <mat-dialog-content class="content faculty-list">
-      @for (faculty of suggestedFaculty; track faculty.name) {
-      <div class="faculty-item">
+      <div *ngFor="let faculty of suggestedFaculty" class="faculty-item">
         <span class="faculty-name">{{ faculty.name }}</span>
         <span class="faculty-time">{{ faculty.time }}</span>
       </div>
-      }
     </mat-dialog-content>
   </section>
 
-  <!-- -----------------------------
-   Section 2: Edit Schedule Details
-   ----------------------------- -->
+  <!-- Section 2: Edit Schedule Details -->
   <section class="section edit-schedule-details">
-    <!--Title: Edit Schedule Details-->
     <div class="title">
       <h2 class="dialog-title scheduling">Edit Schedule Details</h2>
-      <span class="course-name">{{ selectedCourse }}</span>
+      <span class="program-info">{{ selectedProgramInfo }}</span>
+      <span class="course-name">{{ selectedCourseInfo }}</span>
     </div>
 
-    <!--Content: Edit Schedule Details Forms-->
     <mat-dialog-content class="content forms-list">
-      <!--Scheduling Form-->
       <form [formGroup]="scheduleForm" class="scheduling-form-group">
+        <!-- Day Field -->
         <mat-form-field class="scheduling-forms">
           <mat-label>Day</mat-label>
-          <input matInput formControlName="day" />
+          <mat-icon
+            matPrefix
+            [ngClass]="{
+              'invalid-icon':
+                scheduleForm.get('day')?.invalid &&
+                scheduleForm.get('day')?.touched
+            }"
+            >calendar_today</mat-icon
+          >
+          <mat-select formControlName="day" required>
+            <mat-option *ngFor="let day of dayOptions" [value]="day">{{
+              day
+            }}</mat-option>
+          </mat-select>
+          <mat-error *ngIf="scheduleForm.get('day')?.hasError('required')">
+            Day is required.
+          </mat-error>
         </mat-form-field>
 
+        <!-- Start Time Field -->
         <mat-form-field class="scheduling-forms">
           <mat-label>Start Time</mat-label>
-          <input matInput type="time" formControlName="startTime" />
+          <mat-icon
+            matPrefix
+            [ngClass]="{
+              'invalid-icon':
+                scheduleForm.get('startTime')?.invalid &&
+                scheduleForm.get('startTime')?.touched
+            }"
+            >access_time_filled</mat-icon
+          >
+          <mat-select formControlName="startTime" required>
+            <mat-option *ngFor="let time of timeOptions" [value]="time">{{
+              time
+            }}</mat-option>
+          </mat-select>
+          <mat-error
+            *ngIf="scheduleForm.get('startTime')?.hasError('required')"
+          >
+            Start time is required.
+          </mat-error>
         </mat-form-field>
 
+        <!-- End Time Field -->
         <mat-form-field class="scheduling-forms">
           <mat-label>End Time</mat-label>
-          <input matInput type="time" formControlName="endTime" />
+          <mat-icon
+            matPrefix
+            [ngClass]="{
+              'invalid-icon':
+                scheduleForm.get('endTime')?.invalid &&
+                scheduleForm.get('endTime')?.touched
+            }"
+            >access_time_filled</mat-icon
+          >
+          <mat-select formControlName="endTime" required>
+            <mat-option *ngFor="let time of endTimeOptions" [value]="time">{{
+              time
+            }}</mat-option>
+          </mat-select>
+          <mat-error *ngIf="scheduleForm.get('endTime')?.hasError('required')">
+            End time is required.
+          </mat-error>
         </mat-form-field>
 
+        <!-- Professor Field -->
         <mat-form-field class="scheduling-forms">
           <mat-label>Professor</mat-label>
+          <mat-icon
+            matPrefix
+            [ngClass]="{
+              'invalid-icon':
+                scheduleForm.get('professor')?.invalid &&
+                scheduleForm.get('professor')?.touched
+            }"
+            >person</mat-icon
+          >
           <input matInput formControlName="professor" />
+          <mat-error
+            *ngIf="scheduleForm.get('professor')?.hasError('required')"
+          >
+            Professor is required.
+          </mat-error>
         </mat-form-field>
 
+        <!-- Room Field -->
         <mat-form-field class="scheduling-forms">
           <mat-label>Room</mat-label>
+          <mat-icon
+            matPrefix
+            [ngClass]="{
+              'invalid-icon':
+                scheduleForm.get('room')?.invalid &&
+                scheduleForm.get('room')?.touched
+            }"
+            >meeting_room</mat-icon
+          >
           <input matInput formControlName="room" />
+          <mat-error *ngIf="scheduleForm.get('room')?.hasError('required')">
+            Room is required.
+          </mat-error>
         </mat-form-field>
       </form>
     </mat-dialog-content>
 
-    <!-- Edit Schedule Details Actions -->
+    <!-- Action Buttons -->
     <mat-dialog-actions class="scheduling-dialog-actions">
       <button class="cancel-button" mat-button (click)="onCancel()">
         Cancel
       </button>
-      <button class="action-button" mat-flat-button (click)="onAssign()">
+      <button
+        class="action-button"
+        mat-flat-button
+        [disabled]="!scheduleForm.valid"
+        (click)="onAssign()"
+      >
         Assign Schedule
       </button>
     </mat-dialog-actions>

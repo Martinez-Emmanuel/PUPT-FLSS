@@ -11,12 +11,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 
 import { TableHeaderComponent, InputField } from '../../../../shared/table-header/table-header.component';
-import { TableDialogComponent, DialogConfig } from '../../../../shared/table-dialog/table-dialog.component';
+import { TableDialogComponent } from '../../../../shared/table-dialog/table-dialog.component';
 import { DialogSchedulingComponent } from '../../../../shared/dialog-scheduling/dialog-scheduling.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
-import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
 
 import { SchedulingService, Schedule, Program, AcademicYear, Semester, YearLevel } from '../../../services/admin/scheduling/scheduling.service';
+
+import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
 
 interface ProgramOption {
   display: string;
@@ -56,12 +57,12 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   programOptions: ProgramOption[] = [];
   yearLevelOptions: YearLevelOption[] = [];
   sectionOptions: SectionOption[] = [];
-  timeOptions: string[] = [];
-  professorOptions: string[] = [];
-  roomOptions: string[] = [];
   academicYearOptions: AcademicYear[] = [];
   semesterOptions: Semester[] = [];
   programs: Program[] = [];
+  timeOptions: string[] = [];
+  professorOptions: string[] = [];
+  roomOptions: string[] = [];
   dayOptions: string[] = [
     'Monday',
     'Tuesday',
@@ -71,11 +72,19 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     'Saturday',
     'Sunday',
   ];
+  endTimeOptions: string[] = [];
+
+  suggestedFaculty = [
+    { name: 'Mr. Steven Villarosa', time: '07:30 AM - 12:30 PM' },
+    { name: 'Ms. Lady Modesto', time: '07:30 AM - 12:30 PM' },
+  ]; // mock data
 
   selectedProgram: string = '';
   selectedYear: number = 1;
   selectedSection: string = '';
   selectedCurriculumId: number | null = null;
+  selectedProgramInfo: string = 'BSIT-TG 1-1';
+  selectedCourseInfo: string = 'COMP101 - Intro to Programming'; // mock data
 
   activeYear: string = '';
   activeSemester: number = 0;
@@ -98,6 +107,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.initializeHeaderInputFields();
     this.initializeDisplayedColumns();
+    this.generateTimeOptions();
 
     // Load active year/semester and programs in parallel, then set defaults and fetch courses
     forkJoin({
@@ -475,6 +485,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                   (semester) =>
                     semester.semester_number === selectedSemesterNumber
                 );
+
                 if (selectedSemesterObj) {
                   dialogRef.componentInstance.form
                     .get('startDate')
@@ -569,11 +580,56 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       });
   }
 
-  openEditDialog() {
-    this.dialog.open(DialogSchedulingComponent, {
-      maxWidth: '40rem',
+  openEditDialog(schedule: Schedule) {
+    const dialogRef = this.dialog.open(DialogSchedulingComponent, {
+      maxWidth: '45rem',
       width: '100%',
       disableClose: true,
+      data: {
+        dayOptions: this.dayOptions,
+        timeOptions: this.timeOptions,
+        endTimeOptions: this.timeOptions,
+        professorOptions: this.professorOptions,
+        roomOptions: this.roomOptions,
+        selectedProgramInfo: this.selectedProgramInfo,
+        selectedCourseInfo: this.selectedCourseInfo,
+        suggestedFaculty: this.suggestedFaculty,
+        existingSchedule: schedule,
+      },
+    });
+
+    dialogRef.componentInstance.scheduleForm.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((formValues) => {
+        if (formValues.startTime) {
+          // Filter endTimeOptions to only include times after the selected startTime
+          const startIndex = this.timeOptions.indexOf(formValues.startTime);
+          if (startIndex !== -1) {
+            const filteredEndTimes = this.timeOptions.slice(startIndex + 1);
+            dialogRef.componentInstance.endTimeOptions = filteredEndTimes;
+            this.cdr.detectChanges();
+          }
+        }
+      });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        // TODO: Handle the assignment logic here
+        console.log('Assigned Schedule:', result);
+        // You can add further processing or service calls here
+        this.snackBar.open('Schedule assigned successfully!', 'Close', {
+          duration: 3000,
+        });
+        // Optionally, refresh the schedules table
+        this.fetchCourses(
+          this.programOptions.find((p) => p.display === this.selectedProgram)
+            ?.id || 0,
+          this.selectedYear,
+          this.sectionOptions.find(
+            (s) => s.section_name === this.selectedSection
+          )?.section_id || 0
+        ).subscribe();
+      }
     });
   }
 
@@ -612,5 +668,25 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     const month = (date.getMonth() + 1).toString().padStart(2, '0');
     const day = date.getDate().toString().padStart(2, '0');
     return `${year}-${month}-${day}`;
+  }
+
+  private generateTimeOptions() {
+    const startHour = 7;
+    const endHour = 21;
+
+    for (let hour = startHour; hour < endHour; hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
+        const time = this.formatTime(hour, minute);
+        this.timeOptions.push(time);
+      }
+    }
+    this.timeOptions.push(this.formatTime(endHour, 0));
+  }
+
+  private formatTime(hour: number, minute: number): string {
+    const period = hour >= 12 ? 'PM' : 'AM';
+    const displayHour = hour > 12 ? hour - 12 : hour === 0 ? 12 : hour;
+    const displayMinute = minute === 0 ? '00' : minute.toString();
+    return `${displayHour}:${displayMinute} ${period}`;
   }
 }
