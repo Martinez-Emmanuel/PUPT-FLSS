@@ -25,8 +25,8 @@ class DatabaseSeeder extends Seeder
             CourseRequirementsTableSeeder::class,
             RoomsTableSeeder::class,
             SectionsPerProgramYearTableSeeder::class,
-            // SectionCoursesTableSeeder::class,
-            // SchedulesTableSeeder::class,
+            SectionCoursesTableSeeder::class,
+            SchedulesTableSeeder::class,
         ]);
     }
 }
