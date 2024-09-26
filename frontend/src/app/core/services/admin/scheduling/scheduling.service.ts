@@ -12,6 +12,15 @@ export interface Program {
   curriculums: { [yearLevel: string]: string };
 }
 
+export interface Program {
+  program_id: number;
+  program_code: string;
+  program_title: string;
+  year_levels: YearLevel[]; 
+  sections: { [yearLevel: string]: number };
+  curriculums: { [yearLevel: string]: string };
+}
+
 export interface Section {
   section_id: number;
   section_name: string;
@@ -42,9 +51,15 @@ export interface Schedule {
   professor: string;
   room: string;
   program: string;
+  program_code: string;
   year: number;
   curriculum: string;
   section: string;
+
+  schedule_id?: number;
+  faculty_id?: number;
+  faculty_email?: string;
+  room_id?: number;
 }
 
 export interface Semester {
@@ -71,7 +86,61 @@ export interface YearLevel {
   semesters: Semester[];
 }
 
+export interface PopulateSchedulesResponse {
+  active_semester_id: number;
+  academic_year_id: number;
+  semester_id: number;
+  programs: ProgramResponse[];
+}
 
+export interface ProgramResponse {
+  program_id: number;
+  program_code: string;
+  program_title: string;
+  year_levels: YearLevelResponse[];
+}
+
+export interface YearLevelResponse {
+  year_level: number;
+  curriculum_id: number;
+  curriculum_year: string;
+  semesters: SemesterResponse[];
+}
+
+export interface SemesterResponse {
+  semester: number;
+  sections: SectionResponse[];
+}
+
+export interface SectionResponse {
+  section_per_program_year_id: number;
+  section_name: string;
+  courses: CourseResponse[];
+}
+
+export interface CourseResponse {
+  course_assignment_id: number;
+  course_id: number;
+  course_code: string;
+  course_title: string;
+  lec_hours: number;
+  lab_hours: number;
+  units: number;
+  tuition_hours: number;
+  schedule?: {
+    schedule_id: number;
+    day: string;
+    start_time: string;
+    end_time: string;
+  };
+  professor: string;
+  faculty_id: number;
+  faculty_email: string;
+  room?: { 
+    room_id: number;
+    room_code: string;
+  };
+}
 
 @Injectable({
   providedIn: 'root',
@@ -215,5 +284,11 @@ export class SchedulingService {
         sectionId: sectionId.toString(),
       },
     });
+  }
+
+  populateSchedules(): Observable<PopulateSchedulesResponse> {
+    return this.http.get<PopulateSchedulesResponse>(
+      `${this.baseUrl}/populate-schedules`
+    );
   }
 }
