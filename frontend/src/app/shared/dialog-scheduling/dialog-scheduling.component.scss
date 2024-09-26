@@ -50,7 +50,8 @@
 
 /* ------ Edit Schedule Section ------ */
 .edit-schedule-details {
-  flex: 4;
+  flex: 5;
+  overflow: hidden;
 
   .content.forms-list {
     @include flex-layout(
@@ -66,12 +67,16 @@
         $gap: var(--spacing-xs)
       );
 
-      /* Icon color when the field is focused (primary-one color) */
+      .date-fields {
+        @include flex-layout($gap: var(--spacing-sm));
+      }
+
+      /* Icon color when the field is focused */
       .mat-focused .mat-icon {
         color: var(--primary-one);
       }
 
-      /* Icon color when the field is invalid (primary-warning color) */
+      /* Icon color when the field is invalid */
       .mat-focused .mat-icon.invalid-icon {
         color: var(--primary-warning);
       }
@@ -83,17 +88,42 @@
     }
   }
 
+  /* Schedule Validator Styles */
+  .schedule-validator {
+    @include flex-layout;
+
+    .validation-message {
+      @include flex-layout($align: center, $gap: var(--spacing-xs));
+      padding: var(--spacing-xs);
+      border-radius: var(--border-radius-sm);
+      width: fit-content;
+
+      span[mat-symbol] {
+        font-size: var(--font-size-mdx);
+      }
+
+      &.no-conflict {
+        background-color: var(--secondary-fade);
+        color: var(--secondary-text);
+      }
+
+      &.conflict {
+        background-color: var(--primary-fade);
+        color: var(--primary-text);
+      }
+    }
+  }
+
   .scheduling-dialog-actions {
     @include reset-styles;
     @include flex-layout($align: stretch, $justify: space-between);
     padding: var(--spacing-lg) 0;
-    
+
     .clear-all-button {
       color: var(--neutral-base) !important;
     }
 
     .action-buttons {
-
       .cancel-button {
         color: var(--primary-text) !important;
       }
@@ -110,7 +140,7 @@
 
 /* ------ Suggested Faculty Section ------ */
 .suggested-faculty {
-  flex: 2;
+  flex: 3;
   background-color: var(--neutral-extra);
 
   .content.faculty-list {
