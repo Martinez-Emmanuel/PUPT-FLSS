@@ -85,16 +85,24 @@
 
   .scheduling-dialog-actions {
     @include reset-styles;
+    @include flex-layout($align: stretch, $justify: space-between);
     padding: var(--spacing-lg) 0;
-
-    .cancel-button {
-      color: var(--primary-text) !important;
+    
+    .clear-all-button {
+      color: var(--neutral-base) !important;
     }
 
-    .action-button {
-      &:disabled {
-        color: var(--neutral-base) !important;
-        opacity: var(--opacity-semi-opaque);
+    .action-buttons {
+
+      .cancel-button {
+        color: var(--primary-text) !important;
+      }
+
+      .action-button {
+        &:disabled {
+          color: var(--neutral-base) !important;
+          opacity: var(--opacity-semi-opaque);
+        }
       }
     }
   }

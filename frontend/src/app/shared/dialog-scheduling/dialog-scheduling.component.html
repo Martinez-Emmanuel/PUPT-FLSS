@@ -136,17 +136,26 @@
 
     <!-- Action Buttons -->
     <mat-dialog-actions class="scheduling-dialog-actions">
-      <button class="cancel-button" mat-button (click)="onCancel()">
-        Cancel
+      <!-- New Clear All button -->
+      <button mat-button class="clear-all-button" (click)="onClearAll()">
+        <!-- <mat-icon>clear_all</mat-icon>  -->
+        Clear All
       </button>
-      <button
-        class="action-button"
-        mat-flat-button
-        [disabled]="!scheduleForm.valid"
-        (click)="onAssign()"
-      >
-        Assign Schedule
-      </button>
+
+      <!-- Existing buttons (Cancel and Assign Schedule) -->
+      <div class="action-buttons">
+        <button class="cancel-button" mat-button (click)="onCancel()">
+          Cancel
+        </button>
+        <button
+          class="action-button"
+          mat-flat-button
+          [disabled]="!scheduleForm.valid"
+          (click)="onAssign()"
+        >
+          Assign Schedule
+        </button>
+      </div>
     </mat-dialog-actions>
   </section>
 </div>

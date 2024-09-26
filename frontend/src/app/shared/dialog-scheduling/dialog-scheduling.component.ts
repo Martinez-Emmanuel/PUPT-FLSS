@@ -71,4 +71,8 @@ export class DialogSchedulingComponent {
       this.scheduleForm.markAllAsTouched();
     }
   }
+
+  onClearAll() {
+    this.scheduleForm.reset();
+  }
 }
