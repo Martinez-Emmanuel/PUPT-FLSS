@@ -66,7 +66,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     'Gecilie Almiranez',
     'Steven Villarosa',
     'lady Modesto',
-    'AJ San Luis'
+    'AJ San Luis',
   ];
   roomOptions: string[] = [
     'Room A201',
@@ -92,8 +92,32 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       day: 'Saturday',
       time: '07:30 AM - 12:30 PM',
     },
-    { name: 'Ms. Lady Modesto', day: 'Friday', time: '04:00 PM - 09:00 PM' },
-  ]; // mock data
+    {
+      name: 'Ms. Lady Modesto',
+      day: 'Friday',
+      time: '04:00 PM - 09:00 PM',
+    },
+    {
+      name: 'Mr. John Dustin Santos',
+      day: 'Monday',
+      time: '09:00 AM - 02:00 PM',
+    },
+    {
+      name: 'Mr. AJ San Luis',
+      day: 'Thursday',
+      time: '10:30 AM - 03:30 PM',
+    },
+    {
+      name: 'Ms. Lady Modesto',
+      day: 'Sunday',
+      time: '08:00 AM - 01:00 PM',
+    },
+    {
+      name: 'Mrs. Gecilie Almiranez',
+      day: 'Wednesday',
+      time: '01:00 PM - 06:00 PM',
+    },
+  ];  
 
   selectedProgram: string = '';
   selectedYear: number = 1;
