@@ -7,13 +7,9 @@ use Illuminate\Support\Facades\DB;
 
 class ScheduleController extends Controller
 {
-    /**
-     * Automatically assigns courses to sections and populates the schedules.
-     * Maintained as a GET method to align with your requirements.
-     */
     public function autoAssignCoursesToSections()
     {
-        // Step 1: Get the active semester
+        // Step 1: Get the active semester and academic year
         $activeSemester = DB::table('active_semesters')
             ->where('is_active', 1)
             ->first();
@@ -22,7 +18,9 @@ class ScheduleController extends Controller
             return response()->json(['message' => 'No active semester found'], 404);
         }
 
-        // Step 2: Fetch all assigned courses for the active semester
+        $activeAcademicYearId = $activeSemester->academic_year_id;
+
+        // Step 2: Fetch all assigned courses for the active semester and academic year
         $assignedCourses = DB::table('curricula as c')
             ->select(
                 'p.program_id',
@@ -42,18 +40,25 @@ class ScheduleController extends Controller
                 'co.lec_hours',
                 'co.lab_hours',
                 'co.units',
-                'co.tuition_hours'
+                'co.tuition_hours',
+                'pylc.academic_year_id'
             )
             ->join('curricula_program as cp', 'c.curriculum_id', '=', 'cp.curriculum_id')
             ->join('programs as p', 'cp.program_id', '=', 'p.program_id')
             ->join('year_levels as yl', 'cp.curricula_program_id', '=', 'yl.curricula_program_id')
             ->join('semesters as s', 'yl.year_level_id', '=', 's.year_level_id')
+            ->join('program_year_level_curricula as pylc', function ($join) {
+                $join->on('pylc.program_id', '=', 'p.program_id')
+                    ->on('pylc.year_level', '=', 'yl.year')
+                    ->on('pylc.curriculum_id', '=', 'c.curriculum_id');
+            })
             ->leftJoin('course_assignments as ca', function ($join) {
                 $join->on('ca.curricula_program_id', '=', 'cp.curricula_program_id')
                      ->on('ca.semester_id', '=', 's.semester_id');
             })
             ->leftJoin('courses as co', 'ca.course_id', '=', 'co.course_id')
             ->where('s.semester', $activeSemester->semester_id)
+            ->where('pylc.academic_year_id', $activeAcademicYearId) // Filter for active academic year
             ->orderBy('p.program_id')
             ->orderBy('yl.year')
             ->orderBy('s.semester')
@@ -71,6 +76,7 @@ class ScheduleController extends Controller
             $sections = DB::table('sections_per_program_year')
                 ->where('program_id', $row->program_id)
                 ->where('year_level', $row->year_level)
+                ->where('academic_year_id', $activeAcademicYearId) // Filter for active academic year
                 ->get();
 
             foreach ($sections as $section) {
@@ -81,12 +87,11 @@ class ScheduleController extends Controller
 
         return response()->json([
             'active_semester_id' => $activeSemester->active_semester_id,
-            'academic_year_id' => $activeSemester->academic_year_id,
+            'academic_year_id' => $activeAcademicYearId,
             'semester_id' => $activeSemester->semester_id,
             'programs' => $response
         ]);
     }
-
 
     private function findOrCreateProgram(&$response, $row)
     {
