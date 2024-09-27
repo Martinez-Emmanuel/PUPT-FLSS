@@ -142,6 +142,24 @@ export interface CourseResponse {
   };
 }
 
+export interface Room {
+  room_id: number;
+  room_code: string;
+  location: string;
+  floor_level: string;
+  room_type: string;
+  capacity: number;
+  status: string;
+}
+
+export interface Faculty {
+  faculty_id: number;
+  name: string;
+  faculty_email: string;
+  faculty_type: string;
+  faculty_units: number;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -290,5 +308,13 @@ export class SchedulingService {
     return this.http.get<PopulateSchedulesResponse>(
       `${this.baseUrl}/populate-schedules`
     );
+  }
+
+  getAllRooms(): Observable<{ rooms: Room[] }> {
+    return this.http.get<{ rooms: Room[] }>(`${this.baseUrl}/get-rooms`);
+  }
+
+  getFacultyDetails(): Observable<{ faculty: Faculty[] }> {
+    return this.http.get<{ faculty: Faculty[] }>(`${this.baseUrl}/get-faculty`);
   }
 }

@@ -70,20 +70,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   semesterOptions: Semester[] = [];
   programs: Program[] = [];
   timeOptions: string[] = [];
-  professorOptions: string[] = [
-    'John Dustin Santos',
-    'Gecilie Almiranez',
-    'Steven Villarosa',
-    'Lady Modesto',
-    'AJ San Luis',
-  ];
-  roomOptions: string[] = [
-    'Room A201',
-    'Room A202',
-    'Room A203',
-    'DOST Lab',
-    'Aboitiz Lab',
-  ]; // mock data
   dayOptions: string[] = [
     'Monday',
     'Tuesday',
@@ -652,58 +638,48 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   }
 
   openEditDialog(schedule: Schedule) {
-    const selectedProgramInfo = `${schedule.program_code} ${schedule.year}-${schedule.section}`;
-    const selectedCourseInfo = `${schedule.course_code} - ${schedule.course_title}`;
-    
-    const dialogRef = this.dialog.open(DialogSchedulingComponent, {
-      maxWidth: '45rem',
-      width: '100%',
-      disableClose: true,
-      data: {
-        dayOptions: this.dayOptions,
-        timeOptions: this.timeOptions,
-        endTimeOptions: this.timeOptions,
-        professorOptions: this.professorOptions,
-        roomOptions: this.roomOptions,
-        selectedProgramInfo: selectedProgramInfo,
-        selectedCourseInfo: selectedCourseInfo,
-        suggestedFaculty: this.suggestedFaculty,
-        existingSchedule: schedule,
-      },
-    });
+    forkJoin({
+      rooms: this.schedulingService.getAllRooms(),
+      faculty: this.schedulingService.getFacultyDetails(),
+    }).subscribe(({ rooms, faculty }) => {
+      const roomOptions = rooms.rooms.map((room) => room.room_code);
+      const professorOptions = faculty.faculty.map((professor) => professor.name);
   
-    dialogRef.componentInstance.scheduleForm.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((formValues) => {
-        if (formValues.startTime) {
-          // Filter endTimeOptions to only include times after the selected startTime
-          const startIndex = this.timeOptions.indexOf(formValues.startTime);
-          if (startIndex !== -1) {
-            const filteredEndTimes = this.timeOptions.slice(startIndex + 1);
-            // Update the data object instead of directly accessing endTimeOptions
-            dialogRef.componentInstance.data.endTimeOptions = filteredEndTimes;
-            this.cdr.detectChanges();
-          }
-        }
+      const selectedProgramInfo = `${schedule.program_code} ${schedule.year}-${schedule.section}`;
+      const selectedCourseInfo = `${schedule.course_code} - ${schedule.course_title}`;
+      
+      const dialogRef = this.dialog.open(DialogSchedulingComponent, {
+        maxWidth: '45rem',
+        width: '100%',
+        disableClose: true,
+        data: {
+          dayOptions: this.dayOptions,
+          timeOptions: this.timeOptions,
+          endTimeOptions: this.timeOptions,
+          professorOptions: professorOptions,
+          roomOptions: roomOptions,
+          selectedProgramInfo: selectedProgramInfo,
+          selectedCourseInfo: selectedCourseInfo,
+          suggestedFaculty: this.suggestedFaculty,
+          existingSchedule: schedule,
+        },
       });
   
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        // TODO: Handle the assignment logic here
-        console.log('Assigned Schedule:', result);
-        this.snackBar.open('Schedule assigned successfully!', 'Close', {
-          duration: 3000,
-        });
-        // Optionally, refresh the schedules table
-        this.fetchCourses(
-          this.programOptions.find((p) => p.display === this.selectedProgram)
-            ?.id || 0,
-          this.selectedYear,
-          this.sectionOptions.find(
-            (s) => s.section_name === this.selectedSection
-          )?.section_id || 0
-        ).subscribe();
-      }
+      dialogRef.afterClosed().subscribe((result) => {
+        if (result) {
+          this.snackBar.open('Schedule assigned successfully!', 'Close', {
+            duration: 3000,
+          });
+          this.fetchCourses(
+            this.programOptions.find((p) => p.display === this.selectedProgram)
+              ?.id || 0,
+            this.selectedYear,
+            this.sectionOptions.find(
+              (s) => s.section_name === this.selectedSection
+            )?.section_id || 0
+          ).subscribe();
+        }
+      });
     });
   }
 
