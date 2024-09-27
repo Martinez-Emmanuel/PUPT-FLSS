@@ -358,15 +358,19 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
   onManageSections(program: Program) {
     const fields: DialogFieldConfig[] = [];
 
-    if (!Array.isArray(program.year_levels)) {
+    const sortedYearLevels = program.year_levels.sort(
+      (a: YearLevel, b: YearLevel) => a.year_level - b.year_level
+    );
+
+    if (!Array.isArray(sortedYearLevels)) {
       console.error(
         'Expected year_levels to be an array, but got:',
-        program.year_levels
+        sortedYearLevels
       );
       return;
     }
 
-    program.year_levels.forEach((yearLevelObj: YearLevel) => {
+    sortedYearLevels.forEach((yearLevelObj: YearLevel) => {
       const yearLevelKey = `yearLevel${yearLevelObj.year_level}`;
       const sectionsKey = `numberOfSections${yearLevelObj.year_level}`;
 
@@ -415,7 +419,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         let changesMade = false;
-        program.year_levels.forEach((yearLevelObj) => {
+        sortedYearLevels.forEach((yearLevelObj) => {
           const sectionsKey = `numberOfSections${yearLevelObj.year_level}`;
           const numberOfSections = result[sectionsKey];
 
