@@ -149,12 +149,18 @@
 
       <!--Schedule Validator-->
       <div class="schedule-validator">
-        @if (!hasConflicts) {
+        <!-- @if (!hasConflicts) {
         <div class="validation-message no-conflict">
           <span mat-symbol="check_circle"></span>
           <span>All good! No scheduling conflicts have been detected.</span>
         </div>
         } @else {
+        <div class="validation-message conflict">
+          <span mat-symbol="error"></span>
+          <span>Warning: Scheduling conflicts have been detected.</span>
+        </div>
+        } -->
+        @if (hasConflicts) {
         <div class="validation-message conflict">
           <span mat-symbol="error"></span>
           <span>Warning: Scheduling conflicts have been detected.</span>
