@@ -175,6 +175,11 @@
     margin-bottom: var(--spacing-lg);
     border-radius: var(--border-radius-sm);
 
+    .no-faculty-message {
+      opacity: var(--opacity-semi-opaque);
+      font-style: italic;
+    }
+
     .faculty-item {
       background-color: var(--neutral-extra-dark);
       padding: var(--spacing-xs) var(--spacing-sm);

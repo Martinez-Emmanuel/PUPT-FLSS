@@ -12,8 +12,21 @@
       class="content faculty-list"
       [@cardEntranceSide]="data.suggestedFaculty.length"
     >
-      @for (faculty of data.suggestedFaculty; track faculty) {
-      <div class="faculty-item">
+      <!-- Check if suggestedFaculty is empty -->
+      @if (data.suggestedFaculty.length === 0) {
+      <div class="no-faculty-message">
+        No faculty has selected this course as their preference.
+      </div>
+      }
+      <!-- If suggestedFaculty exists, show the list -->
+      @else { @for (faculty of data.suggestedFaculty; track faculty) {
+      <div
+        class="faculty-item"
+        (click)="onFacultyClick(faculty)"
+        style="cursor: pointer"
+        [ngClass]="{ 'selected-faculty': isFacultySelected(faculty) }"
+        matRipple
+      >
         <div
           class="faculty-type"
           [ngClass]="{
@@ -26,7 +39,7 @@
         <div class="faculty-name">{{ faculty.name }}</div>
         <div class="faculty-pref">{{ faculty.day }}, {{ faculty.time }}</div>
       </div>
-      }
+      } }
     </mat-dialog-content>
   </section>
 

@@ -1,3 +1,5 @@
+// dialog-scheduling.component.ts
+
 import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -69,6 +71,14 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
+  // Optional: To keep track of selected faculty for UI purposes
+  selectedFaculty: {
+    name: string;
+    type: string;
+    day: string;
+    time: string;
+  } | null = null;
+
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<DialogSchedulingComponent>,
@@ -136,7 +146,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     if (this.scheduleForm.valid) {
       const formValues = this.scheduleForm.value;
       const { day, startTime, endTime, professor, room } = formValues;
-  
+
       const selectedFaculty = this.data.facultyOptions.find(
         (f) => f.name === professor
       );
@@ -146,7 +156,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
         });
         return;
       }
-  
+
       const selectedRoom = this.data.roomOptionsList.find(
         (r) => r.room_code === room
       );
@@ -156,13 +166,13 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
         });
         return;
       }
-  
+
       const faculty_id = selectedFaculty.faculty_id;
       const room_id = selectedRoom.room_id;
-  
+
       const formattedStartTime = this.formatTimeToBackend(startTime);
       const formattedEndTime = this.formatTimeToBackend(endTime);
-  
+
       this.schedulingService
         .assignSchedule(
           this.data.schedule_id,
@@ -184,7 +194,31 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     } else {
       this.scheduleForm.markAllAsTouched();
     }
-  }  
+  }
+
+  public onFacultyClick(faculty: {
+    name: string;
+    type: string;
+    day: string;
+    time: string;
+  }): void {
+    this.selectedFaculty = faculty;
+
+    const day = faculty.day;
+
+    const [startTime, endTime] = faculty.time
+      .split(' - ')
+      .map((time) => time.trim());
+
+    this.scheduleForm.patchValue({
+      day: day,
+      startTime: startTime,
+      endTime: endTime,
+      professor: faculty.name,
+    });
+
+    this.scheduleForm.markAllAsTouched();
+  }
 
   /*** Autocomplete and Filtering ***/
 
@@ -264,5 +298,14 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
         duration: 3000,
       });
     };
+  }
+
+  public isFacultySelected(faculty: {
+    name: string;
+    type: string;
+    day: string;
+    time: string;
+  }): boolean {
+    return this.selectedFaculty === faculty;
   }
 }
