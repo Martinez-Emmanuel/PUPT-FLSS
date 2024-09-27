@@ -136,7 +136,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     if (this.scheduleForm.valid) {
       const formValues = this.scheduleForm.value;
       const { day, startTime, endTime, professor, room } = formValues;
-
+  
       const selectedFaculty = this.data.facultyOptions.find(
         (f) => f.name === professor
       );
@@ -146,7 +146,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
         });
         return;
       }
-
+  
       const selectedRoom = this.data.roomOptionsList.find(
         (r) => r.room_code === room
       );
@@ -156,13 +156,13 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
         });
         return;
       }
-
+  
       const faculty_id = selectedFaculty.faculty_id;
       const room_id = selectedRoom.room_id;
-
+  
       const formattedStartTime = this.formatTimeToBackend(startTime);
       const formattedEndTime = this.formatTimeToBackend(endTime);
-
+  
       this.schedulingService
         .assignSchedule(
           this.data.schedule_id,
@@ -175,9 +175,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (response) => {
-            this.snackBar.open('Schedule assigned successfully!', 'Close', {
-              duration: 3000,
-            });
+            // Remove the snackbar here
             this.dialogRef.close(true); // Indicate success
           },
           error: (error) => {
@@ -187,7 +185,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     } else {
       this.scheduleForm.markAllAsTouched();
     }
-  }
+  }  
 
   /*** Autocomplete and Filtering ***/
 

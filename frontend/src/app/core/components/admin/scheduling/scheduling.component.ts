@@ -296,9 +296,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     }
 
     console.log('Selected Program ID:', selectedProgram.id);
-    this.selectedProgram = selectedProgramDisplay; // Update selectedProgram
-    this.selectedYear = selectedYearLevel; // Update selectedYear
-    this.selectedSection = selectedSectionDisplay; // Update selectedSection
+    this.selectedProgram = selectedProgramDisplay;
+    this.selectedYear = selectedYearLevel;
+    this.selectedSection = selectedSectionDisplay;
 
     this.yearLevelOptions = selectedProgram.year_levels;
 
