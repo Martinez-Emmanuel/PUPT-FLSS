@@ -1,22 +1,14 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http'; 
-import { Observable } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../../../../environments/environment.dev';
 
 export interface Program {
   program_id: number;
   program_code: string;
   program_title: string;
-  year_levels: YearLevel[]; 
-  sections: { [yearLevel: string]: number };
-  curriculums: { [yearLevel: string]: string };
-}
-
-export interface Program {
-  program_id: number;
-  program_code: string;
-  program_title: string;
-  year_levels: YearLevel[]; 
+  year_levels: YearLevel[];
   sections: { [yearLevel: string]: number };
   curriculums: { [yearLevel: string]: string };
 }
@@ -136,7 +128,7 @@ export interface CourseResponse {
   professor: string;
   faculty_id: number;
   faculty_email: string;
-  room?: { 
+  room?: {
     room_id: number;
     room_code: string;
   };
@@ -168,9 +160,20 @@ export class SchedulingService {
 
   constructor(private http: HttpClient) {}
 
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    console.error('An error occurred:', error);
+    return throwError(
+      () => new Error('Something went wrong; please try again later.')
+    );
+  }
+
+  /* Academic Year-related methods */
+
   // Fetch academic years from the backend
   getAcademicYears(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/academic-years-dropdown`);
+    return this.http
+      .get<any[]>(`${this.baseUrl}/academic-years-dropdown`)
+      .pipe(catchError(this.handleError));
   }
 
   // Set the active academic year and semester
@@ -180,22 +183,61 @@ export class SchedulingService {
     startDate: string,
     endDate: string
   ): Observable<void> {
-    return this.http.post<void>(`${this.baseUrl}/set-active-ay-sem`, {
-      academic_year_id: academicYearId,
-      semester_id: semesterId,
-      start_date: startDate,
-      end_date: endDate,
-    });
+    return this.http
+      .post<void>(`${this.baseUrl}/set-active-ay-sem`, {
+        academic_year_id: academicYearId,
+        semester_id: semesterId,
+        start_date: startDate,
+        end_date: endDate,
+      })
+      .pipe(catchError(this.handleError));
   }
+
+  // Delete academic year
+  deleteAcademicYear(academicYearId: number): Observable<any> {
+    return this.http
+      .request('DELETE', `${this.baseUrl}/delete-ay`, {
+        body: { academic_year_id: academicYearId },
+      })
+      .pipe(catchError(this.handleError));
+  }
+
+  // Add new academic year
+  addAcademicYear(yearStart: string, yearEnd: string): Observable<any> {
+    return this.http
+      .post<any>(`${this.baseUrl}/add-academic-year`, {
+        year_start: yearStart,
+        year_end: yearEnd,
+      })
+      .pipe(catchError(this.handleError));
+  }
+
+  // Get active academic year and semester details
+  getActiveYearAndSemester(): Observable<{
+    activeYear: string;
+    activeSemester: number;
+    startDate: string;
+    endDate: string;
+  }> {
+    return this.http
+      .get<{
+        activeYear: string;
+        activeSemester: number;
+        startDate: string;
+        endDate: string;
+      }>(`${this.baseUrl}/active-year-semester`)
+      .pipe(catchError(this.handleError));
+  }
+
+  /* Program-related methods */
 
   // Fetch program details with year levels and curriculum versions for a specific academic year
   fetchProgramDetailsByAcademicYear(payload: {
     academic_year_id: number;
   }): Observable<any> {
-    return this.http.post<any>(
-      `${this.baseUrl}/fetch-ay-prog-details`,
-      payload
-    );
+    return this.http
+      .post<any>(`${this.baseUrl}/fetch-ay-prog-details`, payload)
+      .pipe(catchError(this.handleError));
   }
 
   // Update year levels' curricula for a specific academic year and program
@@ -212,33 +254,21 @@ export class SchedulingService {
         curriculum_id: yl.curriculum_id,
       })),
     };
-    return this.http.post<any>(
-      `${this.baseUrl}/update-yr-lvl-curricula`,
-      payload
-    );
+    return this.http
+      .post<any>(`${this.baseUrl}/update-yr-lvl-curricula`, payload)
+      .pipe(catchError(this.handleError));
   }
 
-  //Delete academic year
-  deleteAcademicYear(academicYearId: number): Observable<any> {
-    return this.http.request('DELETE', `${this.baseUrl}/delete-ay`, {
-      body: { academic_year_id: academicYearId },
-    });
-  }
-
-  // Delete a program from an academic year
+  // Remove a program from an academic year
   removeProgramFromAcademicYear(
     academicYearId: number,
     programId: number
   ): Observable<any> {
-    return this.http.request('DELETE', `${this.baseUrl}/remove-program`, {
-      body: { academic_year_id: academicYearId, program_id: programId },
-    });
-  }
-
-  // Add new academic year
-  addAcademicYear(yearStart: string, yearEnd: string): Observable<any> {
-    const payload = { year_start: yearStart, year_end: yearEnd };
-    return this.http.post<any>(`${this.baseUrl}/add-academic-year`, payload);
+    return this.http
+      .request('DELETE', `${this.baseUrl}/remove-program`, {
+        body: { academic_year_id: academicYearId, program_id: programId },
+      })
+      .pipe(catchError(this.handleError));
   }
 
   // Edit section on a specific year level
@@ -248,73 +278,98 @@ export class SchedulingService {
     yearLevel: number,
     numberOfSections: number
   ): Observable<any> {
-    return this.http.post<any>(`${this.baseUrl}/update-sections`, {
-      academic_year_id: academicYearId,
-      program_id: programId,
-      year_level: yearLevel,
-      number_of_sections: numberOfSections,
-    });
+    return this.http
+      .post<any>(`${this.baseUrl}/update-sections`, {
+        academic_year_id: academicYearId,
+        program_id: programId,
+        year_level: yearLevel,
+        number_of_sections: numberOfSections,
+      })
+      .pipe(catchError(this.handleError));
   }
 
-  // // Fetch all programs
-  // getPrograms(): Observable<Program[]> {
-  //   return this.http.get<Program[]>(`${this.baseUrl}/programs`);
-  // }
-
-  // Fetch sections by program and year
+  // Fetch sections by program and year level
   getSections(program: string, year: number): Observable<string[]> {
-    return this.http.get<string[]>(
-      `${this.baseUrl}/programs/${program}/year/${year}/sections`
-    );
+    return this.http
+      .get<string[]>(
+        `${this.baseUrl}/programs/${program}/year/${year}/sections`
+      )
+      .pipe(catchError(this.handleError));
   }
 
-  getActiveYearAndSemester(): Observable<{
-    activeYear: string;
-    activeSemester: number;
-    startDate: string;
-    endDate: string;
-  }> {
-    return this.http.get<{
-      activeYear: string;
-      activeSemester: number;
-      startDate: string;
-      endDate: string;
-    }>(`${this.baseUrl}/active-year-semester`);
-  }
-
+  // Fetch active year levels and curricula for programs
   getProgramsFromYearLevels(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/active-year-levels-curricula`);
+    return this.http
+      .get<any[]>(`${this.baseUrl}/active-year-levels-curricula`)
+      .pipe(catchError(this.handleError));
   }
 
+  // Get active year levels curricula
   getActiveYearLevelsCurricula(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.baseUrl}/active-year-levels-curricula`);
+    return this.http
+      .get<any[]>(`${this.baseUrl}/active-year-levels-curricula`)
+      .pipe(catchError(this.handleError));
   }
 
+  /* Schedule-related methods */
+
+  // Get assigned courses by program, year level, and section
   getAssignedCoursesByProgramYearAndSection(
     programId: number,
     yearLevel: number,
     sectionId: number
   ): Observable<any> {
-    return this.http.get<any>(`${this.baseUrl}/get-assigned-courses-sem`, {
-      params: {
-        programId: programId.toString(),
-        yearLevel: yearLevel.toString(),
-        sectionId: sectionId.toString(),
-      },
-    });
+    return this.http
+      .get<any>(`${this.baseUrl}/get-assigned-courses-sem`, {
+        params: {
+          programId: programId.toString(),
+          yearLevel: yearLevel.toString(),
+          sectionId: sectionId.toString(),
+        },
+      })
+      .pipe(catchError(this.handleError));
   }
 
+  // Populate schedules
   populateSchedules(): Observable<PopulateSchedulesResponse> {
-    return this.http.get<PopulateSchedulesResponse>(
-      `${this.baseUrl}/populate-schedules`
-    );
+    return this.http
+      .get<PopulateSchedulesResponse>(`${this.baseUrl}/populate-schedules`)
+      .pipe(catchError(this.handleError));
   }
 
+  // Get all available rooms
   getAllRooms(): Observable<{ rooms: Room[] }> {
-    return this.http.get<{ rooms: Room[] }>(`${this.baseUrl}/get-rooms`);
+    return this.http
+      .get<{ rooms: Room[] }>(`${this.baseUrl}/get-rooms`)
+      .pipe(catchError(this.handleError));
   }
 
+  // Get faculty details
   getFacultyDetails(): Observable<{ faculty: Faculty[] }> {
-    return this.http.get<{ faculty: Faculty[] }>(`${this.baseUrl}/get-faculty`);
+    return this.http
+      .get<{ faculty: Faculty[] }>(`${this.baseUrl}/get-faculty`)
+      .pipe(catchError(this.handleError));
+  }
+
+  // Assign schedule to faculty, room, and time
+  assignSchedule(
+    schedule_id: number,
+    faculty_id: number,
+    room_id: number,
+    day: string,
+    start_time: string,
+    end_time: string
+  ): Observable<any> {
+    const payload = {
+      schedule_id,
+      faculty_id,
+      room_id,
+      day,
+      start_time,
+      end_time,
+    };
+    return this.http
+      .post<any>(`${this.baseUrl}/assign-schedule`, payload)
+      .pipe(catchError(this.handleError));
   }
 }
