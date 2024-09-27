@@ -152,6 +152,43 @@ export interface Faculty {
   faculty_units: number;
 }
 
+export interface SubmittedPrefResponse {
+  preferences: Preference[];
+}
+
+export interface Preference {
+  faculty_id: number;
+  faculty_name: string;
+  faculty_code: string;
+  faculty_units: string;
+  active_semesters: ActiveSemester[];
+}
+
+export interface ActiveSemester {
+  active_semester_id: number;
+  academic_year_id: number;
+  academic_year: string;
+  semester_id: number;
+  semester_label: string;
+  courses: CoursePreference[];
+}
+
+export interface CoursePreference {
+  course_assignment_id: number;
+  course_details: CourseDetails;
+  preferred_day: string;
+  preferred_start_time: string;
+  preferred_end_time: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CourseDetails {
+  course_id: number;
+  course_code: string;
+  course_title: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -370,6 +407,12 @@ export class SchedulingService {
     };
     return this.http
       .post<any>(`${this.baseUrl}/assign-schedule`, payload)
+      .pipe(catchError(this.handleError));
+  }
+
+  getSubmittedPreferencesForActiveSemester(): Observable<SubmittedPrefResponse> {
+    return this.http
+      .get<SubmittedPrefResponse>(`${this.baseUrl}/submitted-pref-sem`)
       .pipe(catchError(this.handleError));
   }
 }

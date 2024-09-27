@@ -26,6 +26,7 @@ import {
   CourseResponse,
   Faculty,
   Room,
+  SubmittedPrefResponse,
 } from '../../../services/admin/scheduling/scheduling.service';
 
 import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
@@ -82,34 +83,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     'Sunday',
   ];
   endTimeOptions: string[] = [];
-
-  suggestedFaculty = [
-    {
-      name: 'Steven Villarosa',
-      day: 'Saturday',
-      time: '07:30 AM - 12:30 PM',
-      type: 'Full-time (Permanent)',
-    },
-    {
-      name: 'Lady Modesto',
-      day: 'Friday',
-      time: '04:00 PM - 09:00 PM',
-      type: 'Part-time',
-    },
-    {
-      name: 'John Dustin Santos',
-      day: 'Monday',
-      time: '09:00 AM - 02:00 PM',
-      type: 'Full-time (Temporary)',
-    },
-    {
-      name: 'AJ San Luis',
-      day: 'Thursday',
-      time: '10:30 AM - 03:30 PM',
-      type: 'Part-time', 
-    },
-  ];
-  
 
   selectedProgram: string = '';
   selectedYear: number = 1;
@@ -314,9 +287,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     this.selectedCurriculumId = selectedYearLevelObj.curriculum_id;
     this.sectionOptions = selectedYearLevelObj.sections;
 
-    this.headerInputFields.find(
-      (field) => field.key === 'section'
-    )!.options = this.sectionOptions.map((section) => section.section_name);
+    this.headerInputFields.find((field) => field.key === 'section')!.options =
+      this.sectionOptions.map((section) => section.section_name);
 
     console.log(
       'Available Sections for Selected Year Level:',
@@ -352,7 +324,11 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     yearLevel: number,
     sectionId: number
   ): Observable<Schedule[]> {
-    console.log(`Fetching courses for Program ID: ${programId}, Year Level: ${yearLevel}, Section ID: ${sectionId}`);
+    console.log(
+      `Fetching courses for Program ID: ${programId}, 
+      Year Level: ${yearLevel},
+      Section ID: ${sectionId}`
+    );
     return this.schedulingService.populateSchedules().pipe(
       tap((response: PopulateSchedulesResponse) => {
         // Find the selected program
@@ -641,54 +617,101 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
   openEditDialog(schedule: Schedule) {
     if (!schedule.schedule_id) {
-      this.snackBar.open('Schedule ID is missing.', 'Close', { duration: 3000 });
+      this.snackBar.open('Schedule ID is missing.', 'Close', {
+        duration: 3000,
+      });
       return;
     }
-    
+
     forkJoin({
       rooms: this.schedulingService.getAllRooms(),
       faculty: this.schedulingService.getFacultyDetails(),
-    }).subscribe(({ rooms, faculty }) => {
-      const roomOptions = rooms.rooms.map((room) => room.room_code);
-      const professorOptions = faculty.faculty.map((professor) => professor.name);
+      preferences:
+        this.schedulingService.getSubmittedPreferencesForActiveSemester(),
+    }).subscribe({
+      next: ({ rooms, faculty, preferences }) => {
+        const roomOptions = rooms.rooms.map((room) => room.room_code);
+        const professorOptions = faculty.faculty.map(
+          (professor) => professor.name
+        );
 
-      const selectedProgramInfo = 
-        `${schedule.program_code} ${schedule.year}-${schedule.section}`;
-      const selectedCourseInfo = 
-        `${schedule.course_code} - ${schedule.course_title}`;
-      
-      const dialogRef = this.dialog.open(DialogSchedulingComponent, {
-        maxWidth: '45rem',
-        width: '100%',
-        disableClose: true,
-        data: {
-          dayOptions: this.dayOptions,
-          timeOptions: this.timeOptions,
-          endTimeOptions: this.timeOptions,
-          professorOptions: professorOptions,
-          roomOptions: roomOptions,
-          facultyOptions: faculty.faculty,
-          roomOptionsList: rooms.rooms,
-          selectedProgramInfo: selectedProgramInfo,
-          selectedCourseInfo: selectedCourseInfo,
-          suggestedFaculty: this.suggestedFaculty,
-          existingSchedule: schedule,
-          schedule_id: schedule.schedule_id,
-        },
-      });
+        const selectedProgramInfo = `${schedule.program_code} ${schedule.year}-${schedule.section}`;
+        const selectedCourseInfo = `${schedule.course_code} - ${schedule.course_title}`;
 
-      dialogRef.afterClosed().subscribe((result) => {
-        if (result) {
-          this.snackBar.open('Schedule assigned successfully!', 'Close', {
-            duration: 3000,
+        const suggestedFaculty: {
+          name: string;
+          type: string;
+          day: string;
+          time: string;
+        }[] = [];
+
+        preferences.preferences.forEach((pref) => {
+          const facultyDetails = faculty.faculty.find(
+            (f) => f.faculty_id === pref.faculty_id
+          );
+          if (!facultyDetails) {
+            console.warn(
+              `Faculty details not found for faculty_id: ${pref.faculty_id}`
+            );
+            return;
+          }
+
+          pref.active_semesters.forEach((semester) => {
+            semester.courses.forEach((course) => {
+              if (course.course_details.course_id === schedule.course_id) {
+                suggestedFaculty.push({
+                  name: pref.faculty_name,
+                  type: facultyDetails.faculty_type,
+                  day: course.preferred_day,
+                  time: `${this.formatTimeFromBackend(
+                    course.preferred_start_time
+                  )} - ${this.formatTimeFromBackend(
+                    course.preferred_end_time
+                  )}`,
+                });
+              }
+            });
           });
-          this.onInputChange({
-            program: this.selectedProgram,
-            yearLevel: this.selectedYear,
-            section: this.selectedSection
-          });
-        }
-      });
+        });
+
+        const dialogRef = this.dialog.open(DialogSchedulingComponent, {
+          maxWidth: '45rem',
+          width: '100%',
+          disableClose: true,
+          data: {
+            dayOptions: this.dayOptions,
+            timeOptions: this.timeOptions,
+            endTimeOptions: this.timeOptions,
+            professorOptions: professorOptions,
+            roomOptions: roomOptions,
+            facultyOptions: faculty.faculty,
+            roomOptionsList: rooms.rooms,
+            selectedProgramInfo: selectedProgramInfo,
+            selectedCourseInfo: selectedCourseInfo,
+            suggestedFaculty: suggestedFaculty,
+            existingSchedule: schedule,
+            schedule_id: schedule.schedule_id,
+          },
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+          if (result) {
+            this.snackBar.open('Schedule assigned successfully!', 'Close', {
+              duration: 3000,
+            });
+            this.onInputChange({
+              program: this.selectedProgram,
+              yearLevel: this.selectedYear,
+              section: this.selectedSection,
+            });
+          }
+        });
+      },
+      error: (error) => {
+        this.handleError('Failed to fetch necessary data for editing schedule')(
+          error
+        );
+      },
     });
   }
 
@@ -753,6 +776,12 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     const [hourStr, minuteStr, _] = timeStr.split(':');
     const hour = parseInt(hourStr, 10);
     const minute = parseInt(minuteStr, 10);
+    return this.formatTime(hour, minute);
+  }
+
+  private formatTimeFromBackend(timeStr: string): string {
+    if (!timeStr) return 'Not set';
+    const [hour, minute, second] = timeStr.split(':').map(Number);
     return this.formatTime(hour, minute);
   }
 
