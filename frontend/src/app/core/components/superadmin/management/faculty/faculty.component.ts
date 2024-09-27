@@ -32,7 +32,7 @@ import { fadeAnimation } from '../../../../animations/animations';
 })
 export class FacultyComponent implements OnInit {
   facultyStatuses = ['active', 'inactive'];
-  facultyTypes = ['part-time', 'full-time', 'regular'];
+  facultyTypes = ['Full-time (Permanent)', 'Full-time (Temporary)', 'Full-time (Designee)', 'Part-time'];
   selectedFacultyIndex: number | null = null;
 
   faculty: Faculty[] = [];
@@ -42,11 +42,11 @@ export class FacultyComponent implements OnInit {
     { key: 'name', label: 'Name' },
     { key: 'faculty_email', label: 'Email' },
     { key: 'faculty_type', label: 'Type' },
-    { key: 'faculty_unit', label: 'Units Assigned' },
+    { key: 'faculty_units', label: 'Units Assigned' },
     { key: 'status', label: 'Status' },
   ];
 
-  displayedColumns: string[] = ['index', 'code', 'name', 'faculty_email', 'faculty_type', 'faculty_unit', 'status', 'action'];
+  displayedColumns: string[] = ['index', 'code', 'name', 'faculty_email', 'faculty_type', 'faculty_units', 'status', 'action'];
 
   headerInputFields: InputField[] = [
     {
@@ -80,7 +80,7 @@ export class FacultyComponent implements OnInit {
         name: user.name,
         faculty_email: user.faculty_email || '',
         faculty_type: user.faculty_type || '',
-        faculty_unit: user.faculty_unit || 0,
+        faculty_units: user.faculty_units || 0,
         status: user.status || 'Active', // Default to 'Active' if status is undefined
         role: user.role,
       }));
@@ -148,7 +148,7 @@ export class FacultyComponent implements OnInit {
         },
         {
           label: 'Units Assigned',
-          formControlName: 'faculty_unit',
+          formControlName: 'faculty_units',
           type: 'number',
           required: true,
         },
