@@ -14,8 +14,17 @@
     >
       @for (faculty of data.suggestedFaculty; track faculty) {
       <div class="faculty-item">
-        <span class="faculty-name">{{ faculty.name }}</span>
-        <span class="faculty-time">{{ faculty.day }}, {{ faculty.time }}</span>
+        <div
+          class="faculty-type"
+          [ngClass]="{
+            'full-time': faculty.type.includes('Full-time'),
+            'part-time': faculty.type === 'Part-time'
+          }"
+        >
+          {{ faculty.type }}
+        </div>
+        <div class="faculty-name">{{ faculty.name }}</div>
+        <div class="faculty-pref">{{ faculty.day }}, {{ faculty.time }}</div>
       </div>
       }
     </mat-dialog-content>
@@ -110,15 +119,15 @@
         <mat-form-field class="scheduling-forms">
           <mat-label>Professor</mat-label>
           <mat-icon
-          matPrefix
-          [ngClass]="{
-            'invalid-icon':
-              scheduleForm.get('professor')?.invalid &&
-              scheduleForm.get('professor')?.touched
-          }"
-        >
-          person
-        </mat-icon>
+            matPrefix
+            [ngClass]="{
+              'invalid-icon':
+                scheduleForm.get('professor')?.invalid &&
+                scheduleForm.get('professor')?.touched
+            }"
+          >
+            person
+          </mat-icon>
           <input
             type="text"
             matInput
@@ -147,7 +156,8 @@
                 scheduleForm.get('room')?.touched
             }"
           >
-            meeting_room  <!-- You can change this to any icon you prefer -->
+            meeting_room
+            <!-- You can change this to any icon you prefer -->
           </mat-icon>
           <input
             type="text"

@@ -26,7 +26,7 @@ interface DialogData {
   endTimeOptions: string[];
   selectedProgramInfo: string;
   selectedCourseInfo: string;
-  suggestedFaculty: { name: string; day: string; time: string }[];
+  suggestedFaculty: { name: string; type: string; day: string; time: string }[];
   professorOptions: string[];
   roomOptions: string[];
   facultyOptions: Faculty[];
@@ -175,8 +175,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
         .pipe(takeUntil(this.destroy$))
         .subscribe({
           next: (response) => {
-            // Remove the snackbar here
-            this.dialogRef.close(true); // Indicate success
+            this.dialogRef.close(true);
           },
           error: (error) => {
             this.handleError('Failed to assign schedule')(error);

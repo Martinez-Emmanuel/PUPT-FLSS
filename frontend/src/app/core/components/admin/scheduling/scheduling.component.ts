@@ -85,36 +85,31 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
   suggestedFaculty = [
     {
-      name: 'Mr. Steven Villarosa',
+      name: 'Steven Villarosa',
       day: 'Saturday',
       time: '07:30 AM - 12:30 PM',
+      type: 'Full-time (Permanent)',
     },
     {
-      name: 'Ms. Lady Modesto',
+      name: 'Lady Modesto',
       day: 'Friday',
       time: '04:00 PM - 09:00 PM',
+      type: 'Part-time',
     },
     {
-      name: 'Mr. John Dustin Santos',
+      name: 'John Dustin Santos',
       day: 'Monday',
       time: '09:00 AM - 02:00 PM',
+      type: 'Full-time (Temporary)',
     },
     {
-      name: 'Mr. AJ San Luis',
+      name: 'AJ San Luis',
       day: 'Thursday',
       time: '10:30 AM - 03:30 PM',
-    },
-    {
-      name: 'Ms. Lady Modesto',
-      day: 'Sunday',
-      time: '08:00 AM - 01:00 PM',
-    },
-    {
-      name: 'Mrs. Gecilie Almiranez',
-      day: 'Wednesday',
-      time: '01:00 PM - 06:00 PM',
+      type: 'Part-time', 
     },
   ];
+  
 
   selectedProgram: string = '';
   selectedYear: number = 1;

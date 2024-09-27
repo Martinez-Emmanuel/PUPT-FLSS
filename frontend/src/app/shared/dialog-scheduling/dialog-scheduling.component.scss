@@ -51,6 +51,11 @@
 /* ------ Edit Schedule Section ------ */
 .edit-schedule-details {
   flex: 5;
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start
+  );
   overflow: hidden;
 
   .content.forms-list {
@@ -61,6 +66,7 @@
       $gap: var(--spacing-sm)
     );
     @include hide-scrollbar;
+    width: 100%;
 
     .scheduling-form-group {
       @include flex-layout(
@@ -170,21 +176,35 @@
     border-radius: var(--border-radius-sm);
 
     .faculty-item {
-      @include flex-layout(
-        $direction: column,
-        $align: stretch,
-        $justify: flex-start
-      );
       background-color: var(--neutral-extra-dark);
       padding: var(--spacing-xs) var(--spacing-sm);
       border-radius: var(--border-radius-sm);
       cursor: pointer;
 
+      .faculty-type {
+        width: fit-content;
+        padding: 0 var(--spacing-xxs);
+        margin: var(--spacing-xxs) 0;
+        border-radius: var(--border-radius-xs);
+        font-size: var(--font-size-xsx);
+        font-weight: 500;
+
+        &.full-time {
+          background-color: rgba(0, 24, 70, 0.25);
+          color: rgb(165, 193, 245);
+        }
+
+        &.part-time {
+          background-color: rgba(26, 0, 70, 0.25);
+          color: rgb(180, 148, 234);
+        }
+      }
+
       .faculty-name {
         font-weight: 500;
       }
 
-      .faculty-time {
+      .faculty-pref {
         opacity: var(--opacity-semi-opaque);
       }
     }
