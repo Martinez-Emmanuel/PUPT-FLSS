@@ -382,11 +382,10 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           units: course.units,
           tuition_hours: course.tuition_hours,
           day: course.schedule?.day || 'Not set',
-          time: course.schedule
-            ? `${this.formatTimeFromString(
-                course.schedule.start_time
-              )} - ${this.formatTimeFromString(course.schedule.end_time)}`
-            : 'Not set',
+          time: this.getFormattedTime(
+            course.schedule?.start_time,
+            course.schedule?.end_time
+          ),
           professor: course.professor || 'Not set',
           room: course.room?.room_code || 'Not set',
           program: program.program_title,
@@ -783,6 +782,29 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     if (!timeStr) return 'Not set';
     const [hour, minute, second] = timeStr.split(':').map(Number);
     return this.formatTime(hour, minute);
+  }
+
+  private getFormattedTime(startTime?: string, endTime?: string): string {
+    if (!startTime && !endTime) {
+      return 'Not set';
+    }
+
+    const formattedStartTime = startTime
+      ? this.formatTimeFromString(startTime)
+      : 'Not set';
+    const formattedEndTime = endTime
+      ? this.formatTimeFromString(endTime)
+      : 'Not set';
+
+    if (formattedStartTime === 'Not set' && formattedEndTime === 'Not set') {
+      return 'Not set';
+    } else if (formattedStartTime === 'Not set') {
+      return formattedEndTime;
+    } else if (formattedEndTime === 'Not set') {
+      return formattedStartTime;
+    }
+
+    return `${formattedStartTime} - ${formattedEndTime}`;
   }
 
   protected get activeSemesterLabel(): string {
