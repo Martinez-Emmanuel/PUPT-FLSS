@@ -190,13 +190,13 @@
         font-weight: 500;
 
         &.full-time {
-          background-color: rgba(0, 24, 70, 0.25);
-          color: rgb(165, 193, 245);
+          background-color: var(--blue-fade);
+          color: var(--blue-primary);
         }
 
         &.part-time {
-          background-color: rgba(26, 0, 70, 0.25);
-          color: rgb(180, 148, 234);
+          background-color: var(--purple-fade);
+          color: var(--purple-primary);
         }
       }
 
