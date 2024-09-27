@@ -109,6 +109,16 @@
         <!-- Professor Field -->
         <mat-form-field class="scheduling-forms">
           <mat-label>Professor</mat-label>
+          <mat-icon
+          matPrefix
+          [ngClass]="{
+            'invalid-icon':
+              scheduleForm.get('professor')?.invalid &&
+              scheduleForm.get('professor')?.touched
+          }"
+        >
+          person
+        </mat-icon>
           <input
             type="text"
             matInput
@@ -129,6 +139,16 @@
         <!-- Room Field -->
         <mat-form-field class="scheduling-forms">
           <mat-label>Room</mat-label>
+          <mat-icon
+            matPrefix
+            [ngClass]="{
+              'invalid-icon':
+                scheduleForm.get('room')?.invalid &&
+                scheduleForm.get('room')?.touched
+            }"
+          >
+            meeting_room  <!-- You can change this to any icon you prefer -->
+          </mat-icon>
           <input
             type="text"
             matInput

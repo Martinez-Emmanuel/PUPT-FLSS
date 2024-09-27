@@ -27,7 +27,7 @@
   </div>
 
   <!--Scheduling Table-->
-  <div class="scheduling-table-container" [@pageFloatUpAnimation]>
+  <div class="scheduling-table-container" [@fadeAnimation]>
     <div class="table-container">
       <table mat-table [dataSource]="schedules" class="custom-table">
         <!-- Index Column -->
@@ -87,7 +87,7 @@
         <!-- Tuition Hours Column -->
         <ng-container matColumnDef="tuition_hours">
           <th mat-header-cell *matHeaderCellDef class="custom-header">
-            Tuition<br />Hours
+            Tuition Hours
           </th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
             {{ element.tuition_hours }}

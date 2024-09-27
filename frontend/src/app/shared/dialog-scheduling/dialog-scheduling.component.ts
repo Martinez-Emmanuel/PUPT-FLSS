@@ -13,8 +13,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatRippleModule } from '@angular/material/core';
-
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
+
+import { SchedulingService, Faculty, Room } from '../../core/services/admin/scheduling/scheduling.service';
 
 import { cardEntranceSide } from '../../core/animations/animations';
 
@@ -27,12 +29,15 @@ interface DialogData {
   suggestedFaculty: { name: string; day: string; time: string }[];
   professorOptions: string[];
   roomOptions: string[];
+  facultyOptions: Faculty[];
+  roomOptionsList: Room[];
   existingSchedule?: {
     day: string;
     time: string;
     professor: string;
     room: string;
   };
+  schedule_id: number;
 }
 
 @Component({
@@ -49,6 +54,7 @@ interface DialogData {
     MatSelectModule,
     MatAutocompleteModule,
     MatRippleModule,
+    MatSnackBarModule,
     MatSymbolDirective,
   ],
   templateUrl: './dialog-scheduling.component.html',
@@ -66,7 +72,9 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<DialogSchedulingComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData
+    @Inject(MAT_DIALOG_DATA) public data: DialogData,
+    private schedulingService: SchedulingService,
+    private snackBar: MatSnackBar
   ) {
     this.initForm();
   }
@@ -82,22 +90,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  onCancel(): void {
-    this.dialogRef.close();
-  }
-
-  onAssign(): void {
-    if (this.scheduleForm.valid) {
-      this.dialogRef.close(this.scheduleForm.value);
-    } else {
-      this.scheduleForm.markAllAsTouched();
-    }
-  }
-
-  onClearAll(): void {
-    this.scheduleForm.reset();
-    this.data.endTimeOptions = [...this.data.timeOptions];
-  }
+  /*** Form Setup ***/
 
   private initForm(): void {
     this.scheduleForm = this.fb.group({
@@ -108,6 +101,95 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
       room: ['', Validators.required],
     });
   }
+
+  private populateExistingSchedule(): void {
+    if (!this.data.existingSchedule) return;
+
+    const { day, time, professor, room } = this.data.existingSchedule;
+    const [startTime, endTime] = time.split(' - ');
+
+    this.scheduleForm.patchValue({
+      day: day !== 'Not set' ? day : '',
+      startTime: startTime !== 'Not set' ? startTime : '',
+      endTime: endTime !== 'Not set' ? endTime : '',
+      professor: professor !== 'Not set' ? professor : '',
+      room: room !== 'Not set' ? room : '',
+    });
+
+    if (startTime && startTime !== 'Not set') {
+      this.updateEndTimeOptions(startTime);
+    }
+  }
+
+  /*** Form Actions ***/
+
+  public onCancel(): void {
+    this.dialogRef.close();
+  }
+
+  public onClearAll(): void {
+    this.scheduleForm.reset();
+    this.data.endTimeOptions = [...this.data.timeOptions];
+  }
+
+  public onAssign(): void {
+    if (this.scheduleForm.valid) {
+      const formValues = this.scheduleForm.value;
+      const { day, startTime, endTime, professor, room } = formValues;
+
+      const selectedFaculty = this.data.facultyOptions.find(
+        (f) => f.name === professor
+      );
+      if (!selectedFaculty) {
+        this.snackBar.open('Selected professor does not exist.', 'Close', {
+          duration: 3000,
+        });
+        return;
+      }
+
+      const selectedRoom = this.data.roomOptionsList.find(
+        (r) => r.room_code === room
+      );
+      if (!selectedRoom) {
+        this.snackBar.open('Selected room does not exist.', 'Close', {
+          duration: 3000,
+        });
+        return;
+      }
+
+      const faculty_id = selectedFaculty.faculty_id;
+      const room_id = selectedRoom.room_id;
+
+      const formattedStartTime = this.formatTimeToBackend(startTime);
+      const formattedEndTime = this.formatTimeToBackend(endTime);
+
+      this.schedulingService
+        .assignSchedule(
+          this.data.schedule_id,
+          faculty_id,
+          room_id,
+          day,
+          formattedStartTime,
+          formattedEndTime
+        )
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            this.snackBar.open('Schedule assigned successfully!', 'Close', {
+              duration: 3000,
+            });
+            this.dialogRef.close(true); // Indicate success
+          },
+          error: (error) => {
+            this.handleError('Failed to assign schedule')(error);
+          },
+        });
+    } else {
+      this.scheduleForm.markAllAsTouched();
+    }
+  }
+
+  /*** Autocomplete and Filtering ***/
 
   private setupAutocomplete(): void {
     this.filteredProfessors$ = this.setupFilter(
@@ -133,6 +215,8 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
       option.toLowerCase().includes(filterValue)
     );
   }
+
+  /*** Time Selection Handling ***/
 
   private handleStartTimeChanges(): void {
     this.scheduleForm
@@ -160,22 +244,28 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     }
   }
 
-  private populateExistingSchedule(): void {
-    if (!this.data.existingSchedule) return;
+  /*** Utility Methods ***/
 
-    const { day, time, professor, room } = this.data.existingSchedule;
-    const [startTime, endTime] = time.split(' - ');
-
-    this.scheduleForm.patchValue({
-      day: day !== 'Not set' ? day : '',
-      startTime: startTime !== 'Not set' ? startTime : '',
-      endTime: endTime !== 'Not set' ? endTime : '',
-      professor: professor !== 'Not set' ? professor : '',
-      room: room !== 'Not set' ? room : '',
-    });
-
-    if (startTime && startTime !== 'Not set') {
-      this.updateEndTimeOptions(startTime);
+  private formatTimeToBackend(time: string): string {
+    const [timePart, period] = time.split(' ');
+    let [hours, minutes] = timePart.split(':').map(Number);
+    if (period === 'PM' && hours !== 12) {
+      hours += 12;
     }
+    if (period === 'AM' && hours === 12) {
+      hours = 0;
+    }
+    const formattedHours = hours.toString().padStart(2, '0');
+    const formattedMinutes = minutes.toString().padStart(2, '0');
+    return `${formattedHours}:${formattedMinutes}:00`;
+  }
+
+  private handleError(message: string) {
+    return (error: any): void => {
+      console.error(`${message}:`, error);
+      this.snackBar.open(`${message}. Please try again.`, 'Close', {
+        duration: 3000,
+      });
+    };
   }
 }
