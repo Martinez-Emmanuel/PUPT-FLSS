@@ -172,7 +172,7 @@ export class SchedulingService {
   // Fetch academic years from the backend
   getAcademicYears(): Observable<any[]> {
     return this.http
-      .get<any[]>(`${this.baseUrl}/academic-years-dropdown`)
+      .get<any[]>(`${this.baseUrl}/get-academic-years`)
       .pipe(catchError(this.handleError));
   }
 

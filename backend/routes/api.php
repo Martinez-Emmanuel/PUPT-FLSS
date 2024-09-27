@@ -23,7 +23,7 @@ use App\Http\Controllers\ScheduleController;
 Route::post('login', [AuthController::class, 'login'])->name('login');
 Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
 
-Route::get('/academic-years-dropdown', [AcademicYearController::class, 'getAcademicYearsForDropdown']);
+Route::get('/get-academic-years', [AcademicYearController::class, 'getAcademicYearsForDropdown']);
 Route::post('/set-active-ay-sem', [AcademicYearController::class, 'setActiveAcademicYearAndSemester']);
 Route::get('/active-year-levels-curricula', [AcademicYearController::class, 'getActiveYearLevelsCurricula']);
 
@@ -75,7 +75,6 @@ Route::delete('/courses/{id}', [CourseController::class, 'deleteCourse']);
 Route::get('/curricula', [CurriculumController::class, 'index']);
 Route::get('/curricula/{id}', [CurriculumController::class, 'show']);
 
-//old delete remove this
 // Route::delete('/deleteCurriculum/{id}', [CurriculumController::class, 'destroy']);
 
 // Semester routes
