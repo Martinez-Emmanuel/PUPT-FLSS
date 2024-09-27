@@ -37,7 +37,6 @@ class PreferenceController extends Controller
         ], 201);
     }
     
-    
 
     public function getPreferences()
     {
@@ -99,7 +98,7 @@ class PreferenceController extends Controller
         ], 200, [], JSON_PRETTY_PRINT);
     }
     
-    
+
     
     public function getPreferencesForActiveSemester()
     {
@@ -112,15 +111,14 @@ class PreferenceController extends Controller
         }
     
         $preferences = Preference::with([
-            'faculty.user',
-            'courseAssignment.course' 
+            'faculty.user', 
+            'courseAssignment.course'
         ])
         ->where('active_semester_id', $activeSemester->active_semester_id)
         ->get();
     
-        
-        $groupedPreferences = $preferences->groupBy('faculty_id')->mapWithKeys(function ($facultyPreferences) use ($activeSemester) {
-            $faculty = $facultyPreferences->first()->faculty;
+        $facultyPreferences = $preferences->groupBy('faculty_id')->map(function ($facultyPreferences) use ($activeSemester) {
+            $faculty = $facultyPreferences->first()->faculty; 
             $facultyUser = $faculty->user;
     
             $courses = $facultyPreferences->map(function ($preference) {
@@ -143,30 +141,29 @@ class PreferenceController extends Controller
             });
     
             return [
-                "faculty_{$faculty->id}" => [
-                    'faculty_id' => $faculty->id,
-                    'faculty_name' => $facultyUser->name ?? 'N/A',
-                    'faculty_code' => $facultyUser->code ?? 'N/A',
-                    'faculty_role' => $facultyUser->role ?? 'N/A',
-                    'faculty_status' => $facultyUser->status ?? 'N/A',
-                    'active_semesters' => [
-                        "active_semester_id_{$activeSemester->active_semester_id}" => [
-                            'active_semester_id' => $activeSemester->active_semester_id,
-                            'academic_year_id' => $activeSemester->academic_year_id,
-                            'academic_year' => $activeSemester->academicYear->year_start . '-' . $activeSemester->academicYear->year_end,
-                            'semester_id' => $activeSemester->semester_id,
-                            'semester_label' => $this->getSemesterLabel($activeSemester->semester_id),
-                            'courses' => $courses->toArray()
-                        ]
+                'faculty_id' => $faculty->id,
+                'faculty_name' => $facultyUser->name ?? 'N/A',
+                'faculty_code' => $facultyUser->code ?? 'N/A',
+                'faculty_units' => $faculty->faculty_units,
+                'active_semesters' => [
+                    [
+                        'active_semester_id' => $activeSemester->active_semester_id,
+                        'academic_year_id' => $activeSemester->academic_year_id,
+                        'academic_year' => $activeSemester->academicYear->year_start . '-' . $activeSemester->academicYear->year_end,
+                        'semester_id' => $activeSemester->semester_id,
+                        'semester_label' => $this->getSemesterLabel($activeSemester->semester_id),
+                        'courses' => $courses->toArray() 
                     ]
                 ]
             ];
-        });
+        })->values();
     
+        // Return the structured response
         return response()->json([
-            'preferences' => $groupedPreferences
+            'preferences' => $facultyPreferences
         ], 200, [], JSON_PRETTY_PRINT);
     }
+
     
     private function getSemesterLabel($semesterId)
     {
@@ -182,5 +179,4 @@ class PreferenceController extends Controller
         }
     }
     
-
 }
