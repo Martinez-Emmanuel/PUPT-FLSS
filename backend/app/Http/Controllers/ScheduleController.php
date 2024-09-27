@@ -54,11 +54,11 @@ class ScheduleController extends Controller
             })
             ->leftJoin('course_assignments as ca', function ($join) {
                 $join->on('ca.curricula_program_id', '=', 'cp.curricula_program_id')
-                     ->on('ca.semester_id', '=', 's.semester_id');
+                    ->on('ca.semester_id', '=', 's.semester_id');
             })
             ->leftJoin('courses as co', 'ca.course_id', '=', 'co.course_id')
             ->where('s.semester', $activeSemester->semester_id)
-            ->where('pylc.academic_year_id', $activeAcademicYearId) // Filter for active academic year
+            ->where('pylc.academic_year_id', $activeAcademicYearId)
             ->orderBy('p.program_id')
             ->orderBy('yl.year')
             ->orderBy('s.semester')
@@ -72,15 +72,15 @@ class ScheduleController extends Controller
             $yearLevelIndex = $this->findOrCreateYearLevel($response[$programIndex]['year_levels'], $row);
             $semesterIndex = $this->findOrCreateSemester($response[$programIndex]['year_levels'][$yearLevelIndex]['semesters'], $row);
 
-            // Step 3: For each section in the program-year level, assign the same course and schedule
+            // Fetch sections for the current program-year level
             $sections = DB::table('sections_per_program_year')
                 ->where('program_id', $row->program_id)
                 ->where('year_level', $row->year_level)
-                ->where('academic_year_id', $activeAcademicYearId) // Filter for active academic year
+                ->where('academic_year_id', $activeAcademicYearId)
                 ->get();
 
             foreach ($sections as $section) {
-                // Assign course to section and schedule
+                // Now assign the course to each section with a specific schedule
                 $this->assignCourseToSectionAndSchedule($row, $section, $response[$programIndex]['year_levels'][$yearLevelIndex]['semesters'][$semesterIndex]['sections']);
             }
         }
@@ -92,6 +92,113 @@ class ScheduleController extends Controller
             'programs' => $response
         ]);
     }
+
+    private function assignCourseToSectionAndSchedule($row, $section, &$sections)
+    {
+        // Check if course_assignment_id is not null
+        if (is_null($row->course_assignment_id)) {
+            return;
+        }
+
+        // Find or create the section in the response array
+        $sectionIndex = $this->findOrCreateSection($sections, $section);
+
+        // Check if the course is already assigned to the section in section_courses
+        $existingSectionCourse = DB::table('section_courses')
+            ->where('sections_per_program_year_id', $section->sections_per_program_year_id)
+            ->where('course_assignment_id', $row->course_assignment_id)
+            ->first();
+
+        if (!$existingSectionCourse) {
+            // Assign course to the section in section_courses
+            $sectionCourseId = DB::table('section_courses')->insertGetId([
+                'sections_per_program_year_id' => $section->sections_per_program_year_id,
+                'course_assignment_id' => $row->course_assignment_id,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+        } else {
+            // Use existing section_course_id
+            $sectionCourseId = $existingSectionCourse->section_course_id;
+        }
+
+        // Check if a schedule already exists for this section_course
+        $existingSchedule = DB::table('schedules')
+            ->where('section_course_id', $sectionCourseId)
+            ->first();
+
+        if ($existingSchedule) {
+            // Fetch faculty and room details if they are assigned
+            $faculty = $existingSchedule->faculty_id ? DB::table('faculty')
+                ->join('users', 'faculty.user_id', '=', 'users.id')
+                ->where('faculty.id', $existingSchedule->faculty_id)
+                ->select('faculty.id', 'users.name as professor', 'faculty.faculty_email')
+                ->first() : null;
+
+            $room = $existingSchedule->room_id ? DB::table('rooms')
+                ->where('room_id', $existingSchedule->room_id)
+                ->first() : null;
+
+            $scheduleId = $existingSchedule->schedule_id;
+        } else {
+            // Since the admin will assign faculty and room later, set them to null
+            $faculty = null;
+            $room = null;
+
+            // Insert schedule into the schedules table with null values
+            $scheduleId = DB::table('schedules')->insertGetId([
+                'section_course_id' => $sectionCourseId,
+                'day' => null,
+                'start_time' => null,
+                'end_time' => null,
+                'faculty_id' => null,
+                'room_id' => null,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]);
+        }
+
+        // Fetch the populated schedule (either existing or newly created)
+        $schedule = DB::table('schedules')
+            ->where('section_course_id', $sectionCourseId)
+            ->first();
+
+        // Append the course to the section's courses array
+        if (!isset($sections[$sectionIndex]['courses'])) {
+            $sections[$sectionIndex]['courses'] = [];
+        }
+
+        $sections[$sectionIndex]['courses'][] = [
+            'course_assignment_id' => $row->course_assignment_id,
+            'course_id' => $row->course_id,
+            'course_code' => $row->course_code,
+            'course_title' => $row->course_title,
+            'lec_hours' => $row->lec_hours,
+            'lab_hours' => $row->lab_hours,
+            'units' => $row->units,
+            'tuition_hours' => $row->tuition_hours,
+
+            // Encapsulating schedule details in a "schedule" object
+            'schedule' => [
+                'schedule_id' => $scheduleId,
+                'day' => $schedule->day,
+                'start_time' => $schedule->start_time,
+                'end_time' => $schedule->end_time
+            ],
+
+            // Adding professor and faculty details
+            'professor' => $faculty ? $faculty->professor : 'Not set',
+            'faculty_id' => $faculty ? $faculty->id : null,
+            'faculty_email' => $faculty ? $faculty->faculty_email : null,
+
+            // Encapsulating room details in a "room" object
+            'room' => [
+                'room_id' => $room ? $room->room_id : null,
+                'room_code' => $room ? $room->room_code : 'Not set'
+            ]
+        ];
+    }
+
 
     private function findOrCreateProgram(&$response, $row)
     {
@@ -137,131 +244,9 @@ class ScheduleController extends Controller
 
         $semesters[] = [
             'semester' => $row->semester,
-            'sections' => [] 
+            'sections' => []
         ];
         return count($semesters) - 1;
-    }
-
-    private function assignCourseToSectionAndSchedule($row, $section, &$sections)
-    {
-        // Step 3.1: Check if course_assignment_id is null
-        if (is_null($row->course_assignment_id)) {
-            return;
-        }
-
-        // Step 3.2: Find or create the section in the response array
-        $sectionIndex = $this->findOrCreateSection($sections, $section);
-
-        // Step 3.3: Check if the course is already assigned to the section in `section_courses`
-        $existingSectionCourse = DB::table('section_courses')
-            ->where('sections_per_program_year_id', $section->sections_per_program_year_id)
-            ->where('course_assignment_id', $row->course_assignment_id)
-            ->first();
-
-        if (!$existingSectionCourse) {
-            // Assign course to the section in `section_courses`
-            $sectionCourseId = DB::table('section_courses')->insertGetId([
-                'sections_per_program_year_id' => $section->sections_per_program_year_id,
-                'course_assignment_id' => $row->course_assignment_id,
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
-        } else {
-            // Use existing section_course_id
-            $sectionCourseId = $existingSectionCourse->section_course_id;
-        }
-
-        // Step 3.4: Check if a schedule already exists for this section_course
-        $existingSchedule = DB::table('schedules')
-            ->where('section_course_id', $sectionCourseId)
-            ->first();
-
-        if ($existingSchedule) {
-            // Fetch faculty and room details if they are assigned
-            $faculty = $existingSchedule->faculty_id ? DB::table('faculty')
-                ->join('users', 'faculty.user_id', '=', 'users.id')
-                ->where('faculty.id', $existingSchedule->faculty_id)
-                ->select('faculty.id', 'users.name as professor', 'faculty.faculty_email')
-                ->first() : null;
-
-            $room = $existingSchedule->room_id ? DB::table('rooms')
-                ->where('room_id', $existingSchedule->room_id)
-                ->first() : null;
-
-            $scheduleId = $existingSchedule->schedule_id;
-        } else {
-            // Since the admin will assign faculty and room later, set them to null
-            $faculty = null;
-            $room = null;
-
-            // Insert schedule into the `schedules` table with null values
-            $scheduleId = DB::table('schedules')->insertGetId([
-                'section_course_id' => $sectionCourseId,
-                'day' => null, // Admin will assign
-                'start_time' => null, // Admin will assign
-                'end_time' => null, // Admin will assign
-                'faculty_id' => null, // Admin will assign
-                'room_id' => null, // Admin will assign
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
-        }
-
-        // Step 3.5: Fetch the populated schedule (either existing or newly created)
-        $schedule = DB::table('schedules')
-            ->where('section_course_id', $sectionCourseId)
-            ->first();
-
-        // Step 3.6: Append the course to the section's courses array
-        // Ensure 'courses' key exists
-        if (!isset($sections[$sectionIndex]['courses'])) {
-            $sections[$sectionIndex]['courses'] = [];
-        }
-
-        // Avoid duplicating course entries in the response
-        $existingCourse = collect($sections[$sectionIndex]['courses'])->firstWhere('course_assignment_id', $row->course_assignment_id);
-        if ($existingCourse) {
-            // Optionally, update the existing course's schedule if needed
-            return;
-        }
-
-        // Assigning null if faculty or room is not set
-        $professor = $faculty ? $faculty->professor : null;
-        $faculty_id = $faculty ? $faculty->id : null;
-        $faculty_email = $faculty ? $faculty->faculty_email : null;
-
-        $room_id = $room ? $room->room_id : null;
-        $room_code = $room ? $room->room_code : null;
-
-        $sections[$sectionIndex]['courses'][] = [
-            'course_assignment_id' => $row->course_assignment_id,
-            'course_id' => $row->course_id,
-            'course_code' => $row->course_code,
-            'course_title' => $row->course_title,
-            'lec_hours' => $row->lec_hours,
-            'lab_hours' => $row->lab_hours,
-            'units' => $row->units,
-            'tuition_hours' => $row->tuition_hours,
-
-            // Encapsulating schedule details in a "schedule" object
-            'schedule' => [
-                'schedule_id' => $scheduleId,   // The newly added or existing schedule ID
-                'day' => $schedule->day, // Can be null
-                'start_time' => $schedule->start_time, // Can be null
-                'end_time' => $schedule->end_time // Can be null
-            ],
-
-            // Adding professor and faculty details
-            'professor' => $professor, // null if not assigned
-            'faculty_id' => $faculty_id,  // null if not assigned
-            'faculty_email' => $faculty_email, // null if not assigned
-
-            // Encapsulating room details in a "room" object
-            'room' => [
-                'room_id' => $room_id, // null if not assigned
-                'room_code' => $room_code // null if not assigned
-            ]
-        ];
     }
 
     private function findOrCreateSection(&$sections, $section)
