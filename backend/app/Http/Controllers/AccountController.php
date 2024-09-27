@@ -32,7 +32,7 @@ class AccountController extends Controller
             'role' => 'required|in:super_admin,admin,faculty',
             'faculty_email' => 'required_if:role,faculty|email|unique:faculty,faculty_email',
             'faculty_type' => 'required_if:role,faculty',
-            'faculty_unit' => 'required_if:role,faculty',
+            'faculty_units' => 'required_if:role,faculty',
             'password' => 'required|string|min:8',
             'status' => 'required|in:active,inactive',
         ]);
@@ -50,7 +50,7 @@ class AccountController extends Controller
                 'user_id' => $user->id,
                 'faculty_email' => $validatedData['faculty_email'],
                 'faculty_type' => $validatedData['faculty_type'],
-                'faculty_unit' => $validatedData['faculty_unit'],
+                'faculty_units' => $validatedData['faculty_units'],
             ]);
         }
 
@@ -65,7 +65,7 @@ class AccountController extends Controller
             'role' => 'required|in:super_admin,admin,faculty',
             'faculty_email' => 'required_if:role,faculty|email|unique:faculty,faculty_email,' . optional($user->faculty)->id,
             'faculty_type' => 'required_if:role,faculty',
-            'faculty_unit' => 'required_if:role,faculty',
+            'faculty_units' => 'required_if:role,faculty',
             'password' => 'sometimes|string|min:8',
             'status' => 'sometimes|required|in:active,inactive', // Add validation for status
         ]);
@@ -84,7 +84,7 @@ class AccountController extends Controller
                 [
                     'faculty_email' => $validatedData['faculty_email'],
                     'faculty_type' => $validatedData['faculty_type'],
-                    'faculty_unit' => $validatedData['faculty_unit'],
+                    'faculty_units' => $validatedData['faculty_units'],
                 ]
             );
         } else {

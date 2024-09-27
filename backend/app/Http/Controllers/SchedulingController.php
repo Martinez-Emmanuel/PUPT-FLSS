@@ -20,7 +20,7 @@ class SchedulingController extends Controller
                 'code' => $faculty->user->code ?? 'N/A',
                 'faculty_email' => $faculty->faculty_email ?? 'N/A',
                 'faculty_type' => $faculty->faculty_type ?? 'N/A',
-                'faculty_units' => $faculty->faculty_unit ?? 'N/A',
+                'faculty_units' => $faculty->faculty_units ?? 'N/A',
             ];
         });
     
