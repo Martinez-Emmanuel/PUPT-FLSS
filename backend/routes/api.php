@@ -123,15 +123,15 @@ Route::middleware(['auth:sanctum', 'super_admin'])->group(function () {
     Route::put('/updateAdmins/{admin}', [AccountController::class, 'updateAdmin']);
     // Delete an admin
     Route::delete('/deleteAdmins/{admin}', [AccountController::class, 'destroyAdmin']);
-
 });
 
 Route::post('/submit-pref', [PreferenceController::class, 'submitPreference']);
 Route::get('/submitted-pref', [PreferenceController::class, 'getPreferences']);
 Route::get('/submitted-pref-sem', [PreferenceController::class, 'getPreferencesForActiveSemester']);
 
-Route::get('/faculty-details', [SchedulingController::class, 'getFacultyDetails']);
-Route::get('/rooms-details', [RoomController::class, 'index']);
+Route::get('/get-faculty', [SchedulingController::class, 'getFacultyDetails']);
+Route::get('/get-rooms', [RoomController::class, 'getAllRooms']);
+// Route::get('/rooms-details', [RoomController::class, 'index']);
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
