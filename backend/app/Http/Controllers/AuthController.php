@@ -42,7 +42,7 @@ class AuthController extends Controller
                 'faculty_id' => $faculty->id, 
                 'faculty_email' => $faculty->faculty_email,
                 'faculty_type' => $faculty->faculty_type,
-                'faculty_unit' => $faculty->faculty_unit,
+                'faculty_units' => $faculty->faculty_units,
             ] : null,
         ]);
 

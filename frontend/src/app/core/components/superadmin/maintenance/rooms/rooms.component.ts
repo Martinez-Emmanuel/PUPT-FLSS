@@ -1,12 +1,17 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
+
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
-import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
 import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
+import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
+import { LoadingComponent } from '../../../../../shared/loading/loading.component';
+
 import { fadeAnimation } from '../../../../animations/animations';
+
 import { Room, RoomService } from '../../../../services/superadmin/rooms/rooms.service';
 
 import jsPDF from 'jspdf';
@@ -20,6 +25,7 @@ import 'jspdf-autotable';
     ReactiveFormsModule,
     TableGenericComponent,
     TableHeaderComponent,
+    LoadingComponent,
   ],
   templateUrl: './rooms.component.html',
   styleUrls: ['./rooms.component.scss'],
@@ -61,6 +67,7 @@ export class RoomsComponent implements OnInit {
   ];
 
   showPreview = false;  
+  isLoading = true; 
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -74,9 +81,19 @@ export class RoomsComponent implements OnInit {
   }
 
   fetchRooms() {
-    this.roomService.getRooms().subscribe((rooms) => {
-      this.rooms = rooms;
-      this.cdr.markForCheck();
+    this.isLoading = true;
+    this.roomService.getRooms().subscribe({
+      next: (rooms) => {
+        this.rooms = rooms;
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.isLoading = false;
+        this.snackBar.open('Error fetching rooms data', 'Close', {
+          duration: 3000,
+        });
+      },
     });
   }
 
@@ -247,7 +264,7 @@ export class RoomsComponent implements OnInit {
           label: 'Status',
           formControlName: 'status',
           type: 'select',
-          options: ['available', 'unavailable'],
+          options: ['Available', 'Unavailable'],
           required: true,
         },
       ],

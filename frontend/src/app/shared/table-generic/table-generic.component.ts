@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
-import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
@@ -17,7 +16,6 @@ import { DialogGenericComponent } from '../dialog-generic/dialog-generic.compone
     CommonModule,
     MatTableModule,
     MatPaginatorModule,
-    MatSortModule,
     MatIconModule,
     MatButtonModule,
   ],
@@ -58,7 +56,7 @@ export class TableGenericComponent<T> implements OnInit, AfterViewInit {
   public showFirstLastButtons = true;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
-  @ViewChild(MatSort) sort!: MatSort;
+
 
   constructor(private dialog: MatDialog) {}
 
@@ -78,27 +76,8 @@ export class TableGenericComponent<T> implements OnInit, AfterViewInit {
     } else {
         console.error('Paginator is not defined');
     }
-
-    if (this.sort) {
-        this.dataSource.sort = this.sort;
-    } else {
-        console.error('Sort is not defined');
-    }
   }
   
-  //temp
-  // ngAfterViewChecked() {
-  //   if (this.paginator && !this.dataSource.paginator) {
-  //       this.dataSource.paginator = this.paginator;
-  //   }
-
-  //   if (this.sort && !this.dataSource.sort) {
-  //       this.dataSource.sort = this.sort;
-  //   }
-  // }
-
-
-
   getIndex(index: number): number {
     if (this.paginator) {
       return this.paginator.pageIndex * this.paginator.pageSize + index + 1;

@@ -13,14 +13,16 @@
 }
 
 .sidenav-bar {
+  @include default-transition;
   width: 16rem;
   background-color: var(--admin-bg);
   padding: var(--spacing-sm) var(--spacing-md);
-  @include default-transition;
+  user-select: none;
 
   .side-toolbar {
     @include flex-layout($direction: column, $gap: var(--spacing-md));
     padding: var(--spacing-lg) var(--spacing-md);
+    
 
     img {
       width: 40%;
@@ -96,7 +98,7 @@
 .sidenav-content {
   @include flex-layout($direction: column, $gap: var(--spacing-md));
   min-height: 100%;
-  padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-lg) 0;
+  padding: var(--spacing-lg);
   box-sizing: border-box;
 
   .main-toolbar {
@@ -199,6 +201,8 @@
     padding: var(--spacing-lg);
     overflow: auto;
     width: 100%;
+
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.05);
 
     &.reports-view {
       padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-xs)

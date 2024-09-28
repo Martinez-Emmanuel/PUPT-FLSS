@@ -329,14 +329,14 @@ CREATE TABLE `faculty` (
   `user_id` bigint UNSIGNED NOT NULL,
   `faculty_email` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `faculty_type` enum('full-time','part-time','regular') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `faculty_unit` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL
+  `faculty_units` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `faculty`
 --
 
-INSERT INTO `faculty` (`id`, `user_id`, `faculty_email`, `faculty_type`, `faculty_unit`) VALUES
+INSERT INTO `faculty` (`id`, `user_id`, `faculty_email`, `faculty_type`, `faculty_units`) VALUES
 (1, 1, 'emmanuel.martinez@example.com', 'full-time', '25'),
 (2, 4, 'adrian.naoe@example.com', 'part-time', '25'),
 (3, 5, 'kyla.malaluan@example.com', 'full-time', '25'),

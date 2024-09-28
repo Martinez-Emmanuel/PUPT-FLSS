@@ -10,6 +10,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
 import { InputField, TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
+import { LoadingComponent } from '../../../../../shared/loading/loading.component';
 
 import { AdminService, User } from '../../../../services/superadmin/management/admin/admin.service';
 
@@ -23,6 +24,7 @@ import { fadeAnimation } from '../../../../animations/animations';
     ReactiveFormsModule,
     TableGenericComponent,
     TableHeaderComponent,
+    LoadingComponent,
   ],
   templateUrl: './admin.component.html',
   styleUrls: ['./admin.component.scss'],
@@ -30,13 +32,15 @@ import { fadeAnimation } from '../../../../animations/animations';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminComponent implements OnInit {
-  adminStatuses = ['active', 'inactive'];
+  adminStatuses = ['Active', 'Inactive'];
   selectedAdminIndex: number | null = null;
 
   admins: User[] = [];
+  isLoading = true;
+
   columns = [
     { key: 'index', label: '#' },
-    { key: 'code', label: 'Admin Code' },  // Display 'Admin Code' as per requirement
+    { key: 'code', label: 'Admin Code' },
     { key: 'name', label: 'Name' },
     { key: 'passwordDisplay', label: 'Password' }, 
     // { key: 'email', label: 'Email' },
@@ -46,7 +50,7 @@ export class AdminComponent implements OnInit {
   
   displayedColumns: string[] = [
     'index', 
-    'code',    // 'Admin Code'
+    'code',
     'name', 
     'passwordDisplay',
     // 'email', 
@@ -76,16 +80,24 @@ export class AdminComponent implements OnInit {
   }
 
   fetchAdmins() {
-    this.adminService.getAdmins().subscribe((admins) => {
-      this.admins = admins.map(admin => ({
-        ...admin,
-        // email: admin.email || '',  // Email comes from faculty_email if it exists
-        passwordDisplay: '••••••••' // Mask password in UI
-      }));
-      this.cdr.markForCheck();
+    this.isLoading = true;
+    this.adminService.getAdmins().subscribe({
+      next: (admins) => {
+        this.admins = admins.map(admin => ({
+          ...admin,
+          passwordDisplay: '••••••••'
+        }));
+        this.isLoading = false;
+        this.cdr.markForCheck();
+      },
+      error: () => {
+        this.snackBar.open('Error fetching admins. Please try again.', 'Close', {
+          duration: 3000,
+        });
+        this.isLoading = false;
+      }
     });
   }
-  
   
 
   onSearch(searchTerm: string) {

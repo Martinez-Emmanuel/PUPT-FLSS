@@ -668,7 +668,7 @@ class AcademicYearController extends Controller
                     $newSection->academic_year_id = $academicYearId;
                     $newSection->program_id = $programId;
                     $newSection->year_level = $yearLevel;
-                    $newSection->section_name = 'Section ' . ($currentSectionCount + $i); // Create new section names like "Section 3", "Section 4", etc.
+                    $newSection->section_name = (string) ($currentSectionCount + $i); 
                     $newSection->save();
                 }
 

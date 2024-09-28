@@ -50,7 +50,7 @@ export class CurriculumDetailComponent implements OnInit {
   public selectedSemesters: Semester[] = [];
   public customExportOptions: { all: string; current: string } | null = null;
   private destroy$ = new Subject<void>();
-  public loading: boolean = true;
+  public isLoading: boolean = true;
 
   headerInputFields: InputField[] = [
     {
@@ -113,19 +113,19 @@ export class CurriculumDetailComponent implements OnInit {
   }
  
   fetchAllPrograms() {
-    this.loading = true; 
+    this.isLoading = true;  
     this.curriculumService.getAllPrograms().subscribe({
       next: (programs) => {
         // Populate the dropdown with all programs
         this.updateProgramDropdown(programs.map(program => program.program_code));
-        this.loading = false;
+        this.isLoading = false;
       },
       error: (error) => {
         console.error('Error fetching programs:', error);
         this.snackBar.open('Error fetching programs. Please try again.', 'Close', {
           duration: 3000,
         });
-        this.loading = false;
+        this.isLoading = false;
       }
     });
   }
@@ -136,7 +136,7 @@ export class CurriculumDetailComponent implements OnInit {
   }
 
   fetchCurriculum(year: string, selectedProgram?: string, selectedYear?: number) {
-    this.loading = true;
+    this.isLoading = true;
     this.curriculumService.getCurriculumByYear(year).subscribe({
       next: (curriculum) => {
         if (curriculum) {
@@ -169,7 +169,7 @@ export class CurriculumDetailComponent implements OnInit {
           });
   
           this.cdr.markForCheck();
-          this.loading = false;
+          this.isLoading = false;
         }
       },
       error: (error) => {
@@ -177,7 +177,7 @@ export class CurriculumDetailComponent implements OnInit {
         this.snackBar.open(
           'Error fetching curriculum. Please try again.', 
           'Close', { duration: 3000 });
-          this.loading = false;
+          this.isLoading = false;
       },
     });
   }

@@ -49,7 +49,7 @@ class ProgramController extends Controller
             'program_code' => 'required|string|max:10',
             'program_title' => 'required|string|max:100',
             'program_info' => 'required|string|max:255',
-            'status' => 'required|in:active,inactive',
+            'status' => 'required|in:Active,Inactive',
             'number_of_years' => 'required|integer|min:1',
         ]);
 
@@ -92,7 +92,7 @@ class ProgramController extends Controller
             'program_code' => 'required|string|max:10|unique:programs,program_code,' . $program->program_id . ',program_id',
             'program_title' => 'required|string|max:100',
             'program_info' => 'required|string|max:255',
-            'status' => 'required|in:active,inactive',
+            'status' => 'required|in:Active,Inactive',
             'number_of_years' => 'required|integer|min:1',
         ]);
 

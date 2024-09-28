@@ -11,34 +11,32 @@ class SchedulingController extends Controller
 {
     public function getFacultyDetails()
     {
-
         $facultyDetails = Faculty::with('user')->get();
-
+    
         $response = $facultyDetails->map(function ($faculty) {
             return [
-                'user_id' => $faculty->user->id ?? 'N/A',
+                'faculty_id' => $faculty->id,
                 'name' => $faculty->user->name ?? 'N/A',
                 'code' => $faculty->user->code ?? 'N/A',
-                'email' => $faculty->faculty_email ?? 'N/A',
-                'role' => $faculty->user->role ?? 'N/A',
+                'faculty_email' => $faculty->faculty_email ?? 'N/A',
                 'faculty_type' => $faculty->faculty_type ?? 'N/A',
-                'faculty_units' => $faculty->faculty_unit ?? 'N/A',
+                'faculty_units' => $faculty->faculty_units ?? 'N/A',
             ];
         });
-
+    
         return response()->json(['faculty' => $response], 200);
     }
-
+    
+    
     public function assignSchedule(Request $request)
     {
-        // Step 1: Validate the incoming request data, including the schedule_id in the request body
         $validator = Validator::make($request->all(), [
             'schedule_id'  => 'required|exists:schedules,schedule_id',
-            'faculty_id'   => 'required|exists:faculty,id',
-            'room_id'      => 'required|exists:rooms,room_id',
-            'day'          => 'required|string|max:10', // Adjust max length as needed
-            'start_time'   => 'required|date_format:H:i:s',
-            'end_time'     => 'required|date_format:H:i:s|after:start_time',
+            'faculty_id'   => 'nullable|exists:faculty,id',
+            'room_id'      => 'nullable|exists:rooms,room_id',
+            'day'          => 'nullable|string|max:10',
+            'start_time'   => 'nullable|date_format:H:i:s',
+            'end_time'     => 'nullable|date_format:H:i:s|after:start_time',
         ]);
     
         if ($validator->fails()) {
@@ -58,13 +56,11 @@ class SchedulingController extends Controller
         // Step 3: Assign the validated data to the schedule
         try {
             $schedule->faculty_id  = $request->input('faculty_id');
-            $schedule->room_id     = $request->input('room_id');
-            $schedule->day         = $request->input('day');
+            $schedule->room_id     = $request->input('room_id');   
+            $schedule->day         = $request->input('day');       
             $schedule->start_time  = $request->input('start_time');
-            $schedule->end_time    = $request->input('end_time');
+            $schedule->end_time    = $request->input('end_time');  
             $schedule->save();
-    
-            Log::info("Schedule ID {$request->input('schedule_id')} updated successfully.");
     
             // Optionally, load related faculty and room details
             $schedule->load(['faculty.user', 'room']);
@@ -96,10 +92,9 @@ class SchedulingController extends Controller
             return response()->json($responseData, 200);
         } catch (\Exception $e) {
             Log::error("Error updating schedule ID {$request->input('schedule_id')}: " . $e->getMessage());
-    
             return response()->json(['message' => 'Internal Server Error'], 500);
         }
-    }
+    }  
     
 }
 

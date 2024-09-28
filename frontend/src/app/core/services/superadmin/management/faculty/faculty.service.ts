@@ -13,7 +13,7 @@ export interface User {
   faculty?: {
     faculty_email: string;
     faculty_type: string;
-    faculty_unit: number;
+    faculty_units: number;
   };
   status?: string; // Adjust if status is actually part of the response
 }
@@ -24,7 +24,7 @@ export interface Faculty {
   code: string;
   faculty_email: string;
   faculty_type: string;
-  faculty_unit: number;
+  faculty_units: number;
   status: string; // You might need to add this on the backend if you require it
   role: string;
   password?: string;  // Make password optional
@@ -63,7 +63,7 @@ export class FacultyService {
             code: user.code,
             faculty_email: user.faculty?.faculty_email || '',
             faculty_type: user.faculty?.faculty_type || '',
-            faculty_unit: user.faculty?.faculty_unit ?? 0,
+            faculty_units: user.faculty?.faculty_units ?? 0,
             status: user.status || 'Active',
             role: user.role,
           }));

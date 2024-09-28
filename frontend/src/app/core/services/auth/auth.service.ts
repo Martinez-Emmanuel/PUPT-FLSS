@@ -65,8 +65,8 @@ export class AuthService {
         '/'
       );
       this.cookieService.set(
-        'faculty_unit',
-        user.faculty.faculty_unit,
+        'faculty_units',
+        user.faculty.faculty_units,
         expiryDate,
         '/'
       );
