@@ -42,7 +42,7 @@
   <!--Objects-->
   <div class="object-container">
     @if (showActiveYearAndSem) {
-      <div class="active-year-sem-container" (click)="onActiveYearSemClick()">
+      <div class="active-year-sem-container" (click)="onActiveYearSemClick()" matRipple>
         <p class="text">A.Y. {{ activeYear }}, {{ activeSemester }}</p>
         <p class="label">Active Year & Semester</p>
       </div>

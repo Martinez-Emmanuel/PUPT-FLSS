@@ -584,7 +584,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                               this.cdr.detectChanges();
                               loadingSnackbarRef.dismiss();
                               this.snackBar.open(
-                                'Active year and semester have been updated successfully!',
+                                'New active year and semester has been set successfully.',
                                 'Close',
                                 { duration: 3000 }
                               );

@@ -9,6 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDialog } from '@angular/material/dialog';
+import { MatRippleModule } from '@angular/material/core';
 
 import { TableDialogComponent } from '../../shared/table-dialog/table-dialog.component';
 
@@ -29,6 +30,7 @@ export interface InputField {
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
+    MatRippleModule,
     ReactiveFormsModule,
     MatSelectModule,
   ],
