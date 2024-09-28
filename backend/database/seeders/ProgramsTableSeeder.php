@@ -12,7 +12,7 @@ class ProgramsTableSeeder extends Seeder
         DB::table('programs')->insert([
             [
                 'program_id' => 1,
-                'program_code' => 'BSIT',
+                'program_code' => 'BSIT-TG',
                 'program_title' => 'Bachelor of Science in Information Technology',
                 'program_info' => 'Focuses on information technology and its applications.',
                 'number_of_years' => 4,
@@ -22,7 +22,7 @@ class ProgramsTableSeeder extends Seeder
             ],
             [
                 'program_id' => 2,
-                'program_code' => 'BSME',
+                'program_code' => 'BSME-TG',
                 'program_title' => 'Bachelor of Science in Mechanical Engineering',
                 'program_info' => 'Focuses on mechanical engineering principles and practices.',
                 'number_of_years' => 4,

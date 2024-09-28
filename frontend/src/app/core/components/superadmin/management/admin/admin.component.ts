@@ -32,7 +32,7 @@ import { fadeAnimation } from '../../../../animations/animations';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminComponent implements OnInit {
-  adminStatuses = ['active', 'inactive'];
+  adminStatuses = ['Active', 'Inactive'];
   selectedAdminIndex: number | null = null;
 
   admins: User[] = [];

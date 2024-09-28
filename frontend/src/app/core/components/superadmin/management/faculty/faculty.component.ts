@@ -33,7 +33,7 @@ import { fadeAnimation } from '../../../../animations/animations';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FacultyComponent implements OnInit {
-  facultyStatuses = ['active', 'inactive'];
+  facultyStatuses = ['Active', 'Inactive'];
   facultyTypes = ['Full-time (Permanent)', 'Full-time (Temporary)', 'Full-time (Designee)', 'Part-time'];
   selectedFacultyIndex: number | null = null;
 

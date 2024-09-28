@@ -16,7 +16,7 @@ return new class extends Migration {
             $table->string('code')->unique();
             $table->string('password');
             $table->enum('role', ['faculty', 'admin', 'superadmin']);
-            $table->string('status');
+            $table->enum('status', ['Active', 'Inactive']);
             $table->timestamps();
         });
     }

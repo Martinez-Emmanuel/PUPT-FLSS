@@ -67,7 +67,7 @@ class AccountController extends Controller
             'faculty_type' => 'required_if:role,faculty',
             'faculty_units' => 'required_if:role,faculty',
             'password' => 'sometimes|string|min:8',
-            'status' => 'sometimes|required|in:active,inactive', // Add validation for status
+            'status' => 'sometimes|required|in:Active,Inactive', // Add validation for status
         ]);
 
         $user->update([
@@ -127,7 +127,7 @@ class AccountController extends Controller
             'code' => 'required|string|max:255|unique:users',
             'password' => 'required|string|min:8',
             'role' => 'required|in:admin,superadmin', // Restrict role to admin or super_admin
-            'status' => 'required|in:active,inactive',
+            'status' => 'required|in:Active,Inactive',
         ]);
 
         // Create the user with the role provided in the request
@@ -151,7 +151,7 @@ class AccountController extends Controller
             'code' => 'sometimes|required|string|max:255|unique:users,code,' . $admin->id,
             'password' => 'sometimes|string|min:8',
             'role' => 'sometimes|required|in:admin,superadmin',
-            'status' => 'sometimes|required|in:active,inactive',
+            'status' => 'sometimes|required|in:Active,Inactive',
         ]);
 
         // Initialize an array to store fields that have changed
