@@ -12,6 +12,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
 import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
+import { LoadingComponent } from '../../../../../shared/loading/loading.component';
 import { fadeAnimation } from '../../../../animations/animations';
 
 import { CurriculumService, Curriculum, Program } from '../../../../services/superadmin/curriculum/curriculum.service';
@@ -23,7 +24,8 @@ import { CurriculumService, Curriculum, Program } from '../../../../services/sup
     CommonModule,
     ReactiveFormsModule,
     TableGenericComponent, 
-    TableHeaderComponent, 
+    TableHeaderComponent,
+    LoadingComponent,
   ],
   templateUrl: './curriculum.component.html',
   styleUrls: ['./curriculum.component.scss'],
@@ -38,6 +40,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
   curricula: Curriculum[] = [];
   programs: Program[] = [];
   availableCurriculumYears: string[] = [];
+  isLoading = true;
   
   columns = [
     { key: 'index', label: '#' },
@@ -86,13 +89,19 @@ export class CurriculumComponent implements OnInit, OnDestroy {
   // }
 
   private fetchCurricula() {
+    this.isLoading = true;  // Set loading state
     this.curriculumService
       .getCurricula()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (curricula) => this.updateCurriculaList(curricula),
-        error: () =>
-          this.showErrorMessage('Error fetching curricula. Please try again.'),
+        next: (curricula) => {
+          this.updateCurriculaList(curricula);
+          this.isLoading = false;
+        },
+        error: () => {
+          this.showErrorMessage('Error fetching curricula. Please try again.');
+          this.isLoading = false;
+        }
       });
   }
 

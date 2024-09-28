@@ -1,31 +1,38 @@
-<div class="programs-container" [@fadeAnimation]>
-  <!--Table Header-->
-  <div class="programs-header-container">
-    <app-table-header
-      [inputFields]="headerInputFields"
-      [addButtonLabel]="'Add Program'"
-      (inputChange)="onInputChange($event)"
-      (add)="openAddProgramDialog()"
-      (export)="onExport()"
-    ></app-table-header>
-  </div>
-
-  <!--Common Table-->
-  <div class="programs-table-container">
-    <app-table-generic
-      [columns]="columns"
-      [data]="programs"
-      [tableName]="'programs'"
-      [displayedColumns]="displayedColumns"
-      (edit)="openEditProgramDialog($event)"
-      (delete)="deleteProgram($event)"
-    ></app-table-generic>
-  </div>
-
-  @if (showPreview) {
-    <div class="pdf-preview-container">
-      <button mat-button (click)="cancelPreview()">Cancel</button>
-      <iframe id="pdfPreview" width="100%" height="600px"></iframe>
+<div class="programs-container">
+  @if (isLoading) {
+    <!-- Show loading component while data is loading -->
+    <div class="loading-wrapper">
+      <app-loading></app-loading>
     </div>
+  } @else {
+    <!--Table Header-->
+    <div class="programs-header-container" [@fadeAnimation]>
+      <app-table-header
+        [inputFields]="headerInputFields"
+        [addButtonLabel]="'Add Program'"
+        (inputChange)="onInputChange($event)"
+        (add)="openAddProgramDialog()"
+        (export)="onExport()"
+      ></app-table-header>
+    </div>
+
+    <!--Common Table-->
+    <div class="programs-table-container" [@fadeAnimation]>
+      <app-table-generic
+        [columns]="columns"
+        [data]="programs"
+        [tableName]="'programs'"
+        [displayedColumns]="displayedColumns"
+        (edit)="openEditProgramDialog($event)"
+        (delete)="deleteProgram($event)"
+      ></app-table-generic>
+    </div>
+
+    @if (showPreview) {
+      <div class="pdf-preview-container">
+        <button mat-button (click)="cancelPreview()">Cancel</button>
+        <iframe id="pdfPreview" width="100%" height="600px"></iframe>
+      </div>
+    }
   }
 </div>

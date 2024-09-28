@@ -10,6 +10,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
 import { InputField, TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
+import { LoadingComponent } from '../../../../../shared/loading/loading.component';
 
 import { FacultyService, Faculty } from '../../../../services/superadmin/management/faculty/faculty.service';
 
@@ -24,6 +25,7 @@ import { fadeAnimation } from '../../../../animations/animations';
     ReactiveFormsModule,
     TableGenericComponent,
     TableHeaderComponent,
+    LoadingComponent,
   ],
   templateUrl: './faculty.component.html',
   styleUrls: ['./faculty.component.scss'],
@@ -36,6 +38,8 @@ export class FacultyComponent implements OnInit {
   selectedFacultyIndex: number | null = null;
 
   faculty: Faculty[] = [];
+  isLoading = true;
+
   columns = [
     { key: 'index', label: '#' },
     { key: 'code', label: 'Faculty Code' },
@@ -67,11 +71,14 @@ export class FacultyComponent implements OnInit {
     this.fetchFaculty();
   }
 
-  fetchFaculty() {
+fetchFaculty() {
+    this.isLoading = true;
     this.facultyService.getFaculty().pipe(
       catchError((error) => {
         console.error('Error fetching faculty:', error);
-        return of([]); // Return empty array on error
+        this.snackBar.open('Error fetching faculty. Please try again.', 'Close', { duration: 3000 });
+        this.isLoading = false;
+        return of([]);
       })
     ).subscribe((faculty) => {
       this.faculty = faculty.map((user, index) => ({
@@ -81,12 +88,14 @@ export class FacultyComponent implements OnInit {
         faculty_email: user.faculty_email || '',
         faculty_type: user.faculty_type || '',
         faculty_units: user.faculty_units || 0,
-        status: user.status || 'Active', // Default to 'Active' if status is undefined
+        status: user.status || 'Active',
         role: user.role,
       }));
-      this.cdr.markForCheck(); // Make sure Angular detects changes
+      this.isLoading = false;
+      this.cdr.markForCheck();
     });
   }
+
 
   onSearch(searchTerm: string) {
     this.facultyService.getFaculty().pipe(
