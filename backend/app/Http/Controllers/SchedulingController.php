@@ -11,7 +11,9 @@ class SchedulingController extends Controller
 {
     public function getFacultyDetails()
     {
-        $facultyDetails = Faculty::with('user')->get();
+        $facultyDetails = Faculty::whereHas('user', function ($query) {
+            $query->where('status', 'Active');
+        })->with('user')->get();
     
         $response = $facultyDetails->map(function ($faculty) {
             return [
