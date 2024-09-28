@@ -22,10 +22,13 @@
   top: 0;
   left: 0;
   border-radius: var(--border-radius-sm);
-  animation: primary-progress-animation 3s infinite;
+  animation: primary-progress-animation 2.5s infinite
+    cubic-bezier(0.65, 0.815, 0.735, 0.395);
 
   &.secondary {
-    animation: secondary-progress-animation 2s infinite;
+    animation: secondary-progress-animation 2.5s infinite
+      cubic-bezier(0.165, 0.84, 0.44, 1);
+    animation-delay: 1.25s;
   }
 }
 
