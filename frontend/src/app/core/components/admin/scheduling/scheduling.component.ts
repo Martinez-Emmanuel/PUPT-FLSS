@@ -629,13 +629,19 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         this.schedulingService.getSubmittedPreferencesForActiveSemester(),
     }).subscribe({
       next: ({ rooms, faculty, preferences }) => {
-        const roomOptions = rooms.rooms.map((room) => room.room_code);
+        const availableRooms = rooms.rooms.filter(
+          (room) => room.status === 'Available'
+        );
+
+        const roomOptions = availableRooms.map((room) => room.room_code);
         const professorOptions = faculty.faculty.map(
           (professor) => professor.name
         );
 
-        const selectedProgramInfo = `${schedule.program_code} ${schedule.year}-${schedule.section}`;
-        const selectedCourseInfo = `${schedule.course_code} - ${schedule.course_title}`;
+        const selectedProgramInfo = 
+          `${schedule.program_code} ${schedule.year}-${schedule.section}`;
+        const selectedCourseInfo = 
+          `${schedule.course_code} - ${schedule.course_title}`;
 
         const suggestedFaculty: {
           name: string;
@@ -684,7 +690,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
             professorOptions: professorOptions,
             roomOptions: roomOptions,
             facultyOptions: faculty.faculty,
-            roomOptionsList: rooms.rooms,
+            roomOptionsList: availableRooms,
             selectedProgramInfo: selectedProgramInfo,
             selectedCourseInfo: selectedCourseInfo,
             suggestedFaculty: suggestedFaculty,

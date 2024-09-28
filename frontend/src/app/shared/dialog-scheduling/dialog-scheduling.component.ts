@@ -71,7 +71,6 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
 
   private destroy$ = new Subject<void>();
 
-  // Optional: To keep track of selected faculty for UI purposes
   selectedFaculty: {
     name: string;
     type: string;
