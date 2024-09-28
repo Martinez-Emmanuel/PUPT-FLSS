@@ -247,7 +247,7 @@ export class RoomsComponent implements OnInit {
           label: 'Status',
           formControlName: 'status',
           type: 'select',
-          options: ['available', 'unavailable'],
+          options: ['Available', 'Unavailable'],
           required: true,
         },
       ],

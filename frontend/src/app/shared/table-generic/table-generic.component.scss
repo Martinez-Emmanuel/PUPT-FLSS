@@ -60,7 +60,24 @@
   }
 
   .custom-cell {
-    padding: var(--spacing-sm);
+    text-align: center;
+    padding: var(--spacing-xs);
+
+    .status-badge {
+      padding: var(--spacing-xxs) var(--spacing-xs);
+      border-radius: var(--border-radius-xs);
+      font-weight: 500;
+    }
+    
+    .status-active {
+      color: var(--green-primary);
+      background-color: var(--green-fade);
+    }
+    
+    .status-inactive {
+      color: var(--primary-text);
+      background-color: var(--primary-fade);
+    }
   }
 
   .action-buttons {

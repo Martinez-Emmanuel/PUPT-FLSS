@@ -98,6 +98,12 @@ Route::get('/programs/{id}', [ProgramController::class, 'show']);
 Route::put('/updateProgram/{id}', [ProgramController::class, 'update']);
 Route::delete('/deleteProgram/{id}', [ProgramController::class, 'destroy']);
 
+// CRUD for rooms
+Route::get('/rooms', [RoomController::class, 'index']);
+Route::post('/addRoom', [RoomController::class, 'addRoom']);
+Route::put('/rooms/{room_id}', [RoomController::class, 'updateRoom']);
+Route::delete('/rooms/{room_id}', [RoomController::class, 'deleteRoom']);
+
 
 // Route::middleware(['auth:sanctum', 'super_admin'])->group(function () {
 //     Route::get('/showAccounts', [AccountController::class, 'index']);
@@ -142,11 +148,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Email API
     // Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
 
-    // CRUD for rooms
-    Route::get('/rooms', [RoomController::class, 'index']);
-    Route::post('/addRoom', [RoomController::class, 'addRoom']);
-    Route::put('/rooms/{room_id}', [RoomController::class, 'updateRoom']);
-    Route::delete('/rooms/{room_id}', [RoomController::class, 'deleteRoom']);
+
 
     // CRUD for Courses
 

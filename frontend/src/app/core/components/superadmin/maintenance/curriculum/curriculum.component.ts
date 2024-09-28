@@ -34,7 +34,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private selectedCurriculumIndex: number | null = null;
 
-  curriculumStatuses = ['active', 'inactive'];
+  curriculumStatuses = ['Active', 'Inactive'];
   curricula: Curriculum[] = [];
   programs: Program[] = [];
   availableCurriculumYears: string[] = [];
@@ -231,7 +231,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
           label: 'Status',
           formControlName: 'status',
           type: 'select' as const,
-          options: ['active', 'inactive'],
+          options: ['Active', 'Inactive'],
           required: true,
         },
         ...(isEdit ? [] : [{
@@ -250,7 +250,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
         status: existingCurriculum!.status,
       } : {
         copy_from: 'None',
-        status: 'active',
+        status: 'Active',
       },
     };
   }

@@ -31,7 +31,7 @@ import 'jspdf-autotable';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProgramsComponent implements OnInit {
-  programStatuses = ['active', 'inactive'];
+  programStatuses = ['Active', 'Inactive'];
   programYears = [1, 2, 3, 4, 5];
   isEdit = false;
   selectedProgramIndex: number | null = null;

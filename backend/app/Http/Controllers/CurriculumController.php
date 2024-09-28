@@ -29,11 +29,11 @@ class CurriculumController extends Controller
             // Step 1: Create the new curriculum
             $curriculum = Curriculum::create([
                 'curriculum_year' => $request->curriculum_year,
-                'status' => 'active',
+                'status' => 'Active',
             ]);
 
-            // Step 2: Get all active programs
-            $programs = DB::table('programs')->where('status', 'active')->get();
+            // Step 2: Get all Active programs
+            $programs = DB::table('programs')->where('status', 'Active')->get();
 
             // Step 3: Create curricula_program entries for each program
             foreach ($programs as $program) {
@@ -125,7 +125,7 @@ class CurriculumController extends Controller
             // Step 2: Create the new curriculum
             $newCurriculum = Curriculum::create([
                 'curriculum_year' => $request->new_curriculum_year,
-                'status' => 'active',
+                'status' => 'Active',
             ]);
 
             // Step 3: Copy each program associated with the original curriculum
@@ -198,7 +198,7 @@ class CurriculumController extends Controller
     {
         $validatedData = $request->validate([
             'curriculum_year' => 'required|string|size:4',
-            'status' => 'required|in:active,inactive',
+            'status' => 'required|in:Active,Inactive',
         ]);
 
         $existingCurriculum = Curriculum::where('curriculum_year', $validatedData['curriculum_year'])->first();
@@ -233,7 +233,7 @@ class CurriculumController extends Controller
 
         $validatedData = $request->validate([
             'curriculum_year' => 'required|string|size:4',
-            'status' => 'required|in:active,inactive',
+            'status' => 'required|in:Active,Inactive',
         ]);
 
         $curriculum->update($validatedData);

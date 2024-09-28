@@ -13,14 +13,14 @@ class CurriculaTableSeeder extends Seeder
             [
                 'curriculum_id' => 1,
                 'curriculum_year' => '2018',
-                'status' => 'active',
+                'status' => 'Active',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
             [
                 'curriculum_id' => 2,
                 'curriculum_year' => '2022',
-                'status' => 'active',
+                'status' => 'Active',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
