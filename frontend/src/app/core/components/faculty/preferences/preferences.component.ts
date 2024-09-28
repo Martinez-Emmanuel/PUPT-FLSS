@@ -75,6 +75,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   filteredCourses: Course[] = [];
   selectedProgram: Program | undefined;
   selectedYearLevel: number | null = null;
+  allSelectedCourses: TableData[] = [];
   dataSource = new MatTableDataSource<TableData>([]);
   subscriptions = new Subscription();
 
@@ -163,9 +164,8 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       .flatMap((semester) => semester.courses);
     this.filteredCourses = this.courses;
     this.loading = false;
-    this.dataSource.data = [];
-    this.updateTotalUnits();
     this.selectedYearLevel = null;
+    this.updateDataSource();
     this.cdr.markForCheck();
   }
 
@@ -179,9 +179,9 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showProgramSelection = true;
     this.selectedProgram = undefined;
     this.courses = [];
-    this.dataSource.data = [];
-    this.updateTotalUnits();
+    this.filteredCourses = [];
     this.selectedYearLevel = null;
+    this.updateDataSource();
     this.cdr.markForCheck();
   }
 
@@ -190,17 +190,17 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    this.dataSource.data = [
-      ...this.dataSource.data,
-      { ...course, preferredDay: '', preferredTime: '' },
-    ];
+    const newCourse: TableData = { ...course, preferredDay: '', preferredTime: ''};
+    this.allSelectedCourses.push(newCourse);
+    this.updateDataSource();
     this.updateTotalUnits();
   }
 
   removeCourse(course_code: string) {
-    this.dataSource.data = this.dataSource.data.filter(
+    this.allSelectedCourses = this.allSelectedCourses.filter(
       (course) => course.course_code !== course_code
     );
+    this.updateDataSource();
     this.updateTotalUnits();
   }
 
@@ -237,7 +237,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     const submittedData = this.prepareSubmissionData(facultyId);
 
     this.preferencesService.submitPreferences(submittedData).subscribe({
-      next: () => this.showSnackBar('Preferences submitted successfully.'),
+      next: () => this.showSuccessModal('Preferences submitted successfully.'),
       error: (error) => {
         console.error('Error submitting preferences:', error);
         this.showSnackBar('Error submitting preferences.');
@@ -287,6 +287,21 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     };
   }
 
+  private showSuccessModal(message: string) {
+    const dialogData: DialogData = {
+      title: 'Success',
+      content: message,
+      actionText: 'OK',
+      cancelText: '',
+      action: 'confirm',
+    };
+
+    this.dialog.open(DialogGenericComponent, {
+      data: dialogData,
+      disableClose: true,
+    });
+  }
+
   // Private Utility Methods
   private isCourseAlreadyAdded(course: Course): boolean {
     if (
@@ -306,6 +321,10 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       return true;
     }
     return false;
+  }
+
+  private updateDataSource() {
+    this.dataSource.data = this.allSelectedCourses;
   }
 
   private updateTotalUnits() {
@@ -336,10 +355,12 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       '',
       '',
     ];
+    const isWholeDay = element.preferredTime === 'Whole Day';
+
     this.dialog
       .open(DialogTimeComponent, {
         width: '300px',
-        data: { startTime, endTime },
+        data: { startTime, endTime, isWholeDay },
       })
       .afterClosed()
       .subscribe((result) => {

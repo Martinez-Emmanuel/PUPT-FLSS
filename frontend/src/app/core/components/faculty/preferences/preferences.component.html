@@ -214,9 +214,9 @@
             >
               <mat-icon fontSet="material-icons-round">schedule</mat-icon>
               {{
-                element.preferredTime
-                  ? (element.preferredTime | timeFormat)
-                  : "Select time"
+                element.preferredTime === 'Whole Day' ? 'Whole Day' 
+                  : (element.preferredTime ? (element.preferredTime | timeFormat)
+                  : "Select time")
               }}
             </button>
           </td>
