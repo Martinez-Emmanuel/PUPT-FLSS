@@ -391,11 +391,11 @@ export class SchedulingService {
   // Assign schedule to faculty, room, and time
   assignSchedule(
     schedule_id: number,
-    faculty_id: number,
-    room_id: number,
-    day: string,
-    start_time: string,
-    end_time: string
+    faculty_id: number | null,
+    room_id: number | null,   
+    day: string | null,       
+    start_time: string | null,
+    end_time: string | null   
   ): Observable<any> {
     const payload = {
       schedule_id,

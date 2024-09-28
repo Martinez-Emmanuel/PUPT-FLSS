@@ -701,9 +701,13 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
         dialogRef.afterClosed().subscribe((result) => {
           if (result) {
-            this.snackBar.open('Schedule assigned successfully!', 'Close', {
-              duration: 3000,
-            });
+            this.snackBar.open(
+              'Schedule has been successfully updated.',
+              'Close',
+              {
+                duration: 3000,
+              }
+            );
             this.onInputChange({
               program: this.selectedProgram,
               yearLevel: this.selectedYear,

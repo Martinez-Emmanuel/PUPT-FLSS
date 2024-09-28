@@ -2,7 +2,7 @@
 
 import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 import { Observable, Subject } from 'rxjs';
 import { map, startWith, takeUntil } from 'rxjs/operators';
@@ -103,11 +103,11 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
 
   private initForm(): void {
     this.scheduleForm = this.fb.group({
-      day: ['', Validators.required],
-      startTime: ['', Validators.required],
-      endTime: ['', Validators.required],
-      professor: ['', Validators.required],
-      room: ['', Validators.required],
+      day: [''],
+      startTime: [''],
+      endTime: [''],
+      professor: [''],
+      room: [''],
     });
   }
 
@@ -142,57 +142,50 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   }
 
   public onAssign(): void {
-    if (this.scheduleForm.valid) {
-      const formValues = this.scheduleForm.value;
-      const { day, startTime, endTime, professor, room } = formValues;
+    const formValues = this.scheduleForm.value;
+    const { day, startTime, endTime, professor, room } = formValues;
 
-      const selectedFaculty = this.data.facultyOptions.find(
-        (f) => f.name === professor
-      );
-      if (!selectedFaculty) {
-        this.snackBar.open('Selected professor does not exist.', 'Close', {
-          duration: 3000,
-        });
-        return;
-      }
-
-      const selectedRoom = this.data.roomOptionsList.find(
-        (r) => r.room_code === room
-      );
-      if (!selectedRoom) {
-        this.snackBar.open('Selected room does not exist.', 'Close', {
-          duration: 3000,
-        });
-        return;
-      }
-
-      const faculty_id = selectedFaculty.faculty_id;
-      const room_id = selectedRoom.room_id;
-
-      const formattedStartTime = this.formatTimeToBackend(startTime);
-      const formattedEndTime = this.formatTimeToBackend(endTime);
-
-      this.schedulingService
-        .assignSchedule(
-          this.data.schedule_id,
-          faculty_id,
-          room_id,
-          day,
-          formattedStartTime,
-          formattedEndTime
-        )
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: (response) => {
-            this.dialogRef.close(true);
-          },
-          error: (error) => {
-            this.handleError('Failed to assign schedule')(error);
-          },
-        });
-    } else {
-      this.scheduleForm.markAllAsTouched();
+    const selectedFaculty = this.data.facultyOptions.find(
+      (f) => f.name === professor
+    );
+    if (professor && !selectedFaculty) {
+      this.snackBar.open('Selected faculty does not exist.', 'Close', {
+        duration: 3000,
+      });
+      return;
     }
+
+    const selectedRoom = this.data.roomOptionsList.find(
+      (r) => r.room_code === room
+    );
+    if (room && !selectedRoom) {
+      this.snackBar.open('Selected room does not exist.', 'Close', {
+        duration: 3000,
+      });
+      return;
+    }
+
+    const faculty_id = selectedFaculty ? selectedFaculty.faculty_id : null;
+    const room_id = selectedRoom ? selectedRoom.room_id : null;
+    const formattedStartTime = startTime
+      ? this.formatTimeToBackend(startTime)
+      : null;
+    const formattedEndTime = endTime ? this.formatTimeToBackend(endTime) : null;
+
+    this.schedulingService
+      .assignSchedule(
+        this.data.schedule_id,
+        faculty_id,
+        room_id,
+        day || null,
+        formattedStartTime,
+        formattedEndTime
+      )
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => this.dialogRef.close(true),
+        error: (error) => this.handleError('Failed to assign schedule')(error),
+      });
   }
 
   public onFacultyClick(faculty: {

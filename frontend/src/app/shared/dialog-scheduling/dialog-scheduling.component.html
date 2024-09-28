@@ -17,9 +17,7 @@
       <div class="no-faculty-message">
         No faculty has selected this course as their preference.
       </div>
-      }
-      <!-- If suggestedFaculty exists, show the list -->
-      @else { @for (faculty of data.suggestedFaculty; track faculty) {
+      } @else { @for (faculty of data.suggestedFaculty; track faculty) {
       <div
         class="faculty-item"
         (click)="onFacultyClick(faculty)"
@@ -56,91 +54,43 @@
         <!-- Day Field -->
         <mat-form-field class="scheduling-forms">
           <mat-label>Day</mat-label>
-          <mat-icon
-            matPrefix
-            [ngClass]="{
-              'invalid-icon':
-                scheduleForm.get('day')?.invalid &&
-                scheduleForm.get('day')?.touched
-            }"
-          >
-            calendar_today
-          </mat-icon>
-          <mat-select formControlName="day" required>
+          <mat-icon matPrefix>calendar_today</mat-icon>
+          <mat-select formControlName="day">
             @for (day of data.dayOptions; track day) {
             <mat-option [value]="day">{{ day }}</mat-option>
             }
           </mat-select>
-          @if (scheduleForm.get('day')?.hasError('required') &&
-          scheduleForm.get('day')?.touched) {
-          <mat-error>Day is required.</mat-error>
-          }
         </mat-form-field>
 
-        <!-- Start and End Date Fields -->
+        <!-- Start and End Time Fields -->
         <div class="date-fields">
           <!-- Start Time Field -->
           <mat-form-field class="scheduling-forms">
             <mat-label>Start Time</mat-label>
-            <mat-icon
-              matPrefix
-              [ngClass]="{
-                'invalid-icon':
-                  scheduleForm.get('startTime')?.invalid &&
-                  scheduleForm.get('startTime')?.touched
-              }"
-            >
-              access_time_filled
-            </mat-icon>
-            <mat-select formControlName="startTime" required>
+            <mat-icon matPrefix>access_time_filled</mat-icon>
+            <mat-select formControlName="startTime">
               @for (time of data.timeOptions; track time) {
               <mat-option [value]="time">{{ time }}</mat-option>
               }
             </mat-select>
-            @if (scheduleForm.get('startTime')?.hasError('required') &&
-            scheduleForm.get('startTime')?.touched) {
-            <mat-error>Start time is required.</mat-error>
-            }
           </mat-form-field>
 
           <!-- End Time Field -->
           <mat-form-field class="scheduling-forms">
             <mat-label>End Time</mat-label>
-            <mat-icon
-              matPrefix
-              [ngClass]="{
-                'invalid-icon':
-                  scheduleForm.get('endTime')?.invalid &&
-                  scheduleForm.get('endTime')?.touched
-              }"
-            >
-              access_time_filled
-            </mat-icon>
-            <mat-select formControlName="endTime" required>
+            <mat-icon matPrefix>access_time_filled</mat-icon>
+            <mat-select formControlName="endTime">
               @for (time of data.endTimeOptions; track time) {
               <mat-option [value]="time">{{ time }}</mat-option>
               }
             </mat-select>
-            @if (scheduleForm.get('endTime')?.hasError('required') &&
-            scheduleForm.get('endTime')?.touched) {
-            <mat-error>End time is required.</mat-error>
-            }
           </mat-form-field>
         </div>
 
         <!-- Professor Field -->
         <mat-form-field class="scheduling-forms">
           <mat-label>Professor</mat-label>
-          <mat-icon
-            matPrefix
-            [ngClass]="{
-              'invalid-icon':
-                scheduleForm.get('professor')?.invalid &&
-                scheduleForm.get('professor')?.touched
-            }"
-          >
-            person
-          </mat-icon>
+          <mat-icon matPrefix>person</mat-icon>
           <input
             type="text"
             matInput
@@ -152,26 +102,12 @@
             <mat-option [value]="professor">{{ professor }}</mat-option>
             }
           </mat-autocomplete>
-          @if (scheduleForm.get('professor')?.hasError('required') &&
-          scheduleForm.get('professor')?.touched) {
-          <mat-error>Professor is required.</mat-error>
-          }
         </mat-form-field>
 
         <!-- Room Field -->
         <mat-form-field class="scheduling-forms">
           <mat-label>Room</mat-label>
-          <mat-icon
-            matPrefix
-            [ngClass]="{
-              'invalid-icon':
-                scheduleForm.get('room')?.invalid &&
-                scheduleForm.get('room')?.touched
-            }"
-          >
-            meeting_room
-            <!-- You can change this to any icon you prefer -->
-          </mat-icon>
+          <mat-icon matPrefix>meeting_room</mat-icon>
           <input
             type="text"
             matInput
@@ -183,26 +119,11 @@
             <mat-option [value]="room">{{ room }}</mat-option>
             }
           </mat-autocomplete>
-          @if (scheduleForm.get('room')?.hasError('required') &&
-          scheduleForm.get('room')?.touched) {
-          <mat-error>Room is required.</mat-error>
-          }
         </mat-form-field>
       </form>
 
-      <!--Schedule Validator-->
+      <!-- Schedule Validator (if applicable) -->
       <div class="schedule-validator">
-        <!-- @if (!hasConflicts) {
-        <div class="validation-message no-conflict">
-          <span mat-symbol="check_circle"></span>
-          <span>All good! No scheduling conflicts have been detected.</span>
-        </div>
-        } @else {
-        <div class="validation-message conflict">
-          <span mat-symbol="error"></span>
-          <span>Warning: Scheduling conflicts have been detected.</span>
-        </div>
-        } -->
         @if (hasConflicts) {
         <div class="validation-message conflict">
           <span mat-symbol="error"></span>
@@ -229,7 +150,7 @@
         <button
           class="action-button"
           mat-flat-button
-          [disabled]="!scheduleForm.valid || hasConflicts"
+          [disabled]="hasConflicts"
           (click)="onAssign()"
         >
           Assign Schedule
