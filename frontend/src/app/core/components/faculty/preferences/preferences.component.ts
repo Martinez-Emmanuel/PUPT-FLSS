@@ -237,7 +237,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     const submittedData = this.prepareSubmissionData(facultyId);
 
     this.preferencesService.submitPreferences(submittedData).subscribe({
-      next: () => this.showSnackBar('Preferences submitted successfully.'),
+      next: () => this.showSuccessModal('Preferences submitted successfully.'),
       error: (error) => {
         console.error('Error submitting preferences:', error);
         this.showSnackBar('Error submitting preferences.');
@@ -285,6 +285,21 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
         })
       ),
     };
+  }
+
+  private showSuccessModal(message: string) {
+    const dialogData: DialogData = {
+      title: 'Success',
+      content: message,
+      actionText: 'OK',
+      cancelText: '',
+      action: 'confirm',
+    };
+
+    this.dialog.open(DialogGenericComponent, {
+      data: dialogData,
+      disableClose: true,
+    });
   }
 
   // Private Utility Methods
