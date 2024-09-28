@@ -623,7 +623,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
 
             if (deletedYearId === activeYearId) {
               this.snackBar.open(
-                'Cannot delete the current set active academic year',
+                'Cannot delete the current set active academic year.',
                 'Close',
                 {
                   duration: 3000,

@@ -205,6 +205,7 @@
   .table-cell {
     padding: var(--spacing-sm);
     text-wrap: wrap;
+    text-align: center;
     background-color: var(--neutral-light);
 
     .remove-button {
