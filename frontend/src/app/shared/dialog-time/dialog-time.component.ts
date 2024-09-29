@@ -9,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatCheckbox } from '@angular/material/checkbox';
 
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
@@ -24,6 +25,7 @@ import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
     MatOptionModule,
     MatButtonModule,
     MatIconModule,
+    MatCheckbox,
     MatSymbolDirective
   ],
   templateUrl: './dialog-time.component.html',
@@ -33,6 +35,7 @@ export class DialogTimeComponent {
   // Updated class name
   startTime: string = '';
   endTime: string = '';
+  isWholeDay: boolean = false;
   timeOptions: string[] = [];
   endTimeOptions: string[] = [];
 
@@ -47,6 +50,7 @@ export class DialogTimeComponent {
       this.endTime = this.data.endTime;
       this.onStartTimeChange();
     }
+    this.isWholeDay = this.data.isWholeDay || false;
   }
 
   generateTimeOptions() {
@@ -79,7 +83,9 @@ export class DialogTimeComponent {
   }
 
   onConfirm(): void {
-    if (this.startTime && this.endTime) {
+    if (this.isWholeDay) {
+      this.dialogRef.close('Whole Day');
+    } else if (this.startTime && this.endTime) {
       this.dialogRef.close(`${this.startTime} - ${this.endTime}`);
     }
   }
@@ -91,5 +97,12 @@ export class DialogTimeComponent {
     const startIndex = this.timeOptions.indexOf(this.startTime);
     const endIndex = this.timeOptions.indexOf(this.endTime);
     return startIndex !== -1 && endIndex !== -1 && endIndex > startIndex;
+  }
+
+  onWholeDayChange(): void {
+    if (this.isWholeDay) {
+      this.startTime = '';
+      this.endTime = '';
+    }
   }
 }
