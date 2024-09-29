@@ -1,15 +1,10 @@
 <div class="material-dialog-container">
   <!--Dialog Title-->
   <h2 mat-dialog-title class="dialog-title">
-    <!-- <span mat-symbol="schedule"></span> -->
     <span id="title_text">Select Time</span>
   </h2>
   <!--Dialog fields-->
-  <mat-dialog-content>
-      <mat-checkbox [(ngModel)]="isWholeDay" (change)="onWholeDayChange()">
-        Whole Day
-      </mat-checkbox>
-
+  <mat-dialog-content class="dialog-content">
     @if (!isWholeDay) {
     <mat-form-field appearance="fill" class="dialog-field">
       <mat-label>Start Time</mat-label>
@@ -41,6 +36,9 @@
       <mat-error>End time must be after start time</mat-error>
     }
     }
+    <mat-checkbox [(ngModel)]="isWholeDay" (change)="onWholeDayChange()">
+      Whole Day
+    </mat-checkbox>
   </mat-dialog-content>
 
   <!--Dialog buttons-->

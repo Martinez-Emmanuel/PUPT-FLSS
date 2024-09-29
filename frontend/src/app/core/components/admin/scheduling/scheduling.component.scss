@@ -28,7 +28,7 @@
     flex-direction: column;
     background-color: var(--neutral-light);
     max-height: 50rem;
-  
+
     .custom-table {
       @include default-transition;
       background-color: var(--neutral-light);
@@ -41,7 +41,7 @@
     .index {
       padding: 0 var(--spacing-md);
     }
-  
+
     .custom-header {
       text-wrap: nowrap;
       background-color: var(--primary-one);
@@ -53,14 +53,22 @@
       top: 0;
       z-index: 2;
     }
-  
+
     .custom-cell {
-      padding: var(--spacing-sm);
+      padding: var(--spacing-xs);
       text-align: center;
+
+      .not-set-badge {
+        background-color: var(--primary-fade);
+        color: var(--primary-text-lighter);
+        padding: var(--spacing-xxs) var(--spacing-xs);
+        border-radius: var(--border-radius-xs);
+        text-wrap: nowrap;
+      }
 
       .edit-button {
         color: var(--secondary-text);
-  
+
         &:hover {
           background-color: var(--secondary-hover);
         }

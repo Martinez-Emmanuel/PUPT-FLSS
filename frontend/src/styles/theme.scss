@@ -17,20 +17,35 @@
   --neutral-button: #535353;
   --neutral-button-lighter: #474747;
   --neutral-space: #efefef;
+  --neutral-extra: #f1f1f1;
+  --neutral-extra-dark: #e4e4e4;
 
   /* Primary colors variations */
   --primary-one: #800000;
   --primary-two: #a93232;
   --primary-fade: #80000020;
   --primary-text: #800000;
+  --primary-text-lighter: #710303;
   --primary-hover: #e3d9d9;
+  --primary-warning: #bb1f1f;
 
   --primary-one-fade: #98292947;
 
   --error-base: #800000;
 
-  --secondary-text: #836816;
+  --secondary-text: #957619;
   --secondary-hover: #a47f1a0b;
+  --secondary-fade: #80631520;
+
+  /* Extra colors */
+  --blue-primary: #002f85;
+  --blue-fade: #0027702f;
+
+  --purple-primary: #2e007d;
+  --purple-fade: #27006a31;
+
+  --green-primary: #005a09;
+  --green-fade: #00461933;
 
   /* Gradient-speficic values */
 
@@ -66,13 +81,17 @@
   --neutral-button: #3a3a3a;
   --neutral-button-lighter: #afafaf;
   --neutral-space: #171717;
+  --neutral-extra: #252525;
+  --neutral-extra-dark: #363636;
 
   /* Primary colors variations */
   --primary-one: #a93232;
   --primary-two: #9e2525;
   --primary-fade: #a932321a;
   --primary-text: #e15d5d;
+  --primary-text-lighter: #f08383;
   --primary-hover: #2b2121;
+  --primary-warning: #ffb4ab;
 
   --primary-one-fade: #ff3c3c38;
 
@@ -80,6 +99,17 @@
 
   --secondary-text: #cc9d1b;
   --secondary-hover: #cc9d1b08;
+  --secondary-fade: #87691620;
+
+  /* Extra colors */
+  --blue-primary: #a5c1f5;
+  --blue-fade: #00277040;
+
+  --purple-primary: #b494ea;
+  --purple-fade: #1a004640;
+
+  --green-primary: #97d39d;
+  --green-fade: #00461940;
 
   /* Gradient-speficic values */
 

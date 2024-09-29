@@ -19,6 +19,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatRippleModule } from '@angular/material/core';
 
 import { TimeFormatPipe } from '../../../pipes/time-format/time-format.pipe';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
@@ -61,6 +62,7 @@ interface TableData extends Course {
     MatProgressSpinnerModule,
     MatSortModule,
     MatMenuModule,
+    MatRippleModule,
   ],  
   templateUrl: './preferences.component.html',
   styleUrls: ['./preferences.component.scss'],

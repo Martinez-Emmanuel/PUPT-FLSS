@@ -18,7 +18,7 @@ class Faculty extends Authenticatable
         'user_id',
         'faculty_email',
         'faculty_type',
-        'faculty_unit',
+        'faculty_units',
         'faculty_password',
     ];
 

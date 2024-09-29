@@ -47,6 +47,24 @@ export const cardEntranceAnimation = trigger('cardEntranceAnimation', [
   ]),
 ]);
 
+export const cardEntranceSide = trigger('cardEntranceSide', [
+  transition('* <=> *', [
+    query(
+      ':enter',
+      [
+        style({ opacity: 0, transform: 'translateX(-15px)' }),
+        stagger('100ms', [
+          animate(
+            '400ms ease-out',
+            style({ opacity: 1, transform: 'translateX(0)' })
+          ),
+        ]),
+      ],
+      { optional: true }
+    ),
+  ]),
+]);
+
 export const pageFloatUpAnimation = trigger('pageFloatUpAnimation', [
   transition(':enter', [
     style({ opacity: 0, transform: 'translateY(20px)' }),

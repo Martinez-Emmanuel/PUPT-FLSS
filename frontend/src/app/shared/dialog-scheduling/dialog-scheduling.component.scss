@@ -1,0 +1,217 @@
+@import "../../../styles/mixins.scss";
+
+.scheduling-dialog-container {
+  @include flex-layout($align: stretch);
+
+  .title {
+    @include flex-layout(
+      $direction: column,
+      $justify: flex-start,
+      $align: flex-start,
+      $gap: var(--spacing-xxs)
+    );
+    padding: var(--spacing-lg) 0;
+
+    .program-info,
+    .course-name {
+      font-size: var(--font-size-sm);
+      color: var(--primary-text);
+    }
+
+    .desc {
+      font-size: var(--font-size-sm);
+      color: var(--secondary-text);
+    }
+
+    .dialog-title {
+      @include flex-layout($justify: flex-start, $gap: var(--spacing-xs));
+      font-weight: 500;
+
+      &.scheduling {
+        margin: 0;
+        color: var(--primary-text) !important;
+      }
+
+      &.suggested {
+        margin: 0;
+        color: var(--secondary-text) !important;
+      }
+    }
+  }
+
+  .section {
+    padding: 0 var(--spacing-lg);
+  }
+
+  .content {
+    @include reset-styles;
+  }
+}
+
+/* ------ Edit Schedule Section ------ */
+.edit-schedule-details {
+  flex: 5;
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start
+  );
+  overflow: hidden;
+
+  .content.forms-list {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $justify: flex-start,
+      $gap: var(--spacing-sm)
+    );
+    @include hide-scrollbar;
+    width: 100%;
+
+    .scheduling-form-group {
+      @include flex-layout(
+        $direction: column,
+        $align: stretch,
+        $gap: var(--spacing-xs)
+      );
+
+      .date-fields {
+        @include flex-layout($gap: var(--spacing-sm));
+      }
+
+      /* Icon color when the field is focused */
+      .mat-focused .mat-icon {
+        color: var(--primary-one);
+      }
+
+      /* Icon color when the field is invalid */
+      .mat-focused .mat-icon.invalid-icon {
+        color: var(--primary-warning);
+      }
+
+      /* Maintain the invalid color when the field is touched and invalid */
+      .invalid-icon {
+        color: var(--primary-warning);
+      }
+    }
+  }
+
+  /* Schedule Validator Styles */
+  .schedule-validator {
+    @include flex-layout;
+
+    .validation-message {
+      @include flex-layout($align: center, $gap: var(--spacing-xs));
+      padding: var(--spacing-xs);
+      border-radius: var(--border-radius-sm);
+      width: fit-content;
+
+      span[mat-symbol] {
+        font-size: var(--font-size-mdx);
+      }
+
+      &.no-conflict {
+        background-color: var(--secondary-fade);
+        color: var(--secondary-text);
+      }
+
+      &.conflict {
+        background-color: var(--primary-fade);
+        color: var(--primary-text);
+      }
+    }
+  }
+
+  .scheduling-dialog-actions {
+    @include reset-styles;
+    @include flex-layout($align: stretch, $justify: space-between);
+    padding: var(--spacing-lg) 0;
+
+    .clear-all-button {
+      color: var(--neutral-base);
+      font-weight: 500;
+      font-size: var(--font-size-sm);
+      opacity: var(--opacity-semi-opaque);
+      border-radius: var(--border-radius-xl);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      background-color: transparent;
+      outline: none;
+      border: none;
+      cursor: pointer;
+
+      &:hover {
+        background-color: var(--neutral-option);
+      }
+    }
+
+    .action-buttons {
+      .cancel-button {
+        color: var(--primary-text) !important;
+      }
+
+      .action-button {
+        &:disabled {
+          color: var(--neutral-base) !important;
+          opacity: var(--opacity-semi-opaque);
+        }
+      }
+    }
+  }
+}
+
+/* ------ Suggested Faculty Section ------ */
+.suggested-faculty {
+  flex: 3;
+  background-color: var(--neutral-extra);
+
+  .content.faculty-list {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $justify: flex-start,
+      $gap: var(--spacing-sm)
+    );
+    @include hide-scrollbar;
+    margin-bottom: var(--spacing-lg);
+    border-radius: var(--border-radius-sm);
+
+    .no-faculty-message {
+      opacity: var(--opacity-semi-opaque);
+      font-style: italic;
+    }
+
+    .faculty-item {
+      background-color: var(--neutral-extra-dark);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: var(--border-radius-sm);
+      cursor: pointer;
+
+      .faculty-type {
+        width: fit-content;
+        padding: 0 var(--spacing-xxs);
+        margin: var(--spacing-xxs) 0;
+        border-radius: var(--border-radius-xs);
+        font-size: var(--font-size-xsx);
+        font-weight: 500;
+
+        &.full-time {
+          background-color: var(--blue-fade);
+          color: var(--blue-primary);
+        }
+
+        &.part-time {
+          background-color: var(--purple-fade);
+          color: var(--purple-primary);
+        }
+      }
+
+      .faculty-name {
+        font-weight: 500;
+      }
+
+      .faculty-pref {
+        opacity: var(--opacity-semi-opaque);
+      }
+    }
+  }
+}

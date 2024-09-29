@@ -45,13 +45,14 @@ CREATE TABLE `faculty` (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` bigint(20) UNSIGNED NOT NULL,
   `faculty_email` varchar(50) NOT NULL,
-  `faculty_type` enum('full-time','part-time','regular') NOT NULL,
-  `faculty_unit` varchar(191) NOT NULL,
+  `faculty_type` enum('full-time (permanent)','full-time (temporary)','full-time (designee)','part-time') NOT NULL,
+  `faculty_unit` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `faculty_faculty_email_unique` (`faculty_email`),
   KEY `faculty_user_id_foreign` (`user_id`),
   CONSTRAINT `faculty_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 -- Table structure for table `rooms`
 CREATE TABLE `rooms` (

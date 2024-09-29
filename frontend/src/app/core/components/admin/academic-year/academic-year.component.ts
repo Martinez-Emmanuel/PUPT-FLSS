@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Subject, takeUntil } from 'rxjs';
+import { forkJoin, Subject, takeUntil } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
@@ -15,6 +15,7 @@ import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-ge
 import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
 import { CurriculumService } from '../../../services/superadmin/curriculum/curriculum.service';
 import { YearLevel, Program, SchedulingService } from '../../../services/admin/scheduling/scheduling.service';
+import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 @Component({
   selector: 'app-academic-year',
@@ -25,6 +26,7 @@ import { YearLevel, Program, SchedulingService } from '../../../services/admin/s
     MatTableModule,
     MatButtonModule,
     MatIconModule,
+    LoadingComponent,
   ],
   templateUrl: './academic-year.component.html',
   styleUrls: ['./academic-year.component.scss'],
@@ -37,6 +39,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
   selectedAcademicYear = '';
   selectedAcademicYearId: number | null = null;
   private destroy$ = new Subject<void>();
+  isLoading = true;
 
   headerInputFields: InputField[] = [
     {
@@ -64,12 +67,67 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
-    this.loadAcademicYears();
+    this.loadData();
   }
 
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  loadData() {
+    this.isLoading = true;
+
+    forkJoin({
+      academicYears: this.schedulingService.getAcademicYears(),
+      activeYear: this.schedulingService.getActiveYearAndSemester(),
+    })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
+        ({ academicYears, activeYear }) => {
+          // Map academic years for dropdown
+          this.academicYearOptions = academicYears.map((ay) => ({
+            academic_year_id: ay.academic_year_id,
+            academic_year: ay.academic_year,
+          }));
+
+          this.headerInputFields[0].options = this.academicYearOptions.map(
+            (ay) => ay.academic_year
+          );
+
+          // Find and set the currently active academic year
+          const activeAcademicYear = this.academicYearOptions.find(
+            (ay) => ay.academic_year === activeYear.activeYear
+          );
+
+          if (activeAcademicYear) {
+            this.selectedAcademicYear = activeAcademicYear.academic_year;
+            this.selectedAcademicYearId = activeAcademicYear.academic_year_id;
+          } else if (this.academicYearOptions.length > 0) {
+            const latestAcademicYear =
+              this.academicYearOptions[0].academic_year;
+            const latestAcademicYearId =
+              this.academicYearOptions[0].academic_year_id;
+            this.selectedAcademicYear = latestAcademicYear;
+            this.selectedAcademicYearId = latestAcademicYearId;
+          } else {
+            this.isLoading = false;
+            this.snackBar.open('No academic years available.', 'Close', {
+              duration: 3000,
+            });
+            return;
+          }
+
+          this.fetchProgramsForAcademicYear(this.selectedAcademicYear);
+        },
+        (error) => {
+          this.isLoading = false;
+          console.error('Error loading data:', error);
+          this.snackBar.open('Failed to load data.', 'Close', {
+            duration: 3000,
+          });
+        }
+      );
   }
 
   loadAcademicYears() {
@@ -78,13 +136,11 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe(
         (academicYears) => {
-          // Map the backend response to an array of objects with academic_year_id and academic_year
           this.academicYearOptions = academicYears.map((ay) => ({
             academic_year_id: ay.academic_year_id,
             academic_year: ay.academic_year,
           }));
 
-          // Populate the dropdown options without sorting (already sorted from backend)
           this.headerInputFields[0].options = this.academicYearOptions.map(
             (ay) => ay.academic_year
           );
@@ -95,14 +151,11 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
             const latestAcademicYearId =
               this.academicYearOptions[0].academic_year_id;
 
-            // Set the selected academic year and its ID
             this.selectedAcademicYear = latestAcademicYear;
             this.selectedAcademicYearId = latestAcademicYearId;
 
-            // Fetch and display programs for the latest academic year
             this.fetchProgramsForAcademicYear(latestAcademicYear);
           } else {
-            // Handle case when there are no academic years available
             this.snackBar.open('No academic years available.', 'Close', {
               duration: 3000,
             });
@@ -123,6 +176,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     );
 
     if (!selectedYear) {
+      this.isLoading = false;
       return;
     }
 
@@ -144,8 +198,10 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
               sections: this.getSectionsByProgram(program),
             }));
           }
+          this.isLoading = false;
         },
         (error) => {
+          this.isLoading = false;
           console.error('Error fetching program details: ', error);
           this.snackBar.open('Failed to fetch program details.', 'Close', {
             duration: 3000,
@@ -175,15 +231,13 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     console.log('Fetched Program ID:', program.program_id);
 
     this.curriculumService.getCurricula().subscribe((curricula) => {
-      console.log(curricula); // Logging the curricula to see the data
+      console.log(curricula);
 
-      // Create a mapping between curriculum_id and curriculum_year
       const curriculumOptions = curricula.map((curriculum) => ({
         year: curriculum.curriculum_year,
         id: curriculum.curriculum_id,
       }));
 
-      // Ensure the year levels are sorted numerically
       const sortedYearLevels = program.year_levels.sort(
         (a: YearLevel, b: YearLevel) => a.year_level - b.year_level
       );
@@ -196,7 +250,6 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
         return;
       }
 
-      // Iterate over each year level and create dialog fields
       program.year_levels.forEach((yearLevelObj: YearLevel, index: number) => {
         const yearLevel = yearLevelObj.year_level;
         const yearLevelKey = `yearLevel${yearLevel}`;
@@ -214,7 +267,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
           label: `Curriculum Year`,
           formControlName: curriculumKey,
           type: 'select',
-          options: curriculumOptions.map((option) => option.year), // Populate dropdown options
+          options: curriculumOptions.map((option) => option.year),
           required: true,
         });
       });
@@ -261,7 +314,6 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
             const curriculumKey = `curriculumVersion${yearLevelObj.year_level}`;
             const selectedCurriculumYear = result[curriculumKey];
 
-            // Find the corresponding curriculum ID for the selected curriculum year
             const matchingCurriculum = curricula.find(
               (c) => c.curriculum_year === selectedCurriculumYear
             );
@@ -285,7 +337,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
               .subscribe(
                 (response) => {
                   this.snackBar.open(
-                    'Year levels updated successfully!',
+                    'Year levels updated successfully.',
                     'Close',
                     { duration: 3000 }
                   );
@@ -306,15 +358,19 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
   onManageSections(program: Program) {
     const fields: DialogFieldConfig[] = [];
 
-    if (!Array.isArray(program.year_levels)) {
+    const sortedYearLevels = program.year_levels.sort(
+      (a: YearLevel, b: YearLevel) => a.year_level - b.year_level
+    );
+
+    if (!Array.isArray(sortedYearLevels)) {
       console.error(
         'Expected year_levels to be an array, but got:',
-        program.year_levels
+        sortedYearLevels
       );
       return;
     }
 
-    program.year_levels.forEach((yearLevelObj: YearLevel) => {
+    sortedYearLevels.forEach((yearLevelObj: YearLevel) => {
       const yearLevelKey = `yearLevel${yearLevelObj.year_level}`;
       const sectionsKey = `numberOfSections${yearLevelObj.year_level}`;
 
@@ -363,7 +419,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         let changesMade = false;
-        program.year_levels.forEach((yearLevelObj) => {
+        sortedYearLevels.forEach((yearLevelObj) => {
           const sectionsKey = `numberOfSections${yearLevelObj.year_level}`;
           const numberOfSections = result[sectionsKey];
 
@@ -384,7 +440,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
                 .subscribe(
                   (response) => {
                     console.log(
-                      `Year Level ${yearLevelObj.year_level} updated successfully!`
+                      `Year Level ${yearLevelObj.year_level} updated successfully.`
                     );
                   },
                   (error) => {
@@ -401,7 +457,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
         });
 
         if (changesMade) {
-          this.snackBar.open('Sections updated successfully!', 'Close', {
+          this.snackBar.open('Sections updated successfully.', 'Close', {
             duration: 3000,
           });
           this.fetchProgramsForAcademicYear(this.selectedAcademicYear);
@@ -442,7 +498,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
                   (p) => p.program_id !== program.program_id
                 );
 
-                this.snackBar.open('Program deleted successfully!', 'Close', {
+                this.snackBar.open('Program deleted successfully.', 'Close', {
                   duration: 3000,
                 });
 
@@ -502,7 +558,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
             .subscribe(
               (response) => {
                 this.snackBar.open(
-                  'New academic year added successfully!',
+                  'New academic year added successfully.',
                   'Close',
                   {
                     duration: 3000,
@@ -536,10 +592,13 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
   academicYearMap: { [name: string]: number } = {};
 
   openManageAcademicYearDialog(): void {
-    this.schedulingService.getAcademicYears().subscribe(
-      (academicYears) => {
+    forkJoin({
+      academicYears: this.schedulingService.getAcademicYears(),
+      activeDetails: this.schedulingService.getActiveYearAndSemester(),
+    }).subscribe({
+      next: ({ academicYears, activeDetails }) => {
         this.academicYearMap = {};
-        const academicYearNames = academicYears.map((year: any) => {
+        const academicYearNames = academicYears.map((year) => {
           this.academicYearMap[year.academic_year] = year.academic_year_id;
           return year.academic_year;
         });
@@ -560,25 +619,35 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
         dialogRef.afterClosed().subscribe((result) => {
           if (result && result.deletedYear) {
             const deletedYearId = this.academicYearMap[result.deletedYear];
-            if (deletedYearId) {
+            const activeYearId = this.academicYearMap[activeDetails.activeYear];
+
+            if (deletedYearId === activeYearId) {
+              this.snackBar.open(
+                'Cannot delete the current set active academic year.',
+                'Close',
+                {
+                  duration: 3000,
+                }
+              );
+            } else {
               this.deleteAcademicYear(deletedYearId);
             }
           }
         });
       },
-      (error) => {
+      error: (error) => {
         console.error('Error fetching academic years:', error);
         this.snackBar.open('Failed to fetch academic years.', 'Close', {
           duration: 3000,
         });
-      }
-    );
+      },
+    });
   }
 
   deleteAcademicYear(academicYearId: number): void {
     this.schedulingService.deleteAcademicYear(academicYearId).subscribe(
       (response) => {
-        this.snackBar.open('Academic year deleted successfully!', 'Close', {
+        this.snackBar.open('Academic year deleted successfully.', 'Close', {
           duration: 3000,
         });
         this.loadAcademicYears();

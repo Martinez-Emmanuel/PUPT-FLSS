@@ -16,15 +16,19 @@
   }
 }
 
+.dialog-content {
+  padding: var(--spacing-lg);
+}
+
 .dialog-field {
   width: 100%;
 }
 
-.cancel span {
-  color: var(--primary-text);
+.cancel {
+  color: var(--primary-text) !important;
 }
 
-.confirm span {
+.confirm {
   color: white;
 }
 

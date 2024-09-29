@@ -23,7 +23,7 @@ use App\Http\Controllers\ScheduleController;
 Route::post('login', [AuthController::class, 'login'])->name('login');
 Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
 
-Route::get('/academic-years-dropdown', [AcademicYearController::class, 'getAcademicYearsForDropdown']);
+Route::get('/get-academic-years', [AcademicYearController::class, 'getAcademicYearsForDropdown']);
 Route::post('/set-active-ay-sem', [AcademicYearController::class, 'setActiveAcademicYearAndSemester']);
 Route::get('/active-year-levels-curricula', [AcademicYearController::class, 'getActiveYearLevelsCurricula']);
 
@@ -75,7 +75,6 @@ Route::delete('/courses/{id}', [CourseController::class, 'deleteCourse']);
 Route::get('/curricula', [CurriculumController::class, 'index']);
 Route::get('/curricula/{id}', [CurriculumController::class, 'show']);
 
-//old delete remove this
 // Route::delete('/deleteCurriculum/{id}', [CurriculumController::class, 'destroy']);
 
 // Semester routes
@@ -98,6 +97,12 @@ Route::post('/addProgram', [ProgramController::class, 'store']);
 Route::get('/programs/{id}', [ProgramController::class, 'show']);
 Route::put('/updateProgram/{id}', [ProgramController::class, 'update']);
 Route::delete('/deleteProgram/{id}', [ProgramController::class, 'destroy']);
+
+// CRUD for rooms
+Route::get('/rooms', [RoomController::class, 'index']);
+Route::post('/addRoom', [RoomController::class, 'addRoom']);
+Route::put('/rooms/{room_id}', [RoomController::class, 'updateRoom']);
+Route::delete('/rooms/{room_id}', [RoomController::class, 'deleteRoom']);
 
 
 // Route::middleware(['auth:sanctum', 'super_admin'])->group(function () {
@@ -123,15 +128,15 @@ Route::middleware(['auth:sanctum', 'super_admin'])->group(function () {
     Route::put('/updateAdmins/{admin}', [AccountController::class, 'updateAdmin']);
     // Delete an admin
     Route::delete('/deleteAdmins/{admin}', [AccountController::class, 'destroyAdmin']);
-
 });
 
 Route::post('/submit-pref', [PreferenceController::class, 'submitPreference']);
 Route::get('/submitted-pref', [PreferenceController::class, 'getPreferences']);
 Route::get('/submitted-pref-sem', [PreferenceController::class, 'getPreferencesForActiveSemester']);
 
-Route::get('/faculty-details', [SchedulingController::class, 'getFacultyDetails']);
-Route::get('/rooms-details', [RoomController::class, 'index']);
+Route::get('/get-faculty', [SchedulingController::class, 'getFacultyDetails']);
+Route::get('/get-rooms', [RoomController::class, 'getAllRooms']);
+// Route::get('/rooms-details', [RoomController::class, 'index']);
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
@@ -143,11 +148,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Email API
     // Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
 
-    // CRUD for rooms
-    Route::get('/rooms', [RoomController::class, 'index']);
-    Route::post('/addRoom', [RoomController::class, 'addRoom']);
-    Route::put('/rooms/{room_id}', [RoomController::class, 'updateRoom']);
-    Route::delete('/rooms/{room_id}', [RoomController::class, 'deleteRoom']);
+
 
     // CRUD for Courses
 
