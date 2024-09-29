@@ -10,6 +10,15 @@ export interface Program {
   program_info: string;
   status: string;
   number_of_years: number;
+  curricula: Curriculum[]; 
+}
+
+export interface Curriculum {
+  curriculum_id: number;
+  curriculum_year: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
 }
 
 @Injectable({
