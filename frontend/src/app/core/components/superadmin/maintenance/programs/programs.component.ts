@@ -44,6 +44,7 @@ export class ProgramsComponent implements OnInit {
     { key: 'program_info', label: 'Program Info' },
     { key: 'status', label: 'Status' },
     { key: 'number_of_years', label: 'Years' },
+    { key: 'curriculum_years', label: 'Curriculum Year' }
   ];
 
   displayedColumns: string[] = [
@@ -53,6 +54,7 @@ export class ProgramsComponent implements OnInit {
     'program_info',
     'status',
     'number_of_years',
+    'curriculum_years'
   ];
 
   headerInputFields: InputField[] = [
@@ -78,10 +80,15 @@ export class ProgramsComponent implements OnInit {
 
   fetchPrograms() {
     this.programService.getPrograms().subscribe((programs) => {
-      this.programs = programs;
+      this.programs = programs.map(program => ({
+        ...program,
+        curriculum_years:
+        program.curricula.map(c => c.curriculum_year).join(', ')
+      }));
       this.cdr.markForCheck();
-    });
+    }); 
   }
+  
 
   onInputChange(values: {[key: string]: any}) {
     if (values['search'] !== undefined) {
@@ -117,11 +124,15 @@ export class ProgramsComponent implements OnInit {
     // Add the header text with different styles
     doc.setFontSize(12);
     doc.setFont('times', 'bold');
-    doc.text('POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH', pageWidth / 2, currentY, { align: 'center' });
+    doc.text('POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH', 
+      pageWidth / 2, currentY, { align: 'center' }
+    );
     currentY += 5;
 
     doc.setFontSize(12);
-    doc.text('Gen. Santos Ave. Upper Bicutan, Taguig City', pageWidth / 2, currentY, { align: 'center' });
+    doc.text('Gen. Santos Ave. Upper Bicutan, Taguig City', 
+      pageWidth / 2, currentY, { align: 'center' }
+    );
     currentY += 10;
 
     doc.setFontSize(15);
@@ -134,20 +145,30 @@ export class ProgramsComponent implements OnInit {
     doc.setLineWidth(0.5);
     doc.line(margin, currentY, pageWidth - margin, currentY);
 
-    currentY += 7; // Move down after the header and line
+    currentY += 7; 
 
-    const bodyData = this.programs.map((program, index) => [
+    const bodyData = this.programs.map((program, index) => {
+      // Extract the curriculum years as a comma-separated string
+      const curriculumYears = program.curricula.map(c => c.curriculum_year).join(', ');
+  
+      return [
         (index + 1).toString(),
         program.program_code,
         program.program_title,
         program.program_info,
         program.status,
         program.number_of_years.toString(),
-    ]);
+        curriculumYears 
+      ];
+    });
 
     doc.autoTable({
         startY: currentY,
-        head: [['#', 'Program Code', 'Program Title', 'Program Info', 'Status', 'Years']],
+        head: [['#', 
+          'Program Code', 'Program Title', 
+          'Program Info', 'Status', 
+          'Years', 'Curriculum Year'
+        ]],
         body: bodyData,
         theme: 'grid',
         headStyles: {
@@ -165,12 +186,13 @@ export class ProgramsComponent implements OnInit {
             cellPadding: 2,
         },
         columnStyles: { 
-            0: { cellWidth: 15 },  // # (index)
+            0: { cellWidth: 10 },  // # (index)
             1: { cellWidth: 30 },  // Program Code
-            2: { cellWidth: 50 },  // Program Title
-            3: { cellWidth: 55 },  // Program Info
-            4: { cellWidth: 25 },  // Status
-            5: { cellWidth: 20 },  // Years
+            2: { cellWidth: 40 },  // Program Title
+            3: { cellWidth: 45 },  // Program Info
+            4: { cellWidth: 20 },  // Status
+            5: { cellWidth: 15 },  // Years
+            6: { cellWidth: 30 },  // Curriculum Year 
         },
         margin: { left: margin, right: margin },
         didDrawPage: (data: any) => {
@@ -295,7 +317,7 @@ export class ProgramsComponent implements OnInit {
       this.programService
         .updateProgram(selectedProgram.program_id, updatedProgram)
         .subscribe((program) => {
-          this.programs[this.selectedProgramIndex!] = program;  // Use non-null assertion operator
+          this.programs[this.selectedProgramIndex!] = program;  
           this.snackBar.open('Program updated successfully', 'Close', {
             duration: 3000,
           });
