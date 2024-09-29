@@ -7,6 +7,8 @@ use App\Models\Faculty;
 use App\Models\Schedule; // Ensure Schedule model is imported
 use Illuminate\Support\Facades\Validator; // Import Validator facade
 use Illuminate\Support\Facades\Log; // Import Log facade
+use Illuminate\Support\Facades\DB;
+
 class SchedulingController extends Controller
 {
     public function getFacultyDetails()
@@ -55,7 +57,9 @@ class SchedulingController extends Controller
             return response()->json(['message' => 'Schedule not found'], 404);
         }
     
-        // Step 3: Assign the validated data to the schedule
+        // Step 3: Assign the validated data to the schedule inside a transaction
+        DB::beginTransaction();
+    
         try {
             $schedule->faculty_id  = $request->input('faculty_id');
             $schedule->room_id     = $request->input('room_id');   
@@ -91,12 +95,18 @@ class SchedulingController extends Controller
                 ],
             ];
     
+            // Commit the transaction after all database operations succeed
+            DB::commit();
+    
             return response()->json($responseData, 200);
         } catch (\Exception $e) {
+            // Rollback the transaction if any exception occurs
+            DB::rollBack();
+    
             Log::error("Error updating schedule ID {$request->input('schedule_id')}: " . $e->getMessage());
             return response()->json(['message' => 'Internal Server Error'], 500);
         }
-    }  
+    }
     
 }
 
