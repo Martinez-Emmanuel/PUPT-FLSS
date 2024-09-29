@@ -13,7 +13,7 @@ return new class extends Migration
         Schema::create('curricula', function (Blueprint $table) {
             $table->increments('curriculum_id');
             $table->string('curriculum_year', 4);
-            $table->enum('status', ['active', 'inactive']);
+            $table->enum('status', ['Active', 'Inactive']);
             $table->timestamps();
         });
     }

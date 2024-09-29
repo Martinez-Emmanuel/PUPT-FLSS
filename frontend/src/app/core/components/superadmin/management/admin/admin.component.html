@@ -1,3 +1,7 @@
+@if (isLoading) {
+<app-loading></app-loading>
+} @else {
+
 <div class="admin-management-container" [@fadeAnimation]>
   <!-- Table Header -->
   <div class="admin-header-container">
@@ -16,9 +20,10 @@
       [columns]="columns"
       [data]="admins"
       [displayedColumns]="displayedColumns"
-      [showViewButton]="false" 
+      [showViewButton]="false"
       (edit)="openEditAdminDialog($event)"
       (delete)="deleteAdmin($event)"
     ></app-table-generic>
   </div>
 </div>
+}

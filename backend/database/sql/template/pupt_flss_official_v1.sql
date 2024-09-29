@@ -1,7 +1,6 @@
--- PUPT-FLSS 2025 Official Database Schema (Version 1.2)
--- Key Changes from the previous partial version:
--- (+) Add start and end date for a unique acad year and sem through
--- active_semesters table
+-- PUPT-FLSS 2025 Official Database Schema (Version 1.2.1)
+-- Key Changes from the previous version:
+-- (*) Set start and end date in active_semesters table as nullable
 
 -- Table structure for table `users`
 CREATE TABLE `users` (
@@ -46,13 +45,14 @@ CREATE TABLE `faculty` (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` bigint(20) UNSIGNED NOT NULL,
   `faculty_email` varchar(50) NOT NULL,
-  `faculty_type` enum('full-time','part-time','regular') NOT NULL,
-  `faculty_unit` varchar(191) NOT NULL,
+  `faculty_type` enum('full-time (permanent)','full-time (temporary)','full-time (designee)','part-time') NOT NULL,
+  `faculty_unit` varchar(255) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `faculty_faculty_email_unique` (`faculty_email`),
   KEY `faculty_user_id_foreign` (`user_id`),
   CONSTRAINT `faculty_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 
 -- Table structure for table `rooms`
 CREATE TABLE `rooms` (
@@ -136,8 +136,8 @@ CREATE TABLE `active_semesters` (
   `academic_year_id` int(10) UNSIGNED DEFAULT NULL,
   `semester_id` int(10) UNSIGNED DEFAULT NULL,
   `is_active` tinyint(1) NOT NULL DEFAULT 0,
-  `start_date` date NOT NULL,
-  `end_date` date NOT NULL,
+  `start_date` date NULL,
+  `end_date` date NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`active_semester_id`),

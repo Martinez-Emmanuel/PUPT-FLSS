@@ -116,6 +116,29 @@
       <mat-checkbox [formControlName]="field.formControlName" class="checkbox">
         {{ field.label }}
       </mat-checkbox>
+      } @case ('date') {
+      <mat-form-field class="form-field" appearance="fill">
+        <mat-label>{{ field.label }}</mat-label>
+        <input
+          matInput
+          [formControlName]="field.formControlName"
+          [matDatepicker]="picker"
+          [min]="
+            field.formControlName === 'endDate'
+              ? form.get('startDate')?.value
+              : null
+          "
+        />
+        <mat-hint>MM/DD/YYYY</mat-hint>
+        <mat-datepicker-toggle
+          matIconSuffix
+          [for]="picker"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+        <mat-error>{{
+          getErrorMessage(field.formControlName, field.label)
+        }}</mat-error>
+      </mat-form-field>
       } @default {
       <mat-form-field class="form-field" appearance="fill">
         <mat-label>{{ field.label }}</mat-label>
@@ -175,22 +198,21 @@
       </mat-form-field>
       } } } }
     </form>
-    }
-    @if (isEditDialog) {
-      <div class="schedule-validator">
-        <div
-          class="validation-message"
-          [ngClass]="{ conflict: isConflict, 'no-conflict': !isConflict }"
-        >
-          <mat-icon>{{ isConflict ? "error" : "check_circle" }}</mat-icon>
-          <span>{{
-            isConflict
-              ? "Warning: Schedule conflicts have been detected. "
-              : "No scheduling conflicts have been detected."
-          }}</span>
-        </div>
+    } @if (isEditDialog) {
+    <div class="schedule-validator">
+      <div
+        class="validation-message"
+        [ngClass]="{ conflict: isConflict, 'no-conflict': !isConflict }"
+      >
+        <mat-icon>{{ isConflict ? "error" : "check_circle" }}</mat-icon>
+        <span>{{
+          isConflict
+            ? "Warning: Schedule conflicts have been detected. "
+            : "No scheduling conflicts have been detected."
+        }}</span>
       </div>
-      }
+    </div>
+    }
   </div>
 
   <div mat-dialog-actions class="table-dialog-button">

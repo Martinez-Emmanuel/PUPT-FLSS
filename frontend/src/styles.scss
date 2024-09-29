@@ -19,7 +19,8 @@
   // Typography
   --font-base: "Inter Tight", "Helvetica Neue", sans-serif;
   --font-header: "Trajan Pro", serif;
-
+  
+  --font-size-tiny: 0.4rem;
   --font-size-xs: 0.65rem;
   --font-size-xsx: 0.8rem;
   --font-size-sm: 0.875rem;
@@ -55,6 +56,7 @@
   // Border radius
   --border-radius-base: 0.25rem;
   --border-radius-xs: 0.3rem;
+  --border-radius-xsx: 0.4rem;
   --border-radius-sm: 0.5rem;
   --border-radius-md: 0.75rem;
   --border-radius-lg: 1rem;
@@ -127,8 +129,24 @@ span[mat-symbol] {
   user-select: none;
 }
 
+.loading-wrapper {
+  height: 100%;
+}
+
 .dialog-generic-logout {
   width: var(--dialog-small);
+}
+
+// .mat-mdc-header-cell {
+//   border-bottom-color: transparent !important;
+// }
+
+.mat-calendar-body-selected {
+  color: white !important;
+}
+
+.mat-calendar-body-today:not(.mat-calendar-body-selected):not(.mat-calendar-body-comparison-identical) {
+  border-color: var(--primary-text) !important;
 }
 
 .mdc-text-field--filled {

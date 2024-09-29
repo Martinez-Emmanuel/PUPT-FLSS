@@ -23,7 +23,7 @@ class ProgramFetchController extends Controller
         $curriculaPrograms = \DB::table('curricula_program')
             ->join('curricula', 'curricula_program.curriculum_id', '=', 'curricula.curriculum_id')
             ->where('curricula_program.program_id', $programId)
-            ->where('curricula.status', 'active')
+            ->where('curricula.status', 'Active')
             ->get();
 
         if ($curriculaPrograms->isEmpty()) {
@@ -116,7 +116,7 @@ class ProgramFetchController extends Controller
     {
         // Fetch all active programs
         $activePrograms = \DB::table('programs')
-            ->where('status', 'active')
+            ->where('status', 'Active')
             ->distinct() // Ensure only distinct programs are fetched
             ->get(['program_code', 'program_title', 'number_of_years', 'program_id']);
 
@@ -131,7 +131,7 @@ class ProgramFetchController extends Controller
             $curriculaPrograms = \DB::table('curricula_program')
                 ->join('curricula', 'curricula_program.curriculum_id', '=', 'curricula.curriculum_id')
                 ->where('curricula_program.program_id', $program->program_id)
-                ->where('curricula.status', 'active')
+                ->where('curricula.status', 'Active')
                 ->get();
 
             $coursesCollection = collect();

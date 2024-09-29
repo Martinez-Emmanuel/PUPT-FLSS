@@ -14,6 +14,26 @@ class RoomController extends Controller
         return response()->json($rooms);
     }
 
+    // Get all rooms (with a wrapper)
+    public function getAllRooms()
+    {
+        $rooms = Room::all();
+
+        $response = $rooms->map(function ($room) {
+            return [
+                'room_id' => $room->room_id,
+                'room_code' => $room->room_code,
+                'location' => $room->location,
+                'floor_level' => $room->floor_level,
+                'room_type' => $room->room_type,
+                'capacity' => $room->capacity,
+                'status' => $room->status,
+            ];
+        });
+
+        return response()->json(['rooms' => $response], 200);
+    }
+
     // Add new room
     public function addRoom(Request $request)
     {

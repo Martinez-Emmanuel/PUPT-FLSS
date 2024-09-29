@@ -29,11 +29,11 @@ class CurriculumController extends Controller
             // Step 1: Create the new curriculum
             $curriculum = Curriculum::create([
                 'curriculum_year' => $request->curriculum_year,
-                'status' => 'active',
+                'status' => 'Active',
             ]);
 
-            // Step 2: Get all active programs
-            $programs = DB::table('programs')->where('status', 'active')->get();
+            // Step 2: Get all Active programs
+            $programs = DB::table('programs')->where('status', 'Active')->get();
 
             // Step 3: Create curricula_program entries for each program
             foreach ($programs as $program) {
@@ -69,43 +69,35 @@ class CurriculumController extends Controller
 
     public function deleteCurriculum(Request $request)
     {
-        // Validate the request
         $request->validate([
             'curriculum_year' => 'required|integer|exists:curricula,curriculum_year',
         ], [
             'curriculum_year.exists' => 'No curriculum found for the given year.',
         ]);
-
-        DB::transaction(function () use ($request) {
-            // Step 1: Find the curriculum by year
-            $curriculum = Curriculum::where('curriculum_year', $request->curriculum_year)->firstOrFail();
-
-            // Step 2: Delete related records
-            // Get all related curricula programs
-            $curriculaPrograms = CurriculaProgram::where('curriculum_id', $curriculum->curriculum_id)->get();
-
-            foreach ($curriculaPrograms as $curriculaProgram) {
-                // Delete related year levels and semesters
-                $yearLevels = YearLevel::where('curricula_program_id', $curriculaProgram->curricula_program_id)->get();
-
-                foreach ($yearLevels as $yearLevel) {
-                    Semester::where('year_level_id', $yearLevel->year_level_id)->delete();
-                    $yearLevel->delete();
-                }
-
-                // Delete the curricula program
-                $curriculaProgram->delete();
-            }
-
-            // Step 3: Delete the curriculum itself
+    
+        $curriculum = Curriculum::where('curriculum_year', $request->curriculum_year)->firstOrFail();
+        $isUsedInAcademicYear = DB::table('academic_year_curricula')
+            ->where('curriculum_id', $curriculum->curriculum_id)
+            ->exists();
+    
+        if ($isUsedInAcademicYear) {
+            return response()->json([
+                'status' => 'fail',
+                'message' => "Curriculum {$request->curriculum_year} is currently used in an academic year and cannot be deleted."
+            ]); // Note: We're returning a 200 OK status here
+        }
+    
+        DB::transaction(function () use ($request, $curriculum) {
+            // Delete related records...
             $curriculum->delete();
         });
-
+    
         return response()->json([
             'status' => 'success',
             'message' => 'Curriculum and all associated programs, year levels, and semesters deleted successfully.'
         ]);
     }
+    
 
     public function copyCurriculum(Request $request)
     {
@@ -125,7 +117,7 @@ class CurriculumController extends Controller
             // Step 2: Create the new curriculum
             $newCurriculum = Curriculum::create([
                 'curriculum_year' => $request->new_curriculum_year,
-                'status' => 'active',
+                'status' => 'Active',
             ]);
 
             // Step 3: Copy each program associated with the original curriculum
@@ -198,7 +190,7 @@ class CurriculumController extends Controller
     {
         $validatedData = $request->validate([
             'curriculum_year' => 'required|string|size:4',
-            'status' => 'required|in:active,inactive',
+            'status' => 'required|in:Active,Inactive',
         ]);
 
         $existingCurriculum = Curriculum::where('curriculum_year', $validatedData['curriculum_year'])->first();
@@ -233,7 +225,7 @@ class CurriculumController extends Controller
 
         $validatedData = $request->validate([
             'curriculum_year' => 'required|string|size:4',
-            'status' => 'required|in:active,inactive',
+            'status' => 'required|in:Active,Inactive',
         ]);
 
         $curriculum->update($validatedData);

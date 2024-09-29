@@ -10,7 +10,7 @@ export interface Faculty {
   user_id: number;
   faculty_email: string;
   faculty_type: string;
-  faculty_unit: string;
+  faculty_units: string;
 }
 
 export interface User {

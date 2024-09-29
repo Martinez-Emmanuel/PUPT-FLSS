@@ -1,0 +1,161 @@
+<div class="scheduling-dialog-container">
+  <!-- Section 1: Suggested Faculty -->
+  <section class="section suggested-faculty">
+    <div class="title">
+      <h2 class="dialog-title suggested">
+        <span mat-symbol="dynamic_form"></span> Suggested
+      </h2>
+      <span class="desc">*Based on submitted preferences</span>
+    </div>
+
+    <mat-dialog-content
+      class="content faculty-list"
+      [@cardEntranceSide]="data.suggestedFaculty.length"
+    >
+      <!-- Check if suggestedFaculty is empty -->
+      @if (data.suggestedFaculty.length === 0) {
+      <div class="no-faculty-message">
+        No faculty has selected this course as their preference.
+      </div>
+      } @else { @for (faculty of data.suggestedFaculty; track faculty) {
+      <div
+        class="faculty-item"
+        (click)="onFacultyClick(faculty)"
+        style="cursor: pointer"
+        [ngClass]="{ 'selected-faculty': isFacultySelected(faculty) }"
+        matRipple
+      >
+        <div
+          class="faculty-type"
+          [ngClass]="{
+            'full-time': faculty.type.includes('Full-time'),
+            'part-time': faculty.type === 'Part-time'
+          }"
+        >
+          {{ faculty.type }}
+        </div>
+        <div class="faculty-name">{{ faculty.name }}</div>
+        <div class="faculty-pref">{{ faculty.day }}, {{ faculty.time }}</div>
+      </div>
+      } }
+    </mat-dialog-content>
+  </section>
+
+  <!-- Section 2: Edit Schedule Details -->
+  <section class="section edit-schedule-details">
+    <div class="title">
+      <h2 class="dialog-title scheduling">Edit Schedule Details</h2>
+      <div class="program-info">{{ data.selectedProgramInfo }}</div>
+      <div class="course-name">{{ data.selectedCourseInfo }}</div>
+    </div>
+
+    <mat-dialog-content class="content forms-list">
+      <form [formGroup]="scheduleForm" class="scheduling-form-group">
+        <!-- Day Field -->
+        <mat-form-field class="scheduling-forms">
+          <mat-label>Day</mat-label>
+          <mat-icon matPrefix>calendar_today</mat-icon>
+          <mat-select formControlName="day">
+            @for (day of data.dayOptions; track day) {
+            <mat-option [value]="day">{{ day }}</mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+
+        <!-- Start and End Time Fields -->
+        <div class="date-fields">
+          <!-- Start Time Field -->
+          <mat-form-field class="scheduling-forms">
+            <mat-label>Start Time</mat-label>
+            <mat-icon matPrefix>access_time_filled</mat-icon>
+            <mat-select formControlName="startTime">
+              @for (time of data.timeOptions; track time) {
+              <mat-option [value]="time">{{ time }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <!-- End Time Field -->
+          <mat-form-field class="scheduling-forms">
+            <mat-label>End Time</mat-label>
+            <mat-icon matPrefix>access_time_filled</mat-icon>
+            <mat-select formControlName="endTime">
+              @for (time of data.endTimeOptions; track time) {
+              <mat-option [value]="time">{{ time }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Professor Field -->
+        <mat-form-field class="scheduling-forms">
+          <mat-label>Professor</mat-label>
+          <mat-icon matPrefix>person</mat-icon>
+          <input
+            type="text"
+            matInput
+            formControlName="professor"
+            [matAutocomplete]="professorAuto"
+          />
+          <mat-autocomplete #professorAuto="matAutocomplete">
+            @for (professor of filteredProfessors$ | async; track professor) {
+            <mat-option [value]="professor">{{ professor }}</mat-option>
+            }
+          </mat-autocomplete>
+        </mat-form-field>
+
+        <!-- Room Field -->
+        <mat-form-field class="scheduling-forms">
+          <mat-label>Room</mat-label>
+          <mat-icon matPrefix>meeting_room</mat-icon>
+          <input
+            type="text"
+            matInput
+            formControlName="room"
+            [matAutocomplete]="roomAuto"
+          />
+          <mat-autocomplete #roomAuto="matAutocomplete">
+            @for (room of filteredRooms$ | async; track room) {
+            <mat-option [value]="room">{{ room }}</mat-option>
+            }
+          </mat-autocomplete>
+        </mat-form-field>
+      </form>
+
+      <!-- Schedule Validator (if applicable) -->
+      <div class="schedule-validator">
+        @if (hasConflicts) {
+        <div class="validation-message conflict">
+          <span mat-symbol="error"></span>
+          <span>Warning: Scheduling conflicts have been detected.</span>
+        </div>
+        }
+      </div>
+    </mat-dialog-content>
+
+    <!-- Action Buttons -->
+    <mat-dialog-actions class="scheduling-dialog-actions">
+      <button
+        class="clear-all-button"
+        (click)="onClearAll()"
+        matRipple
+        [matRippleColor]="'rgba(134,134,134,0.1)'"
+      >
+        Clear All
+      </button>
+      <div class="action-buttons">
+        <button class="cancel-button" mat-button (click)="onCancel()">
+          Cancel
+        </button>
+        <button
+          class="action-button"
+          mat-flat-button
+          [disabled]="hasConflicts"
+          (click)="onAssign()"
+        >
+          Assign Schedule
+        </button>
+      </div>
+    </mat-dialog-actions>
+  </section>
+</div>

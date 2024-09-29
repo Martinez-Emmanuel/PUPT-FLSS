@@ -1,3 +1,7 @@
+@if (isLoading) {
+<app-loading></app-loading>
+} @else {
+
 <div class="faculty-management-container" [@fadeAnimation]>
   <!-- Table Header -->
   <div class="faculty-header-container">
@@ -16,9 +20,10 @@
       [columns]="columns"
       [data]="faculty"
       [displayedColumns]="displayedColumns"
-      [showViewButton]="false"  
+      [showViewButton]="false"
       (edit)="openEditFacultyDialog($event)"
       (delete)="deleteFaculty($event)"
     ></app-table-generic>
   </div>
 </div>
+}

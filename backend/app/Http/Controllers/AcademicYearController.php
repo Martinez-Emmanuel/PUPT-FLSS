@@ -26,18 +26,16 @@ class AcademicYearController extends Controller
                 \DB::raw("CONCAT(academic_years.year_start, '-', academic_years.year_end) as academic_year"),
                 'semesters.semester_id',
                 'semesters.semester as semester_number',
-                'active_semesters.start_date',  
-                'active_semesters.end_date'   
+                'active_semesters.start_date',
+                'active_semesters.end_date'
             )
-            ->orderBy('academic_years.year_start')
+            ->orderBy('academic_years.year_start', 'desc')
             ->orderBy('semesters.semester')
             ->get();
     
-     
         $groupedAcademicYears = [];
     
         foreach ($academicYears as $year) {
-           
             if (!isset($groupedAcademicYears[$year->academic_year_id])) {
                 $groupedAcademicYears[$year->academic_year_id] = [
                     'academic_year_id' => $year->academic_year_id,
@@ -46,7 +44,6 @@ class AcademicYearController extends Controller
                 ];
             }
     
-            
             $semesterLabel = '';
             if ($year->semester_number == 1) {
                 $semesterLabel = '1st Semester';
@@ -56,57 +53,62 @@ class AcademicYearController extends Controller
                 $semesterLabel = 'Summer Semester';
             }
     
-            
             $groupedAcademicYears[$year->academic_year_id]['semesters'][] = [
                 'semester_id' => $year->semester_id,
                 'semester_number' => $semesterLabel,
-                'start_date' => $year->start_date,  
-                'end_date' => $year->end_date        
+                'start_date' => $year->start_date,
+                'end_date' => $year->end_date
             ];
         }
     
-  
         $groupedAcademicYears = array_values($groupedAcademicYears);
     
         return response()->json($groupedAcademicYears);
     }
     
-
-
+    
     public function setActiveAcademicYearAndSemester(Request $request)
     {
         $academicYearId = $request->input('academic_year_id');
         $semesterId = $request->input('semester_id');
-
+        $startDate = $request->input('start_date');
+        $endDate = $request->input('end_date');
+    
         // Validate the incoming request
         $request->validate([
             'academic_year_id' => 'required|integer|exists:academic_years,academic_year_id',
             'semester_id' => 'required|integer|exists:semesters,semester_id',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
         ]);
-
+    
         // Deactivate all current active semesters
         ActiveSemester::query()->update(['is_active' => 0]);
-
+    
         // Deactivate all academic years
         DB::table('academic_years')->update(['is_active' => 0]);
-
+    
         // Update the given academic year and semester to active in ActiveSemester
         ActiveSemester::where('academic_year_id', $academicYearId)
             ->where('semester_id', $semesterId)
-            ->update(['is_active' => 1]);
-
+            ->update([
+                'is_active' => 1,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ]);
+    
         // Activate the selected academic year
         DB::table('academic_years')
             ->where('academic_year_id', $academicYearId)
             ->update(['is_active' => 1]);
-
+    
         return response()->json([
             'message' => 'Active academic year and semester updated successfully',
             'academic_year_id' => $academicYearId,
             'semester_id' => $semesterId
         ]);
     }
-
+    
 
     public function getActiveYearLevelsCurricula()
     {
@@ -498,7 +500,7 @@ class AcademicYearController extends Controller
                     $section->academic_year_id = $newAcademicYearId;
                     $section->program_id = $program->program_id;
                     $section->year_level = $yearLevel;
-                    $section->section_name = 'Section 1'; // Always use "Section 1"
+                    $section->section_name = '1'; // Always use "Section 1"
                     $section->save();
                 }
             }
@@ -666,7 +668,7 @@ class AcademicYearController extends Controller
                     $newSection->academic_year_id = $academicYearId;
                     $newSection->program_id = $programId;
                     $newSection->year_level = $yearLevel;
-                    $newSection->section_name = 'Section ' . ($currentSectionCount + $i); // Create new section names like "Section 3", "Section 4", etc.
+                    $newSection->section_name = (string) ($currentSectionCount + $i); 
                     $newSection->save();
                 }
 
@@ -806,19 +808,21 @@ class AcademicYearController extends Controller
             ->where('active_semesters.is_active', 1)
             ->select(
                 DB::raw("CONCAT(academic_years.year_start, '-', academic_years.year_end) as academic_year"),
-                'semesters.semester as semester_number'
+                'semesters.semester as semester_number',
+                'active_semesters.start_date',
+                'active_semesters.end_date'
             )
             ->first();
-
+    
         if ($activeSemester) {
             return response()->json([
                 'activeYear' => $activeSemester->academic_year,
-                'activeSemester' => $activeSemester->semester_number
+                'activeSemester' => $activeSemester->semester_number,
+                'startDate' => $activeSemester->start_date,
+                'endDate' => $activeSemester->end_date
             ]);
         }
-
+    
         return response()->json(['message' => 'No active academic year and semester found'], 404);
     }
-
-
 }

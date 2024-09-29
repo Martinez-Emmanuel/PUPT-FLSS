@@ -29,7 +29,7 @@ class FacultyController extends Controller
         $data = [
             'faculty_name' => $faculty->user->name, 
             'email' => $faculty->faculty_email,
-            'faculty_unit' => $faculty->faculty_unit,
+            'faculty_units' => $faculty->faculty_units,
         ];
 
         Mail::send('emails.faculty_notification', $data, function ($message) use ($data) {
@@ -42,7 +42,7 @@ class FacultyController extends Controller
     {
         $data = [
             'faculty_name' => 'Juan Dela Cruz',
-            'faculty_unit' => '30', 
+            'faculty_units' => '30', 
         ];
 
         return view('emails.faculty_notification', $data);
