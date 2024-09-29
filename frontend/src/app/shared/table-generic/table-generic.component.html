@@ -17,7 +17,7 @@
 
 <div class="table-container">
   <!-- Material Table -->
-  <table mat-table [dataSource]="dataSource"  class="custom-table">
+  <table mat-table [dataSource]="dataSource" class="custom-table">
     <!-- Dynamic columns -->
     @for (column of columns; track column.key) {
     <ng-container [matColumnDef]="column.key">
@@ -39,8 +39,12 @@
         <span
           class="status-badge"
           [ngClass]="{
-            'status-active': element[column.key] === 'Active' || element[column.key] === 'Available',
-            'status-inactive': element[column.key] === 'Inactive' || element[column.key] === 'Unavailable'
+            'status-active':
+              element[column.key] === 'Active' ||
+              element[column.key] === 'Available',
+            'status-inactive':
+              element[column.key] === 'Inactive' ||
+              element[column.key] === 'Unavailable'
           }"
         >
           {{ element[column.key] }}

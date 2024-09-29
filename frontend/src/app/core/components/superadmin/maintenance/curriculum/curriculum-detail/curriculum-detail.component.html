@@ -1,6 +1,3 @@
-@if (isLoading) {
-<app-loading></app-loading>
-} @else {
 <!-- Table Header -->
 <div class="curriculum-header-container" [@fadeAnimation]>
   <app-table-header
@@ -17,17 +14,19 @@
 </div>
 
 @if (showPreview) {
-<div class="pdf-preview-container">
-  <button mat-button (click)="cancelPreview()">Cancel Preview</button>
-  <iframe id="pdfPreview" width="100%" height="600px"></iframe>
-</div>
+  <div class="pdf-preview-container">
+    <button mat-button (click)="cancelPreview()">Cancel Preview</button>
+    <iframe id="pdfPreview" width="100%" height="600px"></iframe>
+  </div>
 }
 
-<!-- Curriculum Detail -->
+@if (isLoading) {
+<app-loading></app-loading>
+} @else {
 <div class="curriculum-detail-container">
   @for (semester of selectedSemesters; track semester.semester; let i = $index)
   {
-  <div class="semester-container" [@fadeAnimation]>
+  <div class="semester-container" [@pageFloatUpAnimation]>
     <app-table-generic
       [columns]="columns"
       [data]="semester.courses"

@@ -337,7 +337,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
               .subscribe(
                 (response) => {
                   this.snackBar.open(
-                    'Year levels updated successfully!',
+                    'Year levels updated successfully.',
                     'Close',
                     { duration: 3000 }
                   );
@@ -440,7 +440,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
                 .subscribe(
                   (response) => {
                     console.log(
-                      `Year Level ${yearLevelObj.year_level} updated successfully!`
+                      `Year Level ${yearLevelObj.year_level} updated successfully.`
                     );
                   },
                   (error) => {
@@ -457,7 +457,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
         });
 
         if (changesMade) {
-          this.snackBar.open('Sections updated successfully!', 'Close', {
+          this.snackBar.open('Sections updated successfully.', 'Close', {
             duration: 3000,
           });
           this.fetchProgramsForAcademicYear(this.selectedAcademicYear);
@@ -498,7 +498,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
                   (p) => p.program_id !== program.program_id
                 );
 
-                this.snackBar.open('Program deleted successfully!', 'Close', {
+                this.snackBar.open('Program deleted successfully.', 'Close', {
                   duration: 3000,
                 });
 
@@ -558,7 +558,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
             .subscribe(
               (response) => {
                 this.snackBar.open(
-                  'New academic year added successfully!',
+                  'New academic year added successfully.',
                   'Close',
                   {
                     duration: 3000,
@@ -592,10 +592,13 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
   academicYearMap: { [name: string]: number } = {};
 
   openManageAcademicYearDialog(): void {
-    this.schedulingService.getAcademicYears().subscribe(
-      (academicYears) => {
+    forkJoin({
+      academicYears: this.schedulingService.getAcademicYears(),
+      activeDetails: this.schedulingService.getActiveYearAndSemester(),
+    }).subscribe({
+      next: ({ academicYears, activeDetails }) => {
         this.academicYearMap = {};
-        const academicYearNames = academicYears.map((year: any) => {
+        const academicYearNames = academicYears.map((year) => {
           this.academicYearMap[year.academic_year] = year.academic_year_id;
           return year.academic_year;
         });
@@ -616,25 +619,35 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
         dialogRef.afterClosed().subscribe((result) => {
           if (result && result.deletedYear) {
             const deletedYearId = this.academicYearMap[result.deletedYear];
-            if (deletedYearId) {
+            const activeYearId = this.academicYearMap[activeDetails.activeYear];
+
+            if (deletedYearId === activeYearId) {
+              this.snackBar.open(
+                'Cannot delete the current set active academic year.',
+                'Close',
+                {
+                  duration: 3000,
+                }
+              );
+            } else {
               this.deleteAcademicYear(deletedYearId);
             }
           }
         });
       },
-      (error) => {
+      error: (error) => {
         console.error('Error fetching academic years:', error);
         this.snackBar.open('Failed to fetch academic years.', 'Close', {
           duration: 3000,
         });
-      }
-    );
+      },
+    });
   }
 
   deleteAcademicYear(academicYearId: number): void {
     this.schedulingService.deleteAcademicYear(academicYearId).subscribe(
       (response) => {
-        this.snackBar.open('Academic year deleted successfully!', 'Close', {
+        this.snackBar.open('Academic year deleted successfully.', 'Close', {
           duration: 3000,
         });
         this.loadAcademicYears();

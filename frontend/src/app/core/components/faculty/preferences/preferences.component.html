@@ -58,7 +58,7 @@
           } @else {
           <div [@cardEntranceAnimation]="programs.length">
             @for (program of programs; track program) {
-            <div class="program-card" (click)="selectProgram(program)">
+            <div class="program-card" (click)="selectProgram(program)" matRipple>
               <div class="program-info">
                 <span class="program-code">{{ program.code }}</span>
                 <span class="program-title">{{ program.title }}</span>
@@ -89,7 +89,7 @@
           } @else {
           <div [@cardEntranceAnimation]="filteredCourses.length">
             @for (course of filteredCourses; track course) {
-            <div class="course-card">
+            <div class="course-card" matRipple>
               <div class="course-info">
                 <span class="course-code">{{ course.course_code }}</span>
                 <span class="course-title">{{ course.course_title }}</span>
