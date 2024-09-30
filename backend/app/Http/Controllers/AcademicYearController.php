@@ -212,7 +212,8 @@ class AcademicYearController extends Controller
                 'co.lec_hours',       
                 'co.lab_hours',     
                 'co.units',       
-                'co.tuition_hours'   
+                'co.tuition_hours',
+                'ca.course_assignment_id' // Add this line to select course_assignment_id
             )
             ->join('programs as p', 'pylc.program_id', '=', 'p.program_id')
             ->join('curricula as c', 'pylc.curriculum_id', '=', 'c.curriculum_id')
@@ -287,7 +288,8 @@ class AcademicYearController extends Controller
             // Add the courses for the corresponding curriculum
             if ($row->course_id !== null) {
                 $response['programs'][$programIndex]['year_levels'][$yearLevelIndex]['semester']['courses'][] = [
-                    'course_id' => $row->course_id,
+                    'course_assignment_id' => $row->course_assignment_id, 
+                    'course_id' => $row->course_id,// Include course_assignment_id here
                     'course_code' => $row->course_code,
                     'course_title' => $row->course_title,
                     'lec_hours' => $row->lec_hours,     
@@ -300,6 +302,9 @@ class AcademicYearController extends Controller
     
         return response()->json($response);
     }
+    
+    
+
     
 
 
