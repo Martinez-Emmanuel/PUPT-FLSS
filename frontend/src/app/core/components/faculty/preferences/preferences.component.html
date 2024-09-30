@@ -60,8 +60,8 @@
             @for (program of programs; track program) {
             <div class="program-card" (click)="selectProgram(program)" matRipple>
               <div class="program-info">
-                <span class="program-code">{{ program.code }}</span>
-                <span class="program-title">{{ program.title }}</span>
+                <span class="program-code">{{ program.program_code }}</span>
+                <span class="program-title">{{ program.program_title }}</span>
               </div>
             </div>
             }
@@ -79,7 +79,7 @@
             mat-symbol="arrow_back"
             (click)="backToProgramSelection()"
           ></span>
-          Select {{ selectedProgram?.code }} Courses
+          Select {{ selectedProgram?.program_code }} Courses
         </h3>
         <div class="courses-scroll-container">
           @if (loading) {

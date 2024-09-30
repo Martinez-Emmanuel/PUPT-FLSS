@@ -73,9 +73,11 @@ interface TableData extends Course {
 export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   // Component Properties
   programs: Program[] = [];
+  selectedProgramCourses: Course[] = [];  // Store the courses for the selected program
+  selectedProgram: Program | undefined;  // To track selected program
   courses: Course[] = [];
   filteredCourses: Course[] = [];
-  selectedProgram: Program | undefined;
+  // selectedProgram: Program | undefined;
   selectedYearLevel: number | null = null;
   allSelectedCourses: TableData[] = [];
   dataSource = new MatTableDataSource<TableData>([]);
@@ -110,7 +112,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   // Angular Lifecycle Hooks
   ngOnInit() {
     this.subscribeToThemeChanges();
-    this.loadPrograms();
+    this.loadProgramsAndCourses();
   }
 
   ngAfterViewInit() {
@@ -124,28 +126,51 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  // Initialization and Configuration Methods
-  private loadPrograms() {
-    this.loadingPrograms = true;
-    this.programsLoading = true;
-
-    this.preferencesService.getPrograms().subscribe({
-      next: (programs) => {
-        setTimeout(() => {
-          this.programs = programs;
-          this.loadingPrograms = false;
-          this.programsLoading = false;
-          this.cdr.markForCheck();
-        }, 0);
+  // Fetch programs and their courses from the backend
+  loadProgramsAndCourses() {
+    this.loadingPrograms = true; // Show spinner until data loads
+    this.preferencesService.getAssignedCoursesBySem().subscribe({
+      next: (response) => {
+        this.programs = response.programs; // Bind API response to the 'programs' property
+        this.loadingPrograms = false; // Hide spinner once data is loaded
+        this.cdr.markForCheck(); // Trigger change detection if OnPush is used
       },
       error: (error) => {
         console.error('Error loading programs:', error);
         this.loadingPrograms = false;
-        this.programsLoading = false;
         this.cdr.markForCheck();
-      },
+      }
     });
   }
+  
+
+   // Method to handle when a program is selected
+   selectProgram(program: Program) {
+    this.selectedProgram = program;
+    this.showProgramSelection = false;  // Make sure this is false so the courses are displayed
+    this.loadCoursesForProgram(program);
+    this.cdr.markForCheck(); // Ensure UI updates
+  }
+  
+
+  loadCoursesForProgram(program: Program) {
+    this.loading = true;  // Set loading to true when starting to load courses
+  
+    // Flatten the courses from year_levels and semesters
+    this.selectedProgramCourses = program.year_levels.flatMap(
+      (yearLevel: YearLevel) => yearLevel.semester.courses
+    );
+  
+    this.filteredCourses = this.selectedProgramCourses; // Assign courses to filteredCourses
+  
+    // Log to check if courses are being populated
+    console.log('Loaded Courses:', this.selectedProgramCourses);
+  
+    this.loading = false; // Set loading to false once courses are loaded
+    this.cdr.markForCheck();  // Trigger change detection if using OnPush
+  }
+  
+  
 
   private subscribeToThemeChanges() {
     this.subscriptions.add(
@@ -157,25 +182,38 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // Main Functionality Methods
-  selectProgram(program: Program): void {
-    this.selectedProgram = program;
-    this.loading = true;
-    this.showProgramSelection = false;
-    this.courses = program.year_levels
-      .flatMap((yearLevel) => yearLevel.semesters)
-      .flatMap((semester) => semester.courses);
-    this.filteredCourses = this.courses;
-    this.loading = false;
-    this.selectedYearLevel = null;
-    this.updateDataSource();
-    this.cdr.markForCheck();
-  }
+  // selectProgram(program: Program): void {
+  //   this.selectedProgram = program;
+  //   this.loading = true;
+  //   this.showProgramSelection = false;
+  //   this.courses = program.year_levels
+  //     .flatMap((yearLevel) => yearLevel.semesters)
+  //     .flatMap((semester) => semester.courses);
+  //   this.filteredCourses = this.courses;
+  //   this.loading = false;
+  //   this.selectedYearLevel = null;
+  //   this.updateDataSource();
+  //   this.cdr.markForCheck();
+  // }
 
   filterByYear(year: number | null): void {
-    this.selectedYearLevel = year;
-    this.applyYearLevelFilter();
-    this.cdr.markForCheck();
+    if (year === null) {
+      // If year is null, show all courses
+      this.filteredCourses = this.selectedProgramCourses;
+    } else {
+      // Filter courses based on the selected year level
+      this.filteredCourses = this.selectedProgramCourses.filter(course =>
+        this.selectedProgram?.year_levels.some(
+          (yearLevel: YearLevel) => 
+            yearLevel.year_level === year &&
+            yearLevel.semester.courses.some(c => c.course_code === course.course_code)
+        )
+      );
+    }
+  
+    this.cdr.markForCheck();  // Trigger UI update
   }
+  
 
   backToProgramSelection(): void {
     this.showProgramSelection = true;
@@ -248,33 +286,33 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   // Helper Methods
-  private applyYearLevelFilter(): void {
-    if (this.selectedYearLevel === null || this.selectedProgram === undefined) {
-      this.filteredCourses = this.courses;
-    } else {
-      const program = this.programs.find(
-        (prog: Program) => prog.program_id === this.selectedProgram?.program_id
-      );
+  // private applyYearLevelFilter(): void {
+  //   if (this.selectedYearLevel === null || this.selectedProgram === undefined) {
+  //     this.filteredCourses = this.courses;
+  //   } else {
+  //     const program = this.programs.find(
+  //       (prog: Program) => prog.program_id === this.selectedProgram?.program_id
+  //     );
 
-      if (program) {
-        const yearLevel = program.year_levels.find(
-          (yl: YearLevel) => yl.year === this.selectedYearLevel
-        );
+  //     if (program) {
+  //       const yearLevel = program.year_levels.find(
+  //         (yl: YearLevel) => yl.year === this.selectedYearLevel
+  //       );
 
-        if (yearLevel) {
-          this.filteredCourses = yearLevel.semesters.flatMap(
-            (semester: Semester) => semester.courses
-          );
-        } else {
-          this.filteredCourses = [];
-        }
-      } else {
-        this.filteredCourses = [];
-      }
-    }
+  //       if (yearLevel) {
+  //         this.filteredCourses = yearLevel.semesters.flatMap(
+  //           (semester: Semester) => semester.courses
+  //         );
+  //       } else {
+  //         this.filteredCourses = [];
+  //       }
+  //     } else {
+  //       this.filteredCourses = [];
+  //     }
+  //   }
 
-    this.cdr.markForCheck();
-  }
+  //   this.cdr.markForCheck();
+  // }
 
   private prepareSubmissionData(facultyId: string) {
     return {
