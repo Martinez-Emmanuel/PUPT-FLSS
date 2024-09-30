@@ -42,4 +42,9 @@ class Faculty extends Authenticatable
     {
         return $this->hasMany(Preference::class, 'faculty_id');
     }
+
+    public function preferenceSetting()
+    {
+        return $this->hasOne(PreferencesSetting::class, 'faculty_id', 'id');
+    }
 }
