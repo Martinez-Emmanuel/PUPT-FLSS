@@ -133,6 +133,8 @@ Route::middleware(['auth:sanctum', 'super_admin'])->group(function () {
 Route::post('/submit-pref', [PreferenceController::class, 'submitPreference']);
 Route::get('/submitted-pref', [PreferenceController::class, 'getPreferences']);
 Route::get('/submitted-pref-sem', [PreferenceController::class, 'getPreferencesForActiveSemester']);
+Route::post('/pref-courses-sem', [PreferenceController::class, 'findFacultyByCourseCode']);
+
 
 Route::get('/get-faculty', [SchedulingController::class, 'getFacultyDetails']);
 Route::get('/get-rooms', [RoomController::class, 'getAllRooms']);
