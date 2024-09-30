@@ -4,10 +4,12 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Faculty;
-use App\Models\Schedule; // Ensure Schedule model is imported
-use Illuminate\Support\Facades\Validator; // Import Validator facade
-use Illuminate\Support\Facades\Log; // Import Log facade
+use App\Models\Schedule;
+use App\Models\FacultySchedulePublication;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class SchedulingController extends Controller
 {
@@ -61,12 +63,40 @@ class SchedulingController extends Controller
         DB::beginTransaction();
     
         try {
+            $previousFacultyId = $schedule->faculty_id;
+    
             $schedule->faculty_id  = $request->input('faculty_id');
             $schedule->room_id     = $request->input('room_id');   
             $schedule->day         = $request->input('day');       
             $schedule->start_time  = $request->input('start_time');
-            $schedule->end_time    = $request->input('end_time');  
+            $schedule->end_time    = $request->input('end_time');
+            
+            $schedule->is_published = 0;
             $schedule->save();
+    
+            if ($request->input('faculty_id')) {
+                if ($previousFacultyId) {
+                    FacultySchedulePublication::where('faculty_id', $previousFacultyId)
+                        ->where('schedule_id', $schedule->schedule_id)
+                        ->delete();
+                }
+    
+                FacultySchedulePublication::updateOrCreate(
+                    [
+                        'faculty_id' => $request->input('faculty_id'),
+                        'schedule_id' => $schedule->schedule_id
+                    ],
+                    [
+                        'is_published' => 0,
+                    ]
+                );
+            }
+    
+            elseif ($previousFacultyId) {
+                FacultySchedulePublication::where('faculty_id', $previousFacultyId)
+                                          ->where('schedule_id', $schedule->schedule_id)
+                                          ->delete();
+            }
     
             // Optionally, load related faculty and room details
             $schedule->load(['faculty.user', 'room']);
@@ -107,6 +137,5 @@ class SchedulingController extends Controller
             return response()->json(['message' => 'Internal Server Error'], 500);
         }
     }
-    
 }
 

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\User;
 
 class Schedule extends Model
 {
@@ -18,6 +19,7 @@ class Schedule extends Model
         'end_time',
         'faculty_id',
         'room_id',
+        'is_published',
     ];
 
     public function sectionCourse()
@@ -33,5 +35,10 @@ class Schedule extends Model
     public function room()
     {
         return $this->belongsTo(Room::class, 'room_id', 'room_id');
+    }
+
+    public function schedulePublications()
+    {
+        return $this->hasMany(FacultySchedulePublication::class, 'schedule_id', 'schedule_id');
     }
 }
