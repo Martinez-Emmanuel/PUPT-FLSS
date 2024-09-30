@@ -178,5 +178,91 @@ class PreferenceController extends Controller
                 return 'Unknown Semester';
         }
     }
-    
+    public function findFacultyByCourseCode(Request $request)
+    {
+        // Validate the incoming request for course_code
+        $request->validate([
+            'course_code' => 'required|string'
+        ]);
+
+        // Find the active semester first
+        $activeSemester = ActiveSemester::with(['academicYear', 'semester'])
+            ->where('is_active', 1)
+            ->first();
+        
+        if (!$activeSemester) {
+            return response()->json(['error' => 'No active semester found'], 404);
+        }
+
+        // Find the course based on the provided course_code
+        $course = DB::table('courses')->where('course_code', $request->course_code)->first();
+
+        if (!$course) {
+            return response()->json(['error' => 'Course not found'], 404);
+        }
+
+        // Get preferences based on the course_assignment that matches the course_id and active_semester_id
+        $preferences = DB::table('preferences')
+            ->join('course_assignments', 'preferences.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->join('faculty', 'preferences.faculty_id', '=', 'faculty.id')
+            ->join('users', 'faculty.user_id', '=', 'users.id')
+            ->where('course_assignments.course_id', $course->course_id)
+            ->where('preferences.active_semester_id', $activeSemester->active_semester_id) // Matching active semester
+            ->select(
+                'faculty.id as faculty_id',
+                'users.name as faculty_name',
+                'users.code as faculty_code',
+                'faculty.faculty_units', // Corrected column name
+                'preferences.preferred_day',
+                'preferences.preferred_start_time',
+                'preferences.preferred_end_time',
+                'preferences.created_at', // Use as is
+                'preferences.updated_at', // Use as is
+                'preferences.course_assignment_id'
+            )
+            ->get();
+
+        if ($preferences->isEmpty()) {
+            return response()->json(['message' => 'No faculty found for this course'], 404);
+        }
+
+        // Grouping preferences by faculty for structured output
+        $facultyPreferences = $preferences->map(function ($preference) use ($course, $activeSemester) {
+            return [
+                'faculty_id' => $preference->faculty_id,
+                'faculty_name' => $preference->faculty_name,
+                'faculty_code' => $preference->faculty_code,
+                'faculty_units' => $preference->faculty_units,
+                'active_semesters' => [
+                    [
+                        'active_semester_id' => $activeSemester->active_semester_id,
+                        'academic_year_id' => $activeSemester->academic_year_id,
+                        'academic_year' => $activeSemester->academicYear->year_start . '-' . $activeSemester->academicYear->year_end,
+                        'semester_id' => $activeSemester->semester_id,
+                        'semester_label' => $this->getSemesterLabel($activeSemester->semester_id),
+                        'courses' => [
+                            [
+                                'course_assignment_id' => $preference->course_assignment_id,
+                                'course_details' => [
+                                    'course_id' => $course->course_id,
+                                    'course_code' => $course->course_code,
+                                    'course_title' => $course->course_title,
+                                ],
+                                'preferred_day' => $preference->preferred_day,
+                                'preferred_start_time' => $preference->preferred_start_time,
+                                'preferred_end_time' => $preference->preferred_end_time,
+                                'created_at' => $preference->created_at,  // Return as is, no toDateTimeString()
+                                'updated_at' => $preference->updated_at   // Return as is, no toDateTimeString()
+                            ]
+                        ]
+                    ]
+                ]
+            ];
+        });
+
+        return response()->json([
+            'preferences' => $facultyPreferences
+        ], 200, [], JSON_PRETTY_PRINT);
+    }
+        
 }
