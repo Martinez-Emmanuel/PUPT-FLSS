@@ -38,6 +38,7 @@ class Faculty extends Authenticatable
     {
         return $this->hasMany(Schedule::class, 'faculty_id', 'id');
     }
+
     public function preferences()
     {
         return $this->hasMany(Preference::class, 'faculty_id');
@@ -46,5 +47,10 @@ class Faculty extends Authenticatable
     public function preferenceSetting()
     {
         return $this->hasOne(PreferencesSetting::class, 'faculty_id', 'id');
+    }
+
+    public function schedulePublications()
+    {
+        return $this->hasMany(FacultySchedulePublication::class, 'faculty_id', 'id');
     }
 }
