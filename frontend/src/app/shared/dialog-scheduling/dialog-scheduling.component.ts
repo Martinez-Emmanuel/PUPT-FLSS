@@ -232,8 +232,8 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     );
   }
 
-  private filterOptions(value: string, options: string[]): string[] {
-    const filterValue = value.toLowerCase();
+  private filterOptions(value: string | null, options: string[]): string[] {
+    const filterValue = (value || '').toLowerCase();
     return options.filter((option) =>
       option.toLowerCase().includes(filterValue)
     );
