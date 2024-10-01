@@ -34,6 +34,7 @@ import { fadeAnimation, cardEntranceAnimation } from '../../../animations/animat
 interface TableData extends Course {
   preferredDay: string;
   preferredTime: string;
+  isSubmitted: boolean;
 }
 
 @Component({
@@ -167,7 +168,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   private loadFacultyPreferences() {
     this.preferencesService.getPreferences().subscribe({
       next: (response) => {
-        const facultyId = parseInt(this.cookieService.get('faculty_id'));
+        const facultyId = this.cookieService.get('faculty_id');
         const facultyPreference = response.preferences.find(
           (pref: any) => pref.faculty_id == facultyId
         );
@@ -180,6 +181,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
               return semester.courses;
             }
           );
+
           this.allSelectedCourses = preferences.map((course: any) => ({
             course_id: course.course_details.course_id,
             course_assignment_id: course.course_assignment_id,
@@ -190,13 +192,14 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
             units: course.units,
             preferredDay: course.preferred_day,
             preferredTime:
-              course.preferred_time === 'Whole Day'
+              course.preferred_start_time === '00:00:00' &&
+              course.preferred_end_time === '23:59:59'
                 ? 'Whole Day'
                 : course.preferred_start_time && course.preferred_end_time
-                ? `${this.convertTo12HourFormat(
-                    course.preferred_start_time
-                  )} - ${this.convertTo12HourFormat(course.preferred_end_time)}`
+                ? `${this.convertTo12HourFormat(course.preferred_start_time)} 
+                  - ${this.convertTo12HourFormat(course.preferred_end_time)}`
                 : '',
+            isSubmitted: true,
           }));
 
           this.updateDataSource();
@@ -282,6 +285,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.filteredCourses = [];
     this.selectedYearLevel = null;
     this.updateDataSource();
+    this.updateTotalUnits();
     this.cdr.markForCheck();
   }
 
@@ -343,23 +347,55 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       ...course,
       preferredDay: '',
       preferredTime: '',
+      isSubmitted: false,
     };
     this.allSelectedCourses.push(newCourse);
     this.updateDataSource();
     this.updateTotalUnits();
   }
 
-  removeCourse(course_code: string): void {
+  removeCourse(course: TableData): void {
     if (!this.isPreferencesEnabled) {
       this.showSnackBar('You have already submitted your preferences.');
       return;
     }
 
-    this.allSelectedCourses = this.allSelectedCourses.filter(
-      (course) => course.course_code !== course_code
-    );
-    this.updateDataSource();
-    this.updateTotalUnits();
+    if (course.isSubmitted) {
+      const facultyId = this.cookieService.get('faculty_id');
+      const activeSemesterId = this.activeSemesterId;
+
+      if (!facultyId || !activeSemesterId) {
+        this.showSnackBar('Error: Missing faculty or semester information.');
+        return;
+      }
+
+      this.preferencesService
+        .deletePreference(
+          course.course_assignment_id,
+          facultyId,
+          activeSemesterId
+        )
+        .subscribe({
+          next: () => {
+            this.allSelectedCourses = this.allSelectedCourses.filter(
+              (c) => c.course_code !== course.course_code
+            );
+            this.updateDataSource();
+            this.updateTotalUnits();
+            this.showSnackBar('Course preference removed successfully.');
+          },
+          error: (error) => {
+            console.error('Error deleting preference:', error);
+            this.showSnackBar('Error removing course preference.');
+          },
+        });
+    } else {
+      this.allSelectedCourses = this.allSelectedCourses.filter(
+        (c) => c.course_code !== course.course_code
+      );
+      this.updateDataSource();
+      this.updateTotalUnits();
+    }
   }
 
   removeAllCourses(): void {
@@ -385,10 +421,46 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       .afterClosed()
       .subscribe((result) => {
         if (result === 'remove') {
-          this.allSelectedCourses = [];
-          this.updateDataSource();
-          this.updateTotalUnits();
-          this.showSnackBar('All selected courses have been removed.');
+          const facultyId = this.cookieService.get('faculty_id');
+          const activeSemesterId = this.activeSemesterId;
+
+          if (!facultyId || !activeSemesterId) {
+            this.showSnackBar(
+              'Error: Missing faculty or semester information.'
+            );
+            return;
+          }
+
+          const submittedCourses = this.allSelectedCourses.filter(
+            (c) => c.isSubmitted
+          );
+          const nonSubmittedCourses = this.allSelectedCourses.filter(
+            (c) => !c.isSubmitted
+          );
+
+          if (submittedCourses.length > 0) {
+            this.preferencesService
+              .deleteAllPreferences(facultyId, activeSemesterId)
+              .subscribe({
+                next: () => {
+                  this.allSelectedCourses = nonSubmittedCourses;
+                  this.updateDataSource();
+                  this.updateTotalUnits();
+                  this.showSnackBar(
+                    'All submitted course preferences removed successfully.'
+                  );
+                },
+                error: (error) => {
+                  console.error('Error deleting preferences:', error);
+                  this.showSnackBar('Error removing course preferences.');
+                },
+              });
+          } else {
+            this.allSelectedCourses = [];
+            this.updateDataSource();
+            this.updateTotalUnits();
+            this.showSnackBar('All course preferences removed successfully.');
+          }
         }
       });
   }
@@ -414,6 +486,15 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    for (const course of this.dataSource.data) {
+      if (!course.preferredDay || !course.preferredTime) {
+        this.showSnackBar(
+          'Please select preferred day and time for all courses.'
+        );
+        return;
+      }
+    }
+
     const submittedData = this.prepareSubmissionData(
       facultyId,
       this.activeSemesterId
@@ -422,6 +503,10 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.preferencesService.submitPreferences(submittedData).subscribe({
       next: () => {
         this.showSuccessModal('Preferences submitted successfully.');
+        this.allSelectedCourses = this.allSelectedCourses.map((course) => ({
+          ...course,
+          isSubmitted: true,
+        }));
         this.isPreferencesEnabled = false;
         this.updateTotalUnits();
         this.cdr.markForCheck();
@@ -508,13 +593,12 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     let endTime = '';
     let isWholeDay = false;
 
-    // If the preferred time is Whole Day, set the flag accordingly
     if (element.preferredTime === 'Whole Day') {
       isWholeDay = true;
     } else if (element.preferredTime) {
       const [start, end] = element.preferredTime.split(' - ');
-      startTime = this.convertTo12HourFormatForDialog(start);
-      endTime = this.convertTo12HourFormatForDialog(end);
+      startTime = start.trim();
+      endTime = end.trim();
     }
 
     this.dialog
@@ -645,15 +729,20 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private convertTo12HourFormat(time: string): string {
-    const [hour, minute, _] = time.split(':').map(Number);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
-    const hour12 = hour % 12 || 12;
+    const [hour, minute, ] = time.split(':').map(Number);
+    let ampm = 'AM';
+    let hour12 = hour;
+
+    if (hour >= 12) {
+      ampm = 'PM';
+      if (hour > 12) hour12 = hour - 12;
+    }
+    if (hour === 0) {
+      hour12 = 12;
+    }
+
     return `${hour12.toString().padStart(2, '0')}:${minute
       .toString()
       .padStart(2, '0')} ${ampm}`;
-  }
-
-  private convertTo12HourFormatForDialog(time: string): string {
-    return time;
   }
 }
