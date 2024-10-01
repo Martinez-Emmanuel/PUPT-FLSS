@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../../../environments/environment.dev';
 
@@ -73,5 +73,32 @@ export class PreferencesService {
   getPreferences(): Observable<any> {
     const url = `${this.baseUrl}/view-preferences`;
     return this.http.get(url);
+  }
+
+  deletePreference(
+    preferenceId: number,
+    facultyId: string,
+    activeSemesterId: number
+  ): Observable<any> {
+    const params = new HttpParams()
+      .set('faculty_id', facultyId)
+      .set('active_semester_id', activeSemesterId.toString());
+
+    const url = `${this.baseUrl}/preferences/${preferenceId}`;
+
+    return this.http.delete(url, { params });
+  }
+
+  deleteAllPreferences(
+    facultyId: string,
+    activeSemesterId: number
+  ): Observable<any> {
+    const params = new HttpParams()
+      .set('faculty_id', facultyId)
+      .set('active_semester_id', activeSemesterId.toString());
+
+    const url = `${this.baseUrl}/preferences`;
+
+    return this.http.delete(url, { params });
   }
 }
