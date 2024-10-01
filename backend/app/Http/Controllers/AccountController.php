@@ -34,7 +34,7 @@ class AccountController extends Controller
             'faculty_type' => 'required_if:role,faculty',
             'faculty_units' => 'required_if:role,faculty',
             'password' => 'required|string|min:8',
-            'status' => 'required|in:active,inactive',
+            'status' => 'required|in:Active,Inactive',
         ]);
 
         $user = User::create([
@@ -63,7 +63,7 @@ class AccountController extends Controller
             'name' => 'required|string|max:255',
             // 'code' => 'required|string|max:255|unique:users,code,' . $user->id,
             'role' => 'required|in:super_admin,admin,faculty',
-            'faculty_email' => 'required_if:role,faculty|email|unique:faculty,faculty_email,' . optional($user->faculty)->id,
+            'faculty_email' => 'required_if:role,faculty|unique:faculty,faculty_email',
             'faculty_type' => 'required_if:role,faculty',
             'faculty_units' => 'required_if:role,faculty',
             'password' => 'sometimes|string|min:8',
