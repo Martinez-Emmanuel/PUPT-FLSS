@@ -19,7 +19,7 @@
   // Typography
   --font-base: "Inter Tight", "Helvetica Neue", sans-serif;
   --font-header: "Trajan Pro", serif;
-  
+
   --font-size-tiny: 0.4rem;
   --font-size-xs: 0.65rem;
   --font-size-xsx: 0.8rem;
@@ -122,10 +122,10 @@ body {
   @include custom-scrollbar;
 }
 
-
 /* Custom Styling applied globally */
 
 span[mat-symbol] {
+  font-family: "Material Symbols Rounded" !important;
   user-select: none;
 }
 
@@ -143,13 +143,15 @@ span[mat-symbol] {
 
 .mdc-checkbox__checkmark {
   color: white !important;
-} 
+}
 
 .mat-calendar-body-selected {
   color: white !important;
 }
 
-.mat-calendar-body-today:not(.mat-calendar-body-selected):not(.mat-calendar-body-comparison-identical) {
+.mat-calendar-body-today:not(.mat-calendar-body-selected):not(
+    .mat-calendar-body-comparison-identical
+  ) {
   border-color: var(--primary-text) !important;
 }
 
@@ -165,6 +167,19 @@ span[mat-symbol] {
 
 .mat-mdc-menu-item-text {
   font-family: var(--font-base) !important;
+}
+
+.mat-horizontal-content-container {
+  overflow: hidden;
+  padding: 0 !important;
+}
+
+.mat-step-icon-selected {
+  color: white !important;
+}
+
+.mat-step-icon .mat-icon {
+  color: white !important;
 }
 
 [mat-flat-button] {
@@ -200,7 +215,7 @@ span[mat-symbol] {
 }
 
 // Increase border radius on table
-.fc-scrollgrid  {
+.fc-scrollgrid {
   border-radius: var(--border-radius-md);
   background-color: var(--neutral-space);
 }

@@ -11,7 +11,8 @@
   gap: var(--spacing-lg);
   height: 100%;
 
-  .preferences-row-two.disabled {
+  .disabled {
+    opacity: 0.5;
     pointer-events: none;
     user-select: none;
   }

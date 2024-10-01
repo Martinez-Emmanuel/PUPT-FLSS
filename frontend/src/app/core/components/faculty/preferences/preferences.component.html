@@ -1,29 +1,33 @@
-<div class="faculty-preferences-container" [@fadeAnimation]>
+<div class="faculty-preferences-container">
+  @if(isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
   <!-- Preferences First Row -->
   <div class="preferences-row-one">
-    <div id="preferences_title">
+    <div id="preferences_title" [@fadeAnimation]>
       <h1>Set Preferences</h1>
       <p class="pref-description">
         Submit your preferred courses and schedule for the upcoming semester.
       </p>
     </div>
 
-    <div id="units_container">
-      <div class="units max">
+    <div id="units_container" [class.disabled]="!isPreferencesEnabled">
+      <div class="units max" [@fadeAnimation]>
         <h2>{{ maxUnits }}</h2>
         <span>Max. Units Allowed</span>
       </div>
-      <div class="units total">
+      <div class="units total" [@fadeAnimation]>
         <h2>{{ units }}</h2>
         <span>Total Units Selected</span>
       </div>
     </div>
   </div>
-
   <!-- Preferences Second Row -->
   <div class="preferences-row-two" [class.disabled]="!isPreferencesEnabled">
     <!-- Courses List -->
-    <div id="courses_container">
+    <div id="courses_container" [@fadeAnimation]>
       <div id="courses_search">
         <mat-form-field appearance="fill" class="custom-mat-search">
           <mat-label>Search</mat-label>
@@ -106,11 +110,6 @@
           <span mat-symbol="school"></span>Select a Program
         </h3>
         <div class="programs-scroll-container">
-          @if (programsLoading) {
-          <div class="progress-wrapper">
-            <mat-spinner diameter="40" strokeWidth="2.75"></mat-spinner>
-          </div>
-          } @else {
           <div [@cardEntranceAnimation]="programs.length">
             @for (program of programs; track trackByProgramId($index, program)){
             <div
@@ -125,7 +124,6 @@
             </div>
             }
           </div>
-          }
         </div>
       </div>
       } @else if (!showProgramSelection && !searchQuery) {
@@ -139,11 +137,6 @@
           Select {{ selectedProgram?.program_code }} Courses
         </h3>
         <div class="courses-scroll-container">
-          @if (loading) {
-          <div class="progress-wrapper">
-            <mat-spinner diameter="40"></mat-spinner>
-          </div>
-          } @else {
           <div [@cardEntranceAnimation]="filteredCourses.length">
             @for (course of filteredCourses; track trackByCourseId($index,
             course)) {
@@ -162,14 +155,13 @@
             </div>
             }
           </div>
-          }
         </div>
       </div>
       }
     </div>
 
     <!-- Preferences Table -->
-    <div id="table_container">
+    <div id="table_container" [@fadeAnimation]>
       <table
         mat-table
         [dataSource]="dataSource"
@@ -328,4 +320,5 @@
       </div>
     </div>
   </div>
+  }
 </div>

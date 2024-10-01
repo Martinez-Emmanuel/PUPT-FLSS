@@ -1,7 +1,7 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Subscription } from 'rxjs';
+import { forkJoin, Subscription } from 'rxjs';
 
 import { MatTableModule } from '@angular/material/table';
 import { MatTableDataSource } from '@angular/material/table';
@@ -24,6 +24,8 @@ import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { TableDialogComponent } from '../../../../shared/table-dialog/table-dialog.component';
 import { DialogTimeComponent } from '../../../../shared/dialog-time/dialog-time.component';
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
+import { DialogConfirmPrefComponent } from '../../../../shared/dialog-confirm-pref/dialog-confirm-pref.component';
+import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { ThemeService } from '../../../services/theme/theme.service';
 import { PreferencesService, Program, Course, YearLevel } from '../../../services/faculty/preference/preferences.service';
@@ -45,6 +47,8 @@ interface TableData extends Course {
     FormsModule,
     TableDialogComponent,
     DialogTimeComponent,
+    DialogConfirmPrefComponent,
+    LoadingComponent,
     TimeFormatPipe,
     MatSymbolDirective,
     MatTableModule,
@@ -71,6 +75,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   showSidenav = false;
   showProgramSelection = true;
   isDarkMode = false;
+  isLoading = true;
 
   programs: Program[] = [];
   courses: Course[] = [];
@@ -126,9 +131,8 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit() {
     this.subscribeToThemeChanges();
-    this.loadPrograms();
-    this.loadFacultyPreferences();
-  }
+    this.loadAllData();
+  }  
 
   ngAfterViewInit() {
     setTimeout(() => {
@@ -145,76 +149,145 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   // Initialization Methods
   // ======================
 
-  private loadPrograms() {
-    this.programsLoading = true;
-
-    this.preferencesService.getPrograms().subscribe({
-      next: (response) => {
-        this.programs = response.programs;
-        this.activeSemesterId = response.active_semester_id;
-
-        this.programsLoading = false;
-        this.cdr.markForCheck();
-      },
-      error: (error) => {
-        console.error('Error loading programs:', error);
-        this.programsLoading = false;
-        this.showSnackBar('Error loading programs.');
-        this.cdr.markForCheck();
-      },
-    });
-  }
-
-  private loadFacultyPreferences() {
-    this.preferencesService.getPreferences().subscribe({
-      next: (response) => {
-        const facultyId = this.cookieService.get('faculty_id');
-        const facultyPreference = response.preferences.find(
-          (pref: any) => pref.faculty_id == facultyId
-        );
-        if (facultyPreference) {
-          this.isPreferencesEnabled = facultyPreference.is_enabled === 1;
-
-          const preferences = facultyPreference.active_semesters.flatMap(
-            (semester: any) => {
-              this.activeSemesterId = semester.active_semester_id;
-              return semester.courses;
-            }
+  private loadAllData() {
+    this.isLoading = true; 
+  
+    const programs$ = this.preferencesService.getPrograms();
+    const preferences$ = this.preferencesService.getPreferences();
+  
+    this.subscriptions.add(
+      forkJoin([programs$, preferences$]).subscribe({
+        next: ([programsResponse, preferencesResponse]) => {
+          // Process Programs
+          this.programs = programsResponse.programs;
+          this.activeSemesterId = programsResponse.active_semester_id;
+  
+          // Process Preferences
+          const facultyId = this.cookieService.get('faculty_id');
+          const facultyPreference = preferencesResponse.preferences.find(
+            (pref: any) => pref.faculty_id == facultyId
           );
-
-          this.allSelectedCourses = preferences.map((course: any) => ({
-            course_id: course.course_details.course_id,
-            course_assignment_id: course.course_assignment_id,
-            course_code: course.course_details.course_code,
-            course_title: course.course_details.course_title,
-            lec_hours: course.lec_hours,
-            lab_hours: course.lab_hours,
-            units: course.units,
-            preferredDay: course.preferred_day,
-            preferredTime:
-              course.preferred_start_time === '00:00:00' &&
-              course.preferred_end_time === '23:59:59'
-                ? 'Whole Day'
-                : course.preferred_start_time && course.preferred_end_time
-                ? `${this.convertTo12HourFormat(course.preferred_start_time)} 
-                  - ${this.convertTo12HourFormat(course.preferred_end_time)}`
-                : '',
-            isSubmitted: true,
-          }));
-
-          this.updateDataSource();
-          this.updateTotalUnits();
-        } else {
-          this.isPreferencesEnabled = true;
-        }
-        this.cdr.markForCheck();
-      },
-      error: (error) => {
-        console.error('Error loading preferences:', error);
-        this.showSnackBar('Error loading preferences.');
-      },
-    });
+  
+          if (facultyPreference) {
+            this.isPreferencesEnabled = facultyPreference.is_enabled === 1;
+  
+            const preferences = facultyPreference.active_semesters.flatMap(
+              (semester: any) => {
+                this.activeSemesterId = semester.active_semester_id;
+                return semester.courses;
+              }
+            );
+  
+            this.allSelectedCourses = preferences.map((course: any) => ({
+              course_id: course.course_details.course_id,
+              course_assignment_id: course.course_assignment_id,
+              course_code: course.course_details.course_code,
+              course_title: course.course_details.course_title,
+              lec_hours: course.lec_hours,
+              lab_hours: course.lab_hours,
+              units: course.units,
+              preferredDay: course.preferred_day,
+              preferredTime:
+                course.preferred_start_time === '00:00:00' &&
+                course.preferred_end_time === '23:59:59'
+                  ? 'Whole Day'
+                  : course.preferred_start_time && course.preferred_end_time
+                  ? `${this.convertTo12HourFormat(course.preferred_start_time)} 
+                    - ${this.convertTo12HourFormat(course.preferred_end_time)}`
+                  : '',
+              isSubmitted: true,
+            }));
+  
+            this.updateDataSource();
+            this.updateTotalUnits();
+          } else {
+            this.isPreferencesEnabled = true;
+          }
+  
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          console.error('Error loading data:', error);
+          this.showSnackBar('Error loading data.');
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        },
+      })
+    );
   }
+  
+
+  // private loadPrograms() {
+  //   this.preferencesService.getPrograms().subscribe({
+  //     next: (response) => {
+  //       this.programs = response.programs;
+  //       this.activeSemesterId = response.active_semester_id;
+
+  //       this.isLoading = false; 
+  //       this.cdr.markForCheck();
+  //     },
+  //     error: (error) => {
+  //       console.error('Error loading programs:', error);
+  //       this.programsLoading = false;
+  //       this.showSnackBar('Error loading programs.');
+  //       this.isLoading = false;
+  //       this.cdr.markForCheck();
+  //     },
+  //   });
+  // }
+
+  // private loadFacultyPreferences() {
+  //   this.preferencesService.getPreferences().subscribe({
+  //     next: (response) => {
+  //       const facultyId = this.cookieService.get('faculty_id');
+  //       const facultyPreference = response.preferences.find(
+  //         (pref: any) => pref.faculty_id == facultyId
+  //       );
+  //       if (facultyPreference) {
+  //         this.isPreferencesEnabled = facultyPreference.is_enabled === 1;
+
+  //         const preferences = facultyPreference.active_semesters.flatMap(
+  //           (semester: any) => {
+  //             this.activeSemesterId = semester.active_semester_id;
+  //             return semester.courses;
+  //           }
+  //         );
+
+  //         this.allSelectedCourses = preferences.map((course: any) => ({
+  //           course_id: course.course_details.course_id,
+  //           course_assignment_id: course.course_assignment_id,
+  //           course_code: course.course_details.course_code,
+  //           course_title: course.course_details.course_title,
+  //           lec_hours: course.lec_hours,
+  //           lab_hours: course.lab_hours,
+  //           units: course.units,
+  //           preferredDay: course.preferred_day,
+  //           preferredTime:
+  //             course.preferred_start_time === '00:00:00' &&
+  //             course.preferred_end_time === '23:59:59'
+  //               ? 'Whole Day'
+  //               : course.preferred_start_time && course.preferred_end_time
+  //               ? `${this.convertTo12HourFormat(course.preferred_start_time)} 
+  //                 - ${this.convertTo12HourFormat(course.preferred_end_time)}`
+  //               : '',
+  //           isSubmitted: true,
+  //         }));
+
+  //         this.updateDataSource();
+  //         this.updateTotalUnits();
+  //       } else {
+  //         this.isPreferencesEnabled = true;
+  //       }
+  //       this.cdr.markForCheck();
+  //     },
+  //     error: (error) => {
+  //       console.error('Error loading preferences:', error);
+  //       this.showSnackBar('Error loading preferences.');
+  //       this.isLoading = false;
+  //     },
+  //   });
+  // }
 
   private subscribeToThemeChanges() {
     this.subscriptions.add(
@@ -495,14 +568,32 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
+    const dialogRef = this.dialog.open(DialogConfirmPrefComponent, {
+      disableClose: true,
+    });
+
+    const dialogInstance = dialogRef.componentInstance;
+    dialogInstance.confirmSubmission.subscribe(() => {
+      this.performSubmission(facultyId, this.activeSemesterId!, dialogInstance);
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      // Dialog closed
+    });
+  }
+
+  private performSubmission(
+    facultyId: string,
+    activeSemesterId: number,
+    dialogInstance: DialogConfirmPrefComponent
+  ): void {
     const submittedData = this.prepareSubmissionData(
       facultyId,
-      this.activeSemesterId
+      activeSemesterId
     );
 
     this.preferencesService.submitPreferences(submittedData).subscribe({
       next: () => {
-        this.showSuccessModal('Preferences submitted successfully.');
         this.allSelectedCourses = this.allSelectedCourses.map((course) => ({
           ...course,
           isSubmitted: true,
@@ -510,14 +601,15 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
         this.isPreferencesEnabled = false;
         this.updateTotalUnits();
         this.cdr.markForCheck();
+        dialogInstance.onSubmissionComplete(true);
       },
       error: (error) => {
         console.error('Error submitting preferences:', error);
         this.showSnackBar('Error submitting preferences.');
+        dialogInstance.onSubmissionComplete(false);
       },
     });
   }
-
   private prepareSubmissionData(facultyId: string, activeSemesterId: number) {
     return {
       faculty_id: parseInt(facultyId),
@@ -567,21 +659,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   // ====================
   // Dialog Methods
   // ====================
-
-  private showSuccessModal(message: string): void {
-    const dialogData: DialogData = {
-      title: 'Success',
-      content: message,
-      actionText: 'OK',
-      cancelText: '',
-      action: 'confirm',
-    };
-
-    this.dialog.open(DialogGenericComponent, {
-      data: dialogData,
-      disableClose: true,
-    });
-  }
 
   openTimeDialog(element: TableData): void {
     if (!this.isPreferencesEnabled) {
@@ -729,7 +806,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private convertTo12HourFormat(time: string): string {
-    const [hour, minute, ] = time.split(':').map(Number);
+    const [hour, minute] = time.split(':').map(Number);
     let ampm = 'AM';
     let hour12 = hour;
 
