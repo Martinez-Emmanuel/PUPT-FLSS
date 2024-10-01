@@ -107,12 +107,17 @@
       }
     }
 
+    .clear-filter {
+      @include flex-layout($direction: row-reverse);
+    }
+
     #courses_list,
-    #programs_list {
+    #programs_list,
+    #search_results,
+    #empty-results {
       flex: 1;
       overflow: hidden;
-      display: flex;
-      flex-direction: column;
+      @include flex-layout($direction: column, $align: stretch);
 
       .arrow_back {
         cursor: pointer;
@@ -131,6 +136,18 @@
         button {
           margin-right: 0.5rem;
         }
+      }
+    }
+
+    #empty-results {
+      align-items: center;
+      font-size: var(--font-size-md);
+      text-align: center;
+      gap: var(--spacing-md);
+      opacity: var(--opacity-semi-opaque);
+
+      span[mat-symbol] {
+        font-size: var(--font-size-3xl);
       }
     }
 

@@ -1,5 +1,5 @@
 <div class="faculty-preferences-container" [@fadeAnimation]>
-  <!--Preferences first row-->
+  <!-- Preferences First Row -->
   <div class="preferences-row-one">
     <div id="preferences_title">
       <h1>Set Preferences</h1>
@@ -20,52 +20,107 @@
     </div>
   </div>
 
-  <!-- Preferences second row -->
+  <!-- Preferences Second Row -->
   <div class="preferences-row-two">
-    <!--Courses List-->
+    <!-- Courses List -->
     <div id="courses_container">
       <div id="courses_search">
         <mat-form-field appearance="fill" class="custom-mat-search">
           <mat-label>Search</mat-label>
-          <input matInput />
+          <input
+            matInput
+            maxlength="50"
+            [(ngModel)]="searchQuery"
+            (input)="onSearchInput()"
+            #searchInput
+          />
           <span mat-symbol="search" matPrefix></span>
-          @if (!showProgramSelection) {
-          <button mat-icon-button [matMenuTriggerFor]="filterMenu" matSuffix>
+          <button
+            mat-icon-button
+            matSuffix
+            *ngIf="searchQuery"
+            (click)="clearSearch()"
+          >
+            <mat-icon>close</mat-icon>
+          </button>
+          <button
+            mat-icon-button
+            [matMenuTriggerFor]="filterMenu"
+            matSuffix
+            *ngIf="!showProgramSelection && !searchQuery"
+          >
             <mat-icon>filter_list</mat-icon>
           </button>
-          }
         </mat-form-field>
       </div>
-      <!--Filter Menu-->
+
       <mat-menu #filterMenu="matMenu">
-        @for (year of yearLevels; track year) {
-        <button mat-menu-item (click)="filterByYear(year)">
+        <!-- Dynamically create menu items for each year level -->
+        <button
+          mat-menu-item
+          *ngFor="let year of dynamicYearLevels"
+          (click)="filterByYear(year)"
+        >
           Year Level: {{ year }}
         </button>
-        }
+        <!-- Clear filter option -->
+        <button mat-menu-item (click)="filterByYear(null)">Clear Filter</button>
       </mat-menu>
-      <!-- Programs List -->
-      @if (showProgramSelection) {
+
+      <!-- Add this block after the search input -->
+      @if (searchQuery && filteredSearchResults.length === 0) {
+      <div id="empty-results">
+        <span mat-symbol="search_off"></span>
+        <span class="results-desc"
+          >No results found for "{{ searchQuery }}"</span
+        >
+      </div>
+      } @else if (searchQuery && filteredSearchResults.length > 0) {
+      <div id="search_results">
+        <h3 class="cards-label">
+          <span mat-symbol="manage_search"></span>Search Results
+        </h3>
+        <div class="courses-scroll-container">
+          <div [@cardEntranceAnimation]="filteredSearchResults.length">
+            @for (course of filteredSearchResults; track course.course_id) {
+            <div class="course-card" matRipple>
+              <div class="course-info">
+                <span class="course-code">{{ course.course_code }}</span>
+                <span class="course-title">{{ course.course_title }}</span>
+              </div>
+              <button
+                mat-icon-button
+                class="add-button"
+                (click)="addCourseToTable(course)"
+              >
+                <span mat-symbol="add" variant="outlined" size="20px"></span>
+              </button>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+      } @if (showProgramSelection && !searchQuery) {
       <div id="programs_list">
         <h3 class="cards-label">
           <span mat-symbol="school"></span>Select a Program
         </h3>
         <div class="programs-scroll-container">
-          @if (loadingPrograms || programsLoading) {
+          @if (programsLoading) {
           <div class="progress-wrapper">
             <mat-spinner diameter="40" strokeWidth="2.75"></mat-spinner>
           </div>
           } @else {
           <div [@cardEntranceAnimation]="programs.length">
-            @for (program of programs; track program) {
+            @for (program of programs; track trackByProgramId($index, program)){
             <div
               class="program-card"
               (click)="selectProgram(program)"
               matRipple
             >
               <div class="program-info">
-                <span class="program-code">{{ program.code }}</span>
-                <span class="program-title">{{ program.title }}</span>
+                <span class="program-code">{{ program.program_code }}</span>
+                <span class="program-title">{{ program.program_title }}</span>
               </div>
             </div>
             }
@@ -73,9 +128,7 @@
           }
         </div>
       </div>
-      }
-      <!-- Courses List -->
-      @if (!showProgramSelection) {
+      } @else if (!showProgramSelection && !searchQuery) {
       <div id="courses_list">
         <h3 class="cards-label">
           <span
@@ -83,7 +136,7 @@
             mat-symbol="arrow_back"
             (click)="backToProgramSelection()"
           ></span>
-          Select {{ selectedProgram?.code }} Courses
+          Select {{ selectedProgram?.program_code }} Courses
         </h3>
         <div class="courses-scroll-container">
           @if (loading) {
@@ -92,7 +145,8 @@
           </div>
           } @else {
           <div [@cardEntranceAnimation]="filteredCourses.length">
-            @for (course of filteredCourses; track course) {
+            @for (course of filteredCourses; track trackByCourseId($index,
+            course)) {
             <div class="course-card" matRipple>
               <div class="course-info">
                 <span class="course-code">{{ course.course_code }}</span>

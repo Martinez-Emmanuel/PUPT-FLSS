@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
@@ -12,12 +12,9 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSortModule } from '@angular/material/sort';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatRippleModule } from '@angular/material/core';
 
@@ -29,7 +26,7 @@ import { DialogTimeComponent } from '../../../../shared/dialog-time/dialog-time.
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
 
 import { ThemeService } from '../../../services/theme/theme.service';
-import { PreferencesService, Program, Course, YearLevel, Semester } from '../../../services/faculty/preference/preferences.service';
+import { PreferencesService, Program, Course, YearLevel } from '../../../services/faculty/preference/preferences.service';
 import { CookieService } from 'ngx-cookie-service';
 
 import { fadeAnimation, cardEntranceAnimation } from '../../../animations/animations';
@@ -60,10 +57,9 @@ interface TableData extends Course {
     MatSnackBarModule,
     MatDialogModule,
     MatProgressSpinnerModule,
-    MatSortModule,
     MatMenuModule,
     MatRippleModule,
-  ],  
+  ],
   templateUrl: './preferences.component.html',
   styleUrls: ['./preferences.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -71,32 +67,49 @@ interface TableData extends Course {
   animations: [fadeAnimation, cardEntranceAnimation],
 })
 export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
-  // Component Properties
-  programs: Program[] = [];
-  courses: Course[] = [];
-  filteredCourses: Course[] = [];
-  selectedProgram: Program | undefined;
-  selectedYearLevel: number | null = null;
-  allSelectedCourses: TableData[] = [];
-  dataSource = new MatTableDataSource<TableData>([]);
-  subscriptions = new Subscription();
-
-  // UI Control Properties
-  programsLoading = false;
-  loadingPrograms = true;
-  loading = true;
   showSidenav = false;
   showProgramSelection = true;
   isDarkMode = false;
 
-  // Constants
-  readonly maxUnits = 25;
-  readonly displayedColumns: string[] = ['action', 'num', 'course_code', 'course_title', 'lec_hours', 'lab_hours', 'units', 'preferredDay', 'preferredTime'];
-  readonly daysOfWeek = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-  readonly yearLevels: number[] = [1, 2, 3, 4];
+  programs: Program[] = [];
+  courses: Course[] = [];
+  filteredCourses: Course[] = [];
+  selectedProgram?: Program;
+  selectedYearLevel: number | null = null;
+  dynamicYearLevels: number[] = [];
+  allSelectedCourses: TableData[] = [];
+  dataSource = new MatTableDataSource<TableData>([]);
+  subscriptions = new Subscription();
 
-  // State Management Properties
+  programsLoading = false;
+  loading = true;
+
   units = 0;
+  readonly maxUnits = 25;
+  readonly displayedColumns: string[] = [
+    'action',
+    'num',
+    'course_code',
+    'course_title',
+    'lec_hours',
+    'lab_hours',
+    'units',
+    'preferredDay',
+    'preferredTime',
+  ];
+  readonly daysOfWeek = [
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+    'Sunday',
+  ];
+
+  searchQuery = '';
+  filteredSearchResults: Course[] = [];
+  @ViewChild('searchInput') searchInput!: ElementRef;
 
   constructor(
     private readonly themeService: ThemeService,
@@ -107,7 +120,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     private readonly cookieService: CookieService
   ) {}
 
-  // Angular Lifecycle Hooks
   ngOnInit() {
     this.subscribeToThemeChanges();
     this.loadPrograms();
@@ -124,24 +136,23 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  // Initialization and Configuration Methods
+  // ======================
+  // Initialization Methods
+  // ======================
+
   private loadPrograms() {
-    this.loadingPrograms = true;
     this.programsLoading = true;
 
     this.preferencesService.getPrograms().subscribe({
       next: (programs) => {
-        setTimeout(() => {
-          this.programs = programs;
-          this.loadingPrograms = false;
-          this.programsLoading = false;
-          this.cdr.markForCheck();
-        }, 0);
+        this.programs = programs;
+        this.programsLoading = false;
+        this.cdr.markForCheck();
       },
       error: (error) => {
         console.error('Error loading programs:', error);
-        this.loadingPrograms = false;
         this.programsLoading = false;
+        this.showSnackBar('Error loading programs.');
         this.cdr.markForCheck();
       },
     });
@@ -156,14 +167,30 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  // Main Functionality Methods
+  // =========================
+  // Program Selection Methods
+  // =========================
+
   selectProgram(program: Program): void {
     this.selectedProgram = program;
     this.loading = true;
     this.showProgramSelection = false;
+
+    this.dynamicYearLevels = program.year_levels.map(
+      (yearLevel) => yearLevel.year_level
+    );
+
+    const uniqueCourses = new Set<string>();
     this.courses = program.year_levels
-      .flatMap((yearLevel) => yearLevel.semesters)
-      .flatMap((semester) => semester.courses);
+      .flatMap((yearLevel) => yearLevel.semester.courses)
+      .filter((course) => {
+        if (uniqueCourses.has(course.course_code)) {
+          return false;
+        }
+        uniqueCourses.add(course.course_code);
+        return true;
+      });
+
     this.filteredCourses = this.courses;
     this.loading = false;
     this.selectedYearLevel = null;
@@ -187,18 +214,66 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  addCourseToTable(course: Course) {
+  // ====================
+  // Search Methods
+  // ====================
+
+  onSearchInput(): void {
+    const query = this.searchQuery.toLowerCase().trim();
+    if (query.length > 0) {
+      const uniqueCourses = new Set<string>();
+      this.filteredSearchResults = this.showProgramSelection
+        ? this.programs
+            .flatMap((program) =>
+              program.year_levels.flatMap((yl) => yl.semester.courses)
+            )
+            .filter(
+              (course) =>
+                (course.course_code.toLowerCase().includes(query) ||
+                  course.course_title.toLowerCase().includes(query)) &&
+                !uniqueCourses.has(course.course_code) &&
+                uniqueCourses.add(course.course_code)
+            )
+        : this.filteredCourses.filter(
+            (course) =>
+              (course.course_code.toLowerCase().includes(query) ||
+                course.course_title.toLowerCase().includes(query)) &&
+              !uniqueCourses.has(course.course_code) &&
+              uniqueCourses.add(course.course_code)
+          );
+    } else {
+      this.filteredSearchResults = [];
+    }
+    this.cdr.markForCheck();
+  }
+
+  clearSearch(): void {
+    this.searchQuery = '';
+    this.filteredSearchResults = [];
+    this.searchInput.nativeElement.focus();
+    this.cdr.markForCheck();
+  }
+
+  // =========================
+  // Course Management Methods
+  // =========================
+
+  addCourseToTable(course: Course): void {
     if (this.isCourseAlreadyAdded(course) || this.isMaxUnitsExceeded(course)) {
       return;
     }
 
-    const newCourse: TableData = { ...course, preferredDay: '', preferredTime: ''};
+    const newCourse: TableData = {
+      ...course,
+      preferredDay: '',
+      preferredTime: '',
+    };
     this.allSelectedCourses.push(newCourse);
     this.updateDataSource();
     this.updateTotalUnits();
   }
 
-  removeCourse(course_code: string) {
+  removeCourse(course_code: string): void {
     this.allSelectedCourses = this.allSelectedCourses.filter(
       (course) => course.course_code !== course_code
     );
@@ -206,7 +281,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.updateTotalUnits();
   }
 
-  removeAllCourses() {
+  removeAllCourses(): void {
     const dialogData: DialogData = {
       title: 'Remove All Courses',
       content: 'Are you sure you want to remove all your selected courses?',
@@ -224,14 +299,19 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       .afterClosed()
       .subscribe((result) => {
         if (result === 'remove') {
-          this.dataSource.data = [];
+          this.allSelectedCourses = [];
+          this.updateDataSource();
           this.updateTotalUnits();
           this.showSnackBar('All selected courses have been removed.');
         }
       });
   }
 
-  submitPreferences() {
+  // ====================
+  // Preference Submission Methods
+  // ====================
+
+  submitPreferences(): void {
     const facultyId = this.cookieService.get('faculty_id');
     if (!facultyId) {
       this.showSnackBar('Error: Faculty ID not found.');
@@ -248,35 +328,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  // Helper Methods
-  private applyYearLevelFilter(): void {
-    if (this.selectedYearLevel === null || this.selectedProgram === undefined) {
-      this.filteredCourses = this.courses;
-    } else {
-      const program = this.programs.find(
-        (prog: Program) => prog.program_id === this.selectedProgram?.program_id
-      );
-
-      if (program) {
-        const yearLevel = program.year_levels.find(
-          (yl: YearLevel) => yl.year === this.selectedYearLevel
-        );
-
-        if (yearLevel) {
-          this.filteredCourses = yearLevel.semesters.flatMap(
-            (semester: Semester) => semester.courses
-          );
-        } else {
-          this.filteredCourses = [];
-        }
-      } else {
-        this.filteredCourses = [];
-      }
-    }
-
-    this.cdr.markForCheck();
-  }
-
   private prepareSubmissionData(facultyId: string) {
     return {
       faculty_id: facultyId,
@@ -290,7 +341,11 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     };
   }
 
-  private showSuccessModal(message: string) {
+  // ====================
+  // Dialog Methods
+  // ====================
+
+  private showSuccessModal(message: string): void {
     const dialogData: DialogData = {
       title: 'Success',
       content: message,
@@ -303,54 +358,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       data: dialogData,
       disableClose: true,
     });
-  }
-
-  // Private Utility Methods
-  private isCourseAlreadyAdded(course: Course): boolean {
-    if (
-      this.dataSource.data.some(
-        (subject) => subject.course_code === course.course_code
-      )
-    ) {
-      this.showSnackBar('This course has already been selected.');
-      return true;
-    }
-    return false;
-  }
-
-  private isMaxUnitsExceeded(course: Course): boolean {
-    if (this.units + course.units > this.maxUnits) {
-      this.showSnackBar('Maximum units have been reached.');
-      return true;
-    }
-    return false;
-  }
-
-  private updateDataSource() {
-    this.dataSource.data = this.allSelectedCourses;
-  }
-
-  private updateTotalUnits() {
-    this.units = this.dataSource.data.reduce(
-      (total, course) => total + course.units,
-      0
-    );
-    this.cdr.markForCheck();
-  }
-
-  private showSnackBar(message: string) {
-    this.snackBar.open(message, 'Close', {
-      duration: 3000,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom',
-    });
-  }
-
-  // Event Handlers
-  onDayChange(element: TableData, event: Event) {
-    const newDay = (event.target as HTMLSelectElement).value;
-    element.preferredDay = newDay;
-    this.cdr.markForCheck();
   }
 
   openTimeDialog(element: TableData): void {
@@ -369,6 +376,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       .subscribe((result) => {
         if (result) {
           element.preferredTime = result;
+          this.updateTotalUnits();
           this.cdr.markForCheck();
         }
       });
@@ -394,13 +402,78 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (result && result.preferredDay) {
         element.preferredDay = result.preferredDay;
-        this.cdr.markForCheck();
         this.showSnackBar('Preferred day successfully added.');
+        this.updateTotalUnits();
+        this.cdr.markForCheck();
       }
     });
   }
 
-  // Computed Properties
+  // ====================
+  // Utility Methods
+  // ====================
+
+  private applyYearLevelFilter(): void {
+    if (this.selectedYearLevel === null || !this.selectedProgram) {
+      this.filteredCourses = this.courses;
+    } else {
+      const yearLevel = this.selectedProgram.year_levels.find(
+        (yl: YearLevel) => yl.year_level === this.selectedYearLevel
+      );
+
+      this.filteredCourses = yearLevel ? yearLevel.semester.courses : [];
+    }
+    this.cdr.markForCheck();
+  }
+
+  private isCourseAlreadyAdded(course: Course): boolean {
+    if (
+      this.dataSource.data.some(
+        (subject) => subject.course_code === course.course_code
+      )
+    ) {
+      this.showSnackBar('This course has already been selected.');
+      return true;
+    }
+    return false;
+  }
+
+  private isMaxUnitsExceeded(course: Course): boolean {
+    if (this.units + course.units > this.maxUnits) {
+      this.showSnackBar('Maximum units have been reached.');
+      return true;
+    }
+    return false;
+  }
+
+  private updateDataSource(): void {
+    this.dataSource.data = [...this.allSelectedCourses];
+  }
+
+  private updateTotalUnits(): void {
+    this.units = this.dataSource.data.reduce(
+      (total, course) => total + course.units,
+      0
+    );
+    this.cdr.markForCheck();
+  }
+
+  private showSnackBar(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+    });
+  }
+
+  trackByProgramId(index: number, program: Program): number {
+    return program.program_id;
+  }
+
+  trackByCourseId(index: number, course: Course): number {
+    return course.course_assignment_id;
+  }
+
   get isRemoveDisabled(): boolean {
     return this.dataSource.data.length === 0;
   }
