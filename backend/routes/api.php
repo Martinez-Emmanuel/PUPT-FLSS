@@ -132,7 +132,9 @@ Route::middleware(['auth:sanctum', 'super_admin'])->group(function () {
 
 Route::post('/submit-preferences', [PreferenceController::class, 'submitPreferences']);
 Route::get('/view-preferences', [PreferenceController::class, 'getPreferencesForActiveSemester']);
-Route::get('/submitted-pref', [PreferenceController::class, 'getPreferences']);
+Route::delete('/preferences/{preference_id}', [PreferenceController::class, 'deletePreference']);
+Route::delete('/preferences', [PreferenceController::class, 'deleteAllPreferences']);
+// Route::get('/submitted-pref', [PreferenceController::class, 'getPreferences']);
 // Route::post('/pref-courses-sem', [PreferenceController::class, 'findFacultyByCourseCode']);
 
 

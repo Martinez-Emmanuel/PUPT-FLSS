@@ -21,26 +21,100 @@ class PreferenceController extends Controller
             'preferences.*.preferred_start_time' => 'required|string',
             'preferences.*.preferred_end_time' => 'required|string',
         ]);
-
+    
+        $facultyId = $request->faculty_id;
+        $activeSemesterId = $request->active_semester_id;
+    
+        $existingPreferences = Preference::where('faculty_id', $facultyId)
+            ->where('active_semester_id', $activeSemesterId)
+            ->get();
+    
+        $existingIds = $existingPreferences->pluck('course_assignment_id')->toArray();
+    
+        $newIds = array_column($request->preferences, 'course_assignment_id');
+    
         foreach ($request->preferences as $preference) {
-            Preference::create([
-                'faculty_id' => $request->faculty_id,
-                'active_semester_id' => $request->active_semester_id,
-                'course_assignment_id' => $preference['course_assignment_id'],
-                'preferred_day' => $preference['preferred_day'],
-                'preferred_start_time' => $preference['preferred_start_time'],
-                'preferred_end_time' => $preference['preferred_end_time'],
-            ]);
+            Preference::updateOrCreate(
+                [
+                    'faculty_id' => $facultyId,
+                    'active_semester_id' => $activeSemesterId,
+                    'course_assignment_id' => $preference['course_assignment_id'],
+                ],
+                [
+                    'preferred_day' => $preference['preferred_day'],
+                    'preferred_start_time' => $preference['preferred_start_time'],
+                    'preferred_end_time' => $preference['preferred_end_time'],
+                ]
+            );
         }
-
+    
+        $preferencesToDelete = array_diff($existingIds, $newIds);
+        if (!empty($preferencesToDelete)) {
+            Preference::where('faculty_id', $facultyId)
+                ->where('active_semester_id', $activeSemesterId)
+                ->whereIn('course_assignment_id', $preferencesToDelete)
+                ->delete();
+        }
+    
         PreferencesSetting::updateOrCreate(
-            ['faculty_id' => $request->faculty_id],
+            ['faculty_id' => $facultyId],
             ['is_enabled' => 0]
         );
-
+    
         return response()->json([
             'message' => 'Preferences submitted successfully'
         ], 201);
+    }
+
+    public function deletePreference(Request $request, $preference_id)
+    {
+        $facultyId = $request->query('faculty_id');
+        $activeSemesterId = $request->query('active_semester_id');
+
+        if (!$facultyId) {
+            return response()->json(['message' => 'Faculty ID is required.'], 400);
+        }
+
+        if (!$activeSemesterId) {
+            return response()->json(['message' => 'Active semester ID is required.'], 400);
+        }
+
+        $preference = Preference::where('faculty_id', $facultyId)
+            ->where('active_semester_id', $activeSemesterId)
+            ->where('course_assignment_id', $preference_id)
+            ->first();
+
+        if (!$preference) {
+            return response()->json(['message' => 'Preference not found.'], 404);
+        }
+
+        $preference->delete();
+
+        return response()->json(['message' => 'Preference deleted successfully.'], 200);
+    }
+
+    public function deleteAllPreferences(Request $request)
+    {
+        $facultyId = $request->query('faculty_id');
+        $activeSemesterId = $request->query('active_semester_id');
+
+        if (!$facultyId) {
+            return response()->json(['message' => 'Faculty ID is required.'], 400);
+        }
+
+        if (!$activeSemesterId) {
+            return response()->json(['message' => 'Active semester ID is required.'], 400);
+        }
+
+        $deletedCount = Preference::where('faculty_id', $facultyId)
+            ->where('active_semester_id', $activeSemesterId)
+            ->delete();
+
+        if ($deletedCount === 0) {
+            return response()->json(['message' => 'No preferences to delete.'], 404);
+        }
+
+        return response()->json(['message' => 'All preferences deleted successfully.'], 200);
     }
         
 
