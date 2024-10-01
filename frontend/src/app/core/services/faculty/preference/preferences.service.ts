@@ -1,5 +1,3 @@
-// preferences.service.ts
-
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
@@ -53,16 +51,27 @@ export class PreferencesService {
 
   constructor(private http: HttpClient) {}
 
-  getPrograms(): Observable<Program[]> {
+  getPrograms(): Observable<{
+    programs: Program[];
+    active_semester_id: number;
+  }> {
     const url = `${this.baseUrl}/get-assigned-courses-sem`;
-    return this.http
-      .get<AssignedCoursesResponse>(url)
-      .pipe(map((response) => response.programs));
+    return this.http.get<AssignedCoursesResponse>(url).pipe(
+      map((response) => ({
+        programs: response.programs,
+        active_semester_id: response.active_semester_id,
+      }))
+    );
   }
 
   submitPreferences(preferences: any): Observable<any> {
     const url = `${this.baseUrl}/submit-preferences`;
     console.log('Submitting preferences:', preferences);
     return this.http.post(url, preferences);
+  }
+
+  getPreferences(): Observable<any> {
+    const url = `${this.baseUrl}/view-preferences`;
+    return this.http.get(url);
   }
 }

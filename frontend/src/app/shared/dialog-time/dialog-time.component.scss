@@ -1,6 +1,7 @@
 @import "../../../styles/mixins.scss";
 .material-dialog-container {
   padding-top: var(--spacing-sm);
+  width: var(--dialog-small);
 }
 
 .dialog-title {

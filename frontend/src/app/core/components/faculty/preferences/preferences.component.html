@@ -21,7 +21,7 @@
   </div>
 
   <!-- Preferences Second Row -->
-  <div class="preferences-row-two">
+  <div class="preferences-row-two" [class.disabled]="!isPreferencesEnabled">
     <!-- Courses List -->
     <div id="courses_container">
       <div id="courses_search">
@@ -245,7 +245,7 @@
           <th mat-header-cell *matHeaderCellDef class="table-header">
             Preferred Day
           </th>
-          <td mat-cell *matCellDef="let element" class="table-cell">
+          <td mat-cell *matCellDef="let element" class="table-cell pref">
             <button
               mat-button
               (click)="openDayDialog(element)"
@@ -271,13 +271,15 @@
               class="preferred-button time"
             >
               <mat-icon fontSet="material-icons-round">schedule</mat-icon>
-              {{
-                element.preferredTime === "Whole Day"
-                  ? "Whole Day"
-                  : element.preferredTime
-                  ? (element.preferredTime | timeFormat)
-                  : "Select time"
-              }}
+              <span class="display-time">
+                {{
+                  element.preferredTime === "Whole Day"
+                    ? "Whole Day"
+                    : element.preferredTime
+                    ? (element.preferredTime | timeFormat)
+                    : "Select time"
+                }}
+              </span>
             </button>
           </td>
         </ng-container>

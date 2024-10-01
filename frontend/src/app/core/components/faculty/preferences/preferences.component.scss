@@ -10,6 +10,11 @@
   flex-direction: column;
   gap: var(--spacing-lg);
   height: 100%;
+
+  .preferences-row-two.disabled {
+    pointer-events: none;
+    user-select: none;
+  }
 }
 
 /* First row - Header & Units Cards */
@@ -229,6 +234,14 @@
     text-align: center;
     background-color: var(--neutral-light);
 
+    &.pref {
+      @include flex-layout;
+    }
+
+    .display-time {
+      @include ellipsis;
+    }
+
     .remove-button {
       @include flex-layout;
 
@@ -269,6 +282,7 @@
       font-weight: 500;
       user-select: none;
       cursor: pointer;
+      transition: transform 0.2s ease, opacity 0.2s ease;
 
       .remove {
         color: var(--primary-text);
@@ -278,9 +292,18 @@
         color: var(--secondary-text);
       }
 
+      &:hover {
+        opacity: var(--opacity-semi-opaque);
+      }
+
+      &:active {
+        transform: scale(0.97);
+      }
+
       &.disabled {
         opacity: var(--opacity-half);
         cursor: not-allowed;
+        transform: none;
       }
     }
   }
