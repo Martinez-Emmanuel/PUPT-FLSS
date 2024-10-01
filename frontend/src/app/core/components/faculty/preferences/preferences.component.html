@@ -3,7 +3,7 @@
   <div class="preferences-row-one">
     <div id="preferences_title">
       <h1>Set Preferences</h1>
-      <p>
+      <p class="pref-description">
         Submit your preferred courses and schedule for the upcoming semester.
       </p>
     </div>
@@ -58,7 +58,11 @@
           } @else {
           <div [@cardEntranceAnimation]="programs.length">
             @for (program of programs; track program) {
-            <div class="program-card" (click)="selectProgram(program)" matRipple>
+            <div
+              class="program-card"
+              (click)="selectProgram(program)"
+              matRipple
+            >
               <div class="program-info">
                 <span class="program-code">{{ program.code }}</span>
                 <span class="program-title">{{ program.title }}</span>
@@ -214,9 +218,11 @@
             >
               <mat-icon fontSet="material-icons-round">schedule</mat-icon>
               {{
-                element.preferredTime === 'Whole Day' ? 'Whole Day' 
-                  : (element.preferredTime ? (element.preferredTime | timeFormat)
-                  : "Select time")
+                element.preferredTime === "Whole Day"
+                  ? "Whole Day"
+                  : element.preferredTime
+                  ? (element.preferredTime | timeFormat)
+                  : "Select time"
               }}
             </button>
           </td>

@@ -219,13 +219,14 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       .open(DialogGenericComponent, {
         data: dialogData,
         disableClose: true,
+        panelClass: 'dialog-base',
       })
       .afterClosed()
       .subscribe((result) => {
         if (result === 'remove') {
           this.dataSource.data = [];
           this.updateTotalUnits();
-          this.showSnackBar('All courses removed.');
+          this.showSnackBar('All selected courses have been removed.');
         }
       });
   }
@@ -394,7 +395,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       if (result && result.preferredDay) {
         element.preferredDay = result.preferredDay;
         this.cdr.markForCheck();
-        this.showSnackBar('Preferred day successfully added');
+        this.showSnackBar('Preferred day successfully added.');
       }
     });
   }

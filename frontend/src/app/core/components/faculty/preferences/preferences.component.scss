@@ -14,8 +14,7 @@
 
 /* First row - Header & Units Cards */
 .preferences-row-one {
-  @include flex-layout;
-  justify-content: space-between;
+  @include flex-layout($justify: space-between, $gap: var(--spacing-lg));
 
   #preferences_title {
     @include flex-layout(
@@ -25,10 +24,11 @@
       $gap: var(--spacing-xxs)
     );
     height: 100%;
+    flex: 1;
 
     h1,
-    p {
-      width: max-content;
+    .pref-description {
+      width: fit-content;
     }
 
     h1 {
@@ -38,17 +38,21 @@
       background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    p {
-      font-size: var(--font-size-lg);
+    .pref-description {
+      font-size: var(--font-size-mdx);
+      white-space: normal;
     }
   }
 
   #units_container {
     @include flex-layout;
     gap: var(--spacing-sm);
-    height: inherit;
+    height: 100%;
     text-align: center;
 
     .units {
@@ -135,7 +139,7 @@
       @include custom-scrollbar;
       flex: 1;
       overflow-y: auto;
-      padding-right: var(--spacing-sm);
+      padding-right: var(--spacing-xs);
 
       .progress-wrapper {
         height: 100%;
@@ -277,11 +281,42 @@
 
 /* Media Query */
 @media screen and (max-width: 1024px) {
+  * {
+    @include hide-scrollbar;
+  }
+
+  #courses_container {
+    max-height: 25rem;
+  }
+
+  .preferences-row-one {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $gap: var(--spacing-lg)
+    );
+
+    #units_container {
+      .units {
+        flex: 1;
+      }
+    }
+  }
+
   .preferences-row-two {
     @include flex-layout(
       $direction: column,
       $align: stretch,
       $gap: var(--spacing-lg)
     );
+
+    height: auto;
+
+    #courses_container {
+      .courses-scroll-container,
+      .programs-scroll-container {
+        padding-right: 0;
+      }
+    }
   }
 }
