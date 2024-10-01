@@ -63,7 +63,7 @@
   --border-radius-xl: 2rem;
 
   // Box Shadow
-  --shadow-level-0: 0 2px 4px rgba(0, 0, 0, 0.04);
+  --shadow-level-0: 0 0 5px rgba(0, 0, 0, 0.05);
   --shadow-level-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
   --shadow-level-2: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   --shadow-level-3: 0 10px 20px rgba(0, 0, 0, 0.19),
@@ -133,13 +133,17 @@ span[mat-symbol] {
   height: 100%;
 }
 
-.dialog-generic-logout {
+.dialog-base {
   width: var(--dialog-small);
 }
 
 // .mat-mdc-header-cell {
 //   border-bottom-color: transparent !important;
 // }
+
+.mdc-checkbox__checkmark {
+  color: white !important;
+} 
 
 .mat-calendar-body-selected {
   color: white !important;

@@ -7,7 +7,7 @@
   @include flex-layout($justify: flex-start);
   gap: var(--spacing-sm);
   font-size: var(--font-size-xl);
-  font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+  font-family: var(--font-base);
   font-weight: 500;
   color: var(--primary-text);
 
@@ -30,13 +30,9 @@
 
 .confirm {
   color: white;
-}
-
-.button-enabled {
   opacity: 1;
-}
 
-.button-disabled {
-  opacity: var(--opacity-half);
-  background-color: var(--primary-one);
+  &:disabled {
+    opacity: 0.5;
+  }
 }
