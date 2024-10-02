@@ -107,11 +107,8 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   dataSource = new MatTableDataSource<TableData>([]);
   subscriptions = new Subscription();
 
-  programsLoading = false;
-  loading = true;
-
   units = 0;
-  readonly maxUnits = 25;
+  maxUnits = 0;
   readonly displayedColumns: string[] = [
     'action',
     'num',
@@ -151,6 +148,18 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit() {
     this.subscribeToThemeChanges();
+
+    const facultyUnits = parseInt(
+      this.cookieService.get('faculty_units') || '',
+      10
+    );
+
+    if (!isNaN(facultyUnits)) {
+      this.maxUnits = facultyUnits;
+    } else {
+      console.warn('No valid faculty units found in cookies.');
+    }
+
     this.loadAllData();
   }
 
@@ -328,7 +337,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     this.selectedProgram = program;
-    this.loading = true;
     this.showProgramSelection = false;
 
     this.dynamicYearLevels = program.year_levels.map(
@@ -347,7 +355,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       });
 
     this.filteredCourses = this.courses;
-    this.loading = false;
     this.selectedYearLevel = null;
     this.updateDataSource();
     this.updateTotalUnits();
@@ -752,8 +759,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
 
       const dialogData: DialogData = {
         title: 'Action Not Allowed',
-        content:
-          `You cannot edit your preferences at this time. 
+        content: `You cannot edit your preferences at this time. 
           Please contact the administrator if you need assistance.`,
         actionText: 'Close',
         cancelText: '',
