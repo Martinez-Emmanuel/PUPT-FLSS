@@ -15,6 +15,7 @@ class PreferencesSetting extends Model
      * @var string
      */
     protected $table = 'preferences_settings';
+    protected $primaryKey = 'preferences_settings_id';
 
     /**
      * The attributes that are mass assignable.
