@@ -140,11 +140,11 @@ class PreferenceController extends Controller
             $faculty = $facultyPreferences->first()->faculty; 
             $facultyUser = $faculty->user;
             $preferenceSetting = $faculty->preferenceSetting;
-    
+        
             $courses = $facultyPreferences->map(function ($preference) {
                 $courseAssignment = $preference->courseAssignment;
                 $course = $courseAssignment ? $courseAssignment->course : null;
-    
+        
                 return [
                     'course_assignment_id' => $courseAssignment->course_assignment_id ?? 'N/A',
                     'course_details' => [
@@ -162,13 +162,13 @@ class PreferenceController extends Controller
                     'updated_at' => $preference->updated_at->toDateTimeString()
                 ];
             });
-    
+        
             return [
                 'faculty_id' => $faculty->id,
                 'faculty_name' => $facultyUser->name ?? 'N/A',
                 'faculty_code' => $facultyUser->code ?? 'N/A',
                 'faculty_units' => $faculty->faculty_units,
-                'is_enabled' => $preferenceSetting->is_enabled ?? 1,
+                'is_enabled' => (int) ($preferenceSetting->is_enabled ?? 1),
                 'active_semesters' => [
                     [
                         'active_semester_id' => $activeSemester->active_semester_id,
@@ -181,6 +181,7 @@ class PreferenceController extends Controller
                 ]
             ];
         })->values();
+        
     
         return response()->json([
             'preferences' => $facultyPreferences
