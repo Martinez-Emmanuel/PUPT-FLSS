@@ -19,6 +19,7 @@
     opacity: 0.5;
     pointer-events: none;
     user-select: none;
+    transition: opacity 0.3s ease-in-out;
   }
 
   .overlay {
