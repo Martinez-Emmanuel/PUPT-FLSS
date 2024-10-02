@@ -127,16 +127,25 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private setupDocumentClickListener() {
-    this.documentClickListener = this.renderer.listen('document', 'click', (event: Event) => {
-      const dropdownElement = this.el.nativeElement.querySelector('.dropdown-menu');
-      const profileIconElement = this.el.nativeElement.querySelector('.profile-icon');
-      
-      if (!dropdownElement?.contains(event.target as Node) && !profileIconElement?.contains(event.target as Node)) {
-        this.ngZone.run(() => {
-          this.closeDropdown();
-        });
+    this.documentClickListener = this.renderer.listen(
+      'document',
+      'click',
+      (event: Event) => {
+        const dropdownElement =
+          this.el.nativeElement.querySelector('.dropdown-menu');
+        const profileIconElement =
+          this.el.nativeElement.querySelector('.profile-icon');
+
+        if (
+          !dropdownElement?.contains(event.target as Node) &&
+          !profileIconElement?.contains(event.target as Node)
+        ) {
+          this.ngZone.run(() => {
+            this.closeDropdown();
+          });
+        }
       }
-    });
+    );
   }
 
   private removeDocumentClickListener() {
@@ -185,7 +194,7 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
         action: 'Log Out',
       } as DialogData,
       disableClose: true,
-      panelClass: 'dialog-generic-logout'
+      panelClass: 'dialog-base',
     });
 
     confirmDialogRef.afterClosed().subscribe((result) => {

@@ -1,6 +1,17 @@
-import { Component, inject, OnInit, ViewChild, AfterViewInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  ViewChild,
+  AfterViewInit,
+} from '@angular/core';
 import { CommonModule, AsyncPipe } from '@angular/common';
-import { RouterModule, Router, NavigationEnd, ActivatedRoute } from '@angular/router';
+import {
+  RouterModule,
+  Router,
+  NavigationEnd,
+  ActivatedRoute,
+} from '@angular/router';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 
 import { Observable } from 'rxjs';
@@ -14,8 +25,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
-import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
-import { slideInAnimation, fadeAnimation } from '../../../animations/animations';
+import {
+  DialogGenericComponent,
+  DialogData,
+} from '../../../../shared/dialog-generic/dialog-generic.component';
+import {
+  slideInAnimation,
+  fadeAnimation,
+} from '../../../animations/animations';
 
 import { AuthService } from '../../../services/auth/auth.service';
 import { ThemeService } from '../../../services/theme/theme.service';
@@ -139,7 +156,7 @@ export class MainComponent implements OnInit, AfterViewInit {
         action: 'Log Out',
       },
       disableClose: true,
-      panelClass: 'dialog-generic-logout'
+      panelClass: 'dialog-base',
     });
 
     confirmDialogRef.afterClosed().subscribe((result) => {

@@ -45,12 +45,23 @@ export class DialogTimeComponent {
   ) {
     dialogRef.disableClose = true;
     this.generateTimeOptions();
+  
     if (this.data.startTime && this.data.endTime) {
       this.startTime = this.data.startTime;
       this.endTime = this.data.endTime;
       this.onStartTimeChange();
     }
-    this.isWholeDay = this.data.isWholeDay || false;
+  
+    if (
+      this.data.startTime === '07:00 AM' &&
+      this.data.endTime === '09:00 PM'
+    ) {
+      this.isWholeDay = true;
+      this.startTime = '';
+      this.endTime = '';
+    } else {
+      this.isWholeDay = this.data.isWholeDay || false;
+    }
   }
 
   generateTimeOptions() {
@@ -84,11 +95,12 @@ export class DialogTimeComponent {
 
   onConfirm(): void {
     if (this.isWholeDay) {
-      this.dialogRef.close('Whole Day');
+      this.dialogRef.close('07:00 AM - 09:00 PM');
     } else if (this.startTime && this.endTime) {
       this.dialogRef.close(`${this.startTime} - ${this.endTime}`);
     }
   }
+  
 
   isEndTimeValid(): boolean {
     if (!this.startTime || !this.endTime) {

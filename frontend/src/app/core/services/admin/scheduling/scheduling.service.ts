@@ -412,7 +412,7 @@ export class SchedulingService {
 
   getSubmittedPreferencesForActiveSemester(): Observable<SubmittedPrefResponse> {
     return this.http
-      .get<SubmittedPrefResponse>(`${this.baseUrl}/submitted-pref-sem`)
+      .get<SubmittedPrefResponse>(`${this.baseUrl}/view-preferences`)
       .pipe(catchError(this.handleError));
   }
 }
