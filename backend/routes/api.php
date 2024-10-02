@@ -134,6 +134,11 @@ Route::post('/submit-preferences', [PreferenceController::class, 'submitPreferen
 Route::get('/view-preferences', [PreferenceController::class, 'getPreferencesForActiveSemester']);
 Route::delete('/preferences/{preference_id}', [PreferenceController::class, 'deletePreference']);
 Route::delete('/preferences', [PreferenceController::class, 'deleteAllPreferences']);
+
+
+Route::get('/setting-preferences', [PreferenceController::class, 'getPreferencesSetting']);
+Route::post('/toggle-preferences-all', [PreferenceController::class, 'togglePreferencesSettings']);
+Route::post('/toggle-preferences', [PreferenceController::class, 'toggleSpecificFacultyPreferences']);
 // Route::get('/submitted-pref', [PreferenceController::class, 'getPreferences']);
 // Route::post('/pref-courses-sem', [PreferenceController::class, 'findFacultyByCourseCode']);
 
