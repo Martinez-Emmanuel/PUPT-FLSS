@@ -8,7 +8,8 @@
   @include flex-layout(
     $direction: column,
     $align: stretch,
-    $gap: var(--spacing-lg)
+    $justify: flex-start,
+    $gap: var(--spacing-md)
   );
   @include default-transition;
   height: 100%;

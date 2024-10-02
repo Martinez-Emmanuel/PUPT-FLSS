@@ -229,7 +229,9 @@
 }
 
 .faculty-main-content {
+  @include hide-scrollbar;
   height: 100%;
+  overflow-y: auto;
 }
 
 .spinner-overlay {
