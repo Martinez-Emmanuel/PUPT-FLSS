@@ -250,10 +250,6 @@
     text-align: center;
     background-color: var(--neutral-light);
 
-    &.pref {
-      @include flex-layout;
-    }
-
     .display-time {
       @include ellipsis;
     }
