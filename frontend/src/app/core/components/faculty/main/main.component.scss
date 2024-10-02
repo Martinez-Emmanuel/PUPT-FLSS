@@ -186,7 +186,7 @@
         background-color: var(--neutral-light);
         box-shadow: var(--shadow-level-1);
         border-radius: var(--border-radius-md);
-        z-index: 3;
+        z-index: 15;
 
         .dropdown-item {
           @include ellipsis;
