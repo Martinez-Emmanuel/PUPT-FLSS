@@ -58,8 +58,8 @@ class PreferenceController extends Controller
     
         PreferencesSetting::updateOrCreate(
             ['faculty_id' => $facultyId],
-            ['is_enabled' => 0]
-        );
+            ['is_enabled' => 0, 'updated_at' => now()]
+        );        
     
         return response()->json([
             'message' => 'Preferences submitted successfully'
