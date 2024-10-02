@@ -3,7 +3,9 @@
   <div class="loading-wrapper">
     <app-loading></app-loading>
   </div>
-  } @else {
+  } @else { @if (!isPreferencesEnabled) {
+  <div class="overlay" (click)="onDisabledSectionClick($event)"></div>
+  }
   <!-- Preferences First Row -->
   <div class="preferences-row-one">
     <div id="preferences_title" [@fadeAnimation]>
@@ -25,7 +27,11 @@
     </div>
   </div>
   <!-- Preferences Second Row -->
-  <div class="preferences-row-two" [class.disabled]="!isPreferencesEnabled">
+  <div
+    class="preferences-row-two"
+    [class.disabled]="!isPreferencesEnabled"
+    (click)="onDisabledSectionClick($event)"
+  >
     <!-- Courses List -->
     <div id="courses_container" [@fadeAnimation]>
       <div id="courses_search">
@@ -39,34 +45,24 @@
             #searchInput
           />
           <span mat-symbol="search" matPrefix></span>
-          <button
-            mat-icon-button
-            matSuffix
-            *ngIf="searchQuery"
-            (click)="clearSearch()"
-          >
+          @if (searchQuery) {
+          <button mat-icon-button matSuffix (click)="clearSearch()">
             <mat-icon>close</mat-icon>
           </button>
-          <button
-            mat-icon-button
-            [matMenuTriggerFor]="filterMenu"
-            matSuffix
-            *ngIf="!showProgramSelection && !searchQuery"
-          >
+          } @if (!showProgramSelection && !searchQuery) {
+          <button mat-icon-button [matMenuTriggerFor]="filterMenu" matSuffix>
             <mat-icon>filter_list</mat-icon>
           </button>
+          }
         </mat-form-field>
       </div>
 
       <mat-menu #filterMenu="matMenu">
-        <!-- Dynamically create menu items for each year level -->
-        <button
-          mat-menu-item
-          *ngFor="let year of dynamicYearLevels"
-          (click)="filterByYear(year)"
-        >
+        @for (year of dynamicYearLevels; track year) {
+        <button mat-menu-item (click)="filterByYear(year)">
           Year Level: {{ year }}
         </button>
+        }
         <!-- Clear filter option -->
         <button mat-menu-item (click)="filterByYear(null)">Clear Filter</button>
       </mat-menu>

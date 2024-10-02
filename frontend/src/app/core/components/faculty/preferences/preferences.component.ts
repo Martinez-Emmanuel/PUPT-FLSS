@@ -1,4 +1,13 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { forkJoin, Subscription } from 'rxjs';
@@ -23,15 +32,26 @@ import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 import { TableDialogComponent } from '../../../../shared/table-dialog/table-dialog.component';
 import { DialogTimeComponent } from '../../../../shared/dialog-time/dialog-time.component';
-import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
+import {
+  DialogGenericComponent,
+  DialogData,
+} from '../../../../shared/dialog-generic/dialog-generic.component';
 import { DialogConfirmPrefComponent } from '../../../../shared/dialog-confirm-pref/dialog-confirm-pref.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { ThemeService } from '../../../services/theme/theme.service';
-import { PreferencesService, Program, Course, YearLevel } from '../../../services/faculty/preference/preferences.service';
+import {
+  PreferencesService,
+  Program,
+  Course,
+  YearLevel,
+} from '../../../services/faculty/preference/preferences.service';
 import { CookieService } from 'ngx-cookie-service';
 
-import { fadeAnimation, cardEntranceAnimation } from '../../../animations/animations';
+import {
+  fadeAnimation,
+  cardEntranceAnimation,
+} from '../../../animations/animations';
 
 interface TableData extends Course {
   preferredDay: string;
@@ -132,7 +152,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit() {
     this.subscribeToThemeChanges();
     this.loadAllData();
-  }  
+  }
 
   ngAfterViewInit() {
     setTimeout(() => {
@@ -150,34 +170,34 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   // ======================
 
   private loadAllData() {
-    this.isLoading = true; 
-  
+    this.isLoading = true;
+
     const programs$ = this.preferencesService.getPrograms();
     const preferences$ = this.preferencesService.getPreferences();
-  
+
     this.subscriptions.add(
       forkJoin([programs$, preferences$]).subscribe({
         next: ([programsResponse, preferencesResponse]) => {
           // Process Programs
           this.programs = programsResponse.programs;
           this.activeSemesterId = programsResponse.active_semester_id;
-  
+
           // Process Preferences
           const facultyId = this.cookieService.get('faculty_id');
           const facultyPreference = preferencesResponse.preferences.find(
             (pref: any) => pref.faculty_id == facultyId
           );
-  
+
           if (facultyPreference) {
             this.isPreferencesEnabled = facultyPreference.is_enabled === 1;
-  
+
             const preferences = facultyPreference.active_semesters.flatMap(
               (semester: any) => {
                 this.activeSemesterId = semester.active_semester_id;
                 return semester.courses;
               }
             );
-  
+
             this.allSelectedCourses = preferences.map((course: any) => ({
               course_id: course.course_details.course_id,
               course_assignment_id: course.course_assignment_id,
@@ -197,13 +217,13 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
                   : '',
               isSubmitted: true,
             }));
-  
+
             this.updateDataSource();
             this.updateTotalUnits();
           } else {
             this.isPreferencesEnabled = true;
           }
-  
+
           this.isLoading = false;
           this.cdr.markForCheck();
         },
@@ -216,7 +236,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       })
     );
   }
-  
 
   // private loadPrograms() {
   //   this.preferencesService.getPrograms().subscribe({
@@ -224,7 +243,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   //       this.programs = response.programs;
   //       this.activeSemesterId = response.active_semester_id;
 
-  //       this.isLoading = false; 
+  //       this.isLoading = false;
   //       this.cdr.markForCheck();
   //     },
   //     error: (error) => {
@@ -268,7 +287,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   //             course.preferred_end_time === '23:59:59'
   //               ? 'Whole Day'
   //               : course.preferred_start_time && course.preferred_end_time
-  //               ? `${this.convertTo12HourFormat(course.preferred_start_time)} 
+  //               ? `${this.convertTo12HourFormat(course.preferred_start_time)}
   //                 - ${this.convertTo12HourFormat(course.preferred_end_time)}`
   //               : '',
   //           isSubmitted: true,
@@ -725,6 +744,28 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
         this.cdr.markForCheck();
       }
     });
+  }
+
+  onDisabledSectionClick(event: Event): void {
+    if (!this.isPreferencesEnabled) {
+      event.stopPropagation();
+
+      const dialogData: DialogData = {
+        title: 'Action Not Allowed',
+        content:
+          `You cannot edit your preferences at this time. 
+          Please contact the administrator if you need assistance.`,
+        actionText: 'Close',
+        cancelText: '',
+        action: 'close',
+      };
+
+      this.dialog.open(DialogGenericComponent, {
+        data: dialogData,
+        disableClose: true,
+        panelClass: 'dialog-base',
+      });
+    }
   }
 
   // ====================
