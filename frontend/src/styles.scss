@@ -125,11 +125,11 @@ body {
 /* Custom Styling applied globally */
 
 .sec-ripple .mat-ripple-element {
-  background-color: var(--secondary-fade) !important; 
+  background-color: var(--secondary-fade) !important;
 }
 
 .ter-ripple .mat-ripple-element {
-  background-color: rgba(84, 84, 84, 0.3) !important; 
+  background-color: rgba(84, 84, 84, 0.3) !important;
 }
 
 span[mat-symbol] {
@@ -148,6 +148,20 @@ span[mat-symbol] {
 // .mat-mdc-header-cell {
 //   border-bottom-color: transparent !important;
 // }
+
+.header-toggle {
+  .mdc-switch--selected .mdc-switch__track::after {
+    background-color: rgb(231, 212, 212) !important;
+  }
+
+  .mdc-switch--selected:enabled .mdc-switch__handle::after {
+    background-color: var(--primary-one) !important;
+  }
+
+  .mdc-switch--selected .mdc-switch__icon {
+    fill: white !important;
+  }
+}
 
 .mdc-checkbox__checkmark {
   color: white !important;
