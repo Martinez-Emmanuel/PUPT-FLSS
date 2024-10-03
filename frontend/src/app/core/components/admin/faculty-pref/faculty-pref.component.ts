@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -12,6 +12,7 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 import { TableHeaderComponent, InputField } from '../../../../shared/table-header/table-header.component';
+import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { PreferencesService } from '../../../services/faculty/preference/preferences.service';
 
@@ -31,6 +32,7 @@ interface Faculty {
   standalone: true,
   imports: [
     TableHeaderComponent,
+    LoadingComponent,
     FormsModule,
     MatTableModule,
     MatButtonModule,
@@ -39,13 +41,13 @@ interface Faculty {
     MatPaginatorModule,
     MatTooltipModule,
     MatSnackBarModule,
-    MatSymbolDirective
+    MatSymbolDirective,
   ],
   templateUrl: './faculty-pref.component.html',
   styleUrls: ['./faculty-pref.component.scss'],
   animations: [fadeAnimation],
 })
-export class FacultyPrefComponent implements OnInit {
+export class FacultyPrefComponent implements OnInit, AfterViewInit {
   inputFields: InputField[] = [
     {
       type: 'text',
@@ -66,8 +68,9 @@ export class FacultyPrefComponent implements OnInit {
 
   dataSource = new MatTableDataSource<Faculty>([]);
   isToggleAllChecked = false;
+  isLoading = true;
 
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+  @ViewChild(MatPaginator) paginator?: MatPaginator;
 
   constructor(
     private preferencesService: PreferencesService,
@@ -75,7 +78,7 @@ export class FacultyPrefComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.loadFacultyPreferences();
+    // Initialize filter predicate
     this.dataSource.filterPredicate = (data: Faculty, filter: string) => {
       const filterValue = filter.trim().toLowerCase();
       return (
@@ -86,21 +89,40 @@ export class FacultyPrefComponent implements OnInit {
     };
   }
 
-  loadFacultyPreferences(): void {
-    this.preferencesService.getPreferences().subscribe((response) => {
-      const faculties = response.preferences.map((faculty: any) => ({
-        faculty_id: faculty.faculty_id,
-        facultyName: faculty.faculty_name,
-        facultyCode: faculty.faculty_code,
-        facultyType: faculty.faculty_type,
-        facultyUnits: faculty.faculty_units,
-        is_enabled: faculty.is_enabled === 1,
-      }));
+  ngAfterViewInit(): void {
+    this.loadFacultyPreferences();
+  }
 
-      this.dataSource.data = faculties;
-      this.dataSource.paginator = this.paginator;
-      this.checkToggleAllState();
-    });
+  loadFacultyPreferences(): void {
+    this.isLoading = true;
+    this.preferencesService.getPreferences().subscribe(
+      (response) => {
+        const faculties = response.preferences.map((faculty: any) => ({
+          faculty_id: faculty.faculty_id,
+          facultyName: faculty.faculty_name,
+          facultyCode: faculty.faculty_code,
+          facultyType: faculty.faculty_type,
+          facultyUnits: faculty.faculty_units,
+          is_enabled: faculty.is_enabled === 1,
+        }));
+
+        this.dataSource.data = faculties;
+        if (this.paginator) {
+          this.dataSource.paginator = this.paginator;
+        }
+        this.checkToggleAllState();
+        this.isLoading = false;
+      },
+      (error) => {
+        console.error('Error loading faculty preferences:', error);
+        this.snackBar.open(
+          'Error loading faculty preferences. Please try again.',
+          'Close',
+          { duration: 3000 }
+        );
+        this.isLoading = false;
+      }
+    );
   }
 
   checkToggleAllState(): void {
@@ -185,7 +207,7 @@ export class FacultyPrefComponent implements OnInit {
   onInputChange(inputValues: { [key: string]: any }): void {
     const searchValue = inputValues['searchFaculty'] || '';
     this.dataSource.filter = searchValue.trim().toLowerCase();
-  }  
+  }
 
   onView(faculty: Faculty): void {
     console.log('View clicked for:', faculty);
