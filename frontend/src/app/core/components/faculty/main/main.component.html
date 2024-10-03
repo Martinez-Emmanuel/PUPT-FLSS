@@ -1,6 +1,6 @@
 <div class="faculty-main-container">
   <header class="faculty-main-header">
-    <!---->
+    <!--System Name Header-->
     <div class="header-name">
       <img
         src="assets/images/pup_taguig_logo.svg"
@@ -13,19 +13,23 @@
       </div>
     </div>
 
+    <!--Navigation Bar-->
     <nav class="header-navbar">
       <div class="slider"></div>
       <a routerLink="home" routerLinkActive="active">
-        <span mat-symbol="home"></span>Home
+        <span mat-symbol="home"></span><span class="nav-text">Home</span>
       </a>
       <a routerLink="preferences" routerLinkActive="active">
-        <span mat-symbol="settings"></span>Set Preferences
+        <span mat-symbol="settings"></span
+        ><span class="nav-text">Set Preferences</span>
       </a>
       <a routerLink="load-and-schedule" routerLinkActive="active">
-        <span mat-symbol="calendar_month"></span>Load and Schedule
+        <span mat-symbol="calendar_month"></span
+        ><span class="nav-text">Load and Schedule</span>
       </a>
     </nav>
 
+    <!--Account Info-->
     <div class="header-account">
       <div class="account-text">
         <div class="account-name">{{ facultyName }}</div>

@@ -21,12 +21,11 @@ use App\Http\Controllers\ScheduleController;
 
 // Public routes
 Route::post('login', [AuthController::class, 'login'])->name('login');
-Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
 
+//Academic Year Routes
 Route::get('/get-academic-years', [AcademicYearController::class, 'getAcademicYearsForDropdown']);
 Route::post('/set-active-ay-sem', [AcademicYearController::class, 'setActiveAcademicYearAndSemester']);
 Route::get('/active-year-levels-curricula', [AcademicYearController::class, 'getActiveYearLevelsCurricula']);
-
 Route::post('/fetch-ay-prog-details', [AcademicYearController::class, 'fetchProgramDetailsByAcademicYear']);
 Route::post('/add-academic-year', [AcademicYearController::class, 'addAcademicYear']);
 Route::post('/update-yr-lvl-curricula', [AcademicYearController::class, 'updateYearLevelCurricula']);
@@ -35,15 +34,31 @@ Route::delete('/remove-program', [AcademicYearController::class, 'removeProgramF
 Route::delete('/delete-ay', [AcademicYearController::class, 'deleteAcademicYear']);
 Route::get('/active-year-semester', [AcademicYearController::class, 'getActiveYearAndSemester']);
 
-
+//Admin side routes
 Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
 Route::post('/pref-submitted-email', [FacultyController::class, 'sendPreferencesSubmittedEmail']);
 Route::post('/subj-schedule-set', [FacultyController::class, 'sendSubjectsScheduleSetEmail']);
 Route::get('/get-assigned-courses', [AcademicYearController::class, 'getAssignedCourses']);
 Route::get('/get-assigned-courses-sem', [AcademicYearController::class, 'getAssignedCoursesBySem']);
-
 Route::get('/populate-schedules', [ScheduleController::class, 'autoAssignCoursesToSections']);
 Route::post('/assign-schedule', [SchedulingController::class, 'assignSchedule']);
+Route::get('/get-faculty', [SchedulingController::class, 'getFacultyDetails']);
+Route::get('/get-rooms', [RoomController::class, 'getAllRooms']);
+
+
+//Scheduling routes
+Route::post('/submit-preferences', [PreferenceController::class, 'submitPreferences']);
+Route::get('/view-preferences', [PreferenceController::class, 'getPreferencesForActiveSemester']);
+Route::delete('/preferences/{preference_id}', [PreferenceController::class, 'deletePreference']);
+Route::delete('/preferences', [PreferenceController::class, 'deleteAllPreferences']);
+
+//Scheduling toggle preferences
+Route::get('/setting-preferences', [PreferenceController::class, 'getPreferencesSetting']);
+Route::post('/toggle-preferences-all', [PreferenceController::class, 'togglePreferencesSettings']);
+Route::post('/toggle-preferences', [PreferenceController::class, 'toggleSpecificFacultyPreferences']);
+// Route::get('/submitted-pref', [PreferenceController::class, 'getPreferences']);
+// Route::post('/pref-courses-sem', [PreferenceController::class, 'findFacultyByCourseCode']);
+
 //Get all Program and Year Level and Semester with year for superadmin
 Route::get('/curricula-details/{curriculumYear}/', [CurriculumDetailsController::class, 'getCurriculumDetails']);
 
@@ -51,19 +66,11 @@ Route::get('/curricula-details/{curriculumYear}/', [CurriculumDetailsController:
 Route::post('/curriculum/', [ProgramFetchController::class, 'getCoursesForProgram']);
 Route::get('/curriculum/', [ProgramFetchController::class, 'getAllActivePrograms']);
 
-
 //Add Curriculum that add all the program and year level and semester
 Route::post('/addCurriculum', [CurriculumController::class, 'addCurriculum']);
 Route::post('/deleteCurriculum', [CurriculumController::class, 'deleteCurriculum']);
 Route::post('/copyCurriculum', [CurriculumController::class, 'copyCurriculum']);
 Route::put('/updateCurriculum/{id}', [CurriculumController::class, 'update']);
-
-//temp
-Route::post('/removeProgramFromCurriculum', [CurriculumController::class, 'removeProgramFromCurriculum']);
-Route::get('/programs-by-curriculum-year/{curriculumYear}', [CurriculumController::class, 'getProgramsByCurriculumYear']);
-Route::post('/addProgramToCurriculum', [CurriculumController::class, 'addProgramToCurriculum']);
-
-
 
 // Course routes
 Route::get('/courses', [CourseController::class, 'index']);
@@ -75,6 +82,10 @@ Route::delete('/courses/{id}', [CourseController::class, 'deleteCourse']);
 Route::get('/curricula', [CurriculumController::class, 'index']);
 Route::get('/curricula/{id}', [CurriculumController::class, 'show']);
 
+//Curriculum remove program and add program
+Route::post('/removeProgramFromCurriculum', [CurriculumController::class, 'removeProgramFromCurriculum']);
+Route::get('/programs-by-curriculum-year/{curriculumYear}', [CurriculumController::class, 'getProgramsByCurriculumYear']);
+Route::post('/addProgramToCurriculum', [CurriculumController::class, 'addProgramToCurriculum']);
 // Route::delete('/deleteCurriculum/{id}', [CurriculumController::class, 'destroy']);
 
 // Semester routes
@@ -105,14 +116,6 @@ Route::put('/rooms/{room_id}', [RoomController::class, 'updateRoom']);
 Route::delete('/rooms/{room_id}', [RoomController::class, 'deleteRoom']);
 
 
-// Route::middleware(['auth:sanctum', 'super_admin'])->group(function () {
-//     Route::get('/showAccounts', [AccountController::class, 'index']);
-//     Route::post('/addAccount', [AccountController::class, 'store']);
-//     Route::get('/accounts/{user}', [AccountController::class, 'show']);
-//     Route::put('/updateAccount/{user}', [AccountController::class, 'update']);
-//     Route::delete('/deleteAccount/{user}', [AccountController::class, 'destroy']);
-// });
-
 Route::middleware(['auth:sanctum', 'super_admin'])->group(function () {
     Route::get('/showAccounts', [AccountController::class, 'index']);
     Route::post('/addAccount', [AccountController::class, 'store']);
@@ -130,33 +133,28 @@ Route::middleware(['auth:sanctum', 'super_admin'])->group(function () {
     Route::delete('/deleteAdmins/{admin}', [AccountController::class, 'destroyAdmin']);
 });
 
-Route::post('/submit-pref', [PreferenceController::class, 'submitPreference']);
-Route::get('/submitted-pref', [PreferenceController::class, 'getPreferences']);
-Route::get('/submitted-pref-sem', [PreferenceController::class, 'getPreferencesForActiveSemester']);
-Route::post('/pref-courses-sem', [PreferenceController::class, 'findFacultyByCourseCode']);
-
-
-Route::get('/get-faculty', [SchedulingController::class, 'getFacultyDetails']);
-Route::get('/get-rooms', [RoomController::class, 'getAllRooms']);
-// Route::get('/rooms-details', [RoomController::class, 'index']);
 // Protected routes
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
-
     // Preference API
-
     // Route::get('/submittedPreferences', [PreferenceController::class, 'getAllSubmittedPreferences']);
-
     // Email API
     // Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
-
-
-
-    // CRUD for Courses
-
-
-
     Route::get('/some-protected-route', function (Request $request) {
         return response()->json(['message' => 'You are authenticated']);
     });
 });
+
+
+
+
+
+// Route::middleware(['auth:sanctum', 'super_admin'])->group(function () {
+//     Route::get('/showAccounts', [AccountController::class, 'index']);
+//     Route::post('/addAccount', [AccountController::class, 'store']);
+//     Route::get('/accounts/{user}', [AccountController::class, 'show']);
+//     Route::put('/updateAccount/{user}', [AccountController::class, 'update']);
+//     Route::delete('/deleteAccount/{user}', [AccountController::class, 'destroy']);
+// });
+
+// Route::get('/rooms-details', [RoomController::class, 'index']);

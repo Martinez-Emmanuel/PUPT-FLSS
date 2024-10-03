@@ -6,35 +6,46 @@
 }
 
 .faculty-main-container {
+  @include flex-layout(
+    $direction: column,
+    $align: none,
+    $justify: none,
+    $gap: var(--spacing-xl)
+  );
   height: 100%;
-  @include flex-layout($direction: column, $align: none, $justify: none);
   box-sizing: border-box;
-  gap: var(--spacing-2xl);
   padding: var(--spacing-2xl);
   background-color: var(--main-bg); // Prevent flicker when refreshed
 }
 
 .faculty-main-header {
-  @include flex-layout($align: stretch, $justify: space-between);
-  width: inherit;
+  @include flex-layout(
+    $align: stretch,
+    $justify: space-between,
+    $gap: var(--spacing-lg)
+  );
+  width: 100%;
 
   .header-name,
   .header-navbar,
   .header-account {
     @include flex-layout;
+    max-width: fit-content;
   }
 
   .header-name {
+    flex: 0 1 auto;
+    min-width: 0;
     gap: var(--spacing-lg);
 
     .university-logo {
       width: 4rem;
       height: auto;
+      flex-shrink: 0;
     }
 
     .header-text {
-      width: 100%;
-      height: 100%;
+      min-width: 0;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -43,9 +54,11 @@
 
     .university-name,
     .system-name {
+      @include ellipsis;
       font-family: var(--font-header);
       font-size: var(--font-size-md);
       font-weight: 600;
+      white-space: nowrap;
     }
 
     .university-name {
@@ -54,6 +67,7 @@
   }
 
   .header-navbar {
+    flex: 0 1 auto;
     align-self: center;
     align-items: stretch;
     gap: var(--spacing-md);
@@ -89,11 +103,16 @@
       transition: color 0.3s ease;
       cursor: pointer;
 
+      .nav-text {
+        @include ellipsis;
+      }
+
       &.active {
         color: white;
         transition: color 0.3s ease;
 
-        span.material-symbols-rounded {
+        span.material-symbols-rounded,
+        .nav-text {
           color: white;
         }
       }
@@ -105,7 +124,8 @@
       &:hover:not(.active) {
         color: var(--primary-one);
 
-        span.material-symbols-rounded {
+        span.material-symbols-rounded,
+        .nav-text {
           color: var(--primary-one);
         }
       }
@@ -113,11 +133,24 @@
   }
 
   .header-account {
+    flex: 0 1 auto;
     gap: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 0;
 
     .account-text {
-      font-size: var(--font-size-mdx);
+      font-size: var(--font-size-md);
       text-align: right;
+      min-width: 0;
+      flex: 1;
+      overflow: hidden;
+
+      .account-name,
+      .account-email {
+        @include ellipsis;
+      }
 
       .account-name {
         font-weight: 600;
@@ -131,6 +164,7 @@
     .profile-dropdown {
       @include flex-layout;
       position: relative;
+      // flex-shrink: 0;
 
       .profile-icon {
         width: 3rem;
@@ -152,7 +186,7 @@
         background-color: var(--neutral-light);
         box-shadow: var(--shadow-level-1);
         border-radius: var(--border-radius-md);
-        z-index: 3;
+        z-index: 15;
 
         .dropdown-item {
           @include ellipsis;
@@ -195,7 +229,9 @@
 }
 
 .faculty-main-content {
+  @include hide-scrollbar;
   height: 100%;
+  overflow-y: auto;
 }
 
 .spinner-overlay {
@@ -212,4 +248,10 @@
 
   padding: var(--spacing-lg);
   border-radius: var(--border-radius-base);
+}
+
+@media screen and (max-width: 800px) {
+  .nav-text {
+    display: none;
+  }
 }

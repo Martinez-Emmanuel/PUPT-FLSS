@@ -122,7 +122,7 @@ export class MainComponent implements OnInit, AfterViewInit {
         action: 'Log Out',
       },
       disableClose: true,
-      panelClass: 'dialog-generic-logout'
+      panelClass: 'dialog-base'
     });
 
     confirmDialogRef.afterClosed().subscribe((result) => {
