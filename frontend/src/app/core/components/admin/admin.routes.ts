@@ -23,7 +23,7 @@ export const ADMIN_ROUTES: Routes = [
         path: 'faculty-preferences',
         loadComponent: () =>
           import('./faculty-pref/faculty-pref.component').then(
-            (m) => m.FacultyComponent
+            (m) => m.FacultyPrefComponent
           ),
         data: { pageTitle: 'Faculty Preferences' },
       },
