@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
@@ -8,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
+import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 import { TableHeaderComponent, InputField } from '../../../../shared/table-header/table-header.component';
 
@@ -37,6 +39,7 @@ interface Faculty {
     MatPaginatorModule,
     MatTooltipModule,
     MatSnackBarModule,
+    MatSymbolDirective
   ],
   templateUrl: './faculty-pref.component.html',
   styleUrls: ['./faculty-pref.component.scss'],

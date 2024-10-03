@@ -111,6 +111,16 @@
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+        <!-- No Data Row -->
+        <tr *matNoDataRow>
+          <td class="no-data-cell" [attr.colspan]="displayedColumns.length">
+            <div class="flex-cell">
+              <span mat-symbol="info"></span>
+              <span>No faculty found.</span>
+            </div>
+          </td>
+        </tr>
       </table>
 
       <!-- Table Paginator -->
