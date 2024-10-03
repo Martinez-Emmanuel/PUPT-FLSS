@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'app-faculty',
+  selector: 'app-faculty-pref',
   standalone: true,
   imports: [],
-  templateUrl: './faculty.component.html',
-  styleUrl: './faculty.component.scss'
+  templateUrl: './faculty-pref.component.html',
+  styleUrl: './faculty-pref.component.scss'
 })
 export class FacultyComponent {
 

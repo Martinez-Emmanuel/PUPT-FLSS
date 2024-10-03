@@ -1,0 +1,5 @@
+@import "../../../../../styles/mixins.scss";
+
+* {
+  @include reset-styles;
+}
