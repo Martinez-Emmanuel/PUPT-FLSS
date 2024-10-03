@@ -64,7 +64,7 @@
 
   // Box Shadow
   --shadow-level-0: 0 0 5px rgba(0, 0, 0, 0.05);
-  --shadow-level-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow-level-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.12);
   --shadow-level-2: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   --shadow-level-3: 0 10px 20px rgba(0, 0, 0, 0.19),
     0 6px 6px rgba(0, 0, 0, 0.23);
@@ -124,6 +124,14 @@ body {
 
 /* Custom Styling applied globally */
 
+.sec-ripple .mat-ripple-element {
+  background-color: var(--secondary-fade) !important;
+}
+
+.ter-ripple .mat-ripple-element {
+  background-color: rgba(84, 84, 84, 0.3) !important;
+}
+
 span[mat-symbol] {
   font-family: "Material Symbols Rounded" !important;
   user-select: none;
@@ -140,6 +148,20 @@ span[mat-symbol] {
 // .mat-mdc-header-cell {
 //   border-bottom-color: transparent !important;
 // }
+
+.header-toggle {
+  .mdc-switch--selected .mdc-switch__track::after {
+    background-color: rgb(231, 212, 212) !important;
+  }
+
+  .mdc-switch--selected:enabled .mdc-switch__handle::after {
+    background-color: var(--primary-one) !important;
+  }
+
+  .mdc-switch--selected .mdc-switch__icon {
+    fill: white !important;
+  }
+}
 
 .mdc-checkbox__checkmark {
   color: white !important;
