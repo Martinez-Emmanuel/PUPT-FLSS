@@ -32,7 +32,7 @@ class SchedulingController extends Controller
     
         return response()->json(['faculty' => $response], 200);
     }
-    
+
     
     public function assignSchedule(Request $request)
     {

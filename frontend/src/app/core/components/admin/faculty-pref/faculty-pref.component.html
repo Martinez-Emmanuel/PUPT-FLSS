@@ -1,0 +1,150 @@
+<div class="faculty-pref-container">
+  @if (isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
+  <!-- Faculty Preferences Header Container -->
+  <div class="faculty-pref-header-container" [@fadeAnimation]>
+    <app-table-header
+      [inputFields]="inputFields"
+      [showExportButton]="true"
+      [showAddButton]="false"
+      (export)="onExport()"
+      (inputChange)="onInputChange($event)"
+    >
+    </app-table-header>
+  </div>
+
+  <!-- Faculty Preferences Table -->
+  <div class="faculty-pref-table-container" [@fadeAnimation]>
+    <div class="table-container">
+      <table mat-table [dataSource]="dataSource" class="custom-table">
+        <!-- Index Column -->
+        <ng-container matColumnDef="index">
+          <th mat-header-cell *matHeaderCellDef class="custom-header index">
+            #
+          </th>
+          <td mat-cell *matCellDef="let element; let i = index" class="index">
+            <span>
+              {{
+                i +
+                  1 +
+                  (paginator?.pageIndex || 0) * (paginator?.pageSize || 10)
+              }}
+            </span>
+          </td>
+        </ng-container>
+
+        <!-- Faculty Name Column -->
+        <ng-container matColumnDef="facultyName">
+          <th mat-header-cell *matHeaderCellDef class="custom-header">
+            Faculty Name
+          </th>
+          <td mat-cell *matCellDef="let element" class="custom-cell">
+            {{ element.facultyName }}
+          </td>
+        </ng-container>
+
+        <!-- Faculty Code Column -->
+        <ng-container matColumnDef="facultyCode">
+          <th mat-header-cell *matHeaderCellDef class="custom-header">
+            Faculty Code
+          </th>
+          <td mat-cell *matCellDef="let element" class="custom-cell">
+            {{ element.facultyCode }}
+          </td>
+        </ng-container>
+
+        <!-- Faculty Type Column -->
+        <ng-container matColumnDef="facultyType">
+          <th mat-header-cell *matHeaderCellDef class="custom-header">
+            Faculty Type
+          </th>
+          <td mat-cell *matCellDef="let element" class="custom-cell">
+            {{ element.facultyType }}
+          </td>
+        </ng-container>
+
+        <!-- Faculty Units Column -->
+        <ng-container matColumnDef="facultyUnits">
+          <th mat-header-cell *matHeaderCellDef class="custom-header">Units</th>
+          <td mat-cell *matCellDef="let element" class="custom-cell">
+            {{ element.facultyUnits }}
+          </td>
+        </ng-container>
+
+        <!-- Action Column -->
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef class="custom-header">
+            Action
+          </th>
+          <td mat-cell *matCellDef="let element" class="custom-cell">
+            <button
+              mat-button
+              class="sec-ripple view-button"
+              (click)="onView(element)"
+            >
+              <mat-icon>visibility</mat-icon>
+              <span>View</span>
+            </button>
+            <button
+              mat-button
+              class="sec-ripple export-button"
+              (click)="onPrint(element)"
+            >
+              <mat-icon>print</mat-icon>
+              <span>Export</span>
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Toggle Column -->
+        <ng-container matColumnDef="toggle">
+          <th mat-header-cell *matHeaderCellDef class="custom-header">
+            <mat-slide-toggle
+              class="header-toggle"
+              matTooltip="Toggle preferences submission for all faculty"
+              [checked]="isToggleAllChecked"
+              (change)="onToggleAllChange($event)"
+            >
+            </mat-slide-toggle>
+          </th>
+          <td mat-cell *matCellDef="let element" class="custom-cell">
+            <mat-slide-toggle
+              [(ngModel)]="element.is_enabled"
+              matTooltip="Toggle preferences submission for this faculty only"
+              (change)="onToggleChange(element)"
+            >
+            </mat-slide-toggle>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+        <!-- No Data Row -->
+        <tr *matNoDataRow>
+          <td class="no-data-cell" [attr.colspan]="displayedColumns.length">
+            <div class="flex-cell">
+              <span mat-symbol="info"></span>
+              <span>No faculty found.</span>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Table Paginator -->
+      <mat-paginator
+        class="custom-paginator"
+        [length]="dataSource.data.length"
+        [pageSize]="10"
+        [pageSizeOptions]="[5, 10, 25, 50, 100]"
+        [showFirstLastButtons]="true"
+        aria-label="Select page"
+      >
+      </mat-paginator>
+    </div>
+  </div>
+  }
+</div>

@@ -20,10 +20,12 @@ export const ADMIN_ROUTES: Routes = [
         data: { pageTitle: 'Overview' },
       },
       {
-        path: 'faculty',
+        path: 'faculty-preferences',
         loadComponent: () =>
-          import('./faculty/faculty.component').then((m) => m.FacultyComponent),
-        data: { pageTitle: 'Faculty' },
+          import('./faculty-pref/faculty-pref.component').then(
+            (m) => m.FacultyPrefComponent
+          ),
+        data: { pageTitle: 'Faculty Preferences' },
       },
       {
         path: 'scheduling',

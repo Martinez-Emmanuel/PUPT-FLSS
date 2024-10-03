@@ -123,4 +123,9 @@ export class TableHeaderComponent implements OnInit, OnChanges {
     this.addAcademicYear.emit();
   }
 
+  onClearSearch(key: string): void {
+    this.form.get(key)?.setValue('');
+    this.inputChange.emit(this.form.value);
+  }
+  
 }

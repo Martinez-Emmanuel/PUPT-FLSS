@@ -5,8 +5,16 @@
       @if (field.type === 'text') {
         <mat-form-field appearance="fill" class="search-field" subscriptSizing="dynamic">
           <mat-label>{{ field.label }}</mat-label>
-          <input matInput [formControlName]="field.key" [placeholder]="field.placeholder || ''" />
+          <input maxlength="50" matInput [formControlName]="field.key" [placeholder]="field.placeholder || ''" />
           <mat-icon matPrefix>search</mat-icon>
+          @if (form.get(field.key)?.value && form.get(field.key)?.value.length > 0) {
+            <button 
+            mat-icon-button 
+            matSuffix 
+            (click)="onClearSearch(field.key)">
+            <mat-icon>close</mat-icon>
+          </button>
+          }
         </mat-form-field>
       } 
       @if (field.type === 'select') {
@@ -54,7 +62,7 @@
     <div class="button-container">
       <!-- Export to PDF Button -->
       @if (showExportButton) {
-        <button mat-flat-button class="custom-mat-button export-button" (click)="onExport()">
+        <button mat-flat-button class="ter-ripple custom-mat-button export-button" (click)="onExport()">
           <mat-icon>picture_as_pdf</mat-icon>
           Export to PDF
         </button>

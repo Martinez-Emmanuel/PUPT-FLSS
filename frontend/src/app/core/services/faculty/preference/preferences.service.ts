@@ -101,4 +101,14 @@ export class PreferencesService {
 
     return this.http.delete(url, { params });
   }
+
+  toggleAllFacultyPreferences(status: boolean): Observable<any> {
+    const url = `${this.baseUrl}/toggle-preferences-all`;
+    return this.http.post(url, { status });
+  }
+
+  toggleFacultyPreferences(faculty_id: number, status: boolean): Observable<any> {
+    const url = `${this.baseUrl}/toggle-preferences`;
+    return this.http.post(url, { faculty_id, status });
+  }
 }
