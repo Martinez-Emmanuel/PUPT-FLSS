@@ -48,7 +48,7 @@ CREATE TABLE `faculty` (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` bigint(20) UNSIGNED NOT NULL,
   `faculty_email` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `faculty_type` enum('Full-time (Permanent)','Full-time (Temporary)','Full-time (Designee)','Part-time') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `faculty_type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `faculty_unit` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `faculty_faculty_email_unique` (`faculty_email`),
