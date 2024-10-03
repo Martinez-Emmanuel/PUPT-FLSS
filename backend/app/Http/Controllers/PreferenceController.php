@@ -169,6 +169,7 @@ class PreferenceController extends Controller
                 'faculty_id' => $faculty->id,
                 'faculty_name' => $facultyUser->name ?? 'N/A',
                 'faculty_code' => $facultyUser->code ?? 'N/A',
+                'faculty_type' => $faculty->faculty_type ?? 'N/A',
                 'faculty_units' => $faculty->faculty_units,
                 'is_enabled' => (int) ($preferenceSetting->is_enabled ?? 1),
                 'active_semesters' => [
