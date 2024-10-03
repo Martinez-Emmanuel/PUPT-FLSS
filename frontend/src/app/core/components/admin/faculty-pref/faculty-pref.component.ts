@@ -67,8 +67,11 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   ];
 
   dataSource = new MatTableDataSource<Faculty>([]);
+  allData: Faculty[] = [];
+  filteredData: Faculty[] = [];
   isToggleAllChecked = false;
   isLoading = true;
+  currentFilter = '';
 
   @ViewChild(MatPaginator) paginator?: MatPaginator;
 
@@ -78,19 +81,19 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
-    // Initialize filter predicate
+    this.loadFacultyPreferences();
     this.dataSource.filterPredicate = (data: Faculty, filter: string) => {
-      const filterValue = filter.trim().toLowerCase();
       return (
-        data.facultyName.toLowerCase().includes(filterValue) ||
-        data.facultyCode.toLowerCase().includes(filterValue) ||
-        data.facultyType.toLowerCase().includes(filterValue)
+        data.facultyName.toLowerCase().includes(filter) ||
+        data.facultyCode.toLowerCase().includes(filter) ||
+        data.facultyType.toLowerCase().includes(filter)
       );
     };
   }
 
   ngAfterViewInit(): void {
-    this.loadFacultyPreferences();
+    this.dataSource.paginator = this.paginator ?? null;
+    this.applyFilter(this.currentFilter);
   }
 
   loadFacultyPreferences(): void {
@@ -106,10 +109,9 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
           is_enabled: faculty.is_enabled === 1,
         }));
 
-        this.dataSource.data = faculties;
-        if (this.paginator) {
-          this.dataSource.paginator = this.paginator;
-        }
+        this.allData = faculties;
+        this.filteredData = faculties;
+        this.applyFilter(this.currentFilter);
         this.checkToggleAllState();
         this.isLoading = false;
       },
@@ -125,10 +127,44 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     );
   }
 
-  checkToggleAllState(): void {
-    const allEnabled = this.dataSource.data.every(
-      (faculty) => faculty.is_enabled
+  applyFilter(filterValue: string): void {
+    this.currentFilter = filterValue.trim().toLowerCase();
+
+    if (this.currentFilter === '') {
+      this.filteredData = [...this.allData];
+    } else {
+      this.filteredData = this.allData.filter((faculty) =>
+        this.filterPredicate(faculty, this.currentFilter)
+      );
+    }
+
+    if (this.paginator) {
+      this.paginator.firstPage();
+    }
+
+    this.updateDisplayedData();
+  }
+
+  filterPredicate(data: Faculty, filter: string): boolean {
+    return (
+      data.facultyName.toLowerCase().includes(filter) ||
+      data.facultyCode.toLowerCase().includes(filter) ||
+      data.facultyType.toLowerCase().includes(filter)
     );
+  }
+
+  updateDisplayedData(): void {
+    if (this.paginator) {
+      const startIndex = this.paginator.pageIndex * this.paginator.pageSize;
+      const endIndex = startIndex + this.paginator.pageSize;
+      this.dataSource.data = this.filteredData.slice(startIndex, endIndex);
+    } else {
+      this.dataSource.data = [...this.filteredData];
+    }
+  }
+
+  checkToggleAllState(): void {
+    const allEnabled = this.filteredData.every((faculty) => faculty.is_enabled);
     this.isToggleAllChecked = allEnabled;
   }
 
@@ -172,9 +208,8 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
 
     this.preferencesService.toggleAllFacultyPreferences(status).subscribe(
       (response) => {
-        this.dataSource.data.forEach(
-          (faculty) => (faculty.is_enabled = status)
-        );
+        this.filteredData.forEach((faculty) => (faculty.is_enabled = status));
+        this.updateDisplayedData();
         loadingSnackBarRef.dismiss();
 
         this.snackBar.open(
@@ -206,7 +241,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
 
   onInputChange(inputValues: { [key: string]: any }): void {
     const searchValue = inputValues['searchFaculty'] || '';
-    this.dataSource.filter = searchValue.trim().toLowerCase();
+    this.applyFilter(searchValue);
   }
 
   onView(faculty: Faculty): void {
