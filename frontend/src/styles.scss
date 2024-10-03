@@ -145,6 +145,11 @@ span[mat-symbol] {
   width: var(--dialog-small);
 }
 
+.custom-paginator {
+  @include default-transition;
+  background-color: var(--neutral-light) !important;
+}
+
 // .mat-mdc-header-cell {
 //   border-bottom-color: transparent !important;
 // }

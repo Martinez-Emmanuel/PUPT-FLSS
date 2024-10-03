@@ -1,10 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -65,6 +65,8 @@ export class FacultyPrefComponent implements OnInit {
   dataSource = new MatTableDataSource<Faculty>([]);
   isToggleAllChecked = false;
 
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
   constructor(
     private preferencesService: PreferencesService,
     private snackBar: MatSnackBar
@@ -86,6 +88,7 @@ export class FacultyPrefComponent implements OnInit {
       }));
 
       this.dataSource.data = faculties;
+      this.dataSource.paginator = this.paginator;
       this.checkToggleAllState();
     });
   }
