@@ -1,4 +1,5 @@
 import { Component, Inject, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
 
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
@@ -25,7 +26,13 @@ interface Course {
 @Component({
   selector: 'app-dialog-pref',
   standalone: true,
-  imports: [LoadingComponent, MatTableModule, MatButtonModule, MatSymbolDirective],
+  imports: [
+    CommonModule,
+    LoadingComponent,
+    MatTableModule,
+    MatButtonModule,
+    MatSymbolDirective,
+  ],
   templateUrl: './dialog-pref.component.html',
   styleUrl: './dialog-pref.component.scss',
   animations: [fadeAnimation],
@@ -74,5 +81,9 @@ export class DialogPrefComponent implements OnInit {
 
   closeDialog(): void {
     this.dialogRef.close();
+  }
+
+  convertToDate(timeString: string): Date {
+    return new Date(`1970-01-01T${timeString}`);
   }
 }
