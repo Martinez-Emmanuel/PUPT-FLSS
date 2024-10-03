@@ -1,25 +1,27 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatSlideToggle, MatSlideToggleChange  } from '@angular/material/slide-toggle';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 
-import {
-  TableHeaderComponent,
-  InputField,
-} from '../../../../shared/table-header/table-header.component';
+import { TableHeaderComponent, InputField } from '../../../../shared/table-header/table-header.component';
+
+import { PreferencesService } from '../../../services/faculty/preference/preferences.service';
+
 import { fadeAnimation } from '../../../animations/animations';
 
 interface Faculty {
-  index: number;
+  faculty_id: number;
   facultyName: string;
   facultyCode: string;
   facultyType: string;
   facultyUnits: number;
-  action: string;
   is_enabled: boolean;
 }
 
@@ -28,18 +30,20 @@ interface Faculty {
   standalone: true,
   imports: [
     TableHeaderComponent,
+    FormsModule,
     MatTableModule,
     MatButtonModule,
     MatIconModule,
-    MatSlideToggle,
+    MatSlideToggleModule,
     MatPaginatorModule,
     MatTooltipModule,
+    MatSnackBarModule,
   ],
   templateUrl: './faculty-pref.component.html',
   styleUrls: ['./faculty-pref.component.scss'],
   animations: [fadeAnimation],
 })
-export class FacultyPrefComponent {
+export class FacultyPrefComponent implements OnInit {
   inputFields: InputField[] = [
     {
       type: 'text',
@@ -48,155 +52,6 @@ export class FacultyPrefComponent {
     },
   ];
 
-  // Table Data Source
-  faculties: Faculty[] = [
-    {
-      index: 1,
-      facultyName: 'John Doe',
-      facultyCode: 'F001',
-      facultyType: 'Full-Time',
-      facultyUnits: 12,
-      action: 'Edit',
-      is_enabled: true,
-    },
-    {
-      index: 2,
-      facultyName: 'Jane Smith',
-      facultyCode: 'F002',
-      facultyType: 'Part-Time',
-      facultyUnits: 6,
-      action: 'Edit',
-      is_enabled: false,
-    },
-    {
-      index: 3,
-      facultyName: 'Alice Johnson',
-      facultyCode: 'F003',
-      facultyType: 'Full-Time',
-      facultyUnits: 10,
-      action: 'Edit',
-      is_enabled: true,
-    },
-    {
-      index: 4,
-      facultyName: 'Bob Brown',
-      facultyCode: 'F004',
-      facultyType: 'Part-Time',
-      facultyUnits: 4,
-      action: 'Edit',
-      is_enabled: true,
-    },
-    {
-      index: 5,
-      facultyName: 'Charlie Davis',
-      facultyCode: 'F005',
-      facultyType: 'Full-Time',
-      facultyUnits: 15,
-      action: 'Edit',
-      is_enabled: false,
-    },
-    {
-      index: 6,
-      facultyName: 'Diana Evans',
-      facultyCode: 'F006',
-      facultyType: 'Part-Time',
-      facultyUnits: 8,
-      action: 'Edit',
-      is_enabled: true,
-    },
-    {
-      index: 7,
-      facultyName: 'Edward Green',
-      facultyCode: 'F007',
-      facultyType: 'Full-Time',
-      facultyUnits: 12,
-      action: 'Edit',
-      is_enabled: true,
-    },
-    {
-      index: 8,
-      facultyName: 'Fiona Harris',
-      facultyCode: 'F008',
-      facultyType: 'Part-Time',
-      facultyUnits: 5,
-      action: 'Edit',
-      is_enabled: false,
-    },
-    {
-      index: 9,
-      facultyName: 'George King',
-      facultyCode: 'F009',
-      facultyType: 'Full-Time',
-      facultyUnits: 14,
-      action: 'Edit',
-      is_enabled: true,
-    },
-    {
-      index: 10,
-      facultyName: 'Hannah Lee',
-      facultyCode: 'F010',
-      facultyType: 'Part-Time',
-      facultyUnits: 7,
-      action: 'Edit',
-      is_enabled: true,
-    },
-    {
-      index: 11,
-      facultyName: 'Ian Miller',
-      facultyCode: 'F011',
-      facultyType: 'Full-Time',
-      facultyUnits: 13,
-      action: 'Edit',
-      is_enabled: false,
-    },
-    {
-      index: 12,
-      facultyName: 'Jasmine Nelson',
-      facultyCode: 'F012',
-      facultyType: 'Part-Time',
-      facultyUnits: 6,
-      action: 'Edit',
-      is_enabled: true,
-    },
-    {
-      index: 13,
-      facultyName: 'Kevin Ortiz',
-      facultyCode: 'F013',
-      facultyType: 'Full-Time',
-      facultyUnits: 11,
-      action: 'Edit',
-      is_enabled: true,
-    },
-    {
-      index: 14,
-      facultyName: 'Laura Perez',
-      facultyCode: 'F014',
-      facultyType: 'Part-Time',
-      facultyUnits: 9,
-      action: 'Edit',
-      is_enabled: false,
-    },
-    {
-      index: 15,
-      facultyName: 'Michael Quintero',
-      facultyCode: 'F015',
-      facultyType: 'Full-Time',
-      facultyUnits: 16,
-      action: 'Edit',
-      is_enabled: true,
-    },
-    {
-      index: 16,
-      facultyName: 'Nina Roberts',
-      facultyCode: 'F016',
-      facultyType: 'Part-Time',
-      facultyUnits: 4,
-      action: 'Edit',
-      is_enabled: true,
-    },
-  ];
-  
-  
   displayedColumns: string[] = [
     'index',
     'facultyName',
@@ -206,7 +61,109 @@ export class FacultyPrefComponent {
     'action',
     'toggle',
   ];
-  dataSource = new MatTableDataSource<Faculty>(this.faculties);
+
+  dataSource = new MatTableDataSource<Faculty>([]);
+  isToggleAllChecked = false;
+
+  constructor(
+    private preferencesService: PreferencesService,
+    private snackBar: MatSnackBar
+  ) {}
+
+  ngOnInit(): void {
+    this.loadFacultyPreferences();
+  }
+
+  loadFacultyPreferences(): void {
+    this.preferencesService.getPreferences().subscribe((response) => {
+      const faculties = response.preferences.map((faculty: any) => ({
+        faculty_id: faculty.faculty_id,
+        facultyName: faculty.faculty_name,
+        facultyCode: faculty.faculty_code,
+        facultyType: faculty.faculty_type,
+        facultyUnits: faculty.faculty_units,
+        is_enabled: faculty.is_enabled === 1,
+      }));
+
+      this.dataSource.data = faculties;
+      this.checkToggleAllState();
+    });
+  }
+
+  checkToggleAllState(): void {
+    const allEnabled = this.dataSource.data.every(
+      (faculty) => faculty.is_enabled
+    );
+    this.isToggleAllChecked = allEnabled;
+  }
+
+  onToggleChange(faculty: Faculty): void {
+    const status = faculty.is_enabled;
+
+    this.preferencesService
+      .toggleFacultyPreferences(faculty.faculty_id, status)
+      .subscribe(
+        (response) => {
+          this.snackBar.open(
+            `Preferences submission ${
+              status ? 'enabled' : 'disabled'
+            } for Prof. ${faculty.facultyName}.`,
+            'Close',
+            { duration: 3000 }
+          );
+          this.checkToggleAllState();
+        },
+        (error) => {
+          this.snackBar.open(
+            `Failed to update preference for ${faculty.facultyName}`,
+            'Close',
+            { duration: 3000 }
+          );
+          console.error('Error updating faculty preference:', error);
+        }
+      );
+  }
+
+  onToggleAllChange(event: MatSlideToggleChange): void {
+    const status = event.checked;
+
+    const loadingSnackBarRef = this.snackBar.open(
+      'Loading, please wait...',
+      'Close',
+      {
+        duration: undefined,
+      }
+    );
+
+    this.preferencesService.toggleAllFacultyPreferences(status).subscribe(
+      (response) => {
+        this.dataSource.data.forEach(
+          (faculty) => (faculty.is_enabled = status)
+        );
+        loadingSnackBarRef.dismiss();
+
+        this.snackBar.open(
+          `Preferences submission for all faculty is ${
+            status ? 'enabled' : 'disabled'
+          }.`,
+          'Close',
+          { duration: 3000 }
+        );
+
+        this.isToggleAllChecked = status;
+      },
+      (error) => {
+        loadingSnackBarRef.dismiss();
+
+        this.snackBar.open(
+          'Failed to update preferences for all faculty',
+          'Close',
+          { duration: 3000 }
+        );
+        console.error('Error updating all preferences:', error);
+      }
+    );
+  }
 
   onExport(): void {
     console.log('Export to PDF triggered');
@@ -215,6 +172,7 @@ export class FacultyPrefComponent {
   onInputChange(inputValues: { [key: string]: any }): void {
     console.log('Input values changed:', inputValues);
   }
+
   onView(faculty: Faculty): void {
     console.log('View clicked for:', faculty);
   }
@@ -222,14 +180,4 @@ export class FacultyPrefComponent {
   onPrint(faculty: Faculty): void {
     console.log('Print clicked for:', faculty);
   }
-
-  onToggleChange(faculty: Faculty): void {
-    faculty.is_enabled = !faculty.is_enabled;
-    console.log('Toggled: ', faculty);
-  }
-
-  onToggleAllChange(event: MatSlideToggleChange): void {
-    console.log('All toggled to:');
-  }
-
 }
