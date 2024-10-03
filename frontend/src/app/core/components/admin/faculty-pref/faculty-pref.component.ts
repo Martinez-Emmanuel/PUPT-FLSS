@@ -1,6 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSlideToggleChange } from '@angular/material/slide-toggle';
@@ -74,6 +73,14 @@ export class FacultyPrefComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadFacultyPreferences();
+    this.dataSource.filterPredicate = (data: Faculty, filter: string) => {
+      const filterValue = filter.trim().toLowerCase();
+      return (
+        data.facultyName.toLowerCase().includes(filterValue) ||
+        data.facultyCode.toLowerCase().includes(filterValue) ||
+        data.facultyType.toLowerCase().includes(filterValue)
+      );
+    };
   }
 
   loadFacultyPreferences(): void {
@@ -173,8 +180,9 @@ export class FacultyPrefComponent implements OnInit {
   }
 
   onInputChange(inputValues: { [key: string]: any }): void {
-    console.log('Input values changed:', inputValues);
-  }
+    const searchValue = inputValues['searchFaculty'] || '';
+    this.dataSource.filter = searchValue.trim().toLowerCase();
+  }  
 
   onView(faculty: Faculty): void {
     console.log('View clicked for:', faculty);

@@ -127,5 +127,5 @@ export class TableHeaderComponent implements OnInit, OnChanges {
     this.form.get(key)?.setValue('');
     this.inputChange.emit(this.form.value);
   }
-
+  
 }
