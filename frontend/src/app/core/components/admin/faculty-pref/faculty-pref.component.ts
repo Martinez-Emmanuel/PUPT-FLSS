@@ -5,6 +5,7 @@ import { MatSlideToggle, MatSlideToggleChange  } from '@angular/material/slide-t
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import {
   TableHeaderComponent,
@@ -32,6 +33,7 @@ interface Faculty {
     MatIconModule,
     MatSlideToggle,
     MatPaginatorModule,
+    MatTooltipModule,
   ],
   templateUrl: './faculty-pref.component.html',
   styleUrls: ['./faculty-pref.component.scss'],
