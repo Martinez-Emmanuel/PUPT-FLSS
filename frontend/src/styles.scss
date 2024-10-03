@@ -147,6 +147,7 @@ span[mat-symbol] {
 
 .custom-paginator {
   @include default-transition;
+  padding: var(--spacing-sm) 0 !important;
   background-color: var(--neutral-light) !important;
 }
 
