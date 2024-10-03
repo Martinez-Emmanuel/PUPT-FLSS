@@ -9,6 +9,10 @@
   .input-container {
     @include flex-layout($gap: var(--spacing-md));
 
+    .search-field {
+      width: 20rem;
+    }
+
     .program-field {
       width: 20rem;
     }

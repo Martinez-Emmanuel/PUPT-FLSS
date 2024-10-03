@@ -5,8 +5,16 @@
       @if (field.type === 'text') {
         <mat-form-field appearance="fill" class="search-field" subscriptSizing="dynamic">
           <mat-label>{{ field.label }}</mat-label>
-          <input matInput [formControlName]="field.key" [placeholder]="field.placeholder || ''" />
+          <input maxlength="50" matInput [formControlName]="field.key" [placeholder]="field.placeholder || ''" />
           <mat-icon matPrefix>search</mat-icon>
+          @if (form.get(field.key)?.value && form.get(field.key)?.value.length > 0) {
+            <button 
+            mat-icon-button 
+            matSuffix 
+            (click)="onClearSearch(field.key)">
+            <mat-icon>close</mat-icon>
+          </button>
+          }
         </mat-form-field>
       } 
       @if (field.type === 'select') {
