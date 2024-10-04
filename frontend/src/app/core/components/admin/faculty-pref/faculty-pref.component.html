@@ -10,7 +10,7 @@
       [inputFields]="inputFields"
       [showExportButton]="true"
       [showAddButton]="false"
-      (export)="onExport()"
+      (export)="onExportAll()"
       (inputChange)="onInputChange($event)"
     >
     </app-table-header>
@@ -104,7 +104,7 @@
             <button
               mat-button
               class="sec-ripple export-button"
-              (click)="onPrint(element)"
+              (click)="onExportSingle(element)"
             >
               <mat-icon>print</mat-icon>
               <span>Export</span>

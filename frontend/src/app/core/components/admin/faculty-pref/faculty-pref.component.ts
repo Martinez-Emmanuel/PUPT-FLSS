@@ -16,6 +16,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { TableHeaderComponent, InputField } from '../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 import { DialogPrefComponent } from '../../../../shared/dialog-pref/dialog-pref.component';
+import { DialogExportComponent } from '../../../../shared/dialog-export/dialog-export.component';
 
 import { PreferencesService } from '../../../services/faculty/preference/preferences.service';
 
@@ -38,6 +39,7 @@ interface Faculty {
     TableHeaderComponent,
     LoadingComponent,
     DialogPrefComponent,
+    DialogExportComponent,
     FormsModule,
     MatTableModule,
     MatButtonModule,
@@ -83,7 +85,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   constructor(
     private preferencesService: PreferencesService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -240,7 +242,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
       }
     );
   }
-  
+
   onInputChange(inputValues: { [key: string]: any }): void {
     const searchValue = inputValues['searchFaculty'] || '';
     this.applyFilter(searchValue);
@@ -253,16 +255,41 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
       disableClose: true,
     });
 
-    dialogRef.afterClosed().subscribe(result => {
+    dialogRef.afterClosed().subscribe((result) => {
       console.log('Dialog closed', result);
     });
   }
 
-  onExport(): void {
-    console.log('Export to PDF triggered');
+  onExportAll(): void {
+    const dialogRef = this.dialog.open(DialogExportComponent, {
+      maxWidth: '70rem',
+      width: '100%',
+      data: {
+        exportType: 'all',
+        entity: 'faculty Preferences',
+      },
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log('Export All dialog closed', result);
+    });
   }
 
-  onPrint(faculty: Faculty): void {
-    console.log('Print clicked for:', faculty);
+  onExportSingle(faculty: Faculty): void {
+    const dialogRef = this.dialog.open(DialogExportComponent, {
+      maxWidth: '70rem',
+      width: '100%',
+      data: {
+        exportType: 'single',
+        entity: 'faculty',
+        entityData: faculty,
+      },
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log('Export Single dialog closed', result);
+    });
   }
 }
