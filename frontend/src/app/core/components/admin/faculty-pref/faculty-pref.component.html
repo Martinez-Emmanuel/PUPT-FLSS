@@ -62,7 +62,20 @@
             Faculty Type
           </th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
-            {{ element.facultyType }}
+            <span
+              class="faculty-type"
+              [ngClass]="{
+                'full-time':
+                  element.facultyType.toLowerCase().includes('full-time') ||
+                  element.facultyType.toLowerCase().includes('designee') ||
+                  element.facultyType.toLowerCase().includes('temporary'),
+                'part-time': element.facultyType
+                  .toLowerCase()
+                  .includes('part-time')
+              }"
+            >
+              {{ element.facultyType }}
+            </span>
           </td>
         </ng-container>
 

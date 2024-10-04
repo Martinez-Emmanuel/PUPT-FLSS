@@ -1,4 +1,5 @@
 import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -33,6 +34,7 @@ interface Faculty {
   selector: 'app-faculty-pref',
   standalone: true,
   imports: [
+    CommonModule,
     TableHeaderComponent,
     LoadingComponent,
     DialogPrefComponent,
@@ -244,7 +246,6 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     this.applyFilter(searchValue);
   }
   onView(faculty: Faculty): void {
-    // Open the dialog and pass the selected faculty's details
     const dialogRef = this.dialog.open(DialogPrefComponent, {
       maxWidth: '70rem',
       width: '100%',
