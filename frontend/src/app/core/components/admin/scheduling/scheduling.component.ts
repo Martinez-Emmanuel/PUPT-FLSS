@@ -217,28 +217,31 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       const defaultProgram = this.programOptions[0];
       this.selectedProgram = defaultProgram.display;
       this.yearLevelOptions = defaultProgram.year_levels;
-
+  
       this.headerInputFields.find((field) => field.key === 'program')!.options =
         this.programOptions.map((p) => p.display);
-
+  
       this.headerInputFields.find(
         (field) => field.key === 'yearLevel'
       )!.options = this.yearLevelOptions.map((year) => year.year_level);
-
+  
       if (this.yearLevelOptions.length > 0) {
         const defaultYearLevel = this.yearLevelOptions[0];
         this.selectedYear = defaultYearLevel.year_level;
         this.selectedCurriculumId = defaultYearLevel.curriculum_id;
-        this.sectionOptions = defaultYearLevel.sections;
-
+  
+        this.sectionOptions = defaultYearLevel.sections.sort((a, b) =>
+          a.section_name.localeCompare(b.section_name)
+        );
+  
         this.headerInputFields.find(
           (field) => field.key === 'section'
         )!.options = this.sectionOptions.map((section) => section.section_name);
-
+  
         if (this.sectionOptions.length > 0) {
           this.selectedSection = this.sectionOptions[0].section_name;
         }
-
+  
         return this.fetchCourses(
           defaultProgram.id,
           this.selectedYear,
@@ -248,6 +251,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     }
     return of(void 0);
   }
+  
 
   protected onInputChange(values: { [key: string]: any }): void {
     const selectedProgramDisplay = values['program'];
