@@ -4,6 +4,10 @@
   @include reset-styles;
 }
 
+:host {
+  @include custom-spinner(var(--secondary-text));
+}
+
 .scheduling-container {
   @include default-transition;
   @include flex-layout(
@@ -67,7 +71,17 @@
       }
 
       .edit-button {
+        @include flex-layout;
         color: var(--secondary-text);
+
+        .button-content {
+          @include flex-layout($gap: var(--spacing-xs));
+        }
+
+        .button-content mat-icon {
+          @include flex-layout;
+          font-size: var(--font-size-lg);
+        }
 
         &:hover {
           background-color: var(--secondary-hover);

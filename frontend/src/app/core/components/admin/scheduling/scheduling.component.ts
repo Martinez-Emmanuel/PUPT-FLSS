@@ -8,7 +8,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { TableHeaderComponent, InputField } from '../../../../shared/table-header/table-header.component';
 import { TableDialogComponent } from '../../../../shared/table-dialog/table-dialog.component';
@@ -58,7 +58,7 @@ interface SectionOption {
     MatTableModule,
     MatButtonModule,
     MatIconModule,
-    MatProgressBarModule,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './scheduling.component.html',
   styleUrls: ['./scheduling.component.scss'],
@@ -97,6 +97,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = [];
   headerInputFields: InputField[] = [];
   isLoading = true;
+  loadingScheduleId: number | null = null;
 
   private destroy$ = new Subject<void>();
 
@@ -622,6 +623,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.loadingScheduleId = schedule.schedule_id;
+
     forkJoin({
       rooms: this.schedulingService.getAllRooms(),
       faculty: this.schedulingService.getFacultyDetails(),
@@ -629,6 +632,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         this.schedulingService.getSubmittedPreferencesForActiveSemester(),
     }).subscribe({
       next: ({ rooms, faculty, preferences }) => {
+        this.loadingScheduleId = null;
         const availableRooms = rooms.rooms.filter(
           (room) => room.status === 'Available'
         );
@@ -717,6 +721,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         });
       },
       error: (error) => {
+        this.loadingScheduleId = null;
         this.handleError('Failed to fetch necessary data for editing schedule')(
           error
         );
