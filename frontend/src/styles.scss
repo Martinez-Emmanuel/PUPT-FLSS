@@ -132,6 +132,10 @@ body {
   background-color: rgba(84, 84, 84, 0.3) !important;
 }
 
+.sec-spinner .mat-spinner circle {
+  stroke: var(--secondary-text) !important;
+}
+
 span[mat-symbol] {
   font-family: "Material Symbols Rounded" !important;
   user-select: none;
@@ -147,6 +151,7 @@ span[mat-symbol] {
 
 .custom-paginator {
   @include default-transition;
+  padding: var(--spacing-sm) 0 !important;
   background-color: var(--neutral-light) !important;
 }
 

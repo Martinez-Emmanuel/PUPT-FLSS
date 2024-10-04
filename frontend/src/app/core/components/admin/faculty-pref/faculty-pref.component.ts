@@ -1,4 +1,5 @@
 import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -10,9 +11,12 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
+import { MatDialog } from '@angular/material/dialog';
 
 import { TableHeaderComponent, InputField } from '../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
+import { DialogPrefComponent } from '../../../../shared/dialog-pref/dialog-pref.component';
+import { DialogExportComponent } from '../../../../shared/dialog-export/dialog-export.component';
 
 import { PreferencesService } from '../../../services/faculty/preference/preferences.service';
 
@@ -31,8 +35,11 @@ interface Faculty {
   selector: 'app-faculty-pref',
   standalone: true,
   imports: [
+    CommonModule,
     TableHeaderComponent,
     LoadingComponent,
+    DialogPrefComponent,
+    DialogExportComponent,
     FormsModule,
     MatTableModule,
     MatButtonModule,
@@ -77,7 +84,8 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
 
   constructor(
     private preferencesService: PreferencesService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -235,20 +243,53 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     );
   }
 
-  onExport(): void {
-    console.log('Export to PDF triggered');
-  }
-
   onInputChange(inputValues: { [key: string]: any }): void {
     const searchValue = inputValues['searchFaculty'] || '';
     this.applyFilter(searchValue);
   }
-
   onView(faculty: Faculty): void {
-    console.log('View clicked for:', faculty);
+    const dialogRef = this.dialog.open(DialogPrefComponent, {
+      maxWidth: '70rem',
+      width: '100%',
+      data: faculty,
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log('Dialog closed', result);
+    });
   }
 
-  onPrint(faculty: Faculty): void {
-    console.log('Print clicked for:', faculty);
+  onExportAll(): void {
+    const dialogRef = this.dialog.open(DialogExportComponent, {
+      maxWidth: '70rem',
+      width: '100%',
+      data: {
+        exportType: 'all',
+        entity: 'faculty Preferences',
+      },
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log('Export All dialog closed', result);
+    });
+  }
+
+  onExportSingle(faculty: Faculty): void {
+    const dialogRef = this.dialog.open(DialogExportComponent, {
+      maxWidth: '70rem',
+      width: '100%',
+      data: {
+        exportType: 'single',
+        entity: 'faculty',
+        entityData: faculty,
+      },
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log('Export Single dialog closed', result);
+    });
   }
 }

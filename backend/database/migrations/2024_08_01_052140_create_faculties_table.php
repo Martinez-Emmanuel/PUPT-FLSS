@@ -15,13 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('faculty_email', 50)->unique();
-            // Update faculty_type to reflect the new enum values
-            $table->enum('faculty_type', [
-                'Full-time (Permanent)', 
-                'Full-time (Temporary)', 
-                'Full-time (Designee)', 
-                'Part-time'
-            ]);
+            $table->string('faculty_type', 50);
             $table->string('faculty_units');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();

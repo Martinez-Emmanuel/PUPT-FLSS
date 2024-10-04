@@ -1,0 +1,38 @@
+<div class="dialog-export-container">
+  @if (isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else { @if (exportType === 'single') {
+  <div class="entity-info" [@fadeAnimation]>
+    <h2 class="dialog-title">{{ title }}</h2>
+    @if (subtitle) {
+    <span class="dialog-subtitle">{{ subtitle }}</span>
+    }
+  </div>
+  } @if (exportType === 'all') {
+  <div class="entity-info" [@fadeAnimation]>
+    <h2 class="dialog-title">{{ title }}</h2>
+    @if (subtitle) {
+    <span class="dialog-subtitle">{{ subtitle }}</span>
+    }
+  </div>
+  }
+
+  <div class="dialog-export-table-container" [@fadeAnimation]>
+    @if (exportType === 'all') {
+    <div class="export-all">
+      Insert PDF <strong>export all {{ data.entity }}</strong> object here
+    </div>
+    } @if (exportType === 'single') {
+    <div class="export-single">
+      Insert PDF <strong>export single {{ data.entity }}</strong> object here
+    </div>
+    }
+  </div>
+
+  <div class="dialog-actions" [@fadeAnimation]>
+    <button mat-button (click)="closeDialog()">Close</button>
+  </div>
+  }
+</div>

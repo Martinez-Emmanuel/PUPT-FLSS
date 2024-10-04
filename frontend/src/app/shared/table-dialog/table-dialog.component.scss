@@ -6,6 +6,10 @@
   // max-width: none; // Remove max-width constraint
 }
 
+:host {
+  @include custom-spinner(var(--primary-text));
+}
+
 .table-dialog-title {
   font-family: "Inter Tight", sans-serif !important;
   color: var(--primary-text) !important;

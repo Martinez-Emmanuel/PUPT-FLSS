@@ -20,6 +20,7 @@
   overflow: auto;
   position: relative;
   border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-level-1);
 
   .table-container {
     @include hide-scrollbar;
@@ -27,6 +28,7 @@
     flex-direction: column;
     background-color: var(--neutral-light);
     max-height: 50rem;
+
 
     .custom-table {
       @include default-transition;
@@ -38,6 +40,7 @@
     }
 
     .index {
+      padding: 0 var(--spacing-md);
       text-align: center;
     }
 
@@ -56,6 +59,24 @@
     .custom-cell {
       padding: var(--spacing-xs);
       text-align: center;
+
+      .faculty-type {
+        width: fit-content;
+        padding: var(--spacing-xxs) var(--spacing-xs);
+        border-radius: var(--border-radius-xs);
+        font-size: var(--font-size-xsx);
+        font-weight: 500;
+
+        &.full-time {
+          background-color: var(--blue-fade-lighter);
+          color: var(--blue-primary);
+        }
+
+        &.part-time {
+          background-color: var(--purple-fade-lighter);
+          color: var(--purple-primary);
+        }
+      }
 
       .view-button {
         color: var(--secondary-text);

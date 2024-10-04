@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Faculty;
+use App\Models\PreferencesSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -36,24 +37,29 @@ class AccountController extends Controller
             'password' => 'required|string|min:8',
             'status' => 'required|in:Active,Inactive',
         ]);
-
+    
         $user = User::create([
             'name' => $validatedData['name'],
             'code' => $validatedData['code'],
             'role' => $validatedData['role'],
-            'password' => $validatedData['password'], // No manual hashing needed
-            'status' => $validatedData['status'], // Set status
+            'password' => bcrypt($validatedData['password']),
+            'status' => $validatedData['status'],
         ]);
-
+    
         if ($validatedData['role'] === 'faculty') {
-            Faculty::create([
+            $faculty = Faculty::create([
                 'user_id' => $user->id,
                 'faculty_email' => $validatedData['faculty_email'],
                 'faculty_type' => $validatedData['faculty_type'],
                 'faculty_units' => $validatedData['faculty_units'],
             ]);
+    
+            PreferencesSetting::create([
+                'faculty_id' => $faculty->id,
+                'is_enabled' => 0,
+            ]);
         }
-
+    
         return response()->json($user, 201);
     }
 

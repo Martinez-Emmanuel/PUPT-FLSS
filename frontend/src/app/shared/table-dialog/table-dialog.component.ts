@@ -1,9 +1,28 @@
-import { Component, Output, EventEmitter, Inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import {
+  Component,
+  Output,
+  EventEmitter,
+  Inject,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  AbstractControl,
+  ValidationErrors,
+  ValidatorFn,
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogRef,
+  MatDialogModule,
+} from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -12,6 +31,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { provideNativeDateAdapter } from '@angular/material/core';
@@ -62,6 +82,7 @@ export interface DialogConfig {
     MatRadioModule,
     MatCheckboxModule,
     MatAutocompleteModule,
+    MatProgressSpinnerModule,
     MatIconModule,
     MatDatepickerModule,
     TwoDigitInputDirective,
@@ -71,6 +92,7 @@ export interface DialogConfig {
 })
 export class TableDialogComponent {
   form!: FormGroup;
+  isLoading: boolean = false;
   isExportDialog!: boolean;
   isEditDialog: boolean = false;
   isConflict: boolean = false;
@@ -213,7 +235,7 @@ export class TableDialogComponent {
 
       endDateControl.setValidators([
         Validators.required,
-        this.endDateValidator.bind(this)
+        this.endDateValidator.bind(this),
       ]);
     }
   }
@@ -235,9 +257,13 @@ export class TableDialogComponent {
 
     if (control.hasError('required')) return `${label} is required.`;
     if (control.hasError('maxlength'))
-      return `${label} cannot exceed ${control.getError('maxlength').requiredLength} characters.`;
+      return `${label} cannot exceed ${
+        control.getError('maxlength').requiredLength
+      } characters.`;
     if (control.hasError('minlength'))
-      return `${label} must be exactly ${control.getError('minlength').requiredLength} characters.`;
+      return `${label} must be exactly ${
+        control.getError('minlength').requiredLength
+      } characters.`;
     if (control.hasError('pattern')) {
       return control.getError('pattern').requiredPattern === '/^\\d{4}$/'
         ? `${label} must be exactly 4 digits.`
@@ -280,7 +306,25 @@ export class TableDialogComponent {
 
   onSave(): void {
     if (this.form.valid) {
-      this.dialogRef.close(this.form.value);
+      this.isLoading = true;
+
+      const minimumSpinnerDuration = 1000;
+      const startTime = Date.now();
+
+      this.dialogRef.disableClose = true;
+
+      const dialogClose = () => {
+        const elapsedTime = Date.now() - startTime;
+        const remainingTime = minimumSpinnerDuration - elapsedTime;
+
+        setTimeout(() => {
+          this.isLoading = false;
+          this.dialogRef.disableClose = false;
+          this.dialogRef.close(this.form.value);
+        }, Math.max(remainingTime, 0));
+      };
+
+      dialogClose();
     }
   }
 

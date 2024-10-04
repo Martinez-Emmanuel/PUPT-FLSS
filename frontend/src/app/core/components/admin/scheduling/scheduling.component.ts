@@ -8,7 +8,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { TableHeaderComponent, InputField } from '../../../../shared/table-header/table-header.component';
 import { TableDialogComponent } from '../../../../shared/table-dialog/table-dialog.component';
@@ -58,7 +58,7 @@ interface SectionOption {
     MatTableModule,
     MatButtonModule,
     MatIconModule,
-    MatProgressBarModule,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './scheduling.component.html',
   styleUrls: ['./scheduling.component.scss'],
@@ -97,6 +97,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   displayedColumns: string[] = [];
   headerInputFields: InputField[] = [];
   isLoading = true;
+  loadingScheduleId: number | null = null;
 
   private destroy$ = new Subject<void>();
 
@@ -216,28 +217,31 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       const defaultProgram = this.programOptions[0];
       this.selectedProgram = defaultProgram.display;
       this.yearLevelOptions = defaultProgram.year_levels;
-
+  
       this.headerInputFields.find((field) => field.key === 'program')!.options =
         this.programOptions.map((p) => p.display);
-
+  
       this.headerInputFields.find(
         (field) => field.key === 'yearLevel'
       )!.options = this.yearLevelOptions.map((year) => year.year_level);
-
+  
       if (this.yearLevelOptions.length > 0) {
         const defaultYearLevel = this.yearLevelOptions[0];
         this.selectedYear = defaultYearLevel.year_level;
         this.selectedCurriculumId = defaultYearLevel.curriculum_id;
-        this.sectionOptions = defaultYearLevel.sections;
-
+  
+        this.sectionOptions = defaultYearLevel.sections.sort((a, b) =>
+          a.section_name.localeCompare(b.section_name)
+        );
+  
         this.headerInputFields.find(
           (field) => field.key === 'section'
         )!.options = this.sectionOptions.map((section) => section.section_name);
-
+  
         if (this.sectionOptions.length > 0) {
           this.selectedSection = this.sectionOptions[0].section_name;
         }
-
+  
         return this.fetchCourses(
           defaultProgram.id,
           this.selectedYear,
@@ -247,6 +251,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     }
     return of(void 0);
   }
+  
 
   protected onInputChange(values: { [key: string]: any }): void {
     const selectedProgramDisplay = values['program'];
@@ -419,17 +424,17 @@ export class SchedulingComponent implements OnInit, OnDestroy {
             console.error('No academic years available');
             return;
           }
-
+  
           this.academicYearOptions = academicYears;
           const academicYearOptions = academicYears.map(
             (year: AcademicYear) => year.academic_year
           );
-
+  
           const semesterOptions =
             academicYears[0]?.semesters?.map(
               (semester: Semester) => semester.semester_number
             ) || [];
-
+  
           const fields = [
             {
               label: 'Academic Year',
@@ -458,7 +463,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
               required: true,
             },
           ];
-
+  
           const dialogRef = this.dialog.open(TableDialogComponent, {
             data: {
               title: 'Set Active Year and Semester',
@@ -472,8 +477,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
             },
             disableClose: true,
           });
-
-          // Update semester options and start & end dates when the year changes
+  
           dialogRef.componentInstance.form
             .get('academicYear')
             ?.valueChanges.pipe(takeUntil(this.destroy$))
@@ -487,7 +491,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                   selectedYearObj.semesters.map(
                     (semester: Semester) => semester.semester_number
                   );
-
+  
                 // Automatically select the first semester and update dates
                 if (selectedYearObj.semesters.length > 0) {
                   const firstSemester = selectedYearObj.semesters[0];
@@ -503,8 +507,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                 }
               }
             });
-
-          // Update start & end date when the semester changes
+  
           dialogRef.componentInstance.form
             ?.get('semester')
             ?.valueChanges.pipe(takeUntil(this.destroy$))
@@ -519,7 +522,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                   (semester) =>
                     semester.semester_number === selectedSemesterNumber
                 );
-
+  
                 if (selectedSemesterObj) {
                   dialogRef.componentInstance.form
                     ?.get('startDate')
@@ -530,7 +533,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                 }
               }
             });
-
+  
           dialogRef
             .afterClosed()
             .pipe(takeUntil(this.destroy$))
@@ -542,7 +545,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                 const selectedSemesterObj = selectedYearObj?.semesters.find(
                   (semester) => semester.semester_number === result.semester
                 );
-
+  
                 if (selectedYearObj && selectedSemesterObj) {
                   const formattedStartDate = this.formatDateToYMD(
                     new Date(result.startDate)
@@ -550,15 +553,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                   const formattedEndDate = this.formatDateToYMD(
                     new Date(result.endDate)
                   );
-
-                  const loadingSnackbarRef = this.snackBar.open(
-                    'Loading...',
-                    'Dismiss',
-                    {
-                      duration: undefined,
-                    }
-                  );
-
+  
+  
                   this.schedulingService
                     .setActiveYearAndSemester(
                       selectedYearObj.academic_year_id,
@@ -576,13 +572,12 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                       next: () => {
                         this.activeYear = result.academicYear;
                         this.activeSemester = selectedSemesterObj.semester_id;
-
+  
                         this.loadPrograms()
                           .pipe(switchMap(() => this.setDefaultSelections()))
                           .subscribe({
                             next: () => {
-                              this.cdr.detectChanges();
-                              loadingSnackbarRef.dismiss();
+                              dialogRef.close();
                               this.snackBar.open(
                                 'New active year and semester has been set successfully.',
                                 'Close',
@@ -590,7 +585,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                               );
                             },
                             error: (err) => {
-                              loadingSnackbarRef.dismiss();
                               this.handleError(
                                 'Error loading programs after setting active year and semester'
                               )(err);
@@ -598,10 +592,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                           });
                       },
                       error: (err) => {
-                        loadingSnackbarRef.dismiss();
-                        this.handleError(
-                          'Error setting active year and semester'
-                        )(err);
+                        this.handleError('Error setting active year and semester')(
+                          err
+                        );
                       },
                     });
                 }
@@ -622,6 +615,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       return;
     }
 
+    this.loadingScheduleId = schedule.schedule_id;
+
     forkJoin({
       rooms: this.schedulingService.getAllRooms(),
       faculty: this.schedulingService.getFacultyDetails(),
@@ -629,6 +624,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         this.schedulingService.getSubmittedPreferencesForActiveSemester(),
     }).subscribe({
       next: ({ rooms, faculty, preferences }) => {
+        this.loadingScheduleId = null;
         const availableRooms = rooms.rooms.filter(
           (room) => room.status === 'Available'
         );
@@ -717,6 +713,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         });
       },
       error: (error) => {
+        this.loadingScheduleId = null;
         this.handleError('Failed to fetch necessary data for editing schedule')(
           error
         );
