@@ -497,22 +497,18 @@ class PreferenceController extends Controller
     public function toggleSpecificFacultyPreferences(Request $request)
     {
         $validated = $request->validate([
-            'faculty_id' => 'required|integer|exists:faculty,id',  
-            'status' => 'required|boolean',  
+            'faculty_id' => 'required|integer|exists:faculty,id',
+            'status' => 'required|boolean',
         ]);
-
     
-        $preferenceSetting = PreferencesSetting::where('faculty_id', $validated['faculty_id'])->first();
-
-
-        if (!$preferenceSetting) {
-            return response()->json(['error' => 'Preferences setting for the specified faculty not found'], 404);
-        }
+        $preferenceSetting = PreferencesSetting::firstOrCreate(
+            ['faculty_id' => $validated['faculty_id']],
+            ['is_enabled' => $validated['status']]
+        );
 
         $preferenceSetting->is_enabled = $validated['status'];
         $preferenceSetting->save();
-
-        // Return a success response with the updated preference setting
+    
         return response()->json([
             'message' => 'Preference setting updated successfully for faculty',
             'faculty_id' => $validated['faculty_id'],
@@ -520,6 +516,5 @@ class PreferenceController extends Controller
             'updated_preference' => $preferenceSetting
         ], 200);
     }
-
-         
+            
 }
