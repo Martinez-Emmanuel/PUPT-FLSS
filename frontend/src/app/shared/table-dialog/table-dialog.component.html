@@ -234,10 +234,18 @@
       mat-flat-button
       class="action-button"
       color="primary"
-      [disabled]="form.invalid"
+      [disabled]="form.invalid || isLoading"
       (click)="onSave()"
     >
-      {{ data.isEdit ? "Update" : "Confirm" }}
+      @if (isLoading) {
+      <mat-spinner
+        [diameter]="23"
+        strokeWidth="2.5"
+        class="custom-spinner"
+      ></mat-spinner>
+      } @else {
+      <span>{{ data.isEdit ? "Update" : "Confirm" }}</span>
+      }
     </button>
     }
   </div>
