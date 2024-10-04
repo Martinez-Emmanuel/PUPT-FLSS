@@ -25,6 +25,7 @@
   overflow: auto;
   position: relative;
   border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-level-1);
 
   .table-container {
     @include hide-scrollbar;
