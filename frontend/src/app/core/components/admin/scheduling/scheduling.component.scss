@@ -71,6 +71,10 @@
         text-wrap: nowrap;
       }
 
+      .action-button-container {
+        @include flex-layout($align: stretch);
+      }
+
       .edit-button {
         @include flex-layout;
         color: var(--secondary-text);
