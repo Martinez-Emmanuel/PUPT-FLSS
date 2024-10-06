@@ -9,7 +9,7 @@
     $direction: column,
     $align: stretch,
     $justify: flex-start,
-    $gap: var(--spacing-md)
+    $gap: var(--spacing-sm)
   );
   height: 100%;
 }
@@ -70,6 +70,11 @@
         &.full-time {
           background-color: var(--blue-fade-lighter);
           color: var(--blue-primary);
+        }
+
+        &.full-time-designee {
+          background-color: var(--aqua-fade-lighter);
+          color: var(--aqua-primary);
         }
 
         &.part-time {
