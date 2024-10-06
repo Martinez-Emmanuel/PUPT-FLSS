@@ -10,7 +10,7 @@ import { AuthGuard } from './core/guards/auth.guard';
 const globalRippleConfig: RippleGlobalOptions = {
   animation: {
     enterDuration: 500,
-    exitDuration: 500
+    exitDuration: 150
   }
 };
 
