@@ -18,9 +18,15 @@ import { LoadingComponent } from '../../../../shared/loading/loading.component';
 import { DialogPrefComponent } from '../../../../shared/dialog-pref/dialog-pref.component';
 import { DialogExportComponent } from '../../../../shared/dialog-export/dialog-export.component';
 
-import { PreferencesService } from '../../../services/faculty/preference/preferences.service';
+import { PreferencesService, ActiveSemester } from '../../../services/faculty/preference/preferences.service';
+
+import jsPDF from 'jspdf';
+import 'jspdf-autotable'; 
+
 
 import { fadeAnimation } from '../../../animations/animations';
+
+
 
 interface Faculty {
   faculty_id: number;
@@ -29,6 +35,7 @@ interface Faculty {
   facultyType: string;
   facultyUnits: number;
   is_enabled: boolean;
+  active_semesters?: ActiveSemester[]; 
 }
 
 @Component({
@@ -115,7 +122,10 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
           facultyType: faculty.faculty_type,
           facultyUnits: faculty.faculty_units,
           is_enabled: faculty.is_enabled === 1,
+          active_semesters: faculty.active_semesters // Ensure this is included
         }));
+
+        console.log('Processed Faculty Data:', faculties); // Check if active_semesters exist
 
         this.allData = faculties;
         this.filteredData = faculties;
@@ -277,19 +287,53 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   }
 
   onExportSingle(faculty: Faculty): void {
+    // Log the faculty data to check the structure
+    console.log('Faculty Data:', faculty);
+  
+    // Check if active semesters and courses are available
+    const activeSemester = faculty.active_semesters && faculty.active_semesters.length > 0 
+                           ? faculty.active_semesters[0] 
+                           : null;
+  
+    if (!activeSemester) {
+      this.snackBar.open(`No active semesters available for ${faculty.facultyName}.`, 'Close', { duration: 3000 });
+      return; // Exit if there is no active semester
+    }
+  
+    const courses = activeSemester.courses && activeSemester.courses.length > 0 
+                    ? activeSemester.courses 
+                    : null;
+  
+    if (!courses || courses.length === 0) {
+      this.snackBar.open(`No courses available for ${faculty.facultyName}.`, 'Close', { duration: 3000 });
+      return; // Exit if there are no courses
+    }
+  
+    // Ensure activeSemester is not null before passing its properties
+    const academicYear = activeSemester.academic_year || 'N/A';
+    const semesterLabel = activeSemester.semester_label || 'N/A';
+  
+    // Open the export dialog with the faculty and courses data
     const dialogRef = this.dialog.open(DialogExportComponent, {
       maxWidth: '70rem',
       width: '100%',
       data: {
         exportType: 'single',
         entity: 'faculty',
-        entityData: faculty,
+        entityData: {
+          ...faculty,
+          courses, // Pass the extracted courses
+          academicYear, // Use safe variables
+          semesterLabel // Use safe variables
+        }
       },
       disableClose: true,
     });
-
+  
     dialogRef.afterClosed().subscribe((result) => {
       console.log('Export Single dialog closed', result);
     });
   }
+  
+  
 }
