@@ -41,16 +41,6 @@ class PreferencesSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
-            [
-                'faculty_id' => 1,
-                'active_semester_id' => 1,
-                'course_assignment_id' => 13,
-                'preferred_day' => 'Sunday',
-                'preferred_start_time' => '14:00:00',
-                'preferred_end_time' => '15:30:00',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
 
             // Adrianna Naoe
             [
@@ -398,17 +388,6 @@ class PreferencesSeeder extends Seeder
                 'preferred_day' => 'Monday',
                 'preferred_start_time' => '09:00:00',
                 'preferred_end_time' => '10:30:00',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            // Course Assignment 13
-            [
-                'faculty_id' => 4,
-                'active_semester_id' => 1,
-                'course_assignment_id' => 13,
-                'preferred_day' => 'Sunday',
-                'preferred_start_time' => '14:00:00',
-                'preferred_end_time' => '15:30:00',
                 'created_at' => now(),
                 'updated_at' => now(),
             ],

@@ -20,7 +20,7 @@ export const ADMIN_ROUTES: Routes = [
         data: { pageTitle: 'Overview' },
       },
       {
-        path: 'faculty-preferences',
+        path: 'faculty',
         loadComponent: () =>
           import('./faculty-pref/faculty-pref.component').then(
             (m) => m.FacultyPrefComponent

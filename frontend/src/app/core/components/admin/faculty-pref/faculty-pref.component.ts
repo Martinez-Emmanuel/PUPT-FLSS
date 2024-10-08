@@ -20,13 +20,10 @@ import { DialogExportComponent } from '../../../../shared/dialog-export/dialog-e
 
 import { PreferencesService, ActiveSemester } from '../../../services/faculty/preference/preferences.service';
 
-import jsPDF from 'jspdf';
-import 'jspdf-autotable'; 
-
-
 import { fadeAnimation } from '../../../animations/animations';
 
-
+import jsPDF from 'jspdf';
+import 'jspdf-autotable'; 
 
 interface Faculty {
   faculty_id: number;
@@ -122,10 +119,10 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
           facultyType: faculty.faculty_type,
           facultyUnits: faculty.faculty_units,
           is_enabled: faculty.is_enabled === 1,
-          active_semesters: faculty.active_semesters // Ensure this is included
+          active_semesters: faculty.active_semesters,
         }));
 
-        console.log('Processed Faculty Data:', faculties); // Check if active_semesters exist
+        console.log('Processed Faculty Data:', faculties);
 
         this.allData = faculties;
         this.filteredData = faculties;
@@ -287,53 +284,188 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   }
 
   onExportSingle(faculty: Faculty): void {
-    // Log the faculty data to check the structure
-    console.log('Faculty Data:', faculty);
-  
-    // Check if active semesters and courses are available
-    const activeSemester = faculty.active_semesters && faculty.active_semesters.length > 0 
-                           ? faculty.active_semesters[0] 
-                           : null;
-  
-    if (!activeSemester) {
-      this.snackBar.open(`No active semesters available for ${faculty.facultyName}.`, 'Close', { duration: 3000 });
-      return; // Exit if there is no active semester
+    const activeSemester = faculty.active_semesters?.[0];
+
+    if (!activeSemester || !activeSemester.courses?.length) {
+      const message = !activeSemester
+        ? `No active semesters available for ${faculty.facultyName}.`
+        : `No courses available for ${faculty.facultyName}.`;
+      this.snackBar.open(message, 'Close', { duration: 3000 });
+      return;
     }
-  
-    const courses = activeSemester.courses && activeSemester.courses.length > 0 
-                    ? activeSemester.courses 
-                    : null;
-  
-    if (!courses || courses.length === 0) {
-      this.snackBar.open(`No courses available for ${faculty.facultyName}.`, 'Close', { duration: 3000 });
-      return; // Exit if there are no courses
-    }
-  
-    // Ensure activeSemester is not null before passing its properties
-    const academicYear = activeSemester.academic_year || 'N/A';
-    const semesterLabel = activeSemester.semester_label || 'N/A';
-  
-    // Open the export dialog with the faculty and courses data
+
+    const generateFacultyPDF = (showPreview: boolean = false): Blob | void => {
+      const doc = new jsPDF('p', 'mm', 'legal');
+      const pageWidth = doc.internal.pageSize.width;
+      const margin = 10;
+      const topMargin = 15;
+      const logoSize = 22;
+      let currentY = topMargin;
+
+      // Constants for repeated use
+      const headerFont = { font: 'times', style: 'bold', size: 12 };
+      const normalFont = { font: 'times', style: 'normal', size: 12 };
+      const centerAlign = { align: 'center' };
+
+      // Utility function for adding text with optional alignment
+      const addText = (text: string, x: number, y: number, options?: any) => {
+        doc.text(text, x, y, options);
+      };
+
+      // Add the left logo
+      const leftLogoUrl =
+        'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
+      doc.addImage(leftLogoUrl, 'PNG', margin, 10, logoSize, logoSize);
+
+      // Add header
+      doc.setFontSize(headerFont.size);
+      doc.setFont(headerFont.font, headerFont.style);
+      addText(
+        'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
+        pageWidth / 2,
+        currentY,
+        centerAlign
+      );
+      currentY += 5;
+      addText(
+        'Gen. Santos Ave. Upper Bicutan, Taguig City',
+        pageWidth / 2,
+        currentY,
+        centerAlign
+      );
+      currentY += 10;
+      doc.setFontSize(15);
+      addText(
+        'Faculty Preferences Report',
+        pageWidth / 2,
+        currentY,
+        centerAlign
+      );
+      currentY += 8;
+
+      // Add horizontal line
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.5);
+      doc.line(margin, currentY, pageWidth - margin, currentY);
+      currentY += 7;
+
+      // Faculty Info Section
+      doc.setFontSize(normalFont.size);
+      doc.setFont(normalFont.font, normalFont.style);
+      const facultyInfo = [
+        `Faculty Name: ${faculty.facultyName}`,
+        `Faculty Code: ${faculty.facultyCode}`,
+        `Academic Year: ${activeSemester.academic_year}`,
+        `Semester: ${activeSemester.semester_label}`,
+      ];
+
+      facultyInfo.forEach((info) => {
+        addText(info, margin, currentY);
+        currentY += 5;
+      });
+      currentY += 5;
+
+      // Prepare course data for table
+      const courseData = activeSemester.courses.map(
+        (course: any, index: number) => [
+          (index + 1).toString(),
+          course.course_details?.course_code || 'N/A',
+          course.course_details?.course_title || 'N/A',
+          course.lec_hours.toString(),
+          course.lab_hours.toString(),
+          course.units.toString(),
+          course.preferred_day,
+          `${this.formatTimeTo12Hour(
+            course.preferred_start_time
+          )} - ${this.formatTimeTo12Hour(course.preferred_end_time)}`,
+        ]
+      );
+
+      // Constants for table styling
+      const tableHead = [
+        [
+          '#',
+          'Course Code',
+          'Course Title',
+          'Lec',
+          'Lab',
+          'Units',
+          'Preferred Day',
+          'Preferred Time',
+        ],
+      ];
+      const tableConfig = {
+        startY: currentY,
+        head: tableHead,
+        body: courseData,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [128, 0, 0],
+          textColor: [255, 255, 255],
+          fontSize: 9,
+        },
+        bodyStyles: {
+          fontSize: 8,
+          textColor: [0, 0, 0],
+        },
+        styles: {
+          lineWidth: 0.1,
+          overflow: 'linebreak',
+          cellPadding: 2,
+        },
+        columnStyles: {
+          0: { cellWidth: 10 }, // #
+          1: { cellWidth: 30 }, // Course Code
+          2: { cellWidth: 50 }, // Course Title
+          3: { cellWidth: 13 }, // Lec
+          4: { cellWidth: 13 }, // Lab
+          5: { cellWidth: 13 }, // Units
+          6: { cellWidth: 25 }, // Preferred Day
+          7: { cellWidth: 35 }, // Preferred Time
+        },
+        margin: { left: margin, right: margin },
+      };
+
+      // Generate course table using autoTable
+      (doc as any).autoTable(tableConfig);
+
+      const pdfBlob = doc.output('blob');
+      if (showPreview) {
+        return pdfBlob;
+      } else {
+        doc.save('faculty_preferences_report.pdf');
+      }
+    };
+
+    const entityData = {
+      name: faculty.facultyName,
+      academic_year: activeSemester.academic_year,
+      semester_label: activeSemester.semester_label,
+    };
+
     const dialogRef = this.dialog.open(DialogExportComponent, {
       maxWidth: '70rem',
       width: '100%',
       data: {
         exportType: 'single',
         entity: 'faculty',
-        entityData: {
-          ...faculty,
-          courses, // Pass the extracted courses
-          academicYear, // Use safe variables
-          semesterLabel // Use safe variables
-        }
+        entityData: entityData,
+        generatePdfFunction: generateFacultyPDF,
       },
       disableClose: true,
     });
-  
+
     dialogRef.afterClosed().subscribe((result) => {
       console.log('Export Single dialog closed', result);
     });
   }
-  
-  
+
+  formatTimeTo12Hour(time: string): string {
+    const [hour, minute] = time.split(':');
+    const hours = parseInt(hour, 10);
+    const minutesFormatted = minute.length === 2 ? minute : `0${minute}`;
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const formattedHour = hours % 12 || 12;
+    return `${formattedHour}:${minutesFormatted} ${period}`;
+  }
 }
