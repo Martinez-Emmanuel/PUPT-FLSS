@@ -1,56 +1,54 @@
 <div class="dialog-export-container">
   @if (isLoading) {
-    <div class="loading-wrapper">
-      <app-loading></app-loading>
-    </div>
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
   } @else {
-    <!-- Single Export Section -->
-    @if (exportType === 'single') {
-      <div class="entity-info" [@fadeAnimation]>
-        <h2 class="dialog-title">{{ title }}</h2>
-        @if (subtitle) {
-          <span class="dialog-subtitle">{{ subtitle }}</span>
-        }
-      </div>
+  <!-- Single Export Section -->
+  @if (exportType === 'single') {
+  <div class="entity-info" [@fadeAnimation]>
+    <h2 class="dialog-title">{{ title }}</h2>
+    @if (subtitle) {
+    <span class="dialog-subtitle">{{ subtitle }}</span>
     }
+  </div>
+  }
 
-    <!-- All Export Section -->
+  <!-- All Export Section -->
+  @if (exportType === 'all') {
+  <div class="entity-info" [@fadeAnimation]>
+    <h2 class="dialog-title">{{ title }}</h2>
+    @if (subtitle) {
+    <span class="dialog-subtitle">{{ subtitle }}</span>
+    }
+  </div>
+  }
+
+  <div class="dialog-export-pdf-container" [@fadeAnimation]>
+    <!-- Export all block (for future use) -->
     @if (exportType === 'all') {
-      <div class="entity-info" [@fadeAnimation]>
-        <h2 class="dialog-title">{{ title }}</h2>
-        @if (subtitle) {
-          <span class="dialog-subtitle">{{ subtitle }}</span>
-        }
-      </div>
+    <div class="export-all">
+      Insert PDF <strong>export all {{ data.entity }}</strong> object here
+    </div>
     }
 
-    <div class="dialog-export-table-container" [@fadeAnimation]>
-      <!-- Export all block (for future use) -->
-      @if (exportType === 'all') {
-        <div class="export-all">
-          Insert PDF <strong>export all {{ data.entity }}</strong> object here
-        </div>
-      }
-
-      <!-- Export single block (PDF preview iframe) -->
-      @if (exportType === 'single') {
-        <div class="export-single">
-          <!-- PDF Preview inside iframe -->
-          <iframe 
-            #pdfIframe 
-            width="100%" 
-            height="500px" 
-            style="border: 1px solid #ccc;">
-          </iframe>
-        </div>
-      }
+    <!-- Export single block (PDF preview iframe) -->
+    @if (exportType === 'single') {
+    <div class="export-single">
+      <!-- PDF Preview inside iframe -->
+      <iframe #pdfIframe class="pdf-iframe"> </iframe>
     </div>
+    }
+  </div>
 
-    <!-- Dialog actions -->
-    <div class="dialog-actions" [@fadeAnimation]>
-      <button mat-button (click)="closeDialog()">Close</button>
-      <!-- Optional: Button to trigger PDF export without preview -->
-      <button mat-button (click)="generateFacultyPDF(false)">Download PDF</button>
-    </div>
+  <!-- Dialog actions -->
+  <div class="dialog-actions" [@fadeAnimation]>
+    <button mat-button (click)="closeDialog()">Close</button>
+    <!-- Optional: Button to trigger PDF export without preview -->
+    <button mat-flat-button (click)="downloadPdf()">
+      <mat-icon>print</mat-icon>
+      Download PDF
+    </button>
+  </div>
   }
 </div>

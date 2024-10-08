@@ -21,16 +21,21 @@
   color: var(--primary-text);
 }
 
-.dialog-export-table-container {
-  @include flex-layout($direction: column, $align: none, $justify: none);
-  @include hide-scrollbar;
-  text-align: center;
-  max-height: 30vw;
+.dialog-export-pdf-container {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start
+  );
+  
+  .pdf-iframe {
+    width: 100%;
+    min-height: 60vh;
+  }
 }
 
 .dialog-actions {
-  @include flex-layout($justify: flex-end);
-  padding-top: var(--spacing-xs);
+  @include flex-layout($justify: flex-end, $gap: var(--spacing-sm));
 
   button {
     color: var(--primary-text);
