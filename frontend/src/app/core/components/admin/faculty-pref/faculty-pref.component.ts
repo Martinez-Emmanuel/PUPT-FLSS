@@ -255,37 +255,58 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     this.applyFilter(searchValue);
   }
   onView(faculty: Faculty): void {
-    const dialogRef = this.dialog.open(DialogPrefComponent, {
+    const dialogRef = this.dialog.open(DialogExportComponent, {
       maxWidth: '70rem',
       width: '100%',
-      data: faculty,
+      data: {
+        exportType: 'all',
+        entity: 'faculty',
+        entityData: { name: 'All Faculty Preferences' },
+        generatePdfFunction: () => this.generateFacultyPDF(
+          true, 
+          this.allData
+        ), 
+      },
       disableClose: true,
     });
-
     dialogRef.afterClosed().subscribe((result) => {
       console.log('Dialog closed', result);
     });
   }
 
   onExportAll(): void {
+    if (!this.allData.length) {
+      this.snackBar.open(
+        'No faculty preferences available for export.',
+        'Close', { duration: 3000 }
+      );
+      return;
+    }
+  
     const dialogRef = this.dialog.open(DialogExportComponent, {
       maxWidth: '70rem',
       width: '100%',
       data: {
         exportType: 'all',
-        entity: 'faculty Preferences',
+        entity: 'faculty',
+        entityData: { name: 'All Faculty Preferences' },
+        generatePdfFunction: () => this.generateFacultyPDF(
+          true, 
+          this.allData, 
+          true
+        ), 
       },
       disableClose: true,
     });
-
+  
     dialogRef.afterClosed().subscribe((result) => {
       console.log('Export All dialog closed', result);
     });
   }
+  
 
   onExportSingle(faculty: Faculty): void {
     const activeSemester = faculty.active_semesters?.[0];
-
     if (!activeSemester || !activeSemester.courses?.length) {
       const message = !activeSemester
         ? `No active semesters available for ${faculty.facultyName}.`
@@ -293,62 +314,92 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
       this.snackBar.open(message, 'Close', { duration: 3000 });
       return;
     }
-
-    const generateFacultyPDF = (showPreview: boolean = false): Blob | void => {
-      const doc = new jsPDF('p', 'mm', 'legal');
-      const pageWidth = doc.internal.pageSize.width;
-      const margin = 10;
-      const topMargin = 15;
-      const logoSize = 22;
-      let currentY = topMargin;
-
-      // Constants for repeated use
-      const headerFont = { font: 'times', style: 'bold', size: 12 };
-      const normalFont = { font: 'times', style: 'normal', size: 12 };
-      const centerAlign = { align: 'center' };
-
-      // Utility function for adding text with optional alignment
-      const addText = (text: string, x: number, y: number, options?: any) => {
-        doc.text(text, x, y, options);
-      };
-
-      // Add the left logo
-      const leftLogoUrl =
-        'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
+  
+    const dialogRef = this.dialog.open(DialogExportComponent, {
+      maxWidth: '70rem',
+      width: '100%',
+      data: {
+        exportType: 'single',
+        entity: 'faculty',
+        entityData: { 
+          name: faculty.facultyName,
+          academic_year: activeSemester.academic_year, 
+          semester_label: activeSemester.semester_label 
+        },
+        generatePdfFunction: () => this.generateFacultyPDF(
+          false, 
+          [faculty], 
+          true
+        ), 
+      },
+      disableClose: true,
+    });
+  
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log('Export Single dialog closed', result);
+    });
+  }
+  
+  generateFacultyPDF(isAll: boolean, 
+    faculties: Faculty[], 
+    showPreview: boolean = false): Blob | void {
+    const doc = new jsPDF('p', 'mm', 'legal') as any;
+    const pageWidth = doc.internal.pageSize.width;
+    const margin = 10;
+    const topMargin = 15;
+    const logoSize = 22;
+    let currentY = topMargin;
+  
+    const headerFont = { font: 'times', style: 'bold', size: 12 };
+    const normalFont = { font: 'times', style: 'normal', size: 12 };
+    const centerAlign = { align: 'center' };
+  
+    const addHeader = () => {
+      const leftLogoUrl = 'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
       doc.addImage(leftLogoUrl, 'PNG', margin, 10, logoSize, logoSize);
-
-      // Add header
+  
       doc.setFontSize(headerFont.size);
       doc.setFont(headerFont.font, headerFont.style);
-      addText(
-        'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
-        pageWidth / 2,
-        currentY,
+      doc.text('POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH', 
+        pageWidth / 2, 
+        topMargin, 
         centerAlign
       );
-      currentY += 5;
-      addText(
-        'Gen. Santos Ave. Upper Bicutan, Taguig City',
-        pageWidth / 2,
-        currentY,
+      doc.text('Gen. Santos Ave. Upper Bicutan, Taguig City',
+        pageWidth / 2, 
+        topMargin + 5, 
         centerAlign
       );
-      currentY += 10;
       doc.setFontSize(15);
-      addText(
-        'Faculty Preferences Report',
-        pageWidth / 2,
-        currentY,
-        centerAlign
-      );
-      currentY += 8;
-
-      // Add horizontal line
+      
+      if (isAll) {
+        doc.text('All Faculty Preferences Report', 
+          pageWidth / 2, 
+          topMargin + 15, 
+          centerAlign
+        );
+      } else {
+        doc.text('Faculty Preferences Report', 
+          pageWidth / 2, 
+          topMargin + 15, 
+          centerAlign
+        );
+      }
+  
       doc.setDrawColor(0, 0, 0);
       doc.setLineWidth(0.5);
-      doc.line(margin, currentY, pageWidth - margin, currentY);
-      currentY += 7;
-
+      doc.line(margin, topMargin + 20, pageWidth - margin, topMargin + 20);
+  
+      currentY = topMargin + 25; 
+    };
+  
+    addHeader();
+  
+    faculties.forEach((faculty, facultyIndex) => {
+      const activeSemester = faculty.active_semesters?.[0];
+  
+      if (!activeSemester || !activeSemester.courses?.length) return;
+  
       // Faculty Info Section
       doc.setFontSize(normalFont.size);
       doc.setFont(normalFont.font, normalFont.style);
@@ -358,42 +409,32 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
         `Academic Year: ${activeSemester.academic_year}`,
         `Semester: ${activeSemester.semester_label}`,
       ];
-
+  
       facultyInfo.forEach((info) => {
-        addText(info, margin, currentY);
+        doc.text(info, margin, currentY);
         currentY += 5;
       });
       currentY += 5;
-
-      // Prepare course data for table
-      const courseData = activeSemester.courses.map(
-        (course: any, index: number) => [
-          (index + 1).toString(),
-          course.course_details?.course_code || 'N/A',
-          course.course_details?.course_title || 'N/A',
-          course.lec_hours.toString(),
-          course.lab_hours.toString(),
-          course.units.toString(),
-          course.preferred_day,
-          `${this.formatTimeTo12Hour(
-            course.preferred_start_time
-          )} - ${this.formatTimeTo12Hour(course.preferred_end_time)}`,
-        ]
-      );
-
+  
+      const courseData = activeSemester.courses.map((
+        course: any, index: number) => [
+        (index + 1).toString(),
+        course.course_details?.course_code || 'N/A',
+        course.course_details?.course_title || 'N/A',
+        course.lec_hours.toString(),
+        course.lab_hours.toString(),
+        course.units.toString(),
+        course.preferred_day,
+        `${this.formatTimeTo12Hour(course.preferred_start_time)} - ${this.formatTimeTo12Hour(course.preferred_end_time)}`,
+      ]);
+  
       // Constants for table styling
-      const tableHead = [
-        [
-          '#',
-          'Course Code',
-          'Course Title',
-          'Lec',
-          'Lab',
-          'Units',
-          'Preferred Day',
-          'Preferred Time',
-        ],
-      ];
+      const tableHead = [[
+        '#', 'Course Code', 
+        'Course Title', 'Lec', 
+        'Lab', 'Units', 
+        'Preferred Day', 'Preferred Time'
+      ]];
       const tableConfig = {
         startY: currentY,
         head: tableHead,
@@ -414,52 +455,37 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
           cellPadding: 2,
         },
         columnStyles: {
-          0: { cellWidth: 10 }, // #
-          1: { cellWidth: 30 }, // Course Code
-          2: { cellWidth: 50 }, // Course Title
-          3: { cellWidth: 13 }, // Lec
-          4: { cellWidth: 13 }, // Lab
-          5: { cellWidth: 13 }, // Units
-          6: { cellWidth: 25 }, // Preferred Day
-          7: { cellWidth: 35 }, // Preferred Time
+          0: { cellWidth: 10 },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 50 },
+          3: { cellWidth: 13 },
+          4: { cellWidth: 13 },
+          5: { cellWidth: 13 },
+          6: { cellWidth: 25 },
+          7: { cellWidth: 35 },
         },
         margin: { left: margin, right: margin },
       };
-
-      // Generate course table using autoTable
+  
       (doc as any).autoTable(tableConfig);
-
-      const pdfBlob = doc.output('blob');
-      if (showPreview) {
-        return pdfBlob;
-      } else {
-        doc.save('faculty_preferences_report.pdf');
+  
+      currentY = doc.autoTable.previous.finalY + 10;
+      if (currentY > 270) {
+        doc.addPage();
+        addHeader(); 
+        currentY = topMargin + 25; 
       }
-    };
-
-    const entityData = {
-      name: faculty.facultyName,
-      academic_year: activeSemester.academic_year,
-      semester_label: activeSemester.semester_label,
-    };
-
-    const dialogRef = this.dialog.open(DialogExportComponent, {
-      maxWidth: '70rem',
-      width: '100%',
-      data: {
-        exportType: 'single',
-        entity: 'faculty',
-        entityData: entityData,
-        generatePdfFunction: generateFacultyPDF,
-      },
-      disableClose: true,
     });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      console.log('Export Single dialog closed', result);
-    });
+  
+    const pdfBlob = doc.output('blob');
+    if (showPreview) {
+      return pdfBlob; 
+    } else {
+      doc.save(isAll ? 'all_faculty_preferences_report.pdf' : 
+        'faculty_preferences_report.pdf');
+    }
   }
-
+  
   formatTimeTo12Hour(time: string): string {
     const [hour, minute] = time.split(':');
     const hours = parseInt(hour, 10);
