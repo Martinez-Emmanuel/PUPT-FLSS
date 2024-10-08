@@ -174,17 +174,27 @@
     @include hide-scrollbar;
     margin-bottom: var(--spacing-lg);
     border-radius: var(--border-radius-sm);
+    overflow: visible;
 
     .no-faculty-message {
       opacity: var(--opacity-semi-opaque);
       font-style: italic;
     }
 
-    .faculty-item {
+    .faculty-card {
       background-color: var(--neutral-extra-dark);
       padding: var(--spacing-xs) var(--spacing-sm);
       border-radius: var(--border-radius-sm);
       cursor: pointer;
+      transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+
+      &:hover {
+        transform: translateX(3px);
+      }
+
+      &:active {
+        transform: translateX(3px) scale(0.98);
+      }
 
       .faculty-type {
         width: fit-content;
@@ -199,6 +209,11 @@
           color: var(--blue-primary);
         }
 
+        &.full-time-designee {
+          background-color: var(--aqua-fade);
+          color: var(--aqua-primary);
+        }
+
         &.part-time {
           background-color: var(--purple-fade);
           color: var(--purple-primary);
@@ -208,7 +223,7 @@
       .faculty-name {
         font-weight: 500;
       }
-
+      
       .faculty-pref {
         opacity: var(--opacity-semi-opaque);
       }

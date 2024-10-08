@@ -67,8 +67,9 @@
               [ngClass]="{
                 'full-time':
                   element.facultyType.toLowerCase().includes('full-time') ||
-                  element.facultyType.toLowerCase().includes('designee') ||
                   element.facultyType.toLowerCase().includes('temporary'),
+                  'full-time-designee':
+                  element.facultyType.toLowerCase().includes('designee'),
                 'part-time': element.facultyType
                   .toLowerCase()
                   .includes('part-time')
