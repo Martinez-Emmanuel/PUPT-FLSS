@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SafeResourceUrl } from '@angular/platform-browser';
+import { SafeResourceUrl, DomSanitizer } from '@angular/platform-browser';
 
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
@@ -46,7 +46,8 @@ export class DialogExportComponent implements OnInit, AfterViewInit {
 
   constructor(
     public dialogRef: MatDialogRef<DialogExportComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: ExportDialogData
+    @Inject(MAT_DIALOG_DATA) public data: ExportDialogData,
+    private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -86,23 +87,40 @@ export class DialogExportComponent implements OnInit, AfterViewInit {
   }
 
   private handlePdfPreview(): void {
-    if (this.exportType === 'single' && this.data.generatePdfFunction) {
+    if (this.data.generatePdfFunction) {
       setTimeout(() => this.renderPdfPreview(), 0);
     }
   }
 
   private renderPdfPreview(): void {
     const pdfBlob = this.data.generatePdfFunction?.(true);
-    if (pdfBlob && this.pdfIframe?.nativeElement) {
+    if (pdfBlob) {
       const blobUrl = URL.createObjectURL(pdfBlob);
-      this.pdfIframe.nativeElement.src = blobUrl;
+      this.pdfBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl); 
+  
+      if (this.pdfIframe?.nativeElement) {
+        this.pdfIframe.nativeElement.src = blobUrl; 
+      } else {
+        console.error('No PDF iframe element found.');
+      }
     } else {
-      console.error('Unable to load PDF preview.');
+      console.error('PDF Blob is undefined or null.');
     }
   }
+  
+  
+
 
   public downloadPdf(): void {
-    this.data.generatePdfFunction?.(false);
+    const pdfBlob = this.data.generatePdfFunction?.(false); 
+    if (pdfBlob) {
+      const blobUrl = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = `${this.title.replace(/ /g, '_').toLowerCase()}_report.pdf`; 
+      link.click();
+      URL.revokeObjectURL(blobUrl); 
+    }
   }
 
   public closeDialog(): void {
