@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, AfterViewInit, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -10,6 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
+import { LoadingComponent } from '../../../../../shared/loading/loading.component';
 
 import { ReportsService } from '../../../../services/admin/reports/reports.service';
 
@@ -30,6 +31,7 @@ interface Faculty {
   imports: [
     CommonModule,
     TableHeaderComponent,
+    LoadingComponent,
     MatTableModule,
     MatPaginatorModule,
     MatIconModule,
@@ -42,7 +44,9 @@ interface Faculty {
   styleUrl: './report-faculty.component.scss',
   animations: [fadeAnimation],
 })
-export class ReportFacultyComponent implements OnInit {
+export class ReportFacultyComponent
+  implements OnInit, AfterViewInit, AfterViewChecked
+{
   inputFields: InputField[] = [
     {
       type: 'text',
@@ -64,6 +68,7 @@ export class ReportFacultyComponent implements OnInit {
   dataSource = new MatTableDataSource<Faculty>();
   filteredData: Faculty[] = [];
   isToggleAllChecked = false;
+  isLoading = true;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -73,7 +78,18 @@ export class ReportFacultyComponent implements OnInit {
     this.fetchFacultyData();
   }
 
+  ngAfterViewInit() {
+    this.dataSource.paginator = this.paginator;
+  }
+
+  ngAfterViewChecked() {
+    if (this.dataSource.paginator !== this.paginator) {
+      this.dataSource.paginator = this.paginator;
+    }
+  }
+
   fetchFacultyData(): void {
+    this.isLoading = true; 
     this.reportsService.getFacultySchedulesReport().subscribe({
       next: (response) => {
         const facultyData = response.faculty_schedule_reports.faculties.map(
@@ -87,14 +103,23 @@ export class ReportFacultyComponent implements OnInit {
           })
         );
 
+        this.isLoading = false;
         this.dataSource.data = facultyData;
         this.filteredData = [...facultyData];
         this.dataSource.paginator = this.paginator;
       },
       error: (error) => {
+        this.isLoading = false;
         console.error('Error fetching faculty data:', error);
       },
     });
+  }
+
+  getRowIndex(index: number): number {
+    if (this.paginator) {
+      return index + 1 + this.paginator.pageIndex * this.paginator.pageSize;
+    }
+    return index + 1;
   }
 
   onInputChange(changes: { [key: string]: any }) {
