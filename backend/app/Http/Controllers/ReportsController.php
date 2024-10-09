@@ -58,7 +58,8 @@ class ReportsController extends Controller
                 'courses.lec_hours',
                 'courses.lab_hours',
                 'courses.units',
-                'courses.tuition_hours'
+                'courses.tuition_hours',
+                'schedules.is_published'
             )
             ->get();
     
@@ -73,17 +74,13 @@ class ReportsController extends Controller
                     'faculty_code' => $schedule->faculty_code,
                     'faculty_type' => $schedule->faculty_type,
                     'assigned_units' => 0,
-                    'is_published' => 0,
+                    'is_published' => $schedule->is_published,
                     'schedules' => []
                 ];
             }
     
             if ($schedule->course_assignment_id) {
                 $faculties[$schedule->faculty_id]['assigned_units'] += $schedule->units;
-    
-                if ($schedule->schedule_id && $faculties[$schedule->faculty_id]['is_published'] == 0) {
-                    $faculties[$schedule->faculty_id]['is_published'] = 1;
-                }
     
                 $faculties[$schedule->faculty_id]['schedules'][] = [
                     'schedule_id' => $schedule->schedule_id,
