@@ -108,9 +108,6 @@ export class DialogExportComponent implements OnInit, AfterViewInit {
     }
   }
   
-  
-
-
   public downloadPdf(): void {
     const pdfBlob = this.data.generatePdfFunction?.(false); 
     if (pdfBlob) {
