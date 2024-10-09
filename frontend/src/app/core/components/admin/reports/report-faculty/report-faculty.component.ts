@@ -1,9 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { MatTableModule } from '@angular/material/table';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatTableModule, MatTableDataSource } from '@angular/material/table';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,6 +15,14 @@ import { ReportsService } from '../../../../services/admin/reports/reports.servi
 
 import { fadeAnimation } from '../../../../animations/animations';
 
+interface Faculty {
+  facultyName: string;
+  facultyCode: string;
+  facultyType: string;
+  facultyUnits: number;
+  isEnabled: boolean;
+  facultyId: number;
+}
 
 @Component({
   selector: 'app-report-faculty',
@@ -53,11 +61,11 @@ export class ReportFacultyComponent implements OnInit {
     'toggle',
   ];
 
-  dataSource = [];
-  filteredData = [];
+  dataSource = new MatTableDataSource<Faculty>();
+  filteredData: Faculty[] = [];
   isToggleAllChecked = false;
 
-  paginator: any;
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   constructor(private reportsService: ReportsService) {}
 
@@ -68,7 +76,7 @@ export class ReportFacultyComponent implements OnInit {
   fetchFacultyData(): void {
     this.reportsService.getFacultySchedulesReport().subscribe({
       next: (response) => {
-        this.dataSource = response.faculty_schedule_reports.faculties.map(
+        const facultyData = response.faculty_schedule_reports.faculties.map(
           (faculty: any) => ({
             facultyName: faculty.faculty_name,
             facultyCode: faculty.faculty_code,
@@ -78,7 +86,10 @@ export class ReportFacultyComponent implements OnInit {
             facultyId: faculty.faculty_id,
           })
         );
-        this.filteredData = this.dataSource;
+
+        this.dataSource.data = facultyData;
+        this.filteredData = [...facultyData];
+        this.dataSource.paginator = this.paginator;
       },
       error: (error) => {
         console.error('Error fetching faculty data:', error);
@@ -87,10 +98,23 @@ export class ReportFacultyComponent implements OnInit {
   }
 
   onInputChange(changes: { [key: string]: any }) {
-    console.log('Input changed:', changes);
+    const searchQuery = changes['search']
+      ? changes['search'].trim().toLowerCase()
+      : '';
+
+    if (searchQuery === '') {
+      this.dataSource.data = this.filteredData;
+    } else {
+      this.dataSource.data = this.filteredData.filter(
+        (faculty) =>
+          faculty.facultyName.toLowerCase().includes(searchQuery) ||
+          faculty.facultyCode.toLowerCase().includes(searchQuery) ||
+          faculty.facultyType.toLowerCase().includes(searchQuery)
+      );
+    }
   }
 
-  onView(element: any) {
+  onView(element: Faculty) {
     console.log('View clicked for:', element);
   }
 
@@ -98,11 +122,11 @@ export class ReportFacultyComponent implements OnInit {
     console.log('Export All clicked');
   }
 
-  onExportSingle(element: any) {
+  onExportSingle(element: Faculty) {
     console.log('Export clicked for:', element);
   }
 
-  onToggleChange(element: any) {
+  onToggleChange(element: Faculty) {
     console.log('Toggle changed for:', element);
   }
 
