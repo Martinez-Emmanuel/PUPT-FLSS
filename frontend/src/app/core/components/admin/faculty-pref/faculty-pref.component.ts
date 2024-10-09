@@ -302,7 +302,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
         exportType: 'all',
         entity: 'faculty',
         entityData: {
-          name: 'All Faculty Preferences',
+          name: 'Export All Faculty Preferences',
           academic_year,
           semester_label,
         },

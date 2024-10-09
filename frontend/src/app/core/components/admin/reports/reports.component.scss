@@ -13,10 +13,6 @@
 .reports-content {
   height: inherit;
 
-  * {
-    @include reset-styles;
-  }
-
   .report-container {
     @include flex-layout(
       $direction: column,

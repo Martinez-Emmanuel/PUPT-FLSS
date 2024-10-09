@@ -195,12 +195,14 @@
 
   .sidenav-main {
     @include default-transition;
+    @include hide-scrollbar;
     flex: 1;
     background-color: var(--main-bg);
     border-radius: var(--border-radius-lg);
     padding: var(--spacing-lg);
     width: 100%;
     box-shadow: var(--shadow-level-0);
+    overflow: auto;
 
     &.reports-view {
       padding: var(--spacing-lg) var(--spacing-lg) var(--spacing-xs)

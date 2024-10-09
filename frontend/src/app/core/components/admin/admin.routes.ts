@@ -47,7 +47,7 @@ export const ADMIN_ROUTES: Routes = [
         path: 'reports',
         loadComponent: () =>
           import('./reports/reports.component').then((m) => m.ReportsComponent),
-        data: { pageTitle: 'Reports' },
+        data: { pageTitle: 'Official Reports' },
         children: [
           {
             path: 'faculty',
