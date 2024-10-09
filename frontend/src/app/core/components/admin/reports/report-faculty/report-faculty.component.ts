@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -11,7 +11,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
 
+import { ReportsService } from '../../../../services/admin/reports/reports.service';
+
 import { fadeAnimation } from '../../../../animations/animations';
+
 
 @Component({
   selector: 'app-report-faculty',
@@ -31,7 +34,7 @@ import { fadeAnimation } from '../../../../animations/animations';
   styleUrl: './report-faculty.component.scss',
   animations: [fadeAnimation],
 })
-export class ReportFacultyComponent {
+export class ReportFacultyComponent implements OnInit {
   inputFields: InputField[] = [
     {
       type: 'text',
@@ -50,81 +53,37 @@ export class ReportFacultyComponent {
     'toggle',
   ];
 
-  // Temporary mock data
-  dataSource = [
-    {
-      facultyName: 'Emmanuel Martinez',
-      facultyCode: 'F0001TG2024',
-      facultyType: 'Full-time',
-      facultyUnits: 15,
-      isEnabled: true,
-    },
-    {
-      facultyName: 'Kyla Malaluan',
-      facultyCode: 'F0002TG2024',
-      facultyType: 'Part-time',
-      facultyUnits: 8,
-      isEnabled: false,
-    },
-    {
-      facultyName: 'Adrian Naoe',
-      facultyCode: 'F0003TG2024',
-      facultyType: 'Full-time',
-      facultyUnits: 10,
-      isEnabled: true,
-    },
-    {
-      facultyName: 'Via Rasquero',
-      facultyCode: 'F0004TG2024',
-      facultyType: 'Full-time',
-      facultyUnits: 12,
-      isEnabled: true,
-    },
-    {
-      facultyName: 'Marissa Ferrer',
-      facultyCode: 'F0005TG2024',
-      facultyType: 'Part-time (Designee)',
-      facultyUnits: 6,
-      isEnabled: true,
-    },
-    {
-      facultyName: 'Mhel Garcia',
-      facultyCode: 'F0006TG2024',
-      facultyType: 'Full-time',
-      facultyUnits: 18,
-      isEnabled: false,
-    },
-    {
-      facultyName: 'Gecilie Almiranez',
-      facultyCode: 'F0007TG2024',
-      facultyType: 'Full-time',
-      facultyUnits: 14,
-      isEnabled: true,
-    },
-    {
-      facultyName: 'Steven Villarosa',
-      facultyCode: 'F0008TG2024',
-      facultyType: 'Part-time',
-      facultyUnits: 5,
-      isEnabled: false,
-    },
-    {
-      facultyName: 'John Dustin Santos',
-      facultyCode: 'F0009TG2024',
-      facultyType: 'Full-time',
-      facultyUnits: 20,
-      isEnabled: true,
-    },
-  ];
-  
-
-  filteredData = this.dataSource;
+  dataSource = [];
+  filteredData = [];
   isToggleAllChecked = false;
 
   paginator: any;
 
-  onActiveYearSemClick() {
-    console.log('Active Year & Semester clicked');
+  constructor(private reportsService: ReportsService) {}
+
+  ngOnInit(): void {
+    this.fetchFacultyData();
+  }
+
+  fetchFacultyData(): void {
+    this.reportsService.getFacultySchedulesReport().subscribe({
+      next: (response) => {
+        this.dataSource = response.faculty_schedule_reports.faculties.map(
+          (faculty: any) => ({
+            facultyName: faculty.faculty_name,
+            facultyCode: faculty.faculty_code,
+            facultyType: faculty.faculty_type,
+            facultyUnits: faculty.assigned_units,
+            isEnabled: faculty.is_published === 1,
+            facultyId: faculty.faculty_id,
+          })
+        );
+        this.filteredData = this.dataSource;
+      },
+      error: (error) => {
+        console.error('Error fetching faculty data:', error);
+      },
+    });
   }
 
   onInputChange(changes: { [key: string]: any }) {
@@ -148,12 +107,7 @@ export class ReportFacultyComponent {
   }
 
   onToggleAllChange(event: any) {
-    console.log('Toggle All changed:', event);
-    
     this.isToggleAllChecked = event.checked;
-    this.dataSource.forEach(
-      (faculty) => (faculty.isEnabled = this.isToggleAllChecked)
-    );
   }
 
   updateDisplayedData() {
