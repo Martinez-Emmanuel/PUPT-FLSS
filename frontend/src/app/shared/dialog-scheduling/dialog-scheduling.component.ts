@@ -17,6 +17,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatRippleModule } from '@angular/material/core';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { SchedulingService, Faculty, Room } from '../../core/services/admin/scheduling/scheduling.service';
 
@@ -57,6 +58,7 @@ interface DialogData {
     MatAutocompleteModule,
     MatRippleModule,
     MatSnackBarModule,
+    MatProgressSpinnerModule,
     MatSymbolDirective,
   ],
   templateUrl: './dialog-scheduling.component.html',
@@ -68,6 +70,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   filteredProfessors$!: Observable<string[]>;
   filteredRooms$!: Observable<string[]>;
   hasConflicts = false;
+  isLoading = false;
 
   private destroy$ = new Subject<void>();
 
@@ -172,6 +175,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
       : null;
     const formattedEndTime = endTime ? this.formatTimeToBackend(endTime) : null;
 
+    this.isLoading = true;
     this.schedulingService
       .assignSchedule(
         this.data.schedule_id,
@@ -183,8 +187,14 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
       )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => this.dialogRef.close(true),
-        error: (error) => this.handleError('Failed to assign schedule')(error),
+        next: () => {
+          this.isLoading = false;
+          this.dialogRef.close(true);
+        },
+        error: (error) => {
+          this.isLoading = false;
+          this.handleError('Failed to assign schedule')(error);
+        },
       });
   }
 

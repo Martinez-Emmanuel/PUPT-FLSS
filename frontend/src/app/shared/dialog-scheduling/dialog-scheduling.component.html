@@ -144,17 +144,23 @@
       >
         Clear All
       </button>
-      <div class="action-buttons">
+      <div class="button-group">
         <button class="cancel-button" mat-button (click)="onCancel()">
           Cancel
         </button>
         <button
-          class="action-button"
+          class="action-button pop"
           mat-flat-button
-          [disabled]="hasConflicts"
+          [disabled]="hasConflicts || isLoading"
           (click)="onAssign()"
         >
-          Assign Schedule
+          @if (isLoading) {
+          <mat-spinner
+            [diameter]="23"
+            strokeWidth="2.25"
+            class="custom-spinner"
+          ></mat-spinner>
+          } @else { Assign Schedule }
         </button>
       </div>
     </mat-dialog-actions>

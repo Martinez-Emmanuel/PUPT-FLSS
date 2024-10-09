@@ -144,12 +144,13 @@
       }
     }
 
-    .action-buttons {
+    .button-group {
       .cancel-button {
         color: var(--primary-text) !important;
       }
-
       .action-button {
+        transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
         &:disabled {
           color: var(--neutral-base) !important;
           opacity: var(--opacity-semi-opaque);
@@ -223,7 +224,7 @@
       .faculty-name {
         font-weight: 500;
       }
-      
+
       .faculty-pref {
         opacity: var(--opacity-semi-opaque);
       }
