@@ -254,18 +254,15 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     const searchValue = inputValues['searchFaculty'] || '';
     this.applyFilter(searchValue);
   }
+  
   onView(faculty: Faculty): void {
-    const dialogRef = this.dialog.open(DialogExportComponent, {
+    const dialogRef = this.dialog.open(DialogPrefComponent, {
       maxWidth: '70rem',
       width: '100%',
-      data: {
-        exportType: 'all',
-        entity: 'faculty',
-        entityData: { name: 'All Faculty Preferences' },
-        generatePdfFunction: () => this.generateFacultyPDF(true, this.allData),
-      },
+      data: faculty,
       disableClose: true,
     });
+
     dialogRef.afterClosed().subscribe((result) => {
       console.log('Dialog closed', result);
     });
