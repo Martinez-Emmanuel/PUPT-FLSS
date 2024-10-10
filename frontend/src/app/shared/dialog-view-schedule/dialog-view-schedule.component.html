@@ -7,8 +7,17 @@
   } @else {
   <!-- Schedule Title -->
   <div class="entity-info" [@fadeAnimation]>
-    <h2 class="dialog-title">{{ title }}</h2>
-    <span class="dialog-subtitle">{{ subtitle }}</span>
+    <!--Schedule title-->
+    <div class="schedule-title">
+      <h2 class="dialog-title">{{ title }}</h2>
+      <span class="dialog-subtitle">{{ subtitle }}</span>
+    </div>
+    <!--Schedule badge-->
+    <div class="schedule-badge">
+      <span class="badge-text">
+        <span mat-symbol="date_range"></span>Official Schedule</span
+      >
+    </div>
   </div>
 
   <!-- Schedule Calendar Container -->

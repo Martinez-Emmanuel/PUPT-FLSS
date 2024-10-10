@@ -5,6 +5,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 import { LoadingComponent } from '../loading/loading.component';
 
@@ -27,6 +28,7 @@ interface ViewScheduleDialogData {
     MatTableModule,
     MatButtonModule,
     MatIconModule,
+    MatSymbolDirective,
   ],
   templateUrl: './dialog-view-schedule.component.html',
   styleUrl: './dialog-view-schedule.component.scss',

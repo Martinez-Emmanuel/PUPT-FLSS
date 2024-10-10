@@ -11,14 +11,39 @@
   height: 100%;
 }
 
-.dialog-title {
-  @include reset-styles;
-  font-weight: 600;
-  color: var(--primary-text);
-}
+.entity-info {
+  @include flex-layout(
+    $align: stretch,
+    $justify: space-between,
+    $gap: var(--spacing-xxs)
+  );
 
-.dialog-subtitle {
-  color: var(--primary-text);
+  .schedule-title {
+    .dialog-title {
+      @include reset-styles;
+      font-weight: 600;
+      color: var(--primary-text);
+    }
+
+    .dialog-subtitle {
+      color: var(--primary-text);
+    }
+  }
+
+  .schedule-badge {
+    .badge-text {
+      @include flex-layout($gap: var(--spacing-xxs));
+      @include gradient-primary(315deg);
+      border-radius: var(--border-radius-lg);
+      padding: var(--spacing-xxs) var(--spacing-sm);
+      font-size: var(--font-size-sm);
+      color: white;
+
+      span[mat-symbol] {
+        font-size: var(--font-size-base);
+      }
+    }
+  }
 }
 
 .dialog-schedule-calendar-container {
