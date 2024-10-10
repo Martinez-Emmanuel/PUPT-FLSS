@@ -1,0 +1,39 @@
+@import "../../../styles/mixins.scss";
+
+.dialog-view-schedule-container {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-md)
+  );
+  padding: var(--spacing-lg);
+  height: 100%;
+}
+
+.dialog-title {
+  @include reset-styles;
+  font-weight: 600;
+  color: var(--primary-text);
+}
+
+.dialog-subtitle {
+  color: var(--primary-text);
+}
+
+.dialog-schedule-calendar-container {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start
+  );
+
+  min-height: 60vh;
+}
+
+.dialog-actions {
+  @include flex-layout($justify: flex-end);
+  .close-button {
+    color: var(--primary-text);
+  }
+}

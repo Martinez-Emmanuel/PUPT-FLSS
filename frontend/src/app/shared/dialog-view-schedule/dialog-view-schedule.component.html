@@ -1,1 +1,26 @@
-<p>dialog-view-schedule works!</p>
+<div class="dialog-view-schedule-container">
+  <!-- Loading state -->
+  @if (isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
+  <!-- Schedule Title -->
+  <div class="entity-info" [@fadeAnimation]>
+    <h2 class="dialog-title">{{ title }}</h2>
+    <span class="dialog-subtitle">{{ subtitle }}</span>
+  </div>
+
+  <!-- Schedule Calendar Container -->
+  <div class="dialog-schedule-calendar-container" [@fadeAnimation]>
+    <!--The weekly schedule will be displayed here-->
+  </div>
+
+  <!-- Action buttons -->
+  <div class="dialog-actions" [@fadeAnimation]>
+    <button mat-button class="close-button" (click)="closeDialog()">
+      Close
+    </button>
+  </div>
+  }
+</div>
