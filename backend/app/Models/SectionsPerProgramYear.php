@@ -36,4 +36,8 @@ class SectionsPerProgramYear extends Model
     {
         return $this->belongsTo(ProgramYearLevelCurricula::class, 'program_year_level_curricula_id');
     }
+    public function yearLevel()
+    {
+        return $this->belongsTo(YearLevel::class, 'year_level');
+    }
 }
