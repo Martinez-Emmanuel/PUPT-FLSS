@@ -1,6 +1,6 @@
 @import "../../../styles/mixins.scss";
 
-.dialog-export-container {
+.dialog-view-schedule-container {
   @include flex-layout(
     $direction: column,
     $align: stretch,
@@ -21,23 +21,19 @@
   color: var(--primary-text);
 }
 
-.dialog-export-pdf-container {
+.dialog-schedule-calendar-container {
   @include flex-layout(
     $direction: column,
     $align: stretch,
     $justify: flex-start
   );
-  
-  .pdf-iframe {
-    width: 100%;
-    min-height: 60vh;
-  }
+
+  min-height: 60vh;
 }
 
 .dialog-actions {
-  @include flex-layout($justify: flex-end, $gap: var(--spacing-sm));
-
-  button {
+  @include flex-layout($justify: flex-end);
+  .close-button {
     color: var(--primary-text);
   }
 }

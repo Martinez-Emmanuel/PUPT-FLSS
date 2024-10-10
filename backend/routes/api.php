@@ -17,6 +17,7 @@ use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\SchedulingController;
 use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\ReportsController;
 
 
 // Public routes
@@ -44,6 +45,9 @@ Route::get('/populate-schedules', [ScheduleController::class, 'autoAssignCourses
 Route::post('/assign-schedule', [SchedulingController::class, 'assignSchedule']);
 Route::get('/get-faculty', [SchedulingController::class, 'getFacultyDetails']);
 Route::get('/get-rooms', [RoomController::class, 'getAllRooms']);
+
+// Scheduling Reports Routes
+Route::get('/faculty-schedules-report', [ReportsController::class, 'getFacultySchedulesReport']);
 
 
 //Scheduling routes

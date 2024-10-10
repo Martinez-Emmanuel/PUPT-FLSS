@@ -3,7 +3,7 @@
 .header-container {
   @include flex-layout($align: stretch, $justify: space-between);
   @include default-transition;
-  background-color: var(--main-bg);
+  // background-color: var(--main-bg);
   padding-bottom: var(--spacing-sm);
 
   .input-container {

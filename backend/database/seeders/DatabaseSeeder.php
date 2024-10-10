@@ -27,7 +27,7 @@ class DatabaseSeeder extends Seeder
             RoomsTableSeeder::class,
             SectionsPerProgramYearTableSeeder::class,
             SectionCoursesTableSeeder::class,
-            SchedulesTableSeeder::class,
+            // SchedulesTableSeeder::class,
         ]);
     }
 }

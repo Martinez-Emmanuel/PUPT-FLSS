@@ -18,9 +18,12 @@ import { LoadingComponent } from '../../../../shared/loading/loading.component';
 import { DialogPrefComponent } from '../../../../shared/dialog-pref/dialog-pref.component';
 import { DialogExportComponent } from '../../../../shared/dialog-export/dialog-export.component';
 
-import { PreferencesService } from '../../../services/faculty/preference/preferences.service';
+import { PreferencesService, ActiveSemester } from '../../../services/faculty/preference/preferences.service';
 
 import { fadeAnimation } from '../../../animations/animations';
+
+import jsPDF from 'jspdf';
+import 'jspdf-autotable'; 
 
 interface Faculty {
   faculty_id: number;
@@ -29,6 +32,7 @@ interface Faculty {
   facultyType: string;
   facultyUnits: number;
   is_enabled: boolean;
+  active_semesters?: ActiveSemester[]; 
 }
 
 @Component({
@@ -115,7 +119,10 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
           facultyType: faculty.faculty_type,
           facultyUnits: faculty.faculty_units,
           is_enabled: faculty.is_enabled === 1,
+          active_semesters: faculty.active_semesters,
         }));
+
+        console.log('Processed Faculty Data:', faculties);
 
         this.allData = faculties;
         this.filteredData = faculties;
@@ -247,6 +254,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     const searchValue = inputValues['searchFaculty'] || '';
     this.applyFilter(searchValue);
   }
+  
   onView(faculty: Faculty): void {
     const dialogRef = this.dialog.open(DialogPrefComponent, {
       maxWidth: '70rem',
@@ -261,12 +269,45 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   }
 
   onExportAll(): void {
+    if (!this.allData.length) {
+      this.snackBar.open(
+        'No faculty preferences available for export.',
+        'Close',
+        { duration: 3000 }
+      );
+      return;
+    }
+
+    const firstActiveSemesterFaculty = this.allData.find(
+      (faculty) =>
+        faculty.active_semesters && faculty.active_semesters.length > 0
+    );
+
+    if (!firstActiveSemesterFaculty) {
+      this.snackBar.open(
+        'No active semester data available for export.',
+        'Close',
+        { duration: 3000 }
+      );
+      return;
+    }
+
+    const { academic_year, semester_label } =
+      firstActiveSemesterFaculty.active_semesters![0];
+
     const dialogRef = this.dialog.open(DialogExportComponent, {
       maxWidth: '70rem',
       width: '100%',
       data: {
         exportType: 'all',
-        entity: 'faculty Preferences',
+        entity: 'faculty',
+        entityData: {
+          name: 'Export All Faculty Preferences',
+          academic_year,
+          semester_label,
+        },
+        generatePdfFunction: () =>
+          this.generateFacultyPDF(true, this.allData, true),
       },
       disableClose: true,
     });
@@ -277,13 +318,28 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   }
 
   onExportSingle(faculty: Faculty): void {
+    const activeSemester = faculty.active_semesters?.[0];
+    if (!activeSemester || !activeSemester.courses?.length) {
+      const message = !activeSemester
+        ? `No active semesters available for ${faculty.facultyName}.`
+        : `No courses available for ${faculty.facultyName}.`;
+      this.snackBar.open(message, 'Close', { duration: 3000 });
+      return;
+    }
+
     const dialogRef = this.dialog.open(DialogExportComponent, {
       maxWidth: '70rem',
       width: '100%',
       data: {
         exportType: 'single',
         entity: 'faculty',
-        entityData: faculty,
+        entityData: {
+          name: faculty.facultyName,
+          academic_year: activeSemester.academic_year,
+          semester_label: activeSemester.semester_label,
+        },
+        generatePdfFunction: () =>
+          this.generateFacultyPDF(false, [faculty], true),
       },
       disableClose: true,
     });
@@ -291,5 +347,179 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     dialogRef.afterClosed().subscribe((result) => {
       console.log('Export Single dialog closed', result);
     });
+  }
+
+  generateFacultyPDF(
+    isAll: boolean,
+    faculties: Faculty[],
+    showPreview: boolean = false
+  ): Blob | void {
+    const doc = new jsPDF('p', 'mm', 'legal') as any;
+    const pageWidth = doc.internal.pageSize.width;
+    const margin = 10;
+    const topMargin = 15;
+    const logoSize = 22;
+    let currentY = topMargin;
+
+    const headerFont = { font: 'times', style: 'bold', size: 12 };
+    const normalFont = { font: 'times', style: 'normal', size: 12 };
+    const centerAlign = { align: 'center' };
+
+    const addHeader = () => {
+      const leftLogoUrl =
+        'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
+      doc.addImage(leftLogoUrl, 'PNG', margin, 10, logoSize, logoSize);
+
+      doc.setFontSize(headerFont.size);
+      doc.setFont(headerFont.font, headerFont.style);
+      doc.text(
+        'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
+        pageWidth / 2,
+        topMargin,
+        centerAlign
+      );
+      doc.text(
+        'Gen. Santos Ave. Upper Bicutan, Taguig City',
+        pageWidth / 2,
+        topMargin + 5,
+        centerAlign
+      );
+      doc.setFontSize(15);
+
+      if (isAll) {
+        doc.text(
+          'All Faculty Preferences Report',
+          pageWidth / 2,
+          topMargin + 15,
+          centerAlign
+        );
+      } else {
+        doc.text(
+          'Faculty Preferences Report',
+          pageWidth / 2,
+          topMargin + 15,
+          centerAlign
+        );
+      }
+
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.5);
+      doc.line(margin, topMargin + 20, pageWidth - margin, topMargin + 20);
+
+      currentY = topMargin + 25;
+    };
+
+    addHeader();
+
+    faculties.forEach((faculty, facultyIndex) => {
+      const activeSemester = faculty.active_semesters?.[0];
+
+      if (!activeSemester || !activeSemester.courses?.length) return;
+
+      // Faculty Info Section
+      doc.setFontSize(normalFont.size);
+      doc.setFont(normalFont.font, normalFont.style);
+      const facultyInfo = [
+        `Faculty Name: ${faculty.facultyName}`,
+        `Faculty Code: ${faculty.facultyCode}`,
+        `Academic Year: ${activeSemester.academic_year}`,
+        `Semester: ${activeSemester.semester_label}`,
+      ];
+
+      facultyInfo.forEach((info) => {
+        doc.text(info, margin, currentY);
+        currentY += 5;
+      });
+      currentY += 5;
+
+      const courseData = activeSemester.courses.map(
+        (course: any, index: number) => [
+          (index + 1).toString(),
+          course.course_details?.course_code || 'N/A',
+          course.course_details?.course_title || 'N/A',
+          course.lec_hours.toString(),
+          course.lab_hours.toString(),
+          course.units.toString(),
+          course.preferred_day,
+          `${this.formatTimeTo12Hour(
+            course.preferred_start_time
+          )} - ${this.formatTimeTo12Hour(course.preferred_end_time)}`,
+        ]
+      );
+
+      // Constants for table styling
+      const tableHead = [
+        [
+          '#',
+          'Course Code',
+          'Course Title',
+          'Lec',
+          'Lab',
+          'Units',
+          'Preferred Day',
+          'Preferred Time',
+        ],
+      ];
+      const tableConfig = {
+        startY: currentY,
+        head: tableHead,
+        body: courseData,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [128, 0, 0],
+          textColor: [255, 255, 255],
+          fontSize: 9,
+        },
+        bodyStyles: {
+          fontSize: 8,
+          textColor: [0, 0, 0],
+        },
+        styles: {
+          lineWidth: 0.1,
+          overflow: 'linebreak',
+          cellPadding: 2,
+        },
+        columnStyles: {
+          0: { cellWidth: 10 },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 50 },
+          3: { cellWidth: 13 },
+          4: { cellWidth: 13 },
+          5: { cellWidth: 13 },
+          6: { cellWidth: 25 },
+          7: { cellWidth: 35 },
+        },
+        margin: { left: margin, right: margin },
+      };
+
+      (doc as any).autoTable(tableConfig);
+
+      currentY = doc.autoTable.previous.finalY + 10;
+      if (currentY > 270) {
+        doc.addPage();
+        addHeader();
+        currentY = topMargin + 25;
+      }
+    });
+
+    const pdfBlob = doc.output('blob');
+    if (showPreview) {
+      return pdfBlob;
+    } else {
+      doc.save(
+        isAll
+          ? 'all_faculty_preferences_report.pdf'
+          : 'faculty_preferences_report.pdf'
+      );
+    }
+  }
+
+  formatTimeTo12Hour(time: string): string {
+    const [hour, minute] = time.split(':');
+    const hours = parseInt(hour, 10);
+    const minutesFormatted = minute.length === 2 ? minute : `0${minute}`;
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const formattedHour = hours % 12 || 12;
+    return `${formattedHour}:${minutesFormatted} ${period}`;
   }
 }
