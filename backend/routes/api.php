@@ -49,7 +49,7 @@ Route::get('/get-rooms', [RoomController::class, 'getAllRooms']);
 //Scheduling related routes
 Route::post('/publish-all-schedule', [SchedulingController::class, 'togglePublishSchedules']);
 Route::post('/publish-single-schedule', [SchedulingController::class, 'toggleIndividualSchedule']);
-// Get single schedule
+// Get single schedule for faculty viewing schedule
 Route::post('/get-schedules', [FacultyController::class, 'getIndividualFacultySchedule']);
 // Scheduling Id count base on active a.y and semester for testing
 Route::get('/course-active-count', [SchedulingController::class, 'getActiveSchedulesByCourseAssignment']);
