@@ -41,4 +41,9 @@ class CourseAssignment extends Model
     {
         return $this->hasMany(Preference::class, 'course_assignment_id', 'course_assignment_id');
     }
+    public function faculty()
+    {
+        return $this->belongsTo(Faculty::class, 'faculty_id');
+    }
+
 }
