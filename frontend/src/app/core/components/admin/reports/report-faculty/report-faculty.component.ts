@@ -8,9 +8,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
+import { DialogViewScheduleComponent } from '../../../../../shared/dialog-view-schedule/dialog-view-schedule.component';
 
 import { ReportsService } from '../../../../services/admin/reports/reports.service';
 
@@ -39,6 +41,7 @@ interface Faculty {
     MatButtonModule,
     MatTooltipModule,
     FormsModule,
+    MatDialogModule,
   ],
   templateUrl: './report-faculty.component.html',
   styleUrl: './report-faculty.component.scss',
@@ -72,7 +75,10 @@ export class ReportFacultyComponent
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  constructor(private reportsService: ReportsService) {}
+  constructor(
+    private reportsService: ReportsService,
+    public dialog: MatDialog
+  ) {}
 
   ngOnInit(): void {
     this.fetchFacultyData();
@@ -89,7 +95,7 @@ export class ReportFacultyComponent
   }
 
   fetchFacultyData(): void {
-    this.isLoading = true; 
+    this.isLoading = true;
     this.reportsService.getFacultySchedulesReport().subscribe({
       next: (response) => {
         const facultyData = response.faculty_schedule_reports.faculties.map(
@@ -100,6 +106,8 @@ export class ReportFacultyComponent
             facultyUnits: faculty.assigned_units,
             isEnabled: faculty.is_published === 1,
             facultyId: faculty.faculty_id,
+            academicYear: `${response.faculty_schedule_reports.year_start}-${response.faculty_schedule_reports.year_end}`,
+            semester: this.getSemesterDisplay(response.faculty_schedule_reports.semester), // Use the helper function here
           })
         );
 
@@ -113,6 +121,19 @@ export class ReportFacultyComponent
         console.error('Error fetching faculty data:', error);
       },
     });
+  }
+
+  getSemesterDisplay(semester: number): string {
+    switch (semester) {
+      case 1:
+        return '1st Semester';
+      case 2:
+        return '2nd Semester';
+      case 3:
+        return 'Summer Semester';
+      default:
+        return 'Unknown Semester';
+    }
   }
 
   getRowIndex(index: number): number {
@@ -139,8 +160,20 @@ export class ReportFacultyComponent
     }
   }
 
-  onView(element: Faculty) {
-    console.log('View clicked for:', element);
+  onView(element: any) {
+    this.dialog.open(DialogViewScheduleComponent, {
+      maxWidth: '70rem',
+      width: '100%',
+      data: {
+        exportType: 'single',
+        entity: 'faculty',
+        entityData: element,
+        customTitle: `${element.facultyName}`,
+        academicYear: element.academicYear,
+        semester: element.semester,
+      },
+      disableClose: true,
+    });
   }
 
   onExportAll() {
