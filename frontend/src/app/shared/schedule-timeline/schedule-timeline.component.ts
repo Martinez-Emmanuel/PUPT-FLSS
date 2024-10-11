@@ -160,7 +160,7 @@ export class ScheduleTimelineComponent implements OnInit {
         slotIndex < b.startSlot + b.duration
     );
     if (block && slotIndex === block.startSlot) {
-      return `${block.courseCode} - ${block.courseTitle}\n${block.roomCode}\n${block.program} ${block.yearLevel}-${block.section}`;
+      return `${block.courseCode}\n${block.courseTitle}\n\n${block.roomCode}\n\n${block.program} ${block.yearLevel}-${block.section}`;
     }
     return '';
   }
