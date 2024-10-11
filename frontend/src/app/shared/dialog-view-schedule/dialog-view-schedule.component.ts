@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 import { LoadingComponent } from '../loading/loading.component';
+import { ScheduleTimelineComponent } from '../schedule-timeline/schedule-timeline.component';
 
 import { fadeAnimation } from '../../core/animations/animations';
 
@@ -25,6 +26,7 @@ interface ViewScheduleDialogData {
   imports: [
     CommonModule,
     LoadingComponent,
+    ScheduleTimelineComponent,
     MatTableModule,
     MatButtonModule,
     MatIconModule,

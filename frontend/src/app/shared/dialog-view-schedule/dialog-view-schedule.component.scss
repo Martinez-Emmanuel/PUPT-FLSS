@@ -35,8 +35,9 @@
       @include flex-layout($gap: var(--spacing-xxs));
       @include gradient-primary(315deg);
       border-radius: var(--border-radius-lg);
-      padding: var(--spacing-xxs) var(--spacing-sm);
+      padding: var(--spacing-xs) var(--spacing-sm);
       font-size: var(--font-size-sm);
+      font-weight: 500;
       color: white;
 
       span[mat-symbol] {
