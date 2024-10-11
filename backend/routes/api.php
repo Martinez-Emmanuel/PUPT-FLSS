@@ -48,6 +48,7 @@ Route::get('/get-rooms', [RoomController::class, 'getAllRooms']);
 
 // Scheduling Reports Routes
 Route::get('/faculty-schedules-report', [ReportsController::class, 'getFacultySchedulesReport']);
+Route::get('/room-schedules-report', [ReportsController::class, 'getRoomSchedulesReport']);
 
 
 //Scheduling routes
