@@ -159,9 +159,31 @@ export class ScheduleTimelineComponent implements OnInit {
         slotIndex >= b.startSlot &&
         slotIndex < b.startSlot + b.duration
     );
+
     if (block && slotIndex === block.startSlot) {
-      return `${block.courseCode}\n${block.courseTitle}\n\n${block.roomCode}\n\n${block.program} ${block.yearLevel}-${block.section}`;
+      const schedule = this.scheduleData.find(
+        (schedule: any) =>
+          schedule.day === day &&
+          this.convertTimeToMinutes(schedule.start_time) === this.timeSlots[slotIndex].minutes
+      );
+  
+      if (schedule) {
+        const formattedStartTime = this.formatTimeTo12Hour(schedule.start_time);
+        const formattedEndTime = this.formatTimeTo12Hour(schedule.end_time);
+        
+        return `${block.courseCode}\n${block.courseTitle}\n\n${block.roomCode}\n\n${block.program} ${block.yearLevel}-${block.section}\n\n${formattedStartTime} - ${formattedEndTime}`;
+      }
     }
     return '';
   }
+  
+  
+  private formatTimeTo12Hour(time: string): string {
+    let [hours, minutes] = time.split(':').map(Number);
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12 || 12;
+    const formattedMinutes = minutes.toString().padStart(2, '0');
+    return `${hours}:${formattedMinutes} ${ampm}`;
+  }
+  
 }
