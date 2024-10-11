@@ -117,7 +117,7 @@ export class ScheduleTimelineComponent implements OnInit {
       (b) => b.day === day && slotIndex === b.startSlot
     );
     if (block) {
-      return block.duration * 22 - 2; // TODO: adjust this in the future idk
+      return block.duration * 26 - 2; // TODO: adjust this in the future idk
     }
     return 0;
   }
@@ -171,7 +171,7 @@ export class ScheduleTimelineComponent implements OnInit {
         const formattedStartTime = this.formatTimeTo12Hour(schedule.start_time);
         const formattedEndTime = this.formatTimeTo12Hour(schedule.end_time);
         
-        return `${block.courseCode}\n${block.courseTitle}\n\n${block.roomCode}\n\n${block.program} ${block.yearLevel}-${block.section}\n\n${formattedStartTime} - ${formattedEndTime}`;
+        return `${block.courseCode}\n${block.courseTitle}\n(${block.program} ${block.yearLevel}-${block.section})\n\n${block.roomCode}\n\n${formattedStartTime} - ${formattedEndTime}`;
       }
     }
     return '';
