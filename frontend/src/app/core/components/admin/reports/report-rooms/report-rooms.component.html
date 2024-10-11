@@ -1,4 +1,10 @@
 <div class="report-container">
+  <!--Display while loading-->
+  @if (isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
   <!-- Rooms Report Header-->
   <div class="report-header-container" [@fadeAnimation]>
     <app-table-header
@@ -22,11 +28,7 @@
           </th>
           <td mat-cell *matCellDef="let element; let i = index" class="index">
             <span>
-              {{
-                i +
-                  1 +
-                  (paginator?.pageIndex || 0) * (paginator?.pageSize || 10)
-              }}
+              {{ getRowIndex(i) }}
             </span>
           </td>
         </ng-container>
@@ -53,11 +55,9 @@
 
         <!-- Floor Column -->
         <ng-container matColumnDef="floor">
-          <th mat-header-cell *matHeaderCellDef class="custom-header">
-            Floor
-          </th>
+          <th mat-header-cell *matHeaderCellDef class="custom-header">Floor</th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
-            {{ element.floor }}
+            {{ element.floorLevel }} Floor
           </td>
         </ng-container>
 
@@ -86,6 +86,7 @@
           </td>
         </ng-container>
 
+        <!-- Header and Row Declarations -->
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 
@@ -113,4 +114,5 @@
       </mat-paginator>
     </div>
   </div>
+  }
 </div>
