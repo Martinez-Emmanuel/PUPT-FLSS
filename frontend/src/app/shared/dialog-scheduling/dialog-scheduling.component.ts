@@ -1,11 +1,9 @@
-// dialog-scheduling.component.ts
-
 import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
 import { Observable, Subject } from 'rxjs';
-import { map, startWith, takeUntil } from 'rxjs/operators';
+import { map, startWith, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -71,6 +69,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   filteredRooms$!: Observable<string[]>;
   hasConflicts = false;
   isLoading = false;
+  conflictMessage: string = '';
 
   private destroy$ = new Subject<void>();
 
@@ -95,6 +94,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     this.setupAutocomplete();
     this.handleStartTimeChanges();
     this.populateExistingSchedule();
+    this.setupConflictDetection();
   }
 
   ngOnDestroy(): void {
@@ -102,8 +102,68 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  /*** Form Setup ***/
+  //add ko
+  private setupConflictDetection(): void {
+    this.scheduleForm.valueChanges.pipe(
+      debounceTime(300),
+      distinctUntilChanged(
+        (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
+      ),
+      takeUntil(this.destroy$)
+    ).subscribe(() => {
+      this.detectConflicts();
+    });
+  }
 
+  private detectConflicts(): void {
+    const formValues = this.scheduleForm.value;
+    const { day, startTime, endTime, professor, room } = formValues;
+  
+    const selectedFaculty = this.data.facultyOptions.find(
+      (f) => f.name === professor
+    );
+    const selectedRoom = this.data.roomOptionsList.find(
+      (r) => r.room_code === room
+    );
+  
+    const faculty_id = selectedFaculty ? selectedFaculty.faculty_id : null;
+    const room_id = selectedRoom ? selectedRoom.room_id : null;
+  
+    if (!day || !startTime || !endTime || !faculty_id || !room_id) {
+      this.conflictMessage = '';
+      this.hasConflicts = false;
+      return;
+    }
+  
+    const formattedStartTime = this.formatTimeToBackend(startTime);
+    const formattedEndTime = this.formatTimeToBackend(endTime);
+  
+    this.schedulingService.validateSchedule(
+      this.data.schedule_id, 
+      faculty_id, 
+      room_id, day, 
+      formattedStartTime, 
+      formattedEndTime
+    )
+      .subscribe({
+        next: (validationResult) => {
+          if (validationResult.isValid) {
+            this.conflictMessage = '';
+            this.hasConflicts = false;
+          } else {
+            this.conflictMessage = validationResult.message;
+            this.hasConflicts = true;
+          }
+        },
+        error: (error) => {
+          this.conflictMessage = 
+          'An error occurred during validation. Please try again.';
+          this.hasConflicts = true;
+        }
+      });
+  } 
+
+  /*** Form Setup ***/
   private initForm(): void {
     this.scheduleForm = this.fb.group({
       day: [''],
@@ -147,7 +207,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   public onAssign(): void {
     const formValues = this.scheduleForm.value;
     const { day, startTime, endTime, professor, room } = formValues;
-
+  
     const selectedFaculty = this.data.facultyOptions.find(
       (f) => f.name === professor
     );
@@ -157,7 +217,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
       });
       return;
     }
-
+  
     const selectedRoom = this.data.roomOptionsList.find(
       (r) => r.room_code === room
     );
@@ -167,14 +227,14 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
       });
       return;
     }
-
+  
     const faculty_id = selectedFaculty ? selectedFaculty.faculty_id : null;
     const room_id = selectedRoom ? selectedRoom.room_id : null;
     const formattedStartTime = startTime
       ? this.formatTimeToBackend(startTime)
       : null;
     const formattedEndTime = endTime ? this.formatTimeToBackend(endTime) : null;
-
+  
     this.isLoading = true;
     this.schedulingService
       .assignSchedule(
@@ -193,11 +253,28 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.isLoading = false;
-          this.handleError('Failed to assign schedule')(error);
+          this.handleAssignmentError(error);
         },
       });
   }
+  
+  private handleAssignmentError(error: any): void {
+    console.error('Failed to assign schedule:', error);
 
+    let errorMessage = 'Failed to assign schedule.';
+
+    if (error?.message) {
+      errorMessage = error.message;  
+    }
+
+    this.conflictMessage = errorMessage;  
+    this.hasConflicts = true;  
+
+    this.snackBar.open(errorMessage, 'Close', {
+      duration: 5000,
+    });
+  }
+  
   public onFacultyClick(faculty: {
     name: string;
     type: string;

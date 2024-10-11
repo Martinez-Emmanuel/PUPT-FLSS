@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, throwError, forkJoin, of } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { environment } from '../../../../../environments/environment.dev';
 
 export interface Program {
@@ -124,6 +124,7 @@ export interface CourseResponse {
     day: string;
     start_time: string;
     end_time: string;
+    room_id?: number
   };
   professor: string;
   faculty_id: number;
@@ -192,18 +193,25 @@ export interface CourseDetails {
 @Injectable({
   providedIn: 'root',
 })
+
 export class SchedulingService {
   private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
   private handleError(error: HttpErrorResponse): Observable<never> {
-    console.error('An error occurred:', error);
-    return throwError(
-      () => new Error('Something went wrong; please try again later.')
-    );
-  }
 
+    let errorMessage = 'Something went wrong; please try again later.';
+  
+    // Check if the error message exists in the error response
+    if (error.error?.message) {
+      errorMessage = error.error.message;  // Use detailed backend error message
+    } else if (error.message) {
+      errorMessage = error.message;  // Use generic error message
+    }
+    return throwError(() => new Error(errorMessage));
+  }
+  
   /* Academic Year-related methods */
 
   // Fetch academic years from the backend
@@ -392,22 +400,330 @@ export class SchedulingService {
   assignSchedule(
     schedule_id: number,
     faculty_id: number | null,
-    room_id: number | null,   
-    day: string | null,       
+    room_id: number | null,
+    day: string | null,
     start_time: string | null,
-    end_time: string | null   
+    end_time: string | null
   ): Observable<any> {
-    const payload = {
-      schedule_id,
-      faculty_id,
-      room_id,
-      day,
-      start_time,
-      end_time,
-    };
-    return this.http
-      .post<any>(`${this.baseUrl}/assign-schedule`, payload)
-      .pipe(catchError(this.handleError));
+    return this.validateSchedule(
+      schedule_id, 
+      faculty_id, 
+      room_id, 
+      day, 
+      start_time, 
+      end_time
+    ).pipe(
+      switchMap((validationResult) => {
+        if (validationResult.isValid) {
+          const payload = {
+            schedule_id,
+            faculty_id,
+            room_id,
+            day,
+            start_time,
+            end_time,
+          };
+          return this.http.post<any>(`${this.baseUrl}/assign-schedule`, payload);
+        } else {
+          return throwError(() => new Error(validationResult.message));
+        }
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  public validateSchedule(
+    schedule_id: number,
+    faculty_id: number | null,
+    room_id: number | null,
+    day: string | null,
+    start_time: string | null,
+    end_time: string | null
+  ): Observable<{ isValid: boolean; message: string }> {
+    return forkJoin([
+      this.populateSchedules(),
+      this.getAllRooms(),
+      this.getFacultyDetails()
+    ]).pipe(
+      switchMap(([schedules, rooms, faculty]) => {
+        const roomCheck = this.checkRoomAvailability(
+          room_id, day, 
+          start_time, 
+          end_time, 
+          schedules, 
+          rooms
+        );
+        const facultyCheck = this.checkFacultyAvailability(
+          faculty_id, 
+          day, 
+          start_time, 
+          end_time, 
+          schedules
+        );
+        const loadCheck = this.checkFacultyLoad(
+          faculty_id, 
+          schedule_id, 
+          schedules, 
+          faculty
+        );
+        const sectionCheck = this.checkProgramSectionSchedule(
+          schedule_id, 
+          day, 
+          start_time, 
+          end_time, 
+          schedules
+        );
+        const timeCheck = this.validateTimeBlock(start_time, end_time);
+
+        if (!roomCheck.isValid) return of(roomCheck);
+        if (!facultyCheck.isValid) return of(facultyCheck);
+        if (!loadCheck.isValid) return of(loadCheck);
+        if (!sectionCheck.isValid) return of(sectionCheck);
+        if (!timeCheck.isValid) return of(timeCheck);
+        return of({ isValid: true, message: 'All validations passed' });
+      })
+    );
+  }
+  
+  // Validates whether a room is available for the given day and time. It checks if the room is already booked by another course.
+  private checkRoomAvailability(
+    room_id: number | null,
+    day: string | null,
+    start_time: string | null,
+    end_time: string | null,
+    schedules: PopulateSchedulesResponse,
+    rooms: { rooms: Room[] }
+  ): { isValid: boolean; message: string } {
+    if (!room_id || !day || !start_time || !end_time) {
+      return { isValid: true, message: 'Room availability check skipped' };
+    }
+  
+    const room = rooms.rooms.find(r => r.room_id === room_id);
+    if (!room) {
+      return { isValid: false, message: 'Invalid room selected' };
+    }
+  
+    const conflictingSchedule = this.findConflictingSchedule(
+      schedules, (course) => 
+      (course.schedule?.room_id === room_id || course.room?.room_id === room_id) 
+        && course.schedule?.day === day && this.isTimeOverlap(
+          start_time, 
+          end_time, 
+          course.schedule?.start_time, 
+          course.schedule?.end_time
+        )
+    );
+  
+    return conflictingSchedule
+      ? { isValid: false, message: 
+        `Room ${room.room_code} is already booked for 
+        ${conflictingSchedule.course_code} (${conflictingSchedule.course_title}) 
+        on ${day} from ${conflictingSchedule.schedule?.start_time} to 
+        ${conflictingSchedule.schedule?.end_time}` }
+      : { isValid: true, message: 'Room is available' };
+  }
+  
+  // Checks if a professor is available for a specific day and time or if they are already teaching another course during that time.
+  private checkFacultyAvailability(
+    faculty_id: number | null,
+    day: string | null,
+    start_time: string | null,
+    end_time: string | null,
+    schedules: PopulateSchedulesResponse
+  ): { isValid: boolean; message: string } {
+    if (!faculty_id || !day || !start_time || !end_time) {
+      return { isValid: true, message: 'Faculty availability check skipped' };
+    }
+
+    const conflictingSchedule = this.findConflictingSchedule(
+      schedules, (course) => 
+      course.faculty_id === faculty_id &&
+      course.schedule?.day === day &&
+      this.isTimeOverlap(
+        start_time, end_time, 
+        course.schedule.start_time, course.schedule.end_time
+      )
+    );
+
+    return conflictingSchedule
+    ? { 
+        isValid: false, 
+        message: 
+        `Professor ${conflictingSchedule.professor}
+         is already assigned to ${conflictingSchedule.course_code} 
+         (${conflictingSchedule.course_title}) on ${day} from 
+         ${conflictingSchedule.schedule?.start_time} to 
+         ${conflictingSchedule.schedule?.end_time}.`
+      }
+    : { isValid: true, message: 'Faculty is available' };
+  }
+
+  // Verifies that assigning the new course to the professor does not exceed their allowed teaching load (in terms of units).
+  private checkFacultyLoad(
+    faculty_id: number | null,
+    schedule_id: number,
+    schedules: PopulateSchedulesResponse,
+    facultyDetails: { faculty: Faculty[] }
+  ): { isValid: boolean; message: string } {
+    if (!faculty_id) {
+      return { isValid: true, message: 'Faculty load check skipped' };
+    }
+
+    const faculty = facultyDetails.faculty.find(
+      f => f.faculty_id === faculty_id
+    );
+    if (!faculty) {
+      return { isValid: false, message: 'Invalid faculty selected' };
+    }
+
+    const assignedCourses = this.findAllCoursesForFaculty(
+      schedules, faculty_id
+    );
+    const totalUnits = assignedCourses.reduce(
+      (sum, course) => sum + course.units, 0
+    );
+
+    const newCourse = this.findCourseById(schedules, schedule_id);
+    const newTotalUnits = totalUnits + (newCourse?.units || 0);
+
+    return newTotalUnits <= faculty.faculty_units
+      ? { isValid: true, message: 'Faculty load is within limits' }
+      : { isValid: false, message: 
+        `Faculty load (${newTotalUnits} units) exceeds the limit
+         (${faculty.faculty_units} units)` 
+        };
+  }
+
+  //Ensures that the new schedule does not overlap with any existing schedules for the same program section.
+  private checkProgramSectionSchedule(
+    schedule_id: number,
+    day: string | null,
+    start_time: string | null,
+    end_time: string | null,
+    schedules: PopulateSchedulesResponse
+  ): { isValid: boolean; message: string } {
+    if (!day || !start_time || !end_time) {
+      return { isValid: true, message: 
+        'Program section schedule check skipped'
+      };
+    }
+
+    const course = this.findCourseById(schedules, schedule_id);
+    if (!course) {
+      return { isValid: false, message: 'Invalid course selected' };
+    }
+
+    const conflictingSchedule = this.findConflictingSchedule(
+      schedules, (otherCourse) => 
+      otherCourse.course_assignment_id !== schedule_id &&
+      this.isSameSection(course, otherCourse) &&
+      otherCourse.schedule?.day === day &&
+      this.isTimeOverlap(
+        start_time, end_time,
+         otherCourse.schedule.start_time, otherCourse.schedule.end_time
+        )
+    );
+
+    return conflictingSchedule
+      ? { isValid: false, message: 'Program section has a scheduling conflict' }
+      : { isValid: true, message: 'No conflicts in program section schedule' };
+  }
+  
+  //Ensures that the time block for the class is valid 
+  //(e.g., the start time is before the end time, and the duration is within a certain limit).
+  private validateTimeBlock(
+    start_time: string | null,
+    end_time: string | null
+  ): { isValid: boolean; message: string } {
+    if (!start_time || !end_time) {
+      return { isValid: true, message: 'Time block validation skipped' };
+    }
+
+    const start = new Date(`1970-01-01T${start_time}`);
+    const end = new Date(`1970-01-01T${end_time}`);
+    const duration = (end.getTime() - start.getTime()) / (1000 * 60 * 60); 
+
+    if (start >= end) {
+      return { isValid: false, message:
+         'Start time must be earlier than end time'
+        };
+    }
+
+    if (duration > 4) { // Assuming a maximum class duration of 4 hours
+      return { isValid: false, message: 
+        'Class duration exceeds the maximum allowed time'
+      };
+    }
+    return { isValid: true, message: 'Time block is valid' };
+  }
+
+  // Checks if two time blocks overlap by comparing their start and end times.
+  private isTimeOverlap(
+    start1: string, 
+    end1: string, 
+    start2: string, 
+    end2: string): boolean {
+    const s1 = new Date(`1970-01-01T${start1}`);
+    const e1 = new Date(`1970-01-01T${end1}`);
+    const s2 = new Date(`1970-01-01T${start2}`);
+    const e2 = new Date(`1970-01-01T${end2}`);
+
+    // Add 10 minutes buffer
+    s1.setMinutes(s1.getMinutes() - 10);
+    e1.setMinutes(e1.getMinutes() + 10);
+
+    return (s1 < e2 && e1 > s2);
+  }
+
+  //Searches through all schedules to find a schedule that conflicts with the given predicate 
+  //(condition), which could be for room, faculty, or section conflicts.
+  private findConflictingSchedule(
+    schedules: PopulateSchedulesResponse, 
+    predicate: (course: CourseResponse) => boolean): 
+    CourseResponse | undefined {
+    for (const program of schedules.programs) {
+      for (const yearLevel of program.year_levels) {
+        for (const semester of yearLevel.semesters) {
+          for (const section of semester.sections) {
+            const conflictingCourse = section.courses.find(predicate);
+            if (conflictingCourse) {
+              return conflictingCourse;
+            }
+          }
+        }
+      }
+    }
+    return undefined;
+  }
+
+  //Finds all courses assigned to a specific faculty member, which is useful for calculating their total teaching load.
+  private findAllCoursesForFaculty(
+    schedules: PopulateSchedulesResponse, 
+    faculty_id: number): CourseResponse[] {
+    const courses: CourseResponse[] = [];
+    this.findConflictingSchedule(schedules, (course) => {
+      if (course.faculty_id === faculty_id) {
+        courses.push(course);
+      }
+      return false; 
+    });
+    return courses;
+  }
+
+  // Searches for a specific course by its assignment ID within the populated schedules.
+  private findCourseById(
+    schedules: PopulateSchedulesResponse, 
+    course_assignment_id: number): CourseResponse | undefined {
+    return this.findConflictingSchedule(
+      schedules, (course) => course.course_assignment_id === course_assignment_id
+    );
+  }
+
+  //Determines if two courses belong to the same program section. 
+  //This is important for checking if multiple courses are scheduled at the same time for the same section.
+  private isSameSection(course1: CourseResponse, course2: CourseResponse): boolean {
+    // This is a simplification. You might need to adjust this based on how sections are actually identified in your data structure
+    return course1.course_assignment_id.toString().slice(0, -3) === course2.course_assignment_id.toString().slice(0, -3);
   }
 
   getSubmittedPreferencesForActiveSemester(): Observable<SubmittedPrefResponse> {
