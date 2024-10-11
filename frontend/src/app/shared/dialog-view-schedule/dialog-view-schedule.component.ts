@@ -40,6 +40,7 @@ export class DialogViewScheduleComponent implements OnInit {
   title: string = '';
   subtitle: string = '';
   isLoading = true;
+  scheduleData: any;
 
   constructor(
     public dialogRef: MatDialogRef<DialogViewScheduleComponent>,
@@ -48,6 +49,7 @@ export class DialogViewScheduleComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeScheduleTitle();
+    this.scheduleData = this.data.entityData;
   }
 
   private initializeScheduleTitle(): void {
