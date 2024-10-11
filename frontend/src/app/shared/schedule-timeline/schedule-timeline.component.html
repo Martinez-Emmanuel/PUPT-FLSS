@@ -1,7 +1,5 @@
 <div class="schedule-timeline-container">
-  <!--Schedule Timeline Table-->
   <table class="schedule-timeline-table">
-    <!--Schedule Timeline header-->
     <thead class="schedule-timeline-table-header">
       <tr>
         <th></th>
@@ -10,13 +8,25 @@
         }
       </tr>
     </thead>
-    <!--Schedule Timeline Body-->
     <tbody class="schedule-timeline-table-body">
-      @for (slot of timeSlots; track slot) {
+      @for (slot of timeSlots; track slot; let i = $index) {
       <tr>
         <td class="time-slot">{{ slot.time }}</td>
         @for (day of days; track day) {
-        <td class="schedule-cell"></td>
+        <td
+          class="schedule-cell"
+          [ngClass]="{'schedule-block-start': isScheduleBlockStart(day, i)}"
+          [ngStyle]="getScheduleBlockStyle(day, i)"
+        >
+          @if (isScheduleBlockStart(day, i)) {
+            <div 
+              class="schedule-content"
+              [style.height.px]="getScheduleBlockHeight(day, i)"
+            >
+              {{ getScheduleBlockContent(day, i) }}
+            </div>
+          }
+        </td>
         }
       </tr>
       }
