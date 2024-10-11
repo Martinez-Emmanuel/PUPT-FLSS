@@ -1,0 +1,64 @@
+@import "../../../styles/mixins.scss";
+
+.schedule-timeline-container {
+  @include hide-scrollbar;
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  max-height: 60vh;
+  border-radius: var(--border-radius-md);
+
+  .schedule-timeline-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--neutral-space);
+
+    th,
+    td {
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .schedule-timeline-table-header {
+      @include sticky;
+      background-color: var(--primary-one);
+
+      th {
+        color: white;
+        padding: var(--spacing-xs);
+        border-right: 1px solid var(--neutral-fade);
+        border-bottom: 1px solid var(--neutral-fade); /* Bottom border between header and body */
+      }
+    }
+
+    .schedule-timeline-table-body {
+      td {
+        padding: var(--spacing-xxxs);
+        border-bottom: 1px solid var(--neutral-fade); /* Border between rows */
+        border-right: 1px solid var(--neutral-fade); /* Border between columns */
+      }
+
+      /* Remove the right border from the last column to avoid border on the side */
+      tr td:last-child {
+        border-right: none;
+      }
+
+      .time-slot {
+        position: sticky;
+        left: 0;
+        font-weight: 500;
+        border-right: 1px solid var(--neutral-fade); /* Right border for the time slot column */
+      }
+
+      /* Remove the border-right for the last cell in the time slot column */
+      tr td.time-slot {
+        border-right: 1px solid var(--neutral-fade);
+      }
+
+      .schedule-cell {
+        min-width: 100px;
+        height: 30px;
+      }
+    }
+  }
+}

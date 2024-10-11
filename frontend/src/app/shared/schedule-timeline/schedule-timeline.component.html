@@ -1,0 +1,25 @@
+<div class="schedule-timeline-container">
+  <!--Schedule Timeline Table-->
+  <table class="schedule-timeline-table">
+    <!--Schedule Timeline header-->
+    <thead class="schedule-timeline-table-header">
+      <tr>
+        <th></th>
+        @for (day of days; track day) {
+        <th>{{ day }}</th>
+        }
+      </tr>
+    </thead>
+    <!--Schedule Timeline Body-->
+    <tbody class="schedule-timeline-table-body">
+      @for (slot of timeSlots; track slot) {
+      <tr>
+        <td class="time-slot">{{ slot.time }}</td>
+        @for (day of days; track day) {
+        <td class="schedule-cell"></td>
+        }
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
