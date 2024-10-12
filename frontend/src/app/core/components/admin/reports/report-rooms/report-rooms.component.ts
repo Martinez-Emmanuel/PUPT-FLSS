@@ -162,7 +162,7 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
         exportType: 'single',
         entity: 'room',
         entityData: element.schedules,
-        customTitle: `Room ${element.roomCode} Schedule`,
+        customTitle: `Room ${element.roomCode}`,
         academicYear: element.academicYear,
         semester: element.semester,
       },

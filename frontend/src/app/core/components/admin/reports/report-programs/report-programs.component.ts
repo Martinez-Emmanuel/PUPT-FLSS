@@ -250,7 +250,7 @@ export class ReportProgramsComponent implements OnInit {
     const dialogConfig: DialogConfig = {
       title,
       fields: dialogFields,
-      isEdit: true,
+      isEdit: false,
       initialValue: {
         [field === 'yearLevel' ? 'yearLevel' : 'section']:
           field === 'yearLevel'
