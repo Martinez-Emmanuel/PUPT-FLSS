@@ -382,8 +382,8 @@ class ReportsController extends Controller
                 ];
             }
 
-            // If there's a schedule, add it to the schedules array
-            if ($schedule->schedule_id) {
+            // Check if the schedule has at least one non-null value among the specified fields
+            if ($this->isScheduleValid($schedule)) {
                 $programs[$schedule->program_id]['year_levels'][$schedule->year_level]['sections'][$schedule->section_name]['schedules'][] = [
                     'schedule_id' => $schedule->schedule_id,
                     'day' => $schedule->day,
@@ -405,7 +405,7 @@ class ReportsController extends Controller
             }
         }
 
-        // Step 5: Convert year_levels and sections from associative arrays to indexed arrays
+        // Convert year_levels and sections from associative arrays to indexed arrays
         foreach ($programs as &$program) {
             $program['year_levels'] = array_values($program['year_levels']);
             foreach ($program['year_levels'] as &$yearLevel) {
@@ -413,7 +413,7 @@ class ReportsController extends Controller
             }
         }
 
-        // Step 6: Structure the response
+        // Step 5: Structure the response
         return response()->json([
             'programs_schedule_reports' => [
                 'academic_year_id' => $activeSemester->academic_year_id,
@@ -424,5 +424,17 @@ class ReportsController extends Controller
                 'programs' => array_values($programs)
             ]
         ]);
+    }
+
+    private function isScheduleValid($schedule)
+    {
+        return !(
+            is_null($schedule->day) &&
+            is_null($schedule->start_time) &&
+            is_null($schedule->end_time) &&
+            is_null($schedule->faculty_name) &&
+            is_null($schedule->faculty_code) &&
+            is_null($schedule->room_code)
+        );
     }
 }
