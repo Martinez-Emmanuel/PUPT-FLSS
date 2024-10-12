@@ -1,4 +1,12 @@
-import { trigger, transition, style, animate, state, query, stagger } from '@angular/animations';
+import {
+  trigger,
+  transition,
+  style,
+  animate,
+  state,
+  query,
+  stagger,
+} from '@angular/animations';
 
 // Anmation 1: Simple Fade - used in route transitions
 export const fadeAnimation = trigger('fadeAnimation', [
@@ -68,9 +76,25 @@ export const cardEntranceSide = trigger('cardEntranceSide', [
 export const pageFloatUpAnimation = trigger('pageFloatUpAnimation', [
   transition(':enter', [
     style({ opacity: 0, transform: 'translateY(20px)' }),
-    animate('400ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+    animate(
+      '400ms ease-out',
+      style({ opacity: 1, transform: 'translateY(0)' })
+    ),
   ]),
   transition(':leave', [
-    animate('300ms ease-in', style({ opacity: 0, transform: 'translateY(20px)' }))
-  ])
-]); 
+    animate(
+      '300ms ease-in',
+      style({ opacity: 0, transform: 'translateY(20px)' })
+    ),
+  ]),
+]);
+
+export const rowAdditionAnimation = trigger('rowAdditionAnimation', [
+  transition(':enter', [
+    style({ opacity: 0, transform: 'translateX(-50px)' }),
+    animate(
+      '500ms cubic-bezier(0.25, 1, 0.5, 1)',
+      style({ opacity: 1, transform: 'translateX(0)' })
+    ),
+  ]),
+]);
