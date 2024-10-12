@@ -272,4 +272,157 @@ class ReportsController extends Controller
             ]
         ]);
     }
+
+    public function getProgramSchedulesReport()
+    {
+        // Step 1: Retrieve the current active semester with academic year details
+        $activeSemester = DB::table('active_semesters')
+            ->join('academic_years', 'active_semesters.academic_year_id', '=', 'academic_years.academic_year_id')
+            ->join('semesters', 'active_semesters.semester_id', '=', 'semesters.semester_id')
+            ->where('active_semesters.is_active', 1)
+            ->select(
+                'active_semesters.active_semester_id',
+                'active_semesters.semester_id',
+                'academic_years.academic_year_id',
+                'academic_years.year_start',
+                'academic_years.year_end',
+                'semesters.semester'
+            )
+            ->first();
+
+        if (!$activeSemester) {
+            return response()->json(['message' => 'No active semester found.'], 404);
+        }
+
+        // Step 2: Prepare a subquery to get schedules for the current semester and academic year
+        $schedulesSub = DB::table('schedules')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'course_assignments.course_assignment_id', '=', 'section_courses.course_assignment_id')
+            ->join('semesters as ca_semesters', 'ca_semesters.semester_id', '=', 'course_assignments.semester_id')
+            ->join('sections_per_program_year', 'sections_per_program_year.sections_per_program_year_id', '=', 'section_courses.sections_per_program_year_id')
+            ->where('ca_semesters.semester', '=', $activeSemester->semester)
+            ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id)
+            ->select(
+                'schedules.schedule_id',
+                'schedules.faculty_id',
+                'schedules.room_id',
+                'schedules.day',
+                'schedules.start_time',
+                'schedules.end_time',
+                'sections_per_program_year.program_id',
+                'sections_per_program_year.year_level',
+                'sections_per_program_year.section_name',
+                'course_assignments.course_assignment_id',
+                'courses.course_title',
+                'courses.course_code',
+                'courses.lec_hours as lec',
+                'courses.lab_hours as lab',
+                'courses.units',
+                'courses.tuition_hours'
+            )
+            ->leftJoin('courses', 'courses.course_id', '=', 'course_assignments.course_id');
+
+        // Step 3: Join programs with current schedules
+        $programSchedules = DB::table('programs')
+            ->leftJoinSub($schedulesSub, 'current_schedules', function ($join) {
+                $join->on('current_schedules.program_id', '=', 'programs.program_id');
+            })
+            ->leftJoin('faculty', 'current_schedules.faculty_id', '=', 'faculty.id')
+            ->leftJoin('users', 'faculty.user_id', '=', 'users.id')
+            ->leftJoin('rooms', 'current_schedules.room_id', '=', 'rooms.room_id')
+            ->select(
+                'programs.program_id',
+                'programs.program_code',
+                'programs.program_title',
+                'current_schedules.year_level',
+                'current_schedules.section_name',
+                'current_schedules.schedule_id',
+                'current_schedules.day',
+                'current_schedules.start_time',
+                'current_schedules.end_time',
+                'users.name as faculty_name',
+                'users.code as faculty_code',
+                'rooms.room_code',
+                'current_schedules.course_assignment_id',
+                'current_schedules.course_title',
+                'current_schedules.course_code',
+                'current_schedules.lec',
+                'current_schedules.lab',
+                'current_schedules.units',
+                'current_schedules.tuition_hours'
+            )
+            ->get();
+
+        // Step 4: Group the data by program, year level, and section
+        $programs = [];
+
+        foreach ($programSchedules as $schedule) {
+            if (!isset($programs[$schedule->program_id])) {
+                $programs[$schedule->program_id] = [
+                    'program_id' => $schedule->program_id,
+                    'program_code' => $schedule->program_code,
+                    'program_title' => $schedule->program_title,
+                    'year_levels' => []
+                ];
+            }
+
+            // Initialize year_level if not set
+            if (!isset($programs[$schedule->program_id]['year_levels'][$schedule->year_level])) {
+                $programs[$schedule->program_id]['year_levels'][$schedule->year_level] = [
+                    'year_level' => $schedule->year_level,
+                    'sections' => []
+                ];
+            }
+
+            // Initialize section if not set
+            if (!isset($programs[$schedule->program_id]['year_levels'][$schedule->year_level]['sections'][$schedule->section_name])) {
+                $programs[$schedule->program_id]['year_levels'][$schedule->year_level]['sections'][$schedule->section_name] = [
+                    'section_name' => $schedule->section_name,
+                    'schedules' => []
+                ];
+            }
+
+            // If there's a schedule, add it to the schedules array
+            if ($schedule->schedule_id) {
+                $programs[$schedule->program_id]['year_levels'][$schedule->year_level]['sections'][$schedule->section_name]['schedules'][] = [
+                    'schedule_id' => $schedule->schedule_id,
+                    'day' => $schedule->day,
+                    'start_time' => $schedule->start_time,
+                    'end_time' => $schedule->end_time,
+                    'faculty_name' => $schedule->faculty_name,
+                    'faculty_code' => $schedule->faculty_code,
+                    'room_code' => $schedule->room_code,
+                    'course_details' => [
+                        'course_assignment_id' => $schedule->course_assignment_id,
+                        'course_title' => $schedule->course_title,
+                        'course_code' => $schedule->course_code,
+                        'lec' => $schedule->lec,
+                        'lab' => $schedule->lab,
+                        'units' => $schedule->units,
+                        'tuition_hours' => $schedule->tuition_hours
+                    ]
+                ];
+            }
+        }
+
+        // Step 5: Convert year_levels and sections from associative arrays to indexed arrays
+        foreach ($programs as &$program) {
+            $program['year_levels'] = array_values($program['year_levels']);
+            foreach ($program['year_levels'] as &$yearLevel) {
+                $yearLevel['sections'] = array_values($yearLevel['sections']);
+            }
+        }
+
+        // Step 6: Structure the response
+        return response()->json([
+            'programs_schedule_reports' => [
+                'academic_year_id' => $activeSemester->academic_year_id,
+                'year_start' => $activeSemester->year_start,
+                'year_end' => $activeSemester->year_end,
+                'active_semester_id' => $activeSemester->active_semester_id,
+                'semester' => $activeSemester->semester,
+                'programs' => array_values($programs)
+            ]
+        ]);
+    }
 }
