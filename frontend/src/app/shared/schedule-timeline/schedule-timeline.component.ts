@@ -13,6 +13,7 @@ interface ScheduleBlock {
   courseCode: string;
   courseTitle: string;
   roomCode: string;
+  facultyName: string;
   program: string;
   yearLevel: number;
   section: string;
@@ -27,6 +28,7 @@ interface ScheduleBlock {
 })
 export class ScheduleTimelineComponent implements OnInit {
   @Input() scheduleData: any;
+  @Input() entity!: string;
 
   days: string[] = [
     'Monday',
@@ -84,6 +86,7 @@ export class ScheduleTimelineComponent implements OnInit {
           courseCode: schedule.course_details.course_code,
           courseTitle: schedule.course_details.course_title,
           roomCode: schedule.room_code,
+          facultyName: schedule.faculty_name,
           program: schedule.program_code,
           yearLevel: schedule.year_level,
           section: schedule.section_name,
@@ -164,20 +167,24 @@ export class ScheduleTimelineComponent implements OnInit {
       const schedule = this.scheduleData.find(
         (schedule: any) =>
           schedule.day === day &&
-          this.convertTimeToMinutes(schedule.start_time) === this.timeSlots[slotIndex].minutes
+          this.convertTimeToMinutes(schedule.start_time) ===
+            this.timeSlots[slotIndex].minutes
       );
-  
+
       if (schedule) {
         const formattedStartTime = this.formatTimeTo12Hour(schedule.start_time);
         const formattedEndTime = this.formatTimeTo12Hour(schedule.end_time);
-        
-        return `${block.courseCode}\n${block.courseTitle}\n(${block.program} ${block.yearLevel}-${block.section})\n\n${block.roomCode}\n\n${formattedStartTime} - ${formattedEndTime}`;
+
+        if (this.entity === 'faculty') {
+          return `${block.courseCode}\n${block.courseTitle}\n(${block.program} ${block.yearLevel}-${block.section})\n\n${block.roomCode}\n\n${formattedStartTime} - ${formattedEndTime}`;
+        } else if (this.entity === 'room') {
+          return `${block.courseCode}\n${block.courseTitle}\n(${block.program} ${block.yearLevel}-${block.section})\n\n${block.facultyName}\n\n${formattedStartTime} - ${formattedEndTime}`;
+        }
       }
     }
     return '';
   }
-  
-  
+
   private formatTimeTo12Hour(time: string): string {
     let [hours, minutes] = time.split(':').map(Number);
     const ampm = hours >= 12 ? 'PM' : 'AM';
@@ -185,5 +192,4 @@ export class ScheduleTimelineComponent implements OnInit {
     const formattedMinutes = minutes.toString().padStart(2, '0');
     return `${hours}:${formattedMinutes} ${ampm}`;
   }
-  
 }
