@@ -9,8 +9,15 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 
-import { InputField, TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
-import { TableDialogComponent, DialogConfig, DialogFieldConfig } from '../../../../../shared/table-dialog/table-dialog.component';
+import {
+  InputField,
+  TableHeaderComponent,
+} from '../../../../../shared/table-header/table-header.component';
+import {
+  TableDialogComponent,
+  DialogConfig,
+  DialogFieldConfig,
+} from '../../../../../shared/table-dialog/table-dialog.component';
 
 import { fadeAnimation } from '../../../../animations/animations';
 
@@ -160,7 +167,7 @@ export class ReportProgramsComponent {
       title,
       fields: dialogFields,
       isEdit: true,
-      initialValue: { [field]: element[field] },
+      initialValue: { [field]: element[field] || 'All' },
     };
 
     const dialogRef = this.dialog.open(TableDialogComponent, {
