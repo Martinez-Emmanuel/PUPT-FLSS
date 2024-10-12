@@ -61,6 +61,7 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
     'roomCode',
     'location',
     'floor',
+    'capacity',
     'action',
   ];
 
