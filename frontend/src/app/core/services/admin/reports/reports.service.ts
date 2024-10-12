@@ -26,6 +26,13 @@ export class ReportsService {
       .pipe(catchError(this.handleError));
   }
 
+  // Program Schedules Report
+  getProgramSchedulesReport(): Observable<any> {
+    return this.http
+      .get(`${this.baseUrl}/program-schedules-report`)
+      .pipe(catchError(this.handleError));
+  }
+
   private handleError(error: HttpErrorResponse) {
     console.error('An error occurred:', error);
     return throwError(
