@@ -7,14 +7,43 @@
   } @else {
   <!-- Schedule Title -->
   <div class="entity-info" [@fadeAnimation]>
-    <h2 class="dialog-title">{{ title }}</h2>
-    <span class="dialog-subtitle">{{ subtitle }}</span>
+    <!-- Schedule Title Container -->
+    <div class="schedule-title">
+      <h2 class="dialog-title">{{ title }}</h2>
+      <span class="dialog-subtitle">{{ subtitle }}</span>
+    </div>
+    <!-- Schedule Badge -->
+    <div class="schedule-badge">
+      <span class="badge-text">
+        <span mat-symbol="date_range"></span>Official Schedule
+      </span>
+    </div>
   </div>
 
-  <!-- Schedule Calendar Container -->
-  <div class="dialog-schedule-calendar-container" [@fadeAnimation]>
-    <!--The weekly schedule will be displayed here-->
+  <!-- Multiple Schedule -->
+  @if (scheduleGroups && scheduleGroups.length > 0) {
+  <div class="multiple-schedules-container">
+    @for (group of scheduleGroups; track group) {
+    <div class="schedule-group">
+      <h3 class="group-title">{{ group.title }}</h3>
+      <app-schedule-timeline
+        [scheduleData]="group.scheduleData"
+        [entity]="data.entity"
+      ></app-schedule-timeline>
+    </div>
+    }
   </div>
+  }
+
+  <!-- Single Schedule -->
+  @if (!scheduleGroups) {
+  <div class="single-schedule-container" [@fadeAnimation]>
+    <app-schedule-timeline
+      [scheduleData]="scheduleData"
+      [entity]="data.entity"
+    ></app-schedule-timeline>
+  </div>
+  }
 
   <!-- Action buttons -->
   <div class="dialog-actions" [@fadeAnimation]>

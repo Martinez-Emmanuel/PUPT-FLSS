@@ -106,8 +106,9 @@ export class ReportFacultyComponent
             facultyUnits: faculty.assigned_units,
             isEnabled: faculty.is_published === 1,
             facultyId: faculty.faculty_id,
+            schedules: faculty.schedules,
             academicYear: `${response.faculty_schedule_reports.year_start}-${response.faculty_schedule_reports.year_end}`,
-            semester: this.getSemesterDisplay(response.faculty_schedule_reports.semester), // Use the helper function here
+            semester: this.getSemesterDisplay(response.faculty_schedule_reports.semester),
           })
         );
 
@@ -167,7 +168,7 @@ export class ReportFacultyComponent
       data: {
         exportType: 'single',
         entity: 'faculty',
-        entityData: element,
+        entityData: element.schedules,
         customTitle: `${element.facultyName}`,
         academicYear: element.academicYear,
         semester: element.semester,
