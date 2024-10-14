@@ -85,6 +85,7 @@
             @for (course of filteredSearchResults; track course.course_id) {
             <div
               class="course-card pop"
+              (click)="addCourseToTable(course)"
               matRipple
             >
               <div class="course-info">
@@ -94,7 +95,6 @@
               <button
                 mat-icon-button
                 class="add-button"
-                (click)="addCourseToTable(course)"
               >
                 <span mat-symbol="add" variant="outlined" size="20px"></span>
               </button>
@@ -141,6 +141,7 @@
             course)) {
             <div
               class="course-card pop"
+              (click)="addCourseToTable(course)"
               matRipple
             >
               <div class="course-info">
@@ -150,7 +151,6 @@
               <button
                 mat-icon-button
                 class="add-button"
-                (click)="addCourseToTable(course)"
               >
                 <span mat-symbol="add" variant="outlined" size="20px"></span>
               </button>

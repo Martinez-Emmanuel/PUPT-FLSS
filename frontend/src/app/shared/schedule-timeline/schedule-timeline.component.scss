@@ -66,8 +66,6 @@ $day-colors: (
       }
 
       .time-slot {
-        position: sticky;
-        left: 0;
         font-weight: 500;
         border-right: 1px solid var(--neutral-fade);
         background-color: var(--neutral-space);
@@ -76,6 +74,8 @@ $day-colors: (
       }
 
       .schedule-cell {
+        max-width: 6rem;
+        min-width: 6rem;
         position: relative;
 
         &.schedule-block-start {

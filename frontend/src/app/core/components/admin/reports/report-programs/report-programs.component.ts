@@ -1,5 +1,3 @@
-// report-programs.component.ts
-
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
