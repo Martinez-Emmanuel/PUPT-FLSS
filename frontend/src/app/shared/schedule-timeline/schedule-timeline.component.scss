@@ -75,15 +75,16 @@
             left: 0;
             right: 0;
             z-index: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
+            @include flex-layout(
+              $direction: column,
+              $align: center,
+              $justify: center,
+              $gap: var(--spacing-md)
+            );
             white-space: pre-wrap;
             word-break: break-word;
-            font-size: 0.875rem;
-            padding: 4px;
-            pointer-events: none;
+            font-size: var(--font-size-sm);
+            padding: 0 var(--spacing-xs);
           }
         }
 

@@ -176,9 +176,26 @@ export class ScheduleTimelineComponent implements OnInit {
         const formattedEndTime = this.formatTimeTo12Hour(schedule.end_time);
 
         if (this.entity === 'faculty') {
-          return `${block.courseCode}\n${block.courseTitle}\n(${block.program} ${block.yearLevel}-${block.section})\n\n${block.roomCode}\n\n${formattedStartTime} - ${formattedEndTime}`;
+          return `
+            <div class="course"><strong>${block.courseCode}<br>${block.courseTitle}</strong></div>
+            <div>(${block.program}${block.yearLevel}-${block.section})</div>
+            <div>${block.roomCode}</div>
+            <div>${formattedStartTime} - ${formattedEndTime}</div>
+          `;
         } else if (this.entity === 'room') {
-          return `${block.courseCode}\n${block.courseTitle}\n(${block.program} ${block.yearLevel}-${block.section})\n\n${block.facultyName}\n\n${formattedStartTime} - ${formattedEndTime}`;
+          return `
+            <div class="course"><strong>${block.courseCode}<br>${block.courseTitle}</strong></div>
+            <div>(${block.program}${block.yearLevel}-${block.section})</div>
+            <div>${block.facultyName}</div>
+            <div>${formattedStartTime} - ${formattedEndTime}</div>
+          `;
+        } else if (this.entity === 'program') {
+          return `
+            <div class="course"><strong>${block.courseCode}<br>${block.courseTitle}</strong></div>
+            <div>${block.facultyName}</div>
+            <div>${formattedStartTime} - ${formattedEndTime}</div>
+            <div>${block.roomCode}</div>
+          `;
         }
       }
     }

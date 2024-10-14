@@ -12,12 +12,18 @@ import { ScheduleTimelineComponent } from '../schedule-timeline/schedule-timelin
 
 import { fadeAnimation } from '../../core/animations/animations';
 
+interface ScheduleGroup {
+  title: string;
+  scheduleData: any;
+}
+
 interface ViewScheduleDialogData {
   entity: string;
   entityData?: any;
   customTitle?: string;
   academicYear?: string;
   semester?: number;
+  scheduleGroups?: ScheduleGroup[];
 }
 
 @Component({
@@ -33,7 +39,7 @@ interface ViewScheduleDialogData {
     MatSymbolDirective,
   ],
   templateUrl: './dialog-view-schedule.component.html',
-  styleUrl: './dialog-view-schedule.component.scss',
+  styleUrls: ['./dialog-view-schedule.component.scss'],
   animations: [fadeAnimation],
 })
 export class DialogViewScheduleComponent implements OnInit {
@@ -41,6 +47,7 @@ export class DialogViewScheduleComponent implements OnInit {
   subtitle: string = '';
   isLoading = true;
   scheduleData: any;
+  scheduleGroups?: ScheduleGroup[];
 
   constructor(
     public dialogRef: MatDialogRef<DialogViewScheduleComponent>,
@@ -49,7 +56,12 @@ export class DialogViewScheduleComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeScheduleTitle();
-    this.scheduleData = this.data.entityData;
+    if (this.data.scheduleGroups && this.data.scheduleGroups.length > 0) {
+      this.scheduleGroups = this.data.scheduleGroups;
+    } else {
+      this.scheduleData = this.data.entityData;
+    }
+    this.isLoading = false;
   }
 
   private initializeScheduleTitle(): void {
@@ -59,7 +71,8 @@ export class DialogViewScheduleComponent implements OnInit {
   private setTitleAndSubtitle(): void {
     const { customTitle, entityData, academicYear, semester } = this.data;
 
-    this.title = customTitle ?? entityData?.name ?? entityData?.title;
+    this.title =
+      customTitle ?? entityData?.name ?? entityData?.title ?? 'Schedule';
     this.subtitle =
       academicYear && semester
         ? `For Academic Year ${academicYear}, ${semester}`

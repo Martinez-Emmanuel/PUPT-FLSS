@@ -1,3 +1,5 @@
+// report-programs.component.ts
+
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
@@ -8,7 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar'; 
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
 import { TableDialogComponent, DialogConfig, DialogFieldConfig } from '../../../../../shared/table-dialog/table-dialog.component';
@@ -17,6 +19,7 @@ import { LoadingComponent } from '../../../../../shared/loading/loading.componen
 import { ReportsService } from '../../../../services/admin/reports/reports.service';
 
 import { fadeAnimation } from '../../../../animations/animations';
+import { DialogViewScheduleComponent } from '../../../../../shared/dialog-view-schedule/dialog-view-schedule.component';
 
 interface CourseDetails {
   course_assignment_id: number;
@@ -97,6 +100,8 @@ export class ReportProgramsComponent implements OnInit {
 
   dataSource = new MatTableDataSource<Program>();
   filteredData: Program[] = [];
+  academicYear: string = '';
+  semester: string = '';
   isLoading = true;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -135,6 +140,11 @@ export class ReportProgramsComponent implements OnInit {
             section_selected: 'All',
           }));
 
+        this.academicYear = `${response.programs_schedule_reports.year_start}-${response.programs_schedule_reports.year_end}`;
+        this.semester = this.getSemesterDisplay(
+          response.programs_schedule_reports.semester
+        );
+
         this.isLoading = false;
         this.dataSource.data = programData;
         this.filteredData = [...programData];
@@ -152,6 +162,19 @@ export class ReportProgramsComponent implements OnInit {
         );
       },
     });
+  }
+
+  getSemesterDisplay(semester: number): string {
+    switch (semester) {
+      case 1:
+        return '1st Semester';
+      case 2:
+        return '2nd Semester';
+      case 3:
+        return 'Summer Semester';
+      default:
+        return 'Unknown Semester';
+    }
   }
 
   getRowIndex(index: number): number {
@@ -179,14 +202,6 @@ export class ReportProgramsComponent implements OnInit {
 
   onExportAll() {
     console.log('Export All clicked');
-  }
-
-  onView(element: Program) {
-    console.log('View Schedule clicked');
-  }
-
-  onExportSingle(element: Program) {
-    console.log('Export Single clicked for:', element);
   }
 
   onOpenDialog(program: Program, field: 'yearLevel' | 'section') {
@@ -271,9 +286,85 @@ export class ReportProgramsComponent implements OnInit {
         } else if (field === 'section') {
           program.section_selected = result.section;
         }
-        // Further logic can be implemented based on the selection
       }
     });
+  }
+
+  onView(element: Program) {
+    const selectedYearLevel = element.year_levels_selected;
+    const selectedSection = element.section_selected;
+
+    let scheduleGroups: { title: string; scheduleData: any }[] = [];
+
+    if (selectedYearLevel === 'All') {
+      element.year_levels.forEach((yl) => {
+        const yearLevel = yl.year_level;
+        let sections: any[] = [];
+
+        if (selectedSection === 'All') {
+          sections = yl.sections;
+        } else {
+          const section = yl.sections.find(
+            (sec) => sec.section_name === selectedSection
+          );
+          if (section) {
+            sections = [section];
+          }
+        }
+
+        sections.forEach((sec) => {
+          const title = `Year Level ${yearLevel} - Section ${sec.section_name}`;
+          scheduleGroups.push({
+            title: title,
+            scheduleData: sec.schedules,
+          });
+        });
+      });
+    } else {
+      // Specific Year Level
+      const yl = element.year_levels.find(
+        (yl) => yl.year_level.toString() === selectedYearLevel
+      );
+      if (yl) {
+        let sections: any[] = [];
+
+        if (selectedSection === 'All') {
+          sections = yl.sections;
+        } else {
+          const section = yl.sections.find(
+            (sec) => sec.section_name === selectedSection
+          );
+          if (section) {
+            sections = [section];
+          }
+        }
+
+        sections.forEach((sec) => {
+          const title = `Year Level ${yl.year_level} - Section ${sec.section_name}`;
+          scheduleGroups.push({
+            title: title,
+            scheduleData: sec.schedules,
+          });
+        });
+      }
+    }
+
+    this.dialog.open(DialogViewScheduleComponent, {
+      maxWidth: '70rem',
+      width: '100%',
+      data: {
+        entity: 'program',
+        scheduleGroups: scheduleGroups,
+        customTitle: `${element.program_title} (${element.program_code})`,
+        academicYear: this.academicYear,
+        semester: this.semester,
+      },
+      disableClose: true,
+    });
+  }
+
+  onExportSingle(element: Program) {
+    console.log('Export Single clicked for:', element);
   }
 
   updateDisplayedData() {

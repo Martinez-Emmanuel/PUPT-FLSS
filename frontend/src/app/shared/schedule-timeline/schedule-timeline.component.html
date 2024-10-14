@@ -22,8 +22,8 @@
             <div 
               class="schedule-content"
               [style.height.px]="getScheduleBlockHeight(day, i)"
+              [innerHTML]="getScheduleBlockContent(day,i)"
             >
-              {{ getScheduleBlockContent(day, i) }}
             </div>
           }
         </td>

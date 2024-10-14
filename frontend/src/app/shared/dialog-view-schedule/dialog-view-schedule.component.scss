@@ -47,7 +47,34 @@
   }
 }
 
-.dialog-schedule-calendar-container {
+.multiple-schedules-container {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-xl)
+  );
+  max-height: 70vh;
+  overflow: auto;
+  padding-right: var(--spacing-md);
+
+  .schedule-group {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $justify: flex-start,
+      $gap: var(--spacing-xs)
+    );
+    border-radius: var(--border-radius-md);
+
+    .group-title {
+      @include reset-styles;
+      font-weight: 600;
+    }
+  }
+}
+
+.single-schedule-container {
   @include flex-layout(
     $direction: column,
     $align: stretch,
