@@ -19,6 +19,15 @@ interface ScheduleBlock {
   section: string;
 }
 
+type Day =
+  | 'Monday'
+  | 'Tuesday'
+  | 'Wednesday'
+  | 'Thursday'
+  | 'Friday'
+  | 'Saturday'
+  | 'Sunday';
+
 @Component({
   selector: 'app-schedule-timeline',
   standalone: true,
@@ -30,7 +39,7 @@ export class ScheduleTimelineComponent implements OnInit {
   @Input() scheduleData: any;
   @Input() entity!: string;
 
-  days: string[] = [
+  days: Day[] = [
     'Monday',
     'Tuesday',
     'Wednesday',
@@ -43,10 +52,8 @@ export class ScheduleTimelineComponent implements OnInit {
   scheduleBlocks: ScheduleBlock[] = [];
 
   ngOnInit() {
-    console.log('Schedule Data:', this.scheduleData);
     this.generateTimeSlots();
     this.processScheduleData();
-    console.log('Processed Schedule Blocks:', this.scheduleBlocks);
   }
 
   private generateTimeSlots() {
@@ -55,29 +62,20 @@ export class ScheduleTimelineComponent implements OnInit {
     const interval = 30;
 
     for (let time = startTime; time <= endTime; time += interval) {
-      const hours = Math.floor(time / 60);
-      const minutes = time % 60;
-      const ampm = hours >= 12 ? 'PM' : 'AM';
-      const formattedHours = hours % 12 || 12;
-      const formattedTime = `${formattedHours
-        .toString()
-        .padStart(2, '0')}:${minutes.toString().padStart(2, '0')} ${ampm}`;
-
+      const formattedTime = this.formatMinutesTo12Hour(time);
       this.timeSlots.push({ time: formattedTime, minutes: time });
     }
   }
 
   private processScheduleData() {
-    console.log('Processing schedule data:', this.scheduleData);
     if (Array.isArray(this.scheduleData) && this.scheduleData.length > 0) {
       this.scheduleData.forEach((schedule: any) => {
         const startTime = this.convertTimeToMinutes(schedule.start_time);
         const endTime = this.convertTimeToMinutes(schedule.end_time);
         const startSlot = this.findTimeSlotIndex(startTime);
         const duration = Math.ceil((endTime - startTime) / 30);
-        const hasExtraSlot =
-          (endTime - startTime) % 30 === 0 && endTime !== startTime;
-        const adjustedDuration = hasExtraSlot ? duration + 1 : duration;
+        const adjustedDuration =
+          (endTime - startTime) % 30 === 0 ? duration + 1 : duration;
 
         this.scheduleBlocks.push({
           day: schedule.day,
@@ -116,97 +114,123 @@ export class ScheduleTimelineComponent implements OnInit {
   }
 
   getScheduleBlockHeight(day: string, slotIndex: number): number {
-    const block = this.scheduleBlocks.find(
-      (b) => b.day === day && slotIndex === b.startSlot
-    );
-    if (block) {
-      return block.duration * 26 - 2; // TODO: adjust this in the future idk
-    }
-    return 0;
+    const block = this.getScheduleBlock(day, slotIndex);
+    return block ? block.duration * 26 - 2 : 0;
   }
 
   getScheduleBlockStyle(day: string, slotIndex: number): any {
-    const block = this.scheduleBlocks.find(
-      (b) =>
-        b.day === day &&
-        slotIndex >= b.startSlot &&
-        slotIndex < b.startSlot + b.duration
-    );
+    const block = this.getScheduleBlock(day, slotIndex);
     if (block) {
+      const { backgroundColor, borderColor } = this.getBlockColors(day as Day);
       const baseStyle = {
-        'background-color': 'var(--primary-fade)',
-        'border-left': '1px solid var(--primary-one)',
-        'border-right': '1px solid var(--primary-one)',
+        'background-color': backgroundColor,
+        'border-left': `1px solid ${borderColor}`,
+        'border-right': `1px solid ${borderColor}`,
       };
 
       if (slotIndex === block.startSlot) {
-        return {
-          ...baseStyle,
-          'border-top': '1px solid var(--primary-one)',
-        };
+        return { ...baseStyle, 'border-top': `1px solid ${borderColor}` };
       } else if (slotIndex === block.startSlot + block.duration - 1) {
-        return {
-          ...baseStyle,
-          'border-bottom': '1px solid var(--primary-one)',
-        };
+        return { ...baseStyle, 'border-bottom': `1px solid ${borderColor}` };
       }
       return baseStyle;
     }
     return {};
   }
 
-  getScheduleBlockContent(day: string, slotIndex: number): string {
-    const block = this.scheduleBlocks.find(
-      (b) =>
-        b.day === day &&
-        slotIndex >= b.startSlot &&
-        slotIndex < b.startSlot + b.duration
-    );
+  getDayClass(day: string): string {
+    return `schedule-${day.toLowerCase()}`;
+  }
 
-    if (block && slotIndex === block.startSlot) {
+  getBlockProperty(
+    day: string,
+    slotIndex: number,
+    property: keyof ScheduleBlock
+  ): any {
+    const block = this.getScheduleBlock(day, slotIndex);
+    return block ? block[property] : null;
+  }
+
+  getFormattedTime(day: string, slotIndex: number): string {
+    const block = this.getScheduleBlock(day, slotIndex);
+    if (block) {
       const schedule = this.scheduleData.find(
-        (schedule: any) =>
-          schedule.day === day &&
-          this.convertTimeToMinutes(schedule.start_time) ===
+        (s: any) =>
+          s.day === day &&
+          this.convertTimeToMinutes(s.start_time) ===
             this.timeSlots[slotIndex].minutes
       );
-
       if (schedule) {
-        const formattedStartTime = this.formatTimeTo12Hour(schedule.start_time);
-        const formattedEndTime = this.formatTimeTo12Hour(schedule.end_time);
-
-        if (this.entity === 'faculty') {
-          return `
-            <div class="course"><strong>${block.courseCode}<br>${block.courseTitle}</strong></div>
-            <div>(${block.program}${block.yearLevel}-${block.section})</div>
-            <div>${block.roomCode}</div>
-            <div>${formattedStartTime} - ${formattedEndTime}</div>
-          `;
-        } else if (this.entity === 'room') {
-          return `
-            <div class="course"><strong>${block.courseCode}<br>${block.courseTitle}</strong></div>
-            <div>(${block.program}${block.yearLevel}-${block.section})</div>
-            <div>${block.facultyName}</div>
-            <div>${formattedStartTime} - ${formattedEndTime}</div>
-          `;
-        } else if (this.entity === 'program') {
-          return `
-            <div class="course"><strong>${block.courseCode}<br>${block.courseTitle}</strong></div>
-            <div>${block.facultyName}</div>
-            <div>${formattedStartTime} - ${formattedEndTime}</div>
-            <div>${block.roomCode}</div>
-          `;
-        }
+        return `${this.formatTimeTo12Hour(
+          schedule.start_time
+        )} - ${this.formatTimeTo12Hour(schedule.end_time)}`;
       }
     }
     return '';
+  }
+
+  
+  private getBlockColors(day: Day) {
+    const dayColors: Record<
+      Day,
+      { backgroundColor: string; borderColor: string }
+    > = {
+      Monday: {
+        backgroundColor: 'var(--primary-fade)',
+        borderColor: 'var(--primary-text)',
+      },
+      Tuesday: {
+        backgroundColor: 'var(--secondary-fade)',
+        borderColor: 'var(--secondary-text)',
+      },
+      Wednesday: {
+        backgroundColor: 'var(--blue-fade)',
+        borderColor: 'var(--blue-primary)',
+      },
+      Thursday: {
+        backgroundColor: 'var(--aqua-fade)',
+        borderColor: 'var(--aqua-primary)',
+      },
+      Friday: {
+        backgroundColor: 'var(--purple-fade)',
+        borderColor: 'var(--purple-primary)',
+      },
+      Saturday: {
+        backgroundColor: 'var(--green-fade)',
+        borderColor: 'var(--green-primary)',
+      },
+      Sunday: {
+        backgroundColor: 'var(--primary-fade)',
+        borderColor: 'var(--primary-text)',
+      },
+    };
+    return dayColors[day];
+  }
+
+  private formatMinutesTo12Hour(minutes: number): string {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12;
+    return `${formattedHours}:${mins.toString().padStart(2, '0')} ${ampm}`;
   }
 
   private formatTimeTo12Hour(time: string): string {
     let [hours, minutes] = time.split(':').map(Number);
     const ampm = hours >= 12 ? 'PM' : 'AM';
     hours = hours % 12 || 12;
-    const formattedMinutes = minutes.toString().padStart(2, '0');
-    return `${hours}:${formattedMinutes} ${ampm}`;
+    return `${hours}:${minutes.toString().padStart(2, '0')} ${ampm}`;
+  }
+
+  private getScheduleBlock(
+    day: string,
+    slotIndex: number
+  ): ScheduleBlock | undefined {
+    return this.scheduleBlocks.find(
+      (b) =>
+        b.day === day &&
+        slotIndex >= b.startSlot &&
+        slotIndex < b.startSlot + b.duration
+    );
   }
 }

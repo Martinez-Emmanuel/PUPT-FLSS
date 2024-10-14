@@ -1,5 +1,21 @@
 @import "../../../styles/mixins.scss";
 
+$day-colors: (
+  monday: var(--primary-text),
+  tuesday: var(--secondary-text),
+  wednesday: var(--blue-primary),
+  thursday: var(--aqua-primary),
+  friday: var(--purple-primary),
+  saturday: var(--green-primary),
+  sunday: var(--primary-text),
+);
+
+@each $day, $color in $day-colors {
+  .schedule-content.schedule-#{$day} .course {
+    color: #{$color};
+  }
+}
+
 .schedule-timeline-container {
   @include hide-scrollbar;
   height: 100%;
@@ -85,6 +101,10 @@
             word-break: break-word;
             font-size: var(--font-size-sm);
             padding: 0 var(--spacing-xs);
+
+            .course-text {
+              font-weight: 600;
+            }
           }
         }
 
