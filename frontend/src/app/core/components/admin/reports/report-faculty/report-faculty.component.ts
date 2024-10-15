@@ -230,7 +230,7 @@ export class ReportFacultyComponent
             .every((faculty) => faculty.isEnabled);
 
         this.snackBar.open(
-          'Schedules successfully published for applicable faculty.',
+          'Schedules successfully published for all applicable faculty.',
           'Close',
           {
             duration: 3000,
@@ -242,7 +242,7 @@ export class ReportFacultyComponent
         this.isToggleAllChecked = !event.checked;
 
         this.snackBar.open(
-          'Error publishing schedules for applicable faculty.',
+          'Error publishing schedules for all applicable faculty.',
           'Close',
           {
             duration: 3000,
