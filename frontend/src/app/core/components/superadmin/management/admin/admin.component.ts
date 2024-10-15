@@ -138,6 +138,14 @@ export class AdminComponent implements OnInit {
           maxLength: 100,
           required: false,
         },
+        {
+          label: 'Confirm Password',
+          formControlName: 'confirmPassword',
+          type: 'text',
+          maxLength: 100,
+          required: false,
+          confirmPassword: true,
+        }, 
         // {
         //   label: 'Email',
         //   formControlName: 'email',
