@@ -36,10 +36,10 @@
   .header-name {
     flex: 0 1 auto;
     min-width: 0;
-    gap: var(--spacing-lg);
+    gap: var(--spacing-md);
 
     .university-logo {
-      width: 4rem;
+      width: 3.5rem;
       height: auto;
       flex-shrink: 0;
     }
@@ -134,7 +134,7 @@
 
   .header-account {
     flex: 0 1 auto;
-    gap: var(--spacing-lg);
+    gap: var(--spacing-md);
     display: flex;
     align-items: center;
     justify-content: flex-end;
