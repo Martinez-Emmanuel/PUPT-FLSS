@@ -16,15 +16,14 @@ $day-colors: (
   }
 }
 
-.schedule-timeline-container {
+.faculty-schedule-timetable-container {
   @include hide-scrollbar;
   height: 100%;
   width: 100%;
   overflow-y: auto;
-  max-height: 60vh;
   border-radius: var(--border-radius-md);
 
-  .schedule-timeline-table {
+  .faculty-schedule-timetable-table {
     @include default-transition;
     width: 100%;
     border-collapse: separate;
@@ -38,7 +37,7 @@ $day-colors: (
       font-weight: 500;
     }
 
-    .schedule-timeline-table-header {
+    .faculty-schedule-timetable-table-header {
       @include sticky;
       background-color: var(--primary-one);
       z-index: 2;
@@ -51,7 +50,7 @@ $day-colors: (
       }
     }
 
-    .schedule-timeline-table-body {
+    .faculty-schedule-timetable-table-body {
       td {
         padding: 0;
         border-bottom: 1px solid var(--neutral-fade);
