@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
+
 import { FacultyScheduleTimetableComponent } from '../../../../shared/faculty-schedule-timetable/faculty-schedule-timetable.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
@@ -12,7 +14,7 @@ import { fadeAnimation } from '../../../animations/animations';
 @Component({
   selector: 'app-load-and-schedule',
   standalone: true,
-  imports: [CommonModule, FacultyScheduleTimetableComponent, LoadingComponent],
+  imports: [CommonModule, FacultyScheduleTimetableComponent, LoadingComponent, MatSymbolDirective],
   templateUrl: './load-and-schedule.component.html',
   styleUrl: './load-and-schedule.component.scss',
   animations: [fadeAnimation],
@@ -20,6 +22,7 @@ import { fadeAnimation } from '../../../animations/animations';
 export class LoadAndScheduleComponent implements OnInit {
   facultySchedule: any;
   isLoading = true;
+  isPublished = false;
 
   constructor(
     private reportsService: ReportsService,
@@ -36,6 +39,7 @@ export class LoadAndScheduleComponent implements OnInit {
       this.reportsService.getSingleFacultySchedule(+facultyId).subscribe(
         (data) => {
           this.facultySchedule = data.faculty_schedule;
+          this.isPublished = data.faculty_schedule.is_published === 1;
           this.isLoading = false;
         },
         (error) => {

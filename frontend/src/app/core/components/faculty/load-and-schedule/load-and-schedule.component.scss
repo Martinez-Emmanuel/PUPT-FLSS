@@ -23,7 +23,7 @@
     $gap: var(--spacing-md)
   );
 
-  .row-title {
+  .page-header {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-xxs);
@@ -43,7 +43,7 @@
     p {
       @include reset-styles;
       width: max-content;
-      font-size: var(--font-size-lg);
+      font-size: var(--font-size-mdx);
     }
   }
 }
@@ -51,5 +51,29 @@
 .row-two {
   flex: 1;
   overflow: hidden;
-}
 
+  .unpublished-container {
+    @include flex-layout(
+      $direction: column,
+      $align: center,
+      $justify: center,
+      $gap: var(--spacing-lg)
+    );
+    height: 100%;
+    opacity: var(--opacity-semi-opaque);
+
+    svg {
+      width: 30%;
+      height: auto;
+    }
+
+    .unpublished-text {
+      @include flex-layout($gap: var(--spacing-xs));
+      font-size: var(--font-size-mdx);
+
+      span[mat-symbol] {
+        font-size: var(--font-size-mdx);
+      }
+    }
+  }
+}
