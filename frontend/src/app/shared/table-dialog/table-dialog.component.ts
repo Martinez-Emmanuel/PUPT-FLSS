@@ -321,7 +321,7 @@ export class TableDialogComponent {
     if (this.form.valid) {
       this.isLoading = true;
 
-      const minimumSpinnerDuration = 1000;
+      const minimumSpinnerDuration = 500;
       const startTime = Date.now();
 
       this.dialogRef.disableClose = true;

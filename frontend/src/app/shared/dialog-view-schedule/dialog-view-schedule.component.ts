@@ -5,10 +5,17 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 import { LoadingComponent } from '../loading/loading.component';
+import { ScheduleTimelineComponent } from '../schedule-timeline/schedule-timeline.component';
 
 import { fadeAnimation } from '../../core/animations/animations';
+
+interface ScheduleGroup {
+  title: string;
+  scheduleData: any;
+}
 
 interface ViewScheduleDialogData {
   entity: string;
@@ -16,6 +23,7 @@ interface ViewScheduleDialogData {
   customTitle?: string;
   academicYear?: string;
   semester?: number;
+  scheduleGroups?: ScheduleGroup[];
 }
 
 @Component({
@@ -24,18 +32,22 @@ interface ViewScheduleDialogData {
   imports: [
     CommonModule,
     LoadingComponent,
+    ScheduleTimelineComponent,
     MatTableModule,
     MatButtonModule,
     MatIconModule,
+    MatSymbolDirective,
   ],
   templateUrl: './dialog-view-schedule.component.html',
-  styleUrl: './dialog-view-schedule.component.scss',
+  styleUrls: ['./dialog-view-schedule.component.scss'],
   animations: [fadeAnimation],
 })
 export class DialogViewScheduleComponent implements OnInit {
   title: string = '';
   subtitle: string = '';
   isLoading = true;
+  scheduleData: any;
+  scheduleGroups?: ScheduleGroup[];
 
   constructor(
     public dialogRef: MatDialogRef<DialogViewScheduleComponent>,
@@ -44,6 +56,12 @@ export class DialogViewScheduleComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeScheduleTitle();
+    if (this.data.scheduleGroups && this.data.scheduleGroups.length > 0) {
+      this.scheduleGroups = this.data.scheduleGroups;
+    } else {
+      this.scheduleData = this.data.entityData;
+    }
+    this.isLoading = false;
   }
 
   private initializeScheduleTitle(): void {
@@ -53,7 +71,8 @@ export class DialogViewScheduleComponent implements OnInit {
   private setTitleAndSubtitle(): void {
     const { customTitle, entityData, academicYear, semester } = this.data;
 
-    this.title = customTitle ?? entityData?.name ?? entityData?.title;
+    this.title =
+      customTitle ?? entityData?.name ?? entityData?.title ?? 'Schedule';
     this.subtitle =
       academicYear && semester
         ? `For Academic Year ${academicYear}, ${semester}`

@@ -11,17 +11,70 @@
   height: 100%;
 }
 
-.dialog-title {
-  @include reset-styles;
-  font-weight: 600;
-  color: var(--primary-text);
+.entity-info {
+  @include flex-layout(
+    $align: stretch,
+    $justify: space-between,
+    $gap: var(--spacing-xxs)
+  );
+
+  .schedule-title {
+    .dialog-title {
+      @include reset-styles;
+      font-weight: 600;
+      color: var(--primary-text);
+    }
+
+    .dialog-subtitle {
+      color: var(--primary-text);
+    }
+  }
+
+  .schedule-badge {
+    .badge-text {
+      @include flex-layout($gap: var(--spacing-xxs));
+      @include gradient-primary(315deg);
+      border-radius: var(--border-radius-lg);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      font-size: var(--font-size-sm);
+      font-weight: 500;
+      color: white;
+
+      span[mat-symbol] {
+        font-size: var(--font-size-base);
+      }
+    }
+  }
 }
 
-.dialog-subtitle {
-  color: var(--primary-text);
+.multiple-schedules-container {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-xl)
+  );
+  max-height: 70vh;
+  overflow: auto;
+  padding-right: var(--spacing-md);
+
+  .schedule-group {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $justify: flex-start,
+      $gap: var(--spacing-xs)
+    );
+    border-radius: var(--border-radius-md);
+
+    .group-title {
+      @include reset-styles;
+      font-weight: 600;
+    }
+  }
 }
 
-.dialog-schedule-calendar-container {
+.single-schedule-container {
   @include flex-layout(
     $direction: column,
     $align: stretch,
