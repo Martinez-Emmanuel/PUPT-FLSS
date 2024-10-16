@@ -18,6 +18,7 @@ interface ExportDialogData {
   entityData?: any;
   customTitle?: string;
   generatePdfFunction?: (showPreview: boolean) => Blob | void;
+  generateFileNameFunction?: () => string; 
 }
 
 @Component({
@@ -111,10 +112,17 @@ export class DialogExportComponent implements OnInit, AfterViewInit {
   public downloadPdf(): void {
     const pdfBlob = this.data.generatePdfFunction?.(false); 
     if (pdfBlob) {
+      let fileName;
+      if (this.data.generateFileNameFunction) {
+        fileName = this.data.generateFileNameFunction();
+      } else {
+        fileName = `${this.title.replace(/ /g, '_').toLowerCase()}.pdf`;
+      }
+  
       const blobUrl = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = blobUrl;
-      link.download = `${this.title.replace(/ /g, '_').toLowerCase()}_report.pdf`; 
+      link.download = fileName;
       link.click();
       URL.revokeObjectURL(blobUrl); 
     }

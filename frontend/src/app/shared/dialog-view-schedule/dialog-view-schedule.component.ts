@@ -1,9 +1,11 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
@@ -31,10 +33,12 @@ interface ViewScheduleDialogData {
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     LoadingComponent,
     ScheduleTimelineComponent,
     MatTableModule,
     MatButtonModule,
+    MatButtonToggleModule,
     MatIconModule,
     MatSymbolDirective,
   ],
@@ -48,6 +52,7 @@ export class DialogViewScheduleComponent implements OnInit {
   isLoading = true;
   scheduleData: any;
   scheduleGroups?: ScheduleGroup[];
+  selectedView: 'table-view' | 'pdf-view' = 'table-view';
 
   constructor(
     public dialogRef: MatDialogRef<DialogViewScheduleComponent>,
@@ -82,5 +87,9 @@ export class DialogViewScheduleComponent implements OnInit {
 
   public closeDialog(): void {
     this.dialogRef.close();
+  }
+
+  onViewChange(view: 'table-view' | 'pdf-view'): void {
+    this.selectedView = view;
   }
 }

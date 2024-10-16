@@ -10,15 +10,22 @@
     <!-- Schedule Title Container -->
     <div class="schedule-title">
       <h2 class="dialog-title">{{ title }}</h2>
-      <span class="dialog-subtitle">{{ subtitle }}</span>
+      <span class="dialog-subtitle">Official Schedule {{ subtitle }}</span>
     </div>
     <!-- Schedule Badge -->
-    <div class="schedule-badge">
-      <span class="badge-text">
-        <span mat-symbol="date_range"></span>Official Schedule
-      </span>
+    <div class="view-option">
+      <mat-button-toggle-group
+        name="viewOption"
+        [(ngModel)]="selectedView"
+        aria-label="Select view option"
+      >
+        <mat-button-toggle value="table-view">Table view</mat-button-toggle>
+        <mat-button-toggle value="pdf-view">PDF view</mat-button-toggle>
+      </mat-button-toggle-group>
     </div>
   </div>
+
+  @if (selectedView === 'table-view') {
 
   <!-- Multiple Schedule -->
   @if (scheduleGroups && scheduleGroups.length > 0) {
@@ -29,6 +36,7 @@
       <app-schedule-timeline
         [scheduleData]="group.scheduleData"
         [entity]="data.entity"
+        [@fadeAnimation]
       ></app-schedule-timeline>
     </div>
     }
@@ -37,11 +45,17 @@
 
   <!-- Single Schedule -->
   @if (!scheduleGroups) {
-  <div class="single-schedule-container" [@fadeAnimation]>
+  <div class="single-schedule-container">
     <app-schedule-timeline
       [scheduleData]="scheduleData"
       [entity]="data.entity"
+      [@fadeAnimation]
     ></app-schedule-timeline>
+  </div>
+  } } @else if (selectedView === 'pdf-view') {
+  <div class="dialog-pref-pdf-container">
+    <!--TODO: Display the PDF frame here-->
+    <span>Display the PDF frame here</span>
   </div>
   }
 

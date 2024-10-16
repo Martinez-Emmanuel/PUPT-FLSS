@@ -30,18 +30,15 @@
     }
   }
 
-  .schedule-badge {
-    .badge-text {
-      @include flex-layout($gap: var(--spacing-xxs));
-      @include gradient-primary(315deg);
-      border-radius: var(--border-radius-lg);
-      padding: var(--spacing-xs) var(--spacing-sm);
-      font-size: var(--font-size-sm);
-      font-weight: 500;
-      color: white;
+  .view-option {
+    @include flex-layout($align: flex-end);
 
-      span[mat-symbol] {
-        font-size: var(--font-size-base);
+    .button-toggle {
+      @include flex-layout;
+
+      mat-icon {
+        font-size: large;
+        display: vertical-center;
       }
     }
   }
@@ -82,6 +79,14 @@
   );
 
   min-height: 60vh;
+}
+
+iframe {
+  width: 100%;
+  height: 30vw;
+  border: none;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-level-1);
 }
 
 .dialog-actions {
