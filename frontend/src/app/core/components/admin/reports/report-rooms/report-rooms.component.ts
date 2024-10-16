@@ -156,7 +156,7 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
 
   onView(element: Room) {
     this.dialog.open(DialogViewScheduleComponent, {
-      maxWidth: '70rem',
+      maxWidth: '90vw',
       width: '100%',
       data: {
         exportType: 'single',
