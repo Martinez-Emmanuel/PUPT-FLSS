@@ -16,11 +16,11 @@
             <p style="line-height: 1.6; color: red; font-weight: bold; text-align: center;">PENDING</p>
             <p style="line-height: 1.6; color: #333; text-align: justify;">Your submission is pending review by our team. We will notify you once your preferences have been reviewed and processed. This process ensures that all preferences are aligned with our guidelines and requirements.</p>
             <p style="line-height: 1.6; color: #333; text-align: justify;">Thank you for submitting your preferences. If you have any questions or need further assistance, please feel free to contact us.</p>
-            <a href="http://localhost:4200/faculty/login" style="display: block; width: 200px; margin: 20px auto; padding: 10px 0; text-align: center; background-color: #800000; color: #fff; text-decoration: none; border-radius: 5px;">Visit PUPT-FLSS</a>
+            <a href="https://app.pupt-flss.com/" style="display: block; width: 200px; margin: 20px auto; padding: 10px 0; text-align: center; background-color: #800000; color: #fff; text-decoration: none; border-radius: 5px;">Visit PUPT-FLSS</a>
         </div>
     </div>
         <div style="background-color: #f4f4f4; text-align: center; padding: 10px; font-size: 12px; color: #888;">
-            <p>Need a hand? 🖐️ If you have any questions or need help, you can reach us at <a href="mailto:puptflss@gmail.com" style="color: #800000; text-decoration: none;">puptflss@gmail.com</a>.</p>
+            <p>Need a hand? 🖐️ If you have any questions or need help, you can reach us at <a href="mailto:puptflss@gmail.com" style="color: #800000; text-decoration: none;">pupt.flss2025@gmail.com</a>.</p>
             <div style="margin: 10px 0;">
                 <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/124/124010.png" alt="Facebook" style="width: 24px; margin: 0 5px; display: inline-block; vertical-align: middle;"></a>
                 <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="Twitter" style="width: 24px; margin: 0 5px; display: inline-block; vertical-align: middle;"></a>
