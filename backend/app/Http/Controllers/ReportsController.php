@@ -547,6 +547,7 @@ class ReportsController extends Controller
             'faculty_code' => $faculty->faculty_code,
             'faculty_type' => $faculty->faculty_type,
             'assigned_units' => 0,
+            'total_hours' => 0,
             'is_published' => 0,
             'schedules' => []
         ];
@@ -554,6 +555,7 @@ class ReportsController extends Controller
         foreach ($facultySchedules as $schedule) {
             if ($schedule->schedule_id) {
                 $facultyData['assigned_units'] += $schedule->units;
+                $facultyData['total_hours'] += $schedule->tuition_hours;
                 $facultyData['is_published'] = $schedule->is_published;
                 $facultyData['schedules'][] = [
                     'schedule_id' => $schedule->schedule_id,

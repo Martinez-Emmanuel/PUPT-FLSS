@@ -11,6 +11,22 @@
       <h1>Load and Schedule</h1>
       <p>Here's your official load and schedule for this semester.</p>
     </div>
+
+    <!--Schedule Overview-->
+    <div class="schedule-overview" [@fadeAnimation]>
+     <!--Schedule Summary-->
+     <div class="schedule-summary">
+      <h4 class="mini-heading"><span mat-symbol="article"></span>Schedule Summary</h4>
+      <p>Total Units: {{ facultySchedule.assigned_units }}</p>
+      <p>Total Hours: {{ facultySchedule.total_hours }}</p>
+     </div>
+
+     <!--Schedule Summary-->
+     <div class="schedule-history">
+      <h4 class="mini-heading"><span mat-symbol="history"></span>Schedule History</h4>
+      <p>View your past load and schedule here.</p>
+     </div>
+    </div>
   </div>
 
   <!-- Second row -->
