@@ -4,6 +4,7 @@ import { CommonModule } from '@angular/common';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 import { LoadingComponent } from '../loading/loading.component';
@@ -31,6 +32,7 @@ interface Course {
     LoadingComponent,
     MatTableModule,
     MatButtonModule,
+    MatButtonToggleModule,
     MatSymbolDirective,
   ],
   templateUrl: './dialog-pref.component.html',

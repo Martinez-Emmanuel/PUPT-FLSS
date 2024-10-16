@@ -7,12 +7,24 @@
 
   <!-- Faculty Info-->
   <div class="faculty-info" [@fadeAnimation]>
-    <!--Faculty Name-->
-    <h2 class="faculty-name">{{ facultyName }}</h2>
-    <span>
-      Submitted Preferences for A.Y. {{ academicYear }},
-      {{ semesterLabel }}</span
-    >
+    <!--Info Text-->
+    <div class="info-text">
+      <!--Faculty Name-->
+      <h2 class="faculty-name">{{ facultyName }}</h2>
+      <span>
+        Submitted Preferences for A.Y. {{ academicYear }},
+        {{ semesterLabel }}</span
+      >
+    </div>
+
+    <!--Toggle View-->
+    <div class="view-option">
+      <mat-button-toggle-group name="viewOption">
+        <mat-button-toggle value="table-view">Table view</mat-button-toggle>
+        <mat-button-toggle value="pdf-view">PDF view</mat-button-toggle>
+      </mat-button-toggle-group>
+      
+    </div>
   </div>
 
   <!-- Faculty Preferences Table-->

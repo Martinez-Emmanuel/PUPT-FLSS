@@ -12,11 +12,16 @@
 }
 
 .faculty-info {
+  @include flex-layout($align: stretch, $justify: space-between);
   color: var(--primary-text);
 
   .faculty-name {
     font-weight: 600;
     @include reset-styles;
+  }
+
+  .view-option {
+    @include flex-layout($align: flex-end);
   }
 }
 
