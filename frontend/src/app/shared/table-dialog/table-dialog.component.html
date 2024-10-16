@@ -234,7 +234,7 @@
       mat-flat-button
       class="action-button"
       color="primary"
-      [disabled]="form.invalid || isLoading"
+      [disabled]="form.invalid || !hasFormChanged() || isLoading"
       (click)="onSave()"
     >
       @if (isLoading) {
