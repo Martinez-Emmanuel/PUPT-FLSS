@@ -1,0 +1,55 @@
+@import "../../../../../styles/mixins";
+* {
+  @include reset-styles;
+  @include default-transition;
+  @include hide-scrollbar;
+}
+
+.faculty-load-schedule-container {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-md)
+  );
+  height: 100%;
+}
+
+.row-one {
+  @include flex-layout(
+    $direction: column,
+    $align: flex-start,
+    $justify: flex-start,
+    $gap: var(--spacing-md)
+  );
+
+  .row-title {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+
+    h1 {
+      @include reset-styles;
+      width: max-content;
+      font-size: var(--font-size-2xxl);
+      font-weight: 700;
+
+      @include gradient-primary(315deg);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p {
+      @include reset-styles;
+      width: max-content;
+      font-size: var(--font-size-lg);
+    }
+  }
+}
+
+.row-two {
+  flex: 1;
+  overflow: hidden;
+}
+

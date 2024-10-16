@@ -1,1 +1,25 @@
-<p>load-and-schedule works!</p>
+<div class="faculty-load-schedule-container" [@fadeAnimation]>
+  @if(isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
+  <!-- First row -->
+  <div class="row-one">
+    <!-- Page Title -->
+    <div class="row-title" [@fadeAnimation]>
+      <h1>Load and Schedule</h1>
+      <p>Here's your official load and schedule for this semester.</p>
+    </div>
+  </div>
+
+  <!-- Second row -->
+  <div class="row-two">
+    @if (facultySchedule) {
+    <app-faculty-schedule-timetable
+      [facultySchedule]="facultySchedule"
+    ></app-faculty-schedule-timetable>
+    }
+  </div>
+  }
+</div>

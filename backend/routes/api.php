@@ -50,6 +50,7 @@ Route::get('/get-rooms', [RoomController::class, 'getAllRooms']);
 Route::get('/faculty-schedules-report', [ReportsController::class, 'getFacultySchedulesReport']);
 Route::get('/room-schedules-report', [ReportsController::class, 'getRoomSchedulesReport']);
 Route::get('/program-schedules-report', [ReportsController::class, 'getProgramSchedulesReport']);
+Route::get('/single-faculty-schedule/{faculty_id}', [ReportsController::class, 'getSingleFacultySchedule']);
 
 //Scheduling routes
 Route::post('/submit-preferences', [PreferenceController::class, 'submitPreferences']);

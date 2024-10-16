@@ -33,6 +33,13 @@ export class ReportsService {
       .pipe(catchError(this.handleError));
   }
 
+  // Single Faculty Schedule
+  getSingleFacultySchedule(faculty_id: number): Observable<any> {
+    return this.http
+      .get(`${this.baseUrl}/single-faculty-schedule/${faculty_id}`)
+      .pipe(catchError(this.handleError));
+  }
+
   private handleError(error: HttpErrorResponse) {
     console.error('An error occurred:', error);
     return throwError(
