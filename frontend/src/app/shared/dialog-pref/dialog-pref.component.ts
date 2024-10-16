@@ -1,10 +1,13 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatIconModule } from '@angular/material/icon';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 import { LoadingComponent } from '../loading/loading.component';
@@ -24,19 +27,27 @@ interface Course {
   preferred_end_time: string;
 }
 
+interface DialogPrefData {
+  facultyName: string;
+  faculty_id: number;
+  generatePdfFunction?: (preview: boolean) => Blob | void;
+}
+
 @Component({
   selector: 'app-dialog-pref',
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     LoadingComponent,
     MatTableModule,
     MatButtonModule,
     MatButtonToggleModule,
+    MatIconModule,
     MatSymbolDirective,
   ],
   templateUrl: './dialog-pref.component.html',
-  styleUrl: './dialog-pref.component.scss',
+  styleUrls: ['./dialog-pref.component.scss'],
   animations: [fadeAnimation],
 })
 export class DialogPrefComponent implements OnInit {
@@ -45,40 +56,80 @@ export class DialogPrefComponent implements OnInit {
   semesterLabel: string = '';
   courses: Course[] = [];
   isLoading = true;
+  currentView: 'table-view' | 'pdf-view' = 'table-view';
+  pdfBlobUrl: SafeResourceUrl | null = null;
 
   constructor(
     private preferencesService: PreferencesService,
     public dialogRef: MatDialogRef<DialogPrefComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: DialogPrefData,
+    private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
     this.isLoading = true;
     this.facultyName = this.data.facultyName;
 
-    this.preferencesService.getPreferences().subscribe((response) => {
-      const faculty = response.preferences.find(
-        (f: any) => f.faculty_id === this.data.faculty_id
-      );
-      if (faculty) {
-        const activeSemester = faculty.active_semesters[0];
-        this.academicYear = activeSemester.academic_year;
-        this.semesterLabel = activeSemester.semester_label;
+    this.preferencesService.getPreferences().subscribe(
+      (response) => {
+        const faculty = response.preferences.find(
+          (f: any) => f.faculty_id === this.data.faculty_id
+        );
+        if (faculty) {
+          const activeSemester = faculty.active_semesters[0];
+          this.academicYear = activeSemester.academic_year;
+          this.semesterLabel = activeSemester.semester_label;
 
-        this.courses = activeSemester.courses.map((course: any) => ({
-          course_code: course.course_details.course_code,
-          course_title: course.course_details.course_title,
-          lec_hours: course.lec_hours,
-          lab_hours: course.lab_hours,
-          units: course.units,
-          preferred_day: course.preferred_day,
-          preferred_start_time: course.preferred_start_time,
-          preferred_end_time: course.preferred_end_time,
-        }));
+          this.courses = activeSemester.courses.map((course: any) => ({
+            course_code: course.course_details.course_code,
+            course_title: course.course_details.course_title,
+            lec_hours: course.lec_hours,
+            lab_hours: course.lab_hours,
+            units: course.units,
+            preferred_day: course.preferred_day,
+            preferred_start_time: course.preferred_start_time,
+            preferred_end_time: course.preferred_end_time,
+          }));
+        }
+
+        this.isLoading = false;
+      },
+      (error) => {
+        console.error('Error loading faculty preferences:', error);
+        this.isLoading = false;
       }
+    );
+  }
 
-      this.isLoading = false;
-    });
+  onViewChange(): void {
+    if (this.currentView === 'pdf-view') {
+      this.generateAndDisplayPdf();
+    } else {
+      this.pdfBlobUrl = null;
+    }
+  }
+
+  generateAndDisplayPdf(): void {
+    if (this.data.generatePdfFunction) {
+      const pdfBlob = this.data.generatePdfFunction(true);
+      if (pdfBlob instanceof Blob) {
+        const blobUrl = URL.createObjectURL(pdfBlob);
+        this.pdfBlobUrl =
+          this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl);
+      } else {
+        console.error('generatePdfFunction did not return a Blob.');
+      }
+    } else {
+      console.error('No generatePdfFunction provided.');
+    }
+  }
+
+  downloadPdf(): void {
+    if (this.data.generatePdfFunction) {
+      this.data.generatePdfFunction(false);
+    } else {
+      console.error('No generatePdfFunction provided.');
+    }
   }
 
   closeDialog(): void {
