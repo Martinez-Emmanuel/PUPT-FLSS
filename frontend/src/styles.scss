@@ -223,6 +223,12 @@ span[mat-symbol] {
   color: white !important;
 }
 
+.mat-button-toggle-standalone.mat-button-toggle-appearance-standard,
+.mat-button-toggle-group-appearance-standard {
+  border: 1px solid
+    var(--mat-standard-button-toggle-divider-color, var(--mat-app-outline)) !important;
+}
+
 [mat-flat-button] {
   color: white !important;
 }

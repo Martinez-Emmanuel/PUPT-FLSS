@@ -27,10 +27,13 @@
     $align: stretch,
     $justify: flex-start
   );
-  
+
   .pdf-iframe {
     width: 100%;
-    min-height: 60vh;
+    height: 30vw;
+    border: none;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-level-1);
   }
 }
 
