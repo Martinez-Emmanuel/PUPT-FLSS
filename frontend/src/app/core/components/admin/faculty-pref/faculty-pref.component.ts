@@ -316,6 +316,11 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
         },
         generatePdfFunction: () =>
           this.generateFacultyPDF(true, this.allData, true),
+        generateFileNameFunction: () =>
+          `${academic_year.replace(
+            '/',
+            '_'
+          )}_${semester_label.toLowerCase()}_faculty_preferences_report.pdf`,
       },
       disableClose: true,
     });
@@ -501,11 +506,21 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     if (showPreview) {
       return pdfBlob;
     } else {
-      const fileName = isAll
-        ? 'all_faculty_preferences_report.pdf'
-        : `${this.sanitizeFileName(
-            faculties[0].facultyName
-          )}_preferences_report.pdf`;
+      let fileName = 'faculty_preferences_report.pdf'; // Default name
+
+      if (isAll) {
+        const firstFaculty = faculties[0];
+        const activeSemester = firstFaculty.active_semesters?.[0];
+        if (activeSemester) {
+          const academicYear = activeSemester.academic_year.replace('/', '_'); // Replace '/' to avoid file name issues
+          const semester = activeSemester.semester_label.toLowerCase();
+          fileName = `${academicYear}_${semester}_faculty_preferences.pdf`;
+        }
+      } else {
+        fileName = `${this.sanitizeFileName(
+          faculties[0].facultyName
+        )}_preferences_report.pdf`;
+      }
 
       doc.save(fileName);
     }
