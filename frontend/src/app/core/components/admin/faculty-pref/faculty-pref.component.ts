@@ -193,7 +193,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
           this.snackBar.open(
             `Preferences submission ${
               status ? 'enabled' : 'disabled'
-            } for Prof. ${faculty.facultyName}.`,
+            } for ${faculty.facultyName}.`,
             'Close',
             { duration: 3000 }
           );
