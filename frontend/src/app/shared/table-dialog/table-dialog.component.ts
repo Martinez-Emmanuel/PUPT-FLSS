@@ -98,6 +98,7 @@ export class TableDialogComponent {
   isConflict: boolean = false;
   customExportOptions: { all: string; current: string } | null = null;
   filteredOptions: { [key: string]: (string | number)[] } = {};
+  initialFormValues: any;
 
   @Output() startTimeChange = new EventEmitter<string>();
 
@@ -144,6 +145,21 @@ export class TableDialogComponent {
   private initRegularForm(): void {
     this.form.reset();
     this.data.fields.forEach(this.addFormControl.bind(this));
+    this.initialFormValues = this.form.getRawValue();
+    this.trackFormChanges();
+  }
+
+  private trackFormChanges(): void {
+    this.form.valueChanges.subscribe(() => {
+      this.cdr.markForCheck();
+    });
+  }
+
+  public hasFormChanged(): boolean {
+    return (
+      JSON.stringify(this.form.getRawValue()) !==
+      JSON.stringify(this.initialFormValues)
+    );
   }
 
   private addFormControl(field: DialogFieldConfig): void {

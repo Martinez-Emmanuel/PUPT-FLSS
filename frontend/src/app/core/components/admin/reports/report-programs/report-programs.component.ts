@@ -348,7 +348,7 @@ export class ReportProgramsComponent implements OnInit {
     }
 
     this.dialog.open(DialogViewScheduleComponent, {
-      maxWidth: '70rem',
+      maxWidth: '90vw',
       width: '100%',
       data: {
         entity: 'program',
