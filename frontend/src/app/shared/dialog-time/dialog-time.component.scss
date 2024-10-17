@@ -1,13 +1,14 @@
 @import "../../../styles/mixins.scss";
 .material-dialog-container {
   padding-top: var(--spacing-sm);
+  width: var(--dialog-small);
 }
 
 .dialog-title {
   @include flex-layout($justify: flex-start);
   gap: var(--spacing-sm);
   font-size: var(--font-size-xl);
-  font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+  font-family: var(--font-base);
   font-weight: 500;
   color: var(--primary-text);
 
@@ -16,23 +17,23 @@
   }
 }
 
+.dialog-content {
+  padding: var(--spacing-lg);
+}
+
 .dialog-field {
   width: 100%;
 }
 
-.cancel span {
-  color: var(--primary-text);
+.cancel {
+  color: var(--primary-text) !important;
 }
 
-.confirm span {
+.confirm {
   color: white;
-}
-
-.button-enabled {
   opacity: 1;
-}
 
-.button-disabled {
-  opacity: var(--opacity-half);
-  background-color: var(--primary-one);
+  &:disabled {
+    opacity: 0.5;
+  }
 }

@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://pupt-flss-placeholder-url/api',
+  apiUrl: 'https://api.pupt-flss.com/api',
 };

@@ -15,9 +15,10 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('faculty_email', 50)->unique();
-            $table->enum('faculty_type', ['full-time', 'part-time', 'regular']);
-            $table->string('faculty_unit');  // Added the faculty_unit column
+            $table->string('faculty_type', 50);
+            $table->string('faculty_units');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->timestamps();
         });
     }
 

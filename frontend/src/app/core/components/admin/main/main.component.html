@@ -25,57 +25,57 @@
       </div>
     </div>
     <mat-nav-list class="navbar-list">
-        <!--Overview-->
-        <a
-          mat-list-item
-          class="list-item"
-          routerLink="/admin/overview"
-          routerLinkActive="active-link"
-        >
-          <span mat-symbol="dashboard" matListItemIcon></span>
-          <span matListItemTitle>Overview</span>
-        </a>
-        <!--Faculty-->
-        <a
-          mat-list-item
-          class="list-item"
-          routerLink="/admin/faculty"
-          routerLinkActive="active-link"
-        >
-          <span mat-symbol="groups" matListItemIcon></span>
-          <span matListItemTitle>Faculty</span>
-        </a>
-        <!--Scheduling-->
-        <a
-          mat-list-item
-          class="list-item"
-          routerLink="/admin/scheduling"
-          routerLinkActive="active-link"
-        >
-          <span mat-symbol="schedule" matListItemIcon></span>
-          <span matListItemTitle>Scheduling</span>
-        </a>
-        <!--Reports-->
-        <a
-          mat-list-item
-          class="list-item"
-          routerLink="/admin/reports"
-          routerLinkActive="active-link"
-        >
-          <span mat-symbol="bar_chart" matListItemIcon></span>
-          <span matListItemTitle>Reports</span>
-        </a>
-        <!--Help-->
-        <a
-          mat-list-item
-          class="list-item"
-          routerLink="/admin/help"
-          routerLinkActive="active-link"
-        >
-          <span mat-symbol="help" matListItemIcon></span>
-          <span matListItemTitle>Help</span>
-        </a>
-      </mat-nav-list>
+      <!--Overview-->
+      <a
+        mat-list-item
+        class="list-item"
+        routerLink="/admin/overview"
+        routerLinkActive="active-link"
+      >
+        <span mat-symbol="dashboard" matListItemIcon></span>
+        <span matListItemTitle>Overview</span>
+      </a>
+      <!--Faculty-->
+      <a
+        mat-list-item
+        class="list-item"
+        routerLink="/admin/faculty"
+        routerLinkActive="active-link"
+      >
+        <span mat-symbol="groups" matListItemIcon></span>
+        <span matListItemTitle>Faculty Preferences</span>
+      </a>
+      <!--Scheduling-->
+      <a
+        mat-list-item
+        class="list-item"
+        routerLink="/admin/scheduling"
+        routerLinkActive="active-link"
+      >
+        <span mat-symbol="schedule" matListItemIcon></span>
+        <span matListItemTitle>Scheduling</span>
+      </a>
+      <!--Reports-->
+      <a
+        mat-list-item
+        class="list-item"
+        routerLink="/admin/reports"
+        routerLinkActive="active-link"
+      >
+        <span mat-symbol="bar_chart" matListItemIcon></span>
+        <span matListItemTitle>Official Reports</span>
+      </a>
+      <!--Help-->
+      <a
+        mat-list-item
+        class="list-item"
+        routerLink="/admin/help"
+        routerLinkActive="active-link"
+      >
+        <span mat-symbol="help" matListItemIcon></span>
+        <span matListItemTitle>Help</span>
+      </a>
+    </mat-nav-list>
   </mat-sidenav>
   }
 
@@ -105,46 +105,70 @@
           <h1 class="page-title">{{ pageTitle }}</h1>
         </div>
 
-        <!-- Admin Account -->
-        <div class="header-account">
-          <div class="account-text">
-            <div class="account-name">{{ accountName }}</div>
-            <div class="account-role">PUPT-FLSS {{ accountRole }}</div>
-          </div>
-          <div class="profile-dropdown">
-            <img
-              src="../../../../../assets/images/default_admin_icon.png"
-              alt="Profile Icon"
-              class="profile-icon"
-              (click)="toggleDropdown()"
-              matTooltip="Click to open settings"
-              matTooltipPosition="below"
-            />
-            @if (isDropdownOpen) {
-            <div class="dropdown-menu">
-              <span class="dropdown-item" (click)="toggleTheme()">
-                <span
-                  [mat-symbol]="
-                    (themeService.isDarkTheme$ | async)
-                      ? 'light_mode'
-                      : 'dark_mode'
-                  "
-                ></span>
-
-                Switch Theme
-              </span>
-              <span class="dropdown-item logout" (click)="logout()">
-                <span mat-symbol="logout"></span>
-                Logout
-              </span>
+        <!-- Admin Panel -->
+        <div class="admin-panel">
+          <!--Admin Settings-->
+          <div class="admin-settings">
+            <!-- Night Mode Button -->
+            <div
+              class="panel-button theme"
+              [matTooltip]="
+                (themeService.isDarkTheme$ | async)
+                  ? 'Switch to light mode'
+                  : 'Switch to dark mode'
+              "
+              matRipple
+              (click)="toggleTheme()"
+            >
+              <span
+                [mat-symbol]="
+                  (themeService.isDarkTheme$ | async)
+                    ? 'dark_mode'
+                    : 'light_mode'
+                "
+                [ngClass]="
+                  (themeService.isDarkTheme$ | async)
+                    ? 'dark-icon'
+                    : 'light-icon'
+                "
+              ></span>
             </div>
-            }
+
+            <!-- Settings Button -->
+            <div class="panel-button settings" matTooltip="Settings" matRipple>
+              <span mat-symbol="settings"></span>
+            </div>
+
+            <!-- Logout Button -->
+            <div
+              class="panel-button logout"
+              matTooltip="Log out"
+              matRipple
+              (click)="logout()"
+            >
+              <span mat-symbol="door_open"></span>
+            </div>
+          </div>
+
+          <!-- Admin Account -->
+          <div class="admin-account">
+            <div class="account-text">
+              <div class="account-name">{{ accountName }}</div>
+              <div class="account-role">FLSS {{ accountRole }}istrator</div>
+            </div>
+            <div class="profile-dropdown">
+              <img
+                src="../../../../../assets/images/default_admin_icon.png"
+                alt="Profile Icon"
+                class="profile-icon"
+              />
+            </div>
           </div>
         </div>
       </header>
     </mat-toolbar>
     <!-- Main Content -->
-    <div class="sidenav-main">
+    <div class="sidenav-main" [ngClass]="{ 'reports-view': isReportsView }">
       <router-outlet></router-outlet>
     </div>
   </mat-sidenav-content>

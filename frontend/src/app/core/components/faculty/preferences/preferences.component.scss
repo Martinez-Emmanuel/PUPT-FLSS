@@ -5,16 +5,38 @@
 }
 
 .faculty-preferences-container {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-md)
+  );
   @include default-transition;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
   height: 100%;
+  position: relative;
+
+  .disabled {
+    opacity: 0.5;
+    user-select: none;
+    transition: opacity 0.3s ease-in-out;
+  }
+
+  .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ffffff00;
+    z-index: 10;
+    pointer-events: auto;
+    cursor: not-allowed;
+  }
 }
 
+/* First row - Header & Units Cards */
 .preferences-row-one {
-  @include flex-layout;
-  justify-content: space-between;
+  @include flex-layout($justify: space-between, $gap: var(--spacing-lg));
 
   #preferences_title {
     @include flex-layout(
@@ -24,10 +46,11 @@
       $gap: var(--spacing-xxs)
     );
     height: 100%;
+    flex: 1;
 
     h1,
-    p {
-      width: max-content;
+    .pref-description {
+      width: fit-content;
     }
 
     h1 {
@@ -37,17 +60,21 @@
       background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    p {
-      font-size: var(--font-size-lg);
+    .pref-description {
+      font-size: var(--font-size-mdx);
+      white-space: normal;
     }
   }
 
   #units_container {
     @include flex-layout;
     gap: var(--spacing-sm);
-    height: inherit;
+    height: 100%;
     text-align: center;
 
     .units {
@@ -76,237 +103,286 @@
   }
 }
 
+/* Second Row - Course List and Table */
 .preferences-row-two {
+  @include flex-layout($gap: var(--spacing-lg));
   height: calc(100vh - 18rem);
   box-sizing: border-box;
-  display: flex;
-  gap: var(--spacing-lg);
 
   #courses_container,
   #table_container {
     border-radius: var(--border-radius-md);
     height: 100%;
   }
-}
 
-#courses_container {
-  flex: 3;
-  display: flex;
-  flex-direction: column;
-  font-weight: 500;
-
-  .custom-mat-search {
-    width: 100%;
-
-    span[mat-symbol] {
-      padding: var(--spacing-sm);
-    }
-  }
-}
-
-#courses_list {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-
-  .courses-scroll-container {
-    @include custom-scrollbar;
-    flex: 1;
-    overflow-y: auto;
-    padding-right: var(--spacing-sm);
-
-    .progress-wrapper {
-      height: 100%;
-      @include flex-layout;
-    }
-  }
-}
-
-.course-card {
-  @include default-transition;
-  @include gradient-soft-secondary(30deg);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: var(--spacing-sm);
-  margin-bottom: var(--spacing-xs);
-  border-radius: var(--border-radius-sm);
-
-  .course-info {
+  #courses_container {
+    flex: 2;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xxs);
-  }
+    font-weight: 500;
 
-  .course-code,
-  .course-title {
-    color: var(--neutral-base);
-  }
+    .custom-mat-search {
+      width: 100%;
 
-  .course-code {
-    font-weight: 700;
-    font-size: var(--font-size-sm);
-  }
+      span[mat-symbol] {
+        padding: var(--spacing-sm);
+      }
+    }
 
-  .course-title {
-    font-weight: 400;
-    font-size: var(--font-size-md);
-  }
+    .clear-filter {
+      @include flex-layout($direction: row-reverse);
+    }
 
-  .add-button {
-    @include flex-layout;
-    color: var(--neutral-base);
+    #courses_list,
+    #programs_list,
+    #search_results,
+    #empty-results {
+      flex: 1;
+      overflow: hidden;
+      @include flex-layout($direction: column, $align: stretch);
+
+      .arrow_back {
+        cursor: pointer;
+        border-radius: 100%;
+
+        &:hover {
+          background-color: var(--neutral-bar);
+        }
+      }
+
+      .cards-label {
+        @include flex-layout($justify: flex-start, $gap: var(--spacing-sm));
+        font-weight: 500;
+        margin-bottom: 1rem;
+
+        button {
+          margin-right: 0.5rem;
+        }
+      }
+    }
+
+    #empty-results {
+      align-items: center;
+      font-size: var(--font-size-md);
+      text-align: center;
+      gap: var(--spacing-md);
+      opacity: var(--opacity-semi-opaque);
+
+      span[mat-symbol] {
+        font-size: var(--font-size-3xl);
+      }
+    }
+
+    .courses-scroll-container,
+    .programs-scroll-container {
+      @include custom-scrollbar;
+      flex: 1;
+      overflow-y: auto;
+      padding-right: var(--spacing-xs);
+
+      .progress-wrapper {
+        height: 100%;
+        @include flex-layout;
+      }
+    }
+
+    .course-card,
+    .program-card {
+      @include default-transition;
+      @include gradient-soft-secondary(30deg);
+      @include flex-layout($justify: space-between);
+      padding: var(--spacing-sm);
+      margin-bottom: var(--spacing-xs);
+      border-radius: var(--border-radius-sm);
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+      &:hover {
+        transform: scale(0.98);
+      }
+
+      &:active {
+        transform: scale(0.96);
+      }
+
+      .course-info,
+      .program-info {
+        display: flex;
+        flex-direction: column;
+        gap: var(--spacing-xxs);
+      }
+
+      .course-code,
+      .program-code {
+        font-weight: 600;
+        font-size: var(--font-size-md);
+        color: var(--neutral-base);
+      }
+
+      .course-title,
+      .program-title {
+        font-weight: 400;
+        font-size: var(--font-size-md);
+      }
+
+      .add-button {
+        @include flex-layout;
+        color: var(--neutral-base);
+      }
+    }
   }
 }
 
+/* Preferences Table Styling */
 #table_container {
-  flex: 7;
-  overflow: auto;
-  position: relative;
-  background-color: var(--neutral-light);
   @include hide-scrollbar;
-  display: flex;
-  flex-direction: column;
+  @include flex-layout($direction: column, $align: none, $justify: none);
+  flex: 5;
+  overflow: auto;
+  background-color: var(--neutral-light);
 
-  .mat-mdc-table {
+  .table-main {
     width: 100%;
     background-color: var(--neutral-light);
-    transition: none !important;
     table-layout: fixed;
+  }
+
+  .table-header {
+    @include sticky;
+    color: white;
+    text-align: center;
+    background-color: var(--primary-one);
+  }
+
+  .table-cell {
+    padding: var(--spacing-sm);
+    text-wrap: wrap;
+    text-align: center;
+    background-color: var(--neutral-light);
+
+    &.title-cell {
+      max-width: 12rem;
+    }
+
+    .display-time {
+      @include ellipsis;
+    }
+
+    .remove-button {
+      @include flex-layout;
+
+      span[mat-symbol] {
+        font-size: var(--font-size-lg);
+        color: var(--primary-text);
+        @include flex-layout;
+      }
+    }
+  }
+
+  .no-data-text {
+    @include flex-layout($gap: var(--spacing-xs));
+    width: 100%;
+    text-align: center;
+    background-color: var(--neutral-light);
+    font-size: var(--font-size-md);
+    padding: var(--spacing-lg) 0;
+
+    span {
+      opacity: var(--opacity-semi-opaque);
+    }
+
+    span[mat-symbol] {
+      font-size: 100%;
+    }
   }
 
   .table-footer {
     @include flex-layout($justify: space-between, $gap: var(--spacing-xs));
-    flex-shrink: 0;
+    @include sticky;
     margin-top: auto;
-    position: sticky;
-    bottom: 0;
-    z-index: 2;
     background-color: var(--neutral-bar);
-    padding: var(--spacing-xxs) var(--spacing-xxs);
 
     .button-container {
       @include flex-layout($gap: var(--spacing-sm));
-      padding: var(--spacing-xs) var(--spacing-sm);
-      border-radius: var(--border-radius-xl);
-      cursor: pointer;
+      padding: var(--spacing-sm) var(--spacing-sm);
+      font-weight: 500;
       user-select: none;
+      cursor: pointer;
+      transition: transform 0.2s ease, opacity 0.2s ease;
 
-      span {
-        color: var(--neutral-base);
-        @include default-transition(true);
-      }
-
-      .button-text {
-        font-weight: 500;
-
-        &.remove {
-          color: var(--primary-text);
-        }
-      }
-
-      span[mat-symbol="delete_sweep"] {
+      .remove {
         color: var(--primary-text);
       }
 
+      .submit {
+        color: var(--secondary-text);
+      }
+
       &:hover {
-        .send,
-        span[mat-symbol="send"] {
-          color: var(--secondary-text);
-        }
+        opacity: var(--opacity-semi-opaque);
+      }
+
+      &:active {
+        transform: scale(0.97);
+      }
+
+      &.disabled {
+        opacity: var(--opacity-half);
+        cursor: not-allowed;
+        transform: none;
       }
     }
-
-    .button-container.disabled {
-      &:hover {
-        .send,
-        span[mat-symbol="send"] {
-          color: var(--neutral-base);
-        }
-      }
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
   }
 
-  .mat-mdc-header-cell {
-    background-color: var(--primary-one);
-    color: white;
-    font-weight: 500;
-    font-size: var(--font-size-md);
-    text-align: center;
-    position: sticky;
-    top: 0;
-    z-index: 2;
-  }
-
-  .mat-mdc-cell {
-    padding: var(--spacing-sm);
-    text-align: center;
-    text-wrap: wrap;
-  }
-
-  .custom-mat-button {
+  .preferred-icon {
     @include flex-layout;
-
-    span[mat-symbol] {
-      font-size: var(--font-size-lg);
-      color: var(--primary-one);
-      @include flex-layout;
-    }
+    font-size: 100%;
   }
 
-  @mixin column-width($width) {
-    width: $width;
-    min-width: $width;
-    max-width: $width;
-  }
-
-  .mat-column-action {
-    @include column-width(60px);
-  }
-  .mat-column-num {
-    @include column-width(50px);
-  }
-  .mat-column-lec_hours,
-  .mat-column-lab_hours,
-  .mat-column-total_units {
-    @include column-width(70px);
-  }
-
-  .mat-mdc-no-data-row {
-    height: var(--spacing-4xl);
-  }
-
-  .mat-mdc-no-data-row td {
-    font-size: initial;
-    text-align: center;
-  }
-
-  .preferred-day-dropdown {
-    border: none;
-    padding: var(--spacing-sm) var(--spacing-xs);
-    background-color: var(--neutral-light);
-    font-size: var(--font-size-sm);
+  .preferred-button {
+    @include flex-layout;
     color: var(--primary-text);
-    border-radius: var(--border-radius-xl);
-    outline: none;
-    font-weight: 500;
-    cursor: pointer;
+  }
+}
 
-    option {
-      background-color: var(--neutral-light);
-      color: var(--neutral-base);
-    }
+/* Media Query */
+@media screen and (max-width: 1024px) {
+  * {
+    @include hide-scrollbar;
+  }
 
-    &:hover {
-      background-color: var(--primary-hover);
-      border-radius: var(--border-radius-xl);
+  #courses_container {
+    max-height: 25rem;
+  }
+
+  .preferences-row-one {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $gap: var(--spacing-lg)
+    );
+
+    #units_container {
+      .units {
+        flex: 1;
+      }
     }
   }
 
-  .preferred-time-button {
-    color: var(--primary-text);
+  .preferences-row-two {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $gap: var(--spacing-lg)
+    );
+
+    height: auto;
+
+    #courses_container {
+      .courses-scroll-container,
+      .programs-scroll-container {
+        padding-right: 0;
+      }
+    }
   }
 }

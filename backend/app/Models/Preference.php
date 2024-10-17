@@ -9,11 +9,17 @@ class Preference extends Model
 {
     use HasFactory;
 
+    protected $table = 'preferences';
+
+    protected $primaryKey = 'preferences_id';
+
     protected $fillable = [
         'faculty_id',
-        'course_id',
+        'active_semester_id',
+        'course_assignment_id',
         'preferred_day',
-        'preferred_time',
+        'preferred_start_time',
+        'preferred_end_time',
     ];
 
     public function faculty()
@@ -21,8 +27,25 @@ class Preference extends Model
         return $this->belongsTo(Faculty::class, 'faculty_id');
     }
 
+    public function activeSemester()
+    {
+        return $this->belongsTo(ActiveSemester::class, 'active_semester_id');
+    }
+    
+    public function courseAssignment()
+    {
+        return $this->belongsTo(CourseAssignment::class, 'course_assignment_id');
+    }
     public function course()
     {
-        return $this->belongsTo(Course::class, 'course_id');
+        return $this->hasOneThrough(
+            Course::class,
+            CourseAssignment::class,
+            'course_assignment_id', // Foreign key on the CourseAssignment table
+            'course_id',            // Foreign key on the Course table
+            'course_assignment_id', // Local key on the Preferences table
+            'course_id'             // Local key on the CourseAssignment table
+        );
     }
+
 }

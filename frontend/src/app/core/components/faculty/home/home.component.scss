@@ -2,16 +2,26 @@
 * {
   @include reset-styles;
   @include default-transition;
+  @include hide-scrollbar;
 }
 
 .faculty-home-container {
+  @include flex-layout(
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-xl)
+  );
   height: 100%;
 }
 
 .home-row-one {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+  @include flex-layout(
+    $direction: column,
+    $align: flex-start,
+    $justify: flex-start,
+    $gap: var(--spacing-md)
+  );
+  flex: 9;
 
   #home_greetings {
     display: flex;
@@ -33,63 +43,64 @@
     p {
       @include reset-styles;
       width: max-content;
-      font-size: var(--font-size-lg);
+      font-size: var(--font-size-mdx);
     }
   }
 
-  #active_semester {
-    background-color: var(--neutral-light);
-    padding: var(--spacing-md);
+  .faculty-calendar {
+    width: 100%;
+    user-select: none;
+
+    full-calendar {
+      max-height: 450px;
+      overflow-y: auto;
+    }
+  }
+}
+
+.home-row-two {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $gap: var(--spacing-md)
+  );
+  flex: 2;
+
+  .active-year-sem-container {
+    @include flex-layout(
+      $direction: column,
+      $align: flex-start,
+      $gap: var(--spacing-xxs)
+    );
+
+    @include gradient-primary(315deg);
+    padding: var(--spacing-sm);
     border-radius: var(--border-radius-md);
+    color: white;
+    cursor: pointer;
 
-    #semester_text {
-      display: flex;
-      gap: var(--spacing-md);
-      font-size: var(--font-size-lg);
+    .text,
+    .label {
+      @include reset-styles;
+      @include ellipsis;
+    }
+
+    .text {
+      @include flex-layout($gap: var(--spacing-xs));
       font-weight: 500;
-
-      mat-icon {
-        width: max-content;
-        height: max-content;
-      }
-
-      mat-icon,
-      span {
-        color: var(--primary-one);
-      }
     }
 
-    #semester_bar {
-      position: relative;
-      height: var(--font-size-xs);
-      background-color: var(--neutral-bar);
-      border-radius: var(--border-radius-sm);
-      margin-top: var(--spacing-md);
-
-      #progress_base {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        border-radius: var(--border-radius-sm);
-        background-color: var(--neutral-bar);
-      }
-
-      #progress_fill {
-        position: absolute;
-        top: 0;
-        left: 0;
-        height: 100%;
-        border-radius: var(--border-radius-sm);
-        background: linear-gradient(
-          90deg,
-          var(--primary-one) 0%,
-          var(--primary-two) 100%
-        );
-        width: 69%;
-        z-index: 1;
-      }
+    .label {
+      opacity: var(--opacity-semi-opaque);
     }
+  }
+
+  .faculty-announcement {
+    @include flex-layout($direction: column, $gap: var(--spacing-xs));
+    flex: 1;
+    background-color: var(--neutral-space);
+    border-radius: (var(--border-radius-md));
+    padding: var(--spacing-md);
+    user-select: none;
   }
 }

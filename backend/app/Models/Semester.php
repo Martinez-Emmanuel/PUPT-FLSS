@@ -20,6 +20,23 @@ class Semester extends Model
     {
         return $this->belongsTo(YearLevel::class, 'year_level_id', 'year_level_id');
     }
+
+    public function courses()
+    {
+        return $this->hasManyThrough(
+            Course::class,
+            CourseAssignment::class,
+            'semester_id', // Foreign key on CourseAssignment table...
+            'course_id',   // Foreign key on Course table...
+            'semester_id', // Local key on Semester table...
+            'course_id'    // Local key on CourseAssignment table...
+        );
+    }
+    public function activeSemesters()
+    {
+        return $this->hasMany(ActiveSemester::class, 'semester_id', 'semester_id');
+    }
+
     public function courseAssignments()
     {
         return $this->hasMany(CourseAssignment::class, 'semester_id', 'semester_id');

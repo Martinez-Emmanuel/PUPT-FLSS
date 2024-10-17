@@ -12,7 +12,6 @@ class Program extends Model
     protected $primaryKey = 'program_id';
 
     protected $fillable = [
-        'curriculum_id',
         'program_code',
         'program_title',
         'program_info',
@@ -20,22 +19,33 @@ class Program extends Model
         'number_of_years',
     ];
 
-    public function curriculum()
+    public function curricula()
     {
-        return $this->belongsTo(Curriculum::class, 'curriculum_id', 'curriculum_id');
+        return $this->belongsToMany(Curriculum::class, 'curricula_program', 'program_id', 'curriculum_id');
     }
 
     public function yearLevels()
     {
-        return $this->hasMany(YearLevel::class, 'program_id', 'program_id');
+        return $this->hasMany(YearLevel::class, 'curricula_program_id', 'program_id');
     }
 
     public function courseAssignments()
     {
         return $this->hasMany(CourseAssignment::class, 'program_id', 'program_id');
     }
-    public function curricula()
+
+    public function curriculaPrograms()
     {
-        return $this->belongsToMany(Curriculum::class, 'curricula_program', 'program_id', 'curriculum_id');
+        return $this->hasMany(CurriculaProgram::class, 'program_id', 'program_id');
+    }
+
+    public function programYearLevelCurricula()
+    {
+        return $this->hasMany(ProgramYearLevelCurricula::class, 'program_id', 'program_id');
+    }
+
+    public function sectionsPerProgramYear()
+    {
+        return $this->hasMany(SectionsPerProgramYear::class, 'program_id', 'program_id');
     }
 }

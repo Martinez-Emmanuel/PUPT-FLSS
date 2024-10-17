@@ -1,27 +1,21 @@
-import {
-  Component,
-  OnInit,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-} from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule } from '@angular/forms';
+
+import { catchError, of } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
-
-import {
-  TableDialogComponent,
-  DialogConfig,
-} from '../../../../../shared/table-dialog/table-dialog.component';
+import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
-import { TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
+import { InputField, TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
+import { LoadingComponent } from '../../../../../shared/loading/loading.component';
 
-import {
-  FacultyService,
-  Faculty,
-} from '../../../../services/superadmin/management/faculty/faculty.service';
+import { FacultyService, Faculty } from '../../../../services/superadmin/management/faculty/faculty.service';
+
+import { fadeAnimation } from '../../../../animations/animations';
+
 
 @Component({
   selector: 'app-faculty',
@@ -31,28 +25,40 @@ import {
     ReactiveFormsModule,
     TableGenericComponent,
     TableHeaderComponent,
+    LoadingComponent,
   ],
   templateUrl: './faculty.component.html',
   styleUrls: ['./faculty.component.scss'],
+  animations: [fadeAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FacultyComponent implements OnInit {
   facultyStatuses = ['Active', 'Inactive'];
-  facultyTypes = ['Part-Time', 'Full-Time', 'Regular'];
+  facultyTypes = ['Full-time (Permanent)', 'Full-time (Temporary)', 'Full-time (Designee)', 'Part-time'];
   selectedFacultyIndex: number | null = null;
 
   faculty: Faculty[] = [];
+  isLoading = true;
+
   columns = [
     { key: 'index', label: '#' },
-    { key: 'facultyId', label: 'Faculty Code' },
+    { key: 'code', label: 'Faculty Code' },
     { key: 'name', label: 'Name' },
-    { key: 'email', label: 'Email' },
-    { key: 'type', label: 'Type' }, // Part-Time, Full-Time, Regular
-    { key: 'unitsAssigned', label: 'Units Assigned' },
-    { key: 'status', label: 'Status' }, // Active, Inactive
+    { key: 'faculty_email', label: 'Email' },
+    { key: 'faculty_type', label: 'Type' },
+    { key: 'faculty_units', label: 'Units Assigned' },
+    { key: 'status', label: 'Status' },
   ];
 
-  displayedColumns: string[] = ['index', 'facultyId', 'name', 'email', 'type', 'unitsAssigned', 'status', 'action'];
+  displayedColumns: string[] = ['index', 'code', 'name', 'faculty_email', 'faculty_type', 'faculty_units', 'status', 'action'];
+
+  headerInputFields: InputField[] = [
+    {
+      type: 'text',
+      label: 'Search Faculty',
+      key: 'search',
+    },
+  ];
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -65,36 +71,61 @@ export class FacultyComponent implements OnInit {
     this.fetchFaculty();
   }
 
-  fetchFaculty() {
-    this.facultyService.getFaculty().subscribe((faculty) => {
-      this.faculty = faculty;
+fetchFaculty() {
+    this.isLoading = true;
+    this.facultyService.getFaculty().pipe(
+      catchError((error) => {
+        console.error('Error fetching faculty:', error);
+        this.snackBar.open('Error fetching faculty. Please try again.', 'Close', { duration: 3000 });
+        this.isLoading = false;
+        return of([]);
+      })
+    ).subscribe((faculty) => {
+      this.faculty = faculty.map((user, index) => ({
+        id: user.id,
+        code: user.code,
+        name: user.name,
+        faculty_email: user.faculty_email || '',
+        faculty_type: user.faculty_type || '',
+        faculty_units: user.faculty_units || 0,
+        status: user.status || 'Active',
+        role: user.role,
+      }));
+      this.isLoading = false;
       this.cdr.markForCheck();
     });
   }
 
+
   onSearch(searchTerm: string) {
-    this.facultyService.getFaculty().subscribe((faculty) => {
+    this.facultyService.getFaculty().pipe(
+      catchError((error) => {
+        console.error('Error fetching faculty for search:', error);
+        return of([]); // Return empty array on error
+      })
+    ).subscribe((faculty) => {
       this.faculty = faculty.filter(
         (facultyMember) =>
-          facultyMember.facultyId.includes(searchTerm) ||
+          facultyMember.code.includes(searchTerm) ||
           facultyMember.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          facultyMember.type.toLowerCase().includes(searchTerm.toLowerCase()) 
+          facultyMember.faculty_type.toLowerCase().includes(searchTerm.toLowerCase())
       );
       this.cdr.markForCheck();
     });
   }
 
-  private getDialogConfig(faculty?: Faculty): DialogConfig {
+  private getDialogConfig(faculty?: Faculty): DialogConfig {    
     return {
       title: 'Faculty',
       isEdit: !!faculty,
       fields: [
         {
           label: 'Faculty Code',
-          formControlName: 'facultyId',
+          formControlName: 'code',
           type: 'text',
           maxLength: 12,
           required: true,
+          disabled: !!faculty,  // Disable when editing
         },
         {
           label: 'Name',
@@ -104,34 +135,41 @@ export class FacultyComponent implements OnInit {
           required: true,
         },
         {
+          label: 'Password',
+          formControlName: 'password',
+          type: 'text',
+          maxLength: 100,
+          required: false,
+        },
+        {
           label: 'Email',
-          formControlName: 'email',
+          formControlName: 'faculty_email',
           type: 'text',
           maxLength: 100,
           required: true,
         },
         {
           label: 'Type',
-          formControlName: 'type',
+          formControlName: 'faculty_type',
           type: 'select',
           options: this.facultyTypes,
           required: true,
         },
         {
           label: 'Units Assigned',
-          formControlName: 'unitsAssigned',
+          formControlName: 'faculty_units',
           type: 'number',
           required: true,
         },
         {
-          label: 'Status',
+          label: 'Status',  // Status is now required in both add and edit
           formControlName: 'status',
           type: 'select',
           options: this.facultyStatuses,
-          required: true,
+          required: true,  // Make status required
         },
       ],
-      initialValue: faculty || { status: 'Active' },
+      initialValue: faculty || {},  // No default status, user must pick
     };
   }
 
@@ -144,12 +182,19 @@ export class FacultyComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.facultyService.addFaculty(result).subscribe((faculty) => {
-          this.faculty = faculty;
-          this.snackBar.open('Faculty added successfully', 'Close', {
-            duration: 3000,
-          });
-          this.cdr.markForCheck();
+        result.role = 'faculty';  // Ensure the role is 'faculty'
+        this.facultyService.addFaculty(result).pipe(
+          catchError((error) => {
+            console.error('Error adding faculty:', error);
+            return of(null); // Handle error case
+          })
+        ).subscribe((newFaculty) => {
+          if (newFaculty) {
+            this.faculty.push(newFaculty);  // Add new faculty to the list
+            this.snackBar.open('Faculty added successfully', 'Close', { duration: 3000 });
+            this.fetchFaculty();  // Refresh the data after addition
+            this.cdr.markForCheck();
+          }
         });
       }
     });
@@ -166,40 +211,54 @@ export class FacultyComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result && this.selectedFacultyIndex !== null) {
-        this.updateFaculty(result);
+        this.updateFaculty(result);  // Call the update method
       }
     });
   }
 
-  updateFaculty(updatedFaculty: any) {
-    if (this.selectedFacultyIndex !== null) {
-      this.faculty[this.selectedFacultyIndex] = {
-        ...this.faculty[this.selectedFacultyIndex],
-        ...updatedFaculty,
-      };
+  updateFaculty(updatedFaculty: Faculty) {
+    if (this.selectedFacultyIndex !== null && this.selectedFacultyIndex !== undefined) {
+      const selectedFaculty = this.faculty[this.selectedFacultyIndex];
 
-      this.facultyService
-        .updateFaculty(this.selectedFacultyIndex, updatedFaculty)
-        .subscribe((faculty) => {
-          this.faculty = faculty;
-          this.snackBar.open('Faculty updated successfully', 'Close', {
-            duration: 3000,
-          });
-          this.cdr.markForCheck();
+      if (selectedFaculty && selectedFaculty.id) {
+        const facultyId = selectedFaculty.id;
+        updatedFaculty.role = 'faculty';  // Ensure role is 'faculty'
+
+        // Check if the password field contains the masked value ('********') or is empty.
+        // If so, do not include it in the update payload.
+        if (updatedFaculty.password === '********' || !updatedFaculty.password) {
+          delete updatedFaculty.password;
+        }
+
+        this.facultyService.updateFaculty(facultyId, updatedFaculty).pipe(
+          catchError((error) => {
+            console.error('Error updating faculty:', error);
+            return of(null);
+          })
+        ).subscribe((updatedFacultyResponse) => {
+          if (updatedFacultyResponse) {
+            this.faculty[this.selectedFacultyIndex!] = updatedFacultyResponse;
+            this.snackBar.open('Faculty updated successfully', 'Close', { duration: 3000 });
+            this.fetchFaculty();  // Refresh the data after update
+            this.cdr.markForCheck();
+          }
         });
+      }
     }
   }
 
   deleteFaculty(faculty: Faculty) {
-    const index = this.faculty.indexOf(faculty);
-    if (index >= 0) {
-      this.facultyService.deleteFaculty(index).subscribe((faculty) => {
-        this.faculty = faculty;
-        this.snackBar.open('Faculty deleted successfully', 'Close', {
-          duration: 3000,
-        });
-        this.cdr.markForCheck();
-      });
-    }
+    const facultyId = faculty.id;
+
+    this.facultyService.deleteFaculty(facultyId).pipe(
+      catchError((error) => {
+        console.error('Error deleting faculty:', error);
+        return of(null); // Handle error case
+      })
+    ).subscribe(() => {
+      this.faculty = this.faculty.filter(f => f.id !== facultyId);  // Remove from the list
+      this.snackBar.open('Faculty deleted successfully', 'Close', { duration: 3000 });
+      this.cdr.markForCheck();
+    });
   }
 }

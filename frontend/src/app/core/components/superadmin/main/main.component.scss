@@ -27,7 +27,7 @@
     .header-name {
       @include flex-layout($direction: column);
       text-align: center;
-      line-height: var(--line-height-base);
+      line-height: var(--line-height-mdx);
 
       .university-name,
       .system-name {
@@ -37,7 +37,7 @@
       }
 
       .university-name {
-        color: var(--primary-one);
+        color: var(--primary-text);
       }
     }
   }
@@ -91,12 +91,12 @@
   }
 }
 
-mat-sidenav-content {
+.sidenav-content {
   @include flex-layout(
     $direction: column,
     $align: none,
     $justify: none,
-    $gap: var(--spacing-md)
+    $gap: var(--spacing-xl)
   );
   padding: var(--spacing-2xl);
   height: 100%;
@@ -132,7 +132,7 @@ mat-sidenav-content {
 
         .account-text {
           text-align: right;
-          line-height: var(--line-height-base);
+          line-height: var(--line-height-md);
 
           .account-name {
             font-weight: 600;
@@ -185,10 +185,10 @@ mat-sidenav-content {
               }
 
               &.logout {
-                color: var(--primary-one);
+                color: var(--primary-text);
 
                 span.material-symbols-rounded {
-                  color: var(--primary-one);
+                  color: var(--primary-text);
                 }
 
                 &:hover {

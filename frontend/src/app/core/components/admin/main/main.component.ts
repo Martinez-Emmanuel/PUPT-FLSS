@@ -12,6 +12,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
+import { MatRippleModule } from '@angular/material/core';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
@@ -20,6 +22,7 @@ import { slideInAnimation, fadeAnimation } from '../../../animations/animations'
 import { AuthService } from '../../../services/auth/auth.service';
 import { ThemeService } from '../../../services/theme/theme.service';
 import { CookieService } from 'ngx-cookie-service';
+
 @Component({
   selector: 'app-main',
   templateUrl: './main.component.html',
@@ -34,27 +37,21 @@ import { CookieService } from 'ngx-cookie-service';
     MatSidenavModule,
     MatListModule,
     MatIconModule,
+    MatRippleModule,
+    MatTooltipModule,
     MatSymbolDirective,
   ],
   animations: [fadeAnimation, slideInAnimation],
 })
 export class MainComponent implements OnInit, AfterViewInit {
   @ViewChild('drawer') drawer!: MatSidenav;
+  isReportsView: boolean = false;
 
   private breakpointObserver = inject(BreakpointObserver);
   public showSidenav = false;
-  public isDropdownOpen = false;
-  public pageTitle = 'Dashboard';
+  public pageTitle = '';
   public accountName: string;
   public accountRole: string;
-
-  private routeTitleMap: Record<string, string> = {
-    dashboard: 'Dashboard',
-    programs: 'Programs',
-    courses: 'Courses',
-    curriculum: 'Curriculum',
-    rooms: 'Rooms',
-  };
 
   isHandset$: Observable<boolean> = this.breakpointObserver
     .observe(Breakpoints.Handset)
@@ -73,6 +70,11 @@ export class MainComponent implements OnInit, AfterViewInit {
   ) {
     this.accountName = this.cookieService.get('user_name');
     this.accountRole = this.toTitleCase(this.cookieService.get('user_role'));
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe((event: NavigationEnd) => {
+        this.isReportsView = event.urlAfterRedirects.includes('/reports');
+      });
   }
 
   ngOnInit(): void {
@@ -95,31 +97,14 @@ export class MainComponent implements OnInit, AfterViewInit {
     this.themeService.toggleTheme();
   }
 
-  toggleDropdown() {
-    this.isDropdownOpen = !this.isDropdownOpen;
-  }
-
   private toTitleCase(str: string): string {
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
   private setPageTitle(): void {
-    const childRoute = this.findDeepestChild(this.route);
     const pageTitle =
-      childRoute?.snapshot.data['pageTitle'] ||
-      this.routeTitleMap[this.router.url.split('/').pop() || ''] ||
-      'Dashboard';
-    this.pageTitle = childRoute?.snapshot.data['curriculumYear']
-      ? `${pageTitle} ${childRoute.snapshot.data['curriculumYear']}`
-      : pageTitle;
-  }
-
-  private findDeepestChild(route: ActivatedRoute): ActivatedRoute | null {
-    let child = route.firstChild;
-    while (child?.firstChild) {
-      child = child.firstChild;
-    }
-    return child;
+      this.route.snapshot.firstChild?.data['pageTitle'];
+    this.pageTitle = pageTitle;
   }
 
   public logout() {
@@ -136,6 +121,8 @@ export class MainComponent implements OnInit, AfterViewInit {
         cancelText: 'Cancel',
         action: 'Log Out',
       },
+      disableClose: true,
+      panelClass: 'dialog-base'
     });
 
     confirmDialogRef.afterClosed().subscribe((result) => {

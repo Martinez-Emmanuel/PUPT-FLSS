@@ -1,21 +1,13 @@
+@import "../../../styles/mixins.scss";
+
 .table-dialog-container {
   max-width: var(--dialog-base);
+  // width: 100%; // Use full width of the dialog
+  // max-width: none; // Remove max-width constraint
 }
 
-.table-dialog-content {
-  .dialog-form {
-    padding: var(--spacing-sm) 0;
-
-    .form-field {
-      width: 100%;
-      padding: var(--spacing-xxs) 0;
-    }
-
-    .checkbox {
-      display: block;
-      margin-bottom: var(--spacing-md);
-    }
-  }
+:host {
+  @include custom-spinner(var(--primary-text));
 }
 
 .table-dialog-title {
@@ -24,6 +16,74 @@
 
   span {
     font-weight: 500;
+  }
+}
+
+.table-dialog-content {
+  
+  .academic-year-list {
+    @include flex-layout($direction: column, $gap: var(--spacing-sm));
+    width: 100%;
+    font-size: var(--font-size-md);
+
+    .academic-year-item {
+      @include flex-layout($justify: space-between);
+      width: inherit;
+
+      .delete-acad-item {
+        color: var(--primary-text);
+        @include flex-layout;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .dialog-form {
+    padding: var(--spacing-sm) 0;
+
+    .form-field {
+      width: 100%;
+      padding: var(--spacing-xxs) 0;
+    }
+
+    .horizontal-field-container {
+      @include flex-layout(
+        $align: flex-start,
+        $justify: space-between,
+        $gap: var(--spacing-sm)
+      );
+    }
+
+    .checkbox {
+      display: block;
+      margin-bottom: var(--spacing-md);
+    }
+
+    .academic-year-hint {
+      cursor: pointer;
+      color: var(--primary-text);
+    }
+  }
+
+  .validation-message {
+    // border: 1px solid cyan;
+
+    @include flex-layout;
+    font-size: var(--font-size-sm);
+    @include flex-layout($gap: var(--spacing-xxs));
+
+    mat-icon {
+      @include flex-layout;
+      font-size: var(--font-size-md);
+    }
+  }
+
+  .conflict {
+    color: var(--primary-text);
+  }
+
+  .no-conflict {
+    color: var(--secondary-text);
   }
 }
 

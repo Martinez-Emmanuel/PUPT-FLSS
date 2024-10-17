@@ -1,77 +1,71 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { Observable } from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { map } from 'rxjs/operators';
+import { environment } from '../../../../../../environments/environment.dev';
+import { CookieService } from 'ngx-cookie-service';
 
-export interface Admin {
-  adminId: string;
+export interface Faculty {
+  id: number;
+  user_id: number;
+  faculty_email: string;
+  faculty_type: string;
+  faculty_units: string;
+}
+
+export interface User {
+  code: string;
+  id: string;
   name: string;
-  email: string;
+  password?: string;
+  email: string;  // This is likely coming from 'faculty_email'
   role: string;
   status: string;
+  faculty?: Faculty;  // Add this line to include the faculty object in the User interface
+  passwordDisplay?: string;
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class AdminService {
-  private adminsSubject = new BehaviorSubject<Admin[]>([
-    {
-      adminId: 'SPA11234TG',
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-      role: 'Super Admin',
-      status: 'Active',
-    },
-    {
-      adminId: 'ADM55678TG',
-      name: 'Jane Smith',
-      email: 'jane.smith@example.com',
-      role: 'Admin',
-      status: 'Inactive',
-    },
-    {
-      adminId: 'ADM78910TG',
-      name: 'Adrian Naoe',
-      email: 'naoe.adrianb@gmail.com',
-      role: 'Admin',
-      status: 'Active',
-    },
-    {
-      adminId: 'SPA47910TG',
-      name: 'Kyla Malaluan',
-      email: 'malaluankyla@gmail.com',
-      role: 'Super Admin',
-      status: 'Active',
-    },
-    {
-      adminId: 'ADM00765TG',
-      name: 'Alice Guo',
-      email: 'alice123@gmail.com',
-      role: 'Admin',
-      status: 'Inactive',
-    },
-  ]);
+  private baseUrl = environment.apiUrl;
 
-  getAdmins(): Observable<Admin[]> {
-    return this.adminsSubject.asObservable();
+  constructor(private http: HttpClient, private cookieService: CookieService) {}
+
+  private getHeaders(): HttpHeaders {
+    const token = this.cookieService.get('token');
+    return new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    });
   }
 
-  addAdmin(admin: Admin): Observable<Admin[]> {
-    const admins = this.adminsSubject.getValue();
-    this.adminsSubject.next([...admins, admin]);
-    return of(this.adminsSubject.getValue());
+  // Fetch all admins
+  getAdmins(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.baseUrl}/getAdmins`, { headers: this.getHeaders() });
   }
 
-  updateAdmin(index: number, updatedAdmin: Admin): Observable<Admin[]> {
-    const admins = this.adminsSubject.getValue();
-    admins[index] = updatedAdmin;
-    this.adminsSubject.next([...admins]);
-    return of(this.adminsSubject.getValue());
+  // Fetch a specific admin by ID
+  getAdminById(id: string): Observable<User> {
+    return this.http.get<User>(`${this.baseUrl}/getAdmins/${id}`, { headers: this.getHeaders() });
   }
 
-  deleteAdmin(index: number): Observable<Admin[]> {
-    const admins = this.adminsSubject.getValue();
-    admins.splice(index, 1);
-    this.adminsSubject.next([...admins]);
-    return of(this.adminsSubject.getValue());
+  // Add a new admin
+  addAdmin(admin: User): Observable<User> {
+    return this.http.post<User>(`${this.baseUrl}/addAdmins`, admin, { headers: this.getHeaders() });
+  }
+
+  // Update an existing admin
+  updateAdmin(id: string, updatedAdmin: User): Observable<User> {
+    return this.http.put<User>(`${this.baseUrl}/updateAdmins/${id}`, updatedAdmin, {
+      headers: this.getHeaders(),
+    });
+  }
+
+  // Delete an admin by ID
+  deleteAdmin(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/deleteAdmins/${id}`, { headers: this.getHeaders() });
   }
 }

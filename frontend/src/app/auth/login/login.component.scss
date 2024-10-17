@@ -92,13 +92,13 @@
 
     .university-name,
     .system-name {
-      font-family: "Trajan Pro";
+      font-family: var(--font-header);
       font-size: var(--font-size-md);
-      font-weight: 700;
+      font-weight: 600;
     }
 
     .university-name {
-      color: var(--primary-one);
+      color: var(--primary-text);
     }
   }
 
@@ -116,12 +116,12 @@
       h1 {
         @include gradient-primary-text(315deg);
         width: fit-content;
-        font-size: var(--font-size-3xl);
+        font-size: var(--font-size-2xxl);
         margin: 0;
       }
 
       p {
-        font-size: var(--font-size-lg);
+        font-size: var(--font-size-mdx);
         margin: 0;
       }
     }
@@ -208,7 +208,7 @@
       text-align: center;
 
       span {
-        line-height: var(--line-height-base);
+        line-height: var(--line-height-md);
       }
 
       a {
@@ -238,6 +238,7 @@
     align-items: center;
     min-height: var(--spacing-lg);
     margin-top: var(--spacing-xxs);
+    margin-left: var(--spacing-sm);
     visibility: hidden;
     overflow: hidden;
     gap: var(--spacing-xxs);

@@ -2,6 +2,7 @@
 @import "styles/m3-theme.scss";
 @import "styles/theme";
 @import "styles/mixins";
+@import "styles/fonts.scss";
 
 @include mat.core();
 
@@ -19,9 +20,13 @@
   --font-base: "Inter Tight", "Helvetica Neue", sans-serif;
   --font-header: "Trajan Pro", serif;
 
+  --font-size-tiny: 0.4rem;
   --font-size-xs: 0.65rem;
+  --font-size-xsx: 0.8rem;
   --font-size-sm: 0.875rem;
+  --font-size-smx: 0.925rem;
   --font-size-md: 1rem;
+  --font-size-mdx: 1.1rem;
   --font-size-lg: 1.25rem;
   --font-size-xl: 1.5rem;
   --font-size-2xl: 2rem;
@@ -31,13 +36,17 @@
   --font-size-4xl: 4rem;
 
   // Line heights
-  --line-height-base: 1.5;
-  --line-height-normal: 1.25;
+  --line-height-sm: 1.25;
+  --line-height-md: 1.5;
+  --line-height-mdx: 1.6;
+  --line-height-lg: 1.75;
 
   // Spacing
+  --spacing-xxxs: 0.1rem;
   --spacing-xxs: 0.25rem;
   --spacing-xs: 0.5rem;
   --spacing-sm: 0.75rem;
+  --spacing-smx: 0.85rem;
   --spacing-md: 1rem;
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
@@ -48,13 +57,15 @@
   // Border radius
   --border-radius-base: 0.25rem;
   --border-radius-xs: 0.3rem;
+  --border-radius-xsx: 0.4rem;
   --border-radius-sm: 0.5rem;
   --border-radius-md: 0.75rem;
   --border-radius-lg: 1rem;
   --border-radius-xl: 2rem;
 
   // Box Shadow
-  --shadow-level-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow-level-0: 0 0 5px rgba(0, 0, 0, 0.05);
+  --shadow-level-1: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 2px rgba(0, 0, 0, 0.12);
   --shadow-level-2: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
   --shadow-level-3: 0 10px 20px rgba(0, 0, 0, 0.19),
     0 6px 6px rgba(0, 0, 0, 0.23);
@@ -78,8 +89,10 @@
   --duration-extra-long: 0.7s;
 
   // Dialog Sizes
-  --dialog-base: 20rem;
+  --dialog-small: 20rem;
+  --dialog-base: 25rem;
   --dialog-medium: 30rem;
+  --dialog-base-height: 60vh;
 
   // Breakpoints
   --breakpoint-sm: 576px;
@@ -111,6 +124,101 @@ body {
   @include custom-scrollbar;
 }
 
+/* Custom Styling applied globally */
+
+.pdf-iframe {
+  width: 100%;
+  height: var(--dialog-base-height);
+  border: none;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-level-1);
+}
+
+.view-option {
+  @include flex-layout($align: flex-end);
+
+  .mat-button-toggle {
+    @include flex-layout();
+  }
+
+  .icon-spacing {
+    margin-top: var(--spacing-xxxs);
+    margin-right: var(--spacing-xxs);
+    font-size: var(--font-size-lg);
+  }
+}
+
+.pop {
+  transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.sec-ripple .mat-ripple-element {
+  background-color: var(--secondary-fade) !important;
+}
+
+.ter-ripple .mat-ripple-element {
+  background-color: rgba(84, 84, 84, 0.3) !important;
+}
+
+.sec-spinner .mat-spinner circle {
+  stroke: var(--secondary-text) !important;
+}
+
+span[mat-symbol] {
+  font-family: "Material Symbols Rounded" !important;
+  user-select: none;
+}
+
+.loading-wrapper {
+  height: 100%;
+}
+
+.dialog-base {
+  width: var(--dialog-small);
+}
+
+.custom-paginator {
+  @include default-transition;
+  padding: var(--spacing-sm) 0 !important;
+  background-color: var(--neutral-light) !important;
+}
+
+// .mat-mdc-header-cell {
+//   border-bottom-color: transparent !important;
+// }
+
+.header-toggle {
+  .mdc-switch--selected .mdc-switch__track::after {
+    background-color: rgb(231, 212, 212) !important;
+  }
+
+  .mdc-switch--selected:enabled .mdc-switch__handle::after {
+    background-color: var(--primary-one) !important;
+  }
+
+  .mdc-switch--selected .mdc-switch__icon {
+    fill: white !important;
+  }
+}
+
+.mdc-checkbox__checkmark {
+  color: white !important;
+}
+
+.mat-calendar-body-selected {
+  color: white !important;
+}
+
+.mat-calendar-body-today:not(.mat-calendar-body-selected):not(
+    .mat-calendar-body-comparison-identical
+  ) {
+  border-color: var(--primary-text) !important;
+}
+
 .mdc-text-field--filled {
   // when appearance="fill"
   border-top-left-radius: 10px !important;
@@ -121,6 +229,77 @@ body {
   font-family: var(--font-base) !important;
 }
 
+.mat-mdc-menu-item-text {
+  font-family: var(--font-base) !important;
+}
+
+.mat-horizontal-content-container {
+  overflow: hidden;
+  padding: 0 !important;
+}
+
+.mat-step-icon-selected {
+  color: white !important;
+}
+
+.mat-step-icon .mat-icon {
+  color: white !important;
+}
+
+.mat-button-toggle-standalone.mat-button-toggle-appearance-standard,
+.mat-button-toggle-group-appearance-standard {
+  border: 1px solid
+    var(--mat-standard-button-toggle-divider-color, var(--mat-app-outline)) !important;
+}
+
 [mat-flat-button] {
   color: white !important;
+}
+
+/* Full Calendar Styling */
+
+// Increase border radius on table's buttons
+.fc .fc-button {
+  border-top-left-radius: var(--border-radius-xl);
+  border-bottom-left-radius: var(--border-radius-xl);
+  border-top-right-radius: var(--border-radius-xl);
+  border-bottom-right-radius: var(--border-radius-xl);
+
+  padding: var(--spacing-xs) var(--spacing-md);
+}
+
+// Remove shadow from table's buttons when focused
+.fc .fc-button:not(:disabled) {
+  box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0rem !important;
+}
+
+// Make text white for active buttons
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+  color: white;
+}
+
+// Customize calendar month title
+.fc-toolbar-title {
+  @include gradient-primary-text(315deg);
+  font-weight: 600;
+}
+
+// Increase border radius on table
+.fc-scrollgrid {
+  border-radius: var(--border-radius-md);
+  background-color: var(--neutral-space);
+}
+
+.fc {
+  --fc-border-color: var(--neutral-option);
+  --fc-button-text-color: var(--neutral-base);
+  --fc-button-bg-color: transparent;
+  --fc-button-border-color: transparent;
+  --fc-button-hover-bg-color: #a7a7a78d;
+  --fc-button-hover-border-color: transparent;
+  --fc-button-active-bg-color: var(--primary-one);
+  --fc-button-bg-color: var(--neutral-mid);
+  --fc-button-active-border-color: transparent;
+
+  --fc-today-bg-color: var(--primary-one-fade);
 }

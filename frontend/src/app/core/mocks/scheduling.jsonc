@@ -1,0 +1,133 @@
+{
+    "academic_year": {
+        "year_start": 2024,
+        "year_end": 2025,
+        "semester": "1st Semester"
+    },
+    "programs": [
+        {
+            "program_id": 1,
+            "program_code": "BSIT",
+            "program_title": "Bachelor of Science in Information Technology",
+            "year_levels": [
+                {
+                    "year_level": 1,
+                    "curriculum_year": "2022", // Year 1 uses 2022 Curriculum
+                    "sections": [
+                        {
+                            "section_name": "Section 1",
+                            "courses": [
+                                {
+                                    "course_id": 1,
+                                    "course_code": "COMP101",
+                                    "course_title": "Computer Programming",
+                                    "lec_hours": 3,
+                                    "lab_hours": 2,
+                                    "units": 3,
+                                    "tuition_hours": 5,
+                                    "schedules": [
+                                        {
+                                            "day": "Monday",
+                                            "start_time": "08:00:00",
+                                            "end_time": "12:00:00",
+                                            "faculty": {
+                                                "faculty_id": 1,
+                                                "faculty_email": "emmanuel.martinez@example.com",
+                                                "faculty_type": "full-time"
+                                            },
+                                            "room": {
+                                                "room_id": 1,
+                                                "room_code": "A202",
+                                                "location": "Main Building",
+                                                "floor_level": "2",
+                                                "room_type": "Lecture"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "year_level": 2,
+                    "curriculum_year": "2022", // Year 2 uses 2022 Curriculum
+                    "sections": [
+                        {
+                            "section_name": "Section 1",
+                            "courses": [
+                                {
+                                    "course_id": 2,
+                                    "course_code": "MATH101",
+                                    "course_title": "General Mathematics",
+                                    "lec_hours": 3,
+                                    "lab_hours": 0,
+                                    "units": 3,
+                                    "tuition_hours": 3,
+                                    "schedules": [
+                                        {
+                                            "day": "Wednesday",
+                                            "start_time": "10:00:00",
+                                            "end_time": "12:00:00",
+                                            "faculty": {
+                                                "faculty_id": 2,
+                                                "faculty_email": "john.doe@example.com",
+                                                "faculty_type": "part-time"
+                                            },
+                                            "room": {
+                                                "room_id": 2,
+                                                "room_code": "B101",
+                                                "location": "Annex Building",
+                                                "floor_level": "1",
+                                                "room_type": "Lab"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "year_level": 3,
+                    "curriculum_year": "2018", // Year 3 uses 2018 Curriculum
+                    "sections": [
+                        {
+                            "section_name": "Section 1",
+                            "courses": [
+                                {
+                                    "course_id": 3,
+                                    "course_code": "COMP201",
+                                    "course_title": "Advanced Programming",
+                                    "lec_hours": 4,
+                                    "lab_hours": 2,
+                                    "units": 4,
+                                    "tuition_hours": 6,
+                                    "schedules": [
+                                        {
+                                            "day": "Thursday",
+                                            "start_time": "13:00:00",
+                                            "end_time": "17:00:00",
+                                            "faculty": {
+                                                "faculty_id": 1,
+                                                "faculty_email": "emmanuel.martinez@example.com",
+                                                "faculty_type": "full-time"
+                                            },
+                                            "room": {
+                                                "room_id": 1,
+                                                "room_code": "A202",
+                                                "location": "Main Building",
+                                                "floor_level": "2",
+                                                "room_type": "Lecture"
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

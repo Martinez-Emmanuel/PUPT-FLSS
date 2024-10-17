@@ -20,4 +20,9 @@ class Room extends Model
         'capacity',
         'status',
     ];
+
+    public function schedules()
+    {
+        return $this->hasMany(Schedule::class, 'room_id', 'room_id');
+    }
 }

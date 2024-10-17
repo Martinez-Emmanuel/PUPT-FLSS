@@ -14,7 +14,7 @@ $_palettes: (
     50: #d44433,
     60: #f75d49,
     70: #ff8a78,
-    80: #a93232, // default: #ffb4a8
+    80: #a93232, // default: #ffb4a8 // alt: #e15d5d
     90: #ffdad4,
     95: #ffedea,
     98: #fff8f6,
@@ -75,7 +75,7 @@ $_palettes: (
     99: #fffbff,
     100: #ffffff,
     4: #120d0c,
-    6: #181211,
+    6:  #1a1a1a, // default: #181211
     12: #251e1d,
     17: #2f2827,
     22: #3b3332,
@@ -88,7 +88,7 @@ $_palettes: (
   neutral-variant: (
     0: #000000,
     10: #251917,
-    20: #2d2d2d, // #3b2d2b
+    20: #2d2d2d, // default: #3b2d2b
     25: #473836,
     30: #232323, // default: #534341
     35: #5f4f4c,

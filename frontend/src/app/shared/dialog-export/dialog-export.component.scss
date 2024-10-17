@@ -1,0 +1,38 @@
+@import "../../../styles/mixins.scss";
+
+.dialog-export-container {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-md)
+  );
+  padding: var(--spacing-lg);
+  height: 100%;
+}
+
+.dialog-title {
+  @include reset-styles;
+  font-weight: 600;
+  color: var(--primary-text);
+}
+
+.dialog-subtitle {
+  color: var(--primary-text);
+}
+
+.dialog-export-pdf-container {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start
+  );
+}
+
+.dialog-actions {
+  @include flex-layout($justify: flex-end, $gap: var(--spacing-sm));
+
+  button {
+    color: var(--primary-text);
+  }
+}

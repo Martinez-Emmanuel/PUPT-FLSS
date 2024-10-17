@@ -16,72 +16,103 @@ class CourseController extends Controller
         $courses = Course::with(['assignments', 'requirements'])->get(); 
         return response()->json($courses);
     }
-
     public function addCourse(Request $request)
     {
         DB::beginTransaction();
-
+    
         try {
             // Validate the incoming request data
             $validatedData = $request->validate([
-                'course_code' => 'required|string|unique:courses',
+                'course_code' => 'required|string',
                 'course_title' => 'required|string',
                 'lec_hours' => 'required|integer',
                 'lab_hours' => 'required|integer',
                 'units' => 'required|integer',
                 'tuition_hours' => 'required|integer',
                 'semester_id' => 'nullable|integer|exists:semesters,semester_id',
-                'program_id' => 'required|integer|exists:programs,program_id',
+                'year_level_id' => 'nullable|integer|exists:year_levels,year_level_id',
+                'curricula_program_id' => 'nullable|integer|exists:curricula_program,curricula_program_id',
                 'requirements' => 'array',
                 'requirements.*.requirement_type' => 'nullable|in:pre,co',
                 'requirements.*.required_course_id' => 'nullable|integer|exists:courses,course_id',
             ]);
-
-            // Create the course
-            $course = Course::create($validatedData);
-
-            // Handle course assignments if a semester is provided
-            if (!empty($validatedData['semester_id'])) {
+    
+            // Check if the course already exists
+            $course = Course::where('course_code', $validatedData['course_code'])->first();
+    
+            if (!$course) {
+                // Create the course if it does not exist
+                $course = Course::create($validatedData);
+            }
+    
+            // Handle course assignments if a semester, year level, and curricula_program_id are provided
+            if (!empty($validatedData['semester_id']) && !empty($validatedData['curricula_program_id'])) {
+    
+                // Check if the course is already assigned to any semester under the same program
+                $existingAssignment = CourseAssignment::where([
+                    ['curricula_program_id', $validatedData['curricula_program_id']],
+                    ['course_id', $course->course_id],
+                ])->first();
+    
+                if ($existingAssignment) {
+                    return response()->json([
+                        'message' => 'This course is already assigned under this program in a semester. It cannot be assigned again.'
+                    ], 409); // 409 Conflict
+                }
+    
                 CourseAssignment::create([
-                    'program_id' => $validatedData['program_id'],
+                    'curricula_program_id' => $validatedData['curricula_program_id'],
                     'semester_id' => $validatedData['semester_id'],
                     'course_id' => $course->course_id,
                 ]);
             }
-
+    
             // Handle course requirements if any
             if (isset($validatedData['requirements'])) {
                 foreach ($validatedData['requirements'] as $requirement) {
                     if (!empty($requirement['requirement_type']) && !empty($requirement['required_course_id'])) {
-                        CourseRequirement::create([
-                            'course_id' => $course->course_id,
-                            'requirement_type' => $requirement['requirement_type'],
-                            'required_course_id' => $requirement['required_course_id'],
-                        ]);
+                        // Check if the requirement already exists
+                        $existingRequirement = CourseRequirement::where([
+                            ['course_id', $course->course_id],
+                            ['requirement_type', $requirement['requirement_type']],
+                            ['required_course_id', $requirement['required_course_id']],
+                        ])->first();
+    
+                        if (!$existingRequirement) {
+                            CourseRequirement::create([
+                                'course_id' => $course->course_id,
+                                'requirement_type' => $requirement['requirement_type'],
+                                'required_course_id' => $requirement['required_course_id'],
+                            ]);
+                        }
                     }
                 }
             }
-
+    
             DB::commit();
-
+    
             return response()->json([
                 'message' => 'Course added successfully',
                 'course' => $course
             ], 201);
-
+    
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['message' => 'Failed to add course', 'error' => $e->getMessage()], 500);
         }
     }
+    
+
 
     public function updateCourse(Request $request, $id)
     {
         DB::beginTransaction();
     
         try {
+            // Find the course by ID, or fail
             $course = Course::findOrFail($id);
     
+            // Validate the incoming request data
             $validatedData = $request->validate([
                 'course_code' => 'required|string|unique:courses,course_code,' . $course->course_id . ',course_id',
                 'course_title' => 'required|string',
@@ -90,26 +121,39 @@ class CourseController extends Controller
                 'units' => 'required|integer',
                 'tuition_hours' => 'required|integer',
                 'semester_id' => 'nullable|integer|exists:semesters,semester_id',
-                'program_id' => 'required|integer|exists:programs,program_id',
+                'year_level_id' => 'nullable|integer|exists:year_levels,year_level_id',
+                'curricula_program_id' => 'nullable|integer|exists:curricula_program,curricula_program_id',
                 'requirements' => 'array',
                 'requirements.*.requirement_type' => 'nullable|in:pre,co',
                 'requirements.*.required_course_id' => 'nullable|integer|exists:courses,course_id',
             ]);
     
-            // Update the course
+            // Update the course with validated data
             $course->update($validatedData);
-
-            // Handle course assignments
-            if (!empty($validatedData['semester_id'])) {
-                // Delete existing assignment
-                CourseAssignment::where('course_id', $course->course_id)->delete();
-
-                // Add new assignment
-                CourseAssignment::create([
-                    'program_id' => $validatedData['program_id'],
-                    'semester_id' => $validatedData['semester_id'],
-                    'course_id' => $course->course_id,
-                ]);
+    
+            // Handle course assignments if a semester, year level, and curricula_program_id are provided
+            if (!empty($validatedData['semester_id']) && !empty($validatedData['curricula_program_id'])) {
+                // Check if the assignment should be changed (i.e., if the semester or curricula_program_id are being updated)
+                $shouldUpdateAssignment = $course->assignments()->where([
+                    ['curricula_program_id', $validatedData['curricula_program_id']],
+                    ['semester_id', $validatedData['semester_id']],
+                ])->doesntExist();
+    
+                if ($shouldUpdateAssignment) {
+                    // Delete existing assignments for the course and program in the given semester
+                    CourseAssignment::where([
+                        ['course_id', $course->course_id],
+                        ['curricula_program_id', $validatedData['curricula_program_id']],
+                        ['semester_id', $validatedData['semester_id']],
+                    ])->delete();
+    
+                    // Add new assignment
+                    CourseAssignment::create([
+                        'curricula_program_id' => $validatedData['curricula_program_id'],
+                        'semester_id' => $validatedData['semester_id'],
+                        'course_id' => $course->course_id,
+                    ]);
+                }
             }
     
             // Handle course requirements
@@ -141,32 +185,37 @@ class CourseController extends Controller
             return response()->json(['message' => 'Failed to update course', 'error' => $e->getMessage()], 500);
         }
     }
-
+    
+    
+    
+    
+    
     public function deleteCourse($id)
     {
         DB::beginTransaction();
-
+    
         try {
             $course = Course::findOrFail($id);
-
+    
             // Delete associated course assignments
             CourseAssignment::where('course_id', $course->course_id)->delete();
-
+    
             // Delete associated course requirements
             CourseRequirement::where('course_id', $course->course_id)->delete();
-
+    
             // Delete the course
             $course->delete();
-
+    
             DB::commit();
-
+    
             return response()->json([
                 'message' => 'Course deleted successfully'
             ], 200);
-
+    
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['message' => 'Failed to delete course', 'error' => $e->getMessage()], 500);
         }
     }
+    
 }

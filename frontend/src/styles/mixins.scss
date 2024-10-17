@@ -22,6 +22,14 @@
   box-sizing: border-box;
 }
 
+/* Sticky Object */
+@mixin sticky($top: 0, $bottom: 0, $z-index: 2) {
+  position: sticky;
+  top: $top;
+  bottom: $bottom;
+  z-index: $z-index;
+}
+
 /* Default page transition. Add the true parameter (optional) to include text */
 @mixin default-transition($include-color: false) {
   transition: background-color 0.3s ease;
@@ -66,8 +74,17 @@
   font-family: "Inter Tight", "Helvetica Neue", sans-serif;
 }
 
-/* Primary Gradient Border */
-@mixin gradient-border-primary($width: 2px, $degree: 90deg) {
+/* Primary Gradient for text */
+@mixin gradient-secondary-text($degree: 90deg) {
+  @include gradient-secondary($degree);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+}
+
+/* Primary Gradient for border */
+@mixin gradient-primary-border($width: 2px, $degree: 90deg) {
   border: $width solid transparent;
   background-clip: padding-box, border-box;
   background-origin: padding-box, border-box;

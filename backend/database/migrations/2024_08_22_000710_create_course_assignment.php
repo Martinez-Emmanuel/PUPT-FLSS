@@ -8,27 +8,30 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::create('course_assignments', function (Blueprint $table) {
-            $table->increments('course_assignment_id');
-            $table->unsignedInteger('program_id'); 
-            $table->unsignedInteger('semester_id');
-            $table->unsignedInteger('course_id');
-            $table->timestamps();
+            $table->increments('course_assignment_id'); 
+            $table->unsignedInteger('curricula_program_id'); 
+            $table->unsignedInteger('semester_id');         
+            $table->unsignedInteger('course_id');            
+            $table->timestamps();                            
 
             // Foreign key constraints
-            $table->foreign('program_id')
-                  ->references('program_id')
-                  ->on('programs')
-                  ->onDelete('cascade');
+            $table->foreign('curricula_program_id')
+                  ->references('curricula_program_id')
+                  ->on('curricula_program')
+                  ->onDelete('cascade')
+                  ->onUpdate('restrict');
 
             $table->foreign('semester_id')
                   ->references('semester_id')
                   ->on('semesters')
-                  ->onDelete('cascade');
+                  ->onDelete('cascade')
+                  ->onUpdate('restrict');
             
             $table->foreign('course_id')
                   ->references('course_id')
                   ->on('courses')
-                  ->onDelete('cascade');
+                  ->onDelete('cascade')
+                  ->onUpdate('restrict');
         });
     }
 
