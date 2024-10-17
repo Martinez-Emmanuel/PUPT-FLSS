@@ -32,27 +32,25 @@
   .no-data-row {
     text-align: center;
     padding: var(--spacing-md);
-    color: var(--neutral-base); 
+    color: var(--neutral-base);
     border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
-    
-  .no-data-text {
-    @include flex-layout($gap: var(--spacing-xs));
-    width: 100%;
-    text-align: center;
-    background-color: var(--neutral-light);
-    font-size: var(--font-size-md);
-    padding: var(--spacing-xs) 0;
 
-    span {
-      opacity: var(--opacity-semi-opaque);
-    }
+    .no-data-text {
+      @include flex-layout($gap: var(--spacing-xs));
+      width: 100%;
+      text-align: center;
+      font-size: var(--font-size-md);
+      padding: var(--spacing-xs) 0;
 
-    span[mat-symbol] {
-      font-size: 100%;
+      span {
+        opacity: var(--opacity-semi-opaque);
+      }
+
+      span[mat-symbol] {
+        font-size: 100%;
+      }
     }
   }
-  }
-  
 
   .custom-header {
     text-wrap: nowrap;
@@ -85,12 +83,12 @@
       border-radius: var(--border-radius-xs);
       font-weight: 500;
     }
-    
+
     .status-active {
       color: var(--green-primary);
       background-color: var(--green-fade);
     }
-    
+
     .status-inactive {
       color: var(--primary-text-lighter);
       background-color: var(--primary-fade);
