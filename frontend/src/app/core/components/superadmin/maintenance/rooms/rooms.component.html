@@ -1,38 +1,39 @@
 <div class="rooms-container">
   @if (isLoading) {
-    <div class="loading-wrapper">
-      <app-loading></app-loading>
-    </div>
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
   } @else {
-    <!--Table Header-->
-    <div class="rooms-header-container" [@fadeAnimation]>
-      <app-table-header
-        [inputFields]="headerInputFields"
-        [addButtonLabel]="'Add Room'"
-        (inputChange)="onInputChange($event)"
-        (add)="openAddRoomDialog()"
-        (export)="onExport()"
-      ></app-table-header>
-    </div>
+  <!--Table Header-->
+  <div class="rooms-header-container" [@fadeAnimation]>
+    <app-table-header
+      [inputFields]="headerInputFields"
+      [addButtonLabel]="'Add Room'"
+      (inputChange)="onInputChange($event)"
+      (add)="openAddRoomDialog()"
+      (export)="onExport()"
+    ></app-table-header>
+  </div>
 
-    <!-- Common Table -->
-    <div class="rooms-table-container" [@fadeAnimation]>
-      <app-table-generic
-        [columns]="columns"
-        [data]="rooms"
-        [tableName]="'room/s'"
-        [displayedColumns]="displayedColumns"
-        (edit)="openEditRoomDialog($event)"
-        (delete)="deleteRoom($event)"
-      ></app-table-generic>
-    </div>
-
-    <!-- PDF Preview and Export Confirmation -->
-    @if (showPreview) {
-      <div class="pdf-preview-container">
-        <button mat-button (click)="cancelPreview()">Cancel</button>
-        <iframe id="pdfPreview" width="100%" height="600px"></iframe>
-      </div>
+  <!-- Common Table -->
+  <div class="rooms-table-container" [@fadeAnimation]>
+    @if (rooms$ | async; as rooms) {
+    <app-table-generic
+      [columns]="columns"
+      [data]="rooms"
+      [tableName]="'room/s'"
+      [displayedColumns]="displayedColumns"
+      (edit)="openEditRoomDialog($event)"
+      (delete)="deleteRoom($event)"
+    ></app-table-generic>
     }
-  }
+  </div>
+
+  <!-- PDF Preview and Export Confirmation -->
+  @if (showPreview) {
+  <div class="pdf-preview-container">
+    <button mat-button (click)="cancelPreview()">Cancel</button>
+    <iframe id="pdfPreview" width="100%" height="600px"></iframe>
+  </div>
+  } }
 </div>

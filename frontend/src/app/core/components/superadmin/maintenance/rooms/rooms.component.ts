@@ -1,6 +1,9 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
+
+import { BehaviorSubject, Subject } from 'rxjs';
+import { takeUntil, catchError, map, finalize } from 'rxjs/operators';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -10,9 +13,9 @@ import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-
 import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
 
-import { fadeAnimation } from '../../../../animations/animations';
-
 import { Room, RoomService } from '../../../../services/superadmin/rooms/rooms.service';
+
+import { fadeAnimation } from '../../../../animations/animations';
 
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -32,12 +35,14 @@ import 'jspdf-autotable';
   animations: [fadeAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class RoomsComponent implements OnInit {
+export class RoomsComponent implements OnInit, OnDestroy {
   roomTypes = ['Lecture', 'Laboratory', 'Office'];
   floors = ['1st', '2nd', '3rd', '4th', '5th'];
   selectedRoomIndex: number | null = null;
 
-  rooms: Room[] = [];
+  private roomsSubject = new BehaviorSubject<Room[]>([]);
+  rooms$ = this.roomsSubject.asObservable();
+
   columns = [
     { key: 'index', label: '#' },
     { key: 'room_code', label: 'Room Code' },
@@ -45,7 +50,7 @@ export class RoomsComponent implements OnInit {
     { key: 'floor_level', label: 'Floor Level' },
     { key: 'room_type', label: 'Room Type' },
     { key: 'capacity', label: 'Capacity' },
-    { key: 'status', label: 'Status'},
+    { key: 'status', label: 'Status' },
   ];
 
   displayedColumns: string[] = [
@@ -62,12 +67,14 @@ export class RoomsComponent implements OnInit {
     {
       type: 'text',
       label: 'Search Rooms',
-      key: 'search'
-    }
+      key: 'search',
+    },
   ];
 
-  showPreview = false;  
-  isLoading = true; 
+  showPreview = false;
+  isLoading = true;
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -80,146 +87,65 @@ export class RoomsComponent implements OnInit {
     this.fetchRooms();
   }
 
-  fetchRooms() {
-    this.isLoading = true;
-    this.roomService.getRooms().subscribe({
-      next: (rooms) => {
-        this.rooms = rooms;
-        this.isLoading = false;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.isLoading = false;
-        this.snackBar.open('Error fetching rooms data', 'Close', {
-          duration: 3000,
-        });
-      },
-    });
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
-  onInputChange(values: {[key: string]: any}) {
+  fetchRooms() {
+    this.isLoading = true;
+    this.roomService
+      .getRooms()
+      .pipe(
+        catchError((err) => {
+          this.snackBar.open('Error fetching rooms data', 'Close', {
+            duration: 3000,
+          });
+          return [];
+        }),
+        finalize(() => {
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((rooms) => {
+        this.roomsSubject.next(rooms);
+      });
+  }
+
+  onInputChange(values: { [key: string]: any }) {
     if (values['search'] !== undefined) {
       this.onSearch(values['search']);
     }
   }
 
-  private onSearch(searchTerm: string) {
-    this.roomService.getRooms().subscribe((rooms) => {
-      this.rooms = rooms.filter(
-        (room) =>
-          room.room_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          room.location.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      this.cdr.markForCheck();
-    });
+  onSearch(searchTerm: string) {
+    this.roomService
+      .getRooms()
+      .pipe(
+        map((rooms) =>
+          rooms.filter(
+            (room) =>
+              room.room_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+              room.location.toLowerCase().includes(searchTerm.toLowerCase())
+          )
+        ),
+        catchError(() => {
+          this.snackBar.open('Error during search', 'Close', {
+            duration: 3000,
+          });
+          return [];
+        }),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((filteredRooms) => {
+        this.roomsSubject.next(filteredRooms);
+        this.cdr.markForCheck();
+      });
   }
 
-  public generatePDF(showPreview: boolean = false): void {
-    const doc = new jsPDF('p', 'mm', 'legal') as any;
-    const pageWidth = doc.internal.pageSize.width;
-    const margin = 10;
-    const logoSize = 22;
-    const topMargin = 15;
-    let currentY = topMargin;
-
-    // Add the left logo
-    const leftLogoUrl = 'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png'; 
-    doc.addImage(leftLogoUrl, 'PNG', margin, 10, logoSize, logoSize); 
-
-    // Add the header text with different styles
-    doc.setFontSize(12);
-    doc.setFont('times', 'bold');
-    doc.text('POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH', pageWidth / 2, currentY, { align: 'center' });
-    currentY += 5;
-
-    doc.setFontSize(12);
-    doc.text('Gen. Santos Ave. Upper Bicutan, Taguig City', pageWidth / 2, currentY, { align: 'center' });
-    currentY += 10;
-
-    doc.setFontSize(15);
-    // doc.setFont('times', 'italic');
-    doc.setTextColor(0, 0, 0);
-    doc.text('Room Report', pageWidth / 2, currentY, { align: 'center' });
-    currentY += 8;
-
-    // Add the horizontal line below the header
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.5);
-    doc.line(margin, currentY, pageWidth - margin, currentY);
-
-    currentY += 7; // Move down after the header and line
-
-    const bodyData = this.rooms.map((room, index) => [
-        (index + 1).toString(),
-        room.room_code,
-        room.location,
-        room.floor_level,
-        room.room_type,
-        room.capacity.toString(),
-        room.status,
-    ]);
-
-    doc.autoTable({
-        startY: currentY,
-        head: [['#', 'Room Code', 'Location', 'Floor Level', 'Room Type', 'Capacity', 'Status']],
-        body: bodyData,
-        theme: 'grid',
-        headStyles: {
-          fillColor: [128, 0, 0],
-          textColor: [255, 255, 255],
-          fontSize: 9,
-        },
-        bodyStyles: {
-            fontSize: 8, 
-            textColor: [0, 0, 0],
-        },
-        styles: {
-            lineWidth: 0.1,
-            overflow: 'linebreak',
-            cellPadding: 2,
-        },
-        columnStyles: { 
-            0: { cellWidth: 15 },  // # (index)
-            1: { cellWidth: 30 },  // Room Code
-            2: { cellWidth: 40 },  // Location
-            3: { cellWidth: 30 },  // Floor Level
-            4: { cellWidth: 40 },  // Room Type
-            5: { cellWidth: 20 },  // Capacity
-            6: { cellWidth: 25 },  // Status
-        },
-        margin: { left: margin, right: margin },
-        didDrawPage: (data: any) => {
-            currentY = data.cursor.y + 10;
-        },
-    });
-
-    // Create the blob and generate the URL before setting the iframe source
-    const pdfBlob = doc.output('blob');
-    const blobUrl = URL.createObjectURL(pdfBlob);
-
-    if (showPreview) {
-        this.showPreview = true; 
-        setTimeout(() => {
-            const iframe = document.getElementById('pdfPreview') as HTMLIFrameElement;
-
-            if (iframe) {
-                iframe.src = blobUrl;
-            }
-        }, 0); 
-    } else {
-        doc.save('rooms_report.pdf');
-    }
-  }
-
-  onExport() {
-    this.generatePDF(true);  // Trigger PDF generation with preview
-  }
-
-  cancelPreview() {
-    this.showPreview = false;  // Hide the preview section
-  }
-
-  private getDialogConfig(room?: Room): DialogConfig {
+  getDialogConfig(room?: Room): DialogConfig {
     return {
       title: room ? 'Edit Room' : 'Add Room',
       isEdit: !!room,
@@ -272,6 +198,10 @@ export class RoomsComponent implements OnInit {
     };
   }
 
+  // ======================
+  // CRU Operations
+  // ======================
+
   openAddRoomDialog() {
     const config = this.getDialogConfig();
     const dialogRef = this.dialog.open(TableDialogComponent, {
@@ -279,72 +209,241 @@ export class RoomsComponent implements OnInit {
       disableClose: true,
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        this.roomService.addRoom(result).subscribe((newRoom) => {
-          this.rooms.push(newRoom);
-          this.snackBar.open('Room added successfully', 'Close', {
-            duration: 3000,
-          });
-          this.fetchRooms();
-          this.cdr.markForCheck();
-        });
-      }
-    });
+    dialogRef
+      .afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((result) => {
+        if (result) {
+          this.roomService
+            .addRoom(result)
+            .pipe(
+              catchError(() => {
+                this.snackBar.open('Error adding room', 'Close', {
+                  duration: 3000,
+                });
+                return [];
+              }),
+              takeUntil(this.destroy$)
+            )
+            .subscribe((newRoom) => {
+              const currentRooms = this.roomsSubject.getValue();
+              this.roomsSubject.next([...currentRooms, newRoom]);
+              this.snackBar.open(`Room ${newRoom.room_code} added successfully.`, 'Close', {
+                duration: 3000,
+              });
+            });
+        }
+      });
   }
 
   openEditRoomDialog(room: Room) {
-    this.selectedRoomIndex = this.rooms.indexOf(room);
     const config = this.getDialogConfig(room);
-
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: config,
       disableClose: true,
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result && this.selectedRoomIndex !== null) {
-        if (!result.room_id) {
-            result.room_id = room.room_id;
+    dialogRef
+      .afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((result) => {
+        if (result) {
+          const updatedRoom = { ...result, room_id: room.room_id };
+          this.updateRoom(updatedRoom);
         }
-        this.updateRoom(result);
-    } 
-  });
+      });
   }
 
   updateRoom(room: Room) {
     const roomId = room.room_id;
-
     if (roomId !== undefined) {
-
-      this.roomService.updateRoom(roomId, room).subscribe((updated) => {
-        const index = this.rooms.findIndex(r => r.room_id === roomId);
-          if (index >= 0) {
-            this.rooms[index] = updated;
-                this.snackBar.open('Room updated successfully', 'Close', {
-                    duration: 3000,
-                });
-              this.fetchRooms();
-              this.cdr.markForCheck();
-            }
-      });
+      this.roomService
+        .updateRoom(roomId, room)
+        .pipe(
+          catchError(() => {
+            this.snackBar.open('Error updating room.', 'Close', {
+              duration: 3000,
+            });
+            return [];
+          }),
+          takeUntil(this.destroy$)
+        )
+        .subscribe((updated) => {
+          const currentRooms = this.roomsSubject.getValue();
+          const index = currentRooms.findIndex((r) => r.room_id === roomId);
+          if (index !== -1) {
+            currentRooms[index] = updated;
+            this.roomsSubject.next([...currentRooms]);
+            this.snackBar.open(`Room ${updated.room_code} updated successfully.`, 'Close', {
+              duration: 3000,
+            });
+          }
+        });
     }
   }
 
   deleteRoom(room: Room) {
     const roomId = room.room_id;
     if (roomId !== undefined) {
-      this.roomService.deleteRoom(roomId).subscribe(() => {
-        const index = this.rooms.findIndex(r => r.room_id === roomId);
-        if (index >= 0) {
-          this.rooms.splice(index, 1);
-          this.snackBar.open('Room deleted successfully', 'Close', {
+      this.roomService
+        .deleteRoom(roomId)
+        .pipe(
+          catchError(() => {
+            this.snackBar.open('Error deleting room.', 'Close', {
+              duration: 3000,
+            });
+            return [];
+          }),
+          takeUntil(this.destroy$)
+        )
+        .subscribe(() => {
+          const updatedRooms = this.roomsSubject
+            .getValue()
+            .filter((r) => r.room_id !== roomId);
+          this.roomsSubject.next(updatedRooms);
+          this.snackBar.open(`Room ${room.room_code} deleted successfully.`, 'Close', {
             duration: 3000,
           });
-          this.fetchRooms();
-          this.cdr.markForCheck();
-        }
-      });
+        });
     }
-  }  
+  }
+
+  // ======================
+  // PDF Generation
+  // ======================
+
+  generatePDF(showPreview: boolean = false): void {
+    this.rooms$.pipe(takeUntil(this.destroy$)).subscribe((rooms) => {
+      try {
+        const doc = new jsPDF('p', 'mm', 'legal') as any;
+        const pageWidth = doc.internal.pageSize.width;
+        const margin = 10;
+        const logoSize = 22;
+        const topMargin = 15;
+        let currentY = topMargin;
+
+        // Add the left logo
+        const leftLogoUrl =
+          'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
+        doc.addImage(leftLogoUrl, 'PNG', margin, 10, logoSize, logoSize);
+
+        // Add the header text with different styles
+        doc.setFontSize(12);
+        doc.setFont('times', 'bold');
+        doc.text(
+          'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
+          pageWidth / 2,
+          currentY,
+          { align: 'center' }
+        );
+        currentY += 5;
+
+        doc.setFontSize(12);
+        doc.text(
+          'Gen. Santos Ave. Upper Bicutan, Taguig City',
+          pageWidth / 2,
+          currentY,
+          { align: 'center' }
+        );
+        currentY += 10;
+
+        doc.setFontSize(15);
+        doc.setTextColor(0, 0, 0);
+        doc.text('Room Report', pageWidth / 2, currentY, { align: 'center' });
+        currentY += 8;
+
+        // Add the horizontal line below the header
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.5);
+        doc.line(margin, currentY, pageWidth - margin, currentY);
+
+        currentY += 7; // Move down after the header and line
+
+        const bodyData = rooms.map((room, index) => [
+          (index + 1).toString(),
+          room.room_code,
+          room.location,
+          room.floor_level,
+          room.room_type,
+          room.capacity.toString(),
+          room.status,
+        ]);
+
+        doc.autoTable({
+          startY: currentY,
+          head: [
+            [
+              '#',
+              'Room Code',
+              'Location',
+              'Floor Level',
+              'Room Type',
+              'Capacity',
+              'Status',
+            ],
+          ],
+          body: bodyData,
+          theme: 'grid',
+          headStyles: {
+            fillColor: [128, 0, 0],
+            textColor: [255, 255, 255],
+            fontSize: 9,
+          },
+          bodyStyles: {
+            fontSize: 8,
+            textColor: [0, 0, 0],
+          },
+          styles: {
+            lineWidth: 0.1,
+            overflow: 'linebreak',
+            cellPadding: 2,
+          },
+          columnStyles: {
+            0: { cellWidth: 15 }, // # (index)
+            1: { cellWidth: 30 }, // Room Code
+            2: { cellWidth: 40 }, // Location
+            3: { cellWidth: 30 }, // Floor Level
+            4: { cellWidth: 40 }, // Room Type
+            5: { cellWidth: 20 }, // Capacity
+            6: { cellWidth: 25 }, // Status
+          },
+          margin: { left: margin, right: margin },
+          didDrawPage: (data: any) => {
+            currentY = data.cursor.y + 10;
+          },
+        });
+
+        // Create the blob and generate the URL before setting the iframe source
+        const pdfBlob = doc.output('blob');
+        const blobUrl = URL.createObjectURL(pdfBlob);
+
+        if (showPreview) {
+          this.showPreview = true;
+          setTimeout(() => {
+            const iframe = document.getElementById(
+              'pdfPreview'
+            ) as HTMLIFrameElement;
+
+            if (iframe) {
+              iframe.src = blobUrl;
+            }
+          }, 0);
+        } else {
+          doc.save('rooms_report.pdf');
+        }
+      } catch (error) {
+        this.snackBar.open('Failed to generate PDF.', 'Close', {
+          duration: 3000,
+        });
+      }
+    });
+  }
+
+  onExport() {
+    this.generatePDF(true);
+  }
+
+  cancelPreview() {
+    this.showPreview = false;
+  }
 }

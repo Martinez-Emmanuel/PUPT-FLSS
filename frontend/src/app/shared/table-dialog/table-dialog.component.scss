@@ -39,7 +39,7 @@
   }
 
   .dialog-form {
-    padding: var(--spacing-sm) 0;
+    padding: var(--spacing-sm) 0 0 0;
 
     .form-field {
       width: 100%;
@@ -91,6 +91,8 @@
   .cancel-button {
     color: var(--primary-text) !important;
   }
+
+  padding-bottom: var(--spacing-lg);
 
   .action-button {
     &:disabled {
