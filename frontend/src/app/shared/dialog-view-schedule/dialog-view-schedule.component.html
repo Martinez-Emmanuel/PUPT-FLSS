@@ -7,14 +7,57 @@
   } @else {
   <!-- Schedule Title -->
   <div class="entity-info" [@fadeAnimation]>
-    <h2 class="dialog-title">{{ title }}</h2>
-    <span class="dialog-subtitle">{{ subtitle }}</span>
+    <!-- Schedule Title Container -->
+    <div class="schedule-title">
+      <h2 class="dialog-title">{{ title }}</h2>
+      <span class="dialog-subtitle">Official Schedule {{ subtitle }}</span>
+    </div>
+    <!-- Schedule Badge -->
+    <div class="view-option">
+      <mat-button-toggle-group
+        name="viewOption"
+        [(ngModel)]="selectedView"
+        aria-label="Select view option"
+      >
+        <mat-button-toggle value="table-view">Table view</mat-button-toggle>
+        <mat-button-toggle value="pdf-view">PDF view</mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
   </div>
 
-  <!-- Schedule Calendar Container -->
-  <div class="dialog-schedule-calendar-container" [@fadeAnimation]>
-    <!--The weekly schedule will be displayed here-->
+  @if (selectedView === 'table-view') {
+
+  <!-- Multiple Schedule -->
+  @if (scheduleGroups && scheduleGroups.length > 0) {
+  <div class="multiple-schedules-container">
+    @for (group of scheduleGroups; track group) {
+    <div class="schedule-group">
+      <h3 class="group-title">{{ group.title }}</h3>
+      <app-schedule-timeline
+        [scheduleData]="group.scheduleData"
+        [entity]="data.entity"
+        [@fadeAnimation]
+      ></app-schedule-timeline>
+    </div>
+    }
   </div>
+  }
+
+  <!-- Single Schedule -->
+  @if (!scheduleGroups) {
+  <div class="single-schedule-container">
+    <app-schedule-timeline
+      [scheduleData]="scheduleData"
+      [entity]="data.entity"
+      [@fadeAnimation]
+    ></app-schedule-timeline>
+  </div>
+  } } @else if (selectedView === 'pdf-view') {
+  <div class="dialog-pref-pdf-container">
+    <!--TODO: Display the PDF frame here-->
+    <span>Display the PDF frame here</span>
+  </div>
+  }
 
   <!-- Action buttons -->
   <div class="dialog-actions" [@fadeAnimation]>

@@ -42,6 +42,7 @@
   --line-height-lg: 1.75;
 
   // Spacing
+  --spacing-xxxs: 0.1rem;
   --spacing-xxs: 0.25rem;
   --spacing-xs: 0.5rem;
   --spacing-sm: 0.75rem;
@@ -220,6 +221,12 @@ span[mat-symbol] {
 
 .mat-step-icon .mat-icon {
   color: white !important;
+}
+
+.mat-button-toggle-standalone.mat-button-toggle-appearance-standard,
+.mat-button-toggle-group-appearance-standard {
+  border: 1px solid
+    var(--mat-standard-button-toggle-divider-color, var(--mat-app-outline)) !important;
 }
 
 [mat-flat-button] {

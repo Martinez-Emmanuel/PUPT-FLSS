@@ -31,7 +31,7 @@ import { ThemeService } from '../../../services/theme/theme.service';
 import { PreferencesService, Program, Course, YearLevel } from '../../../services/faculty/preference/preferences.service';
 import { CookieService } from 'ngx-cookie-service';
 
-import { fadeAnimation, cardEntranceAnimation } from '../../../animations/animations';
+import { fadeAnimation, cardEntranceAnimation, rowAdditionAnimation } from '../../../animations/animations';
 
 interface TableData extends Course {
   preferredDay: string;
@@ -69,7 +69,7 @@ interface TableData extends Course {
   styleUrls: ['./preferences.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   providers: [PreferencesService],
-  animations: [fadeAnimation, cardEntranceAnimation],
+  animations: [fadeAnimation, cardEntranceAnimation, rowAdditionAnimation],
 })
 export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   showSidenav = false;

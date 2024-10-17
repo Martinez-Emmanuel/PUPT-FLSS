@@ -9,6 +9,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
@@ -25,6 +26,9 @@ interface Faculty {
   facultyUnits: number;
   isEnabled: boolean;
   facultyId: number;
+  schedules?: any[];
+  academicYear?: string;
+  semester?: string;
 }
 
 @Component({
@@ -70,6 +74,7 @@ export class ReportFacultyComponent
 
   dataSource = new MatTableDataSource<Faculty>();
   filteredData: Faculty[] = [];
+  hasSchedulesForToggleAll = false;
   isToggleAllChecked = false;
   isLoading = true;
 
@@ -77,7 +82,8 @@ export class ReportFacultyComponent
 
   constructor(
     private reportsService: ReportsService,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -106,8 +112,11 @@ export class ReportFacultyComponent
             facultyUnits: faculty.assigned_units,
             isEnabled: faculty.is_published === 1,
             facultyId: faculty.faculty_id,
+            schedules: faculty.schedules || [],
             academicYear: `${response.faculty_schedule_reports.year_start}-${response.faculty_schedule_reports.year_end}`,
-            semester: this.getSemesterDisplay(response.faculty_schedule_reports.semester), // Use the helper function here
+            semester: this.getSemesterDisplay(
+              response.faculty_schedule_reports.semester
+            ),
           })
         );
 
@@ -115,6 +124,15 @@ export class ReportFacultyComponent
         this.dataSource.data = facultyData;
         this.filteredData = [...facultyData];
         this.dataSource.paginator = this.paginator;
+
+        this.hasSchedulesForToggleAll = facultyData.some(
+          (faculty: { schedules: string | any[] }) =>
+            faculty.schedules && faculty.schedules.length > 0
+        );
+
+        this.isToggleAllChecked =
+          this.dataSource.data.length > 0 &&
+          this.dataSource.data.every((faculty) => faculty.isEnabled);
       },
       error: (error) => {
         this.isLoading = false;
@@ -158,16 +176,20 @@ export class ReportFacultyComponent
           faculty.facultyType.toLowerCase().includes(searchQuery)
       );
     }
+
+    this.isToggleAllChecked =
+      this.dataSource.data.length > 0 &&
+      this.dataSource.data.every((faculty) => faculty.isEnabled);
   }
 
   onView(element: any) {
     this.dialog.open(DialogViewScheduleComponent, {
-      maxWidth: '70rem',
+      maxWidth: '90vw',
       width: '100%',
       data: {
         exportType: 'single',
         entity: 'faculty',
-        entityData: element,
+        entityData: element.schedules,
         customTitle: `${element.facultyName}`,
         academicYear: element.academicYear,
         semester: element.semester,
@@ -184,12 +206,91 @@ export class ReportFacultyComponent
     console.log('Export clicked for:', element);
   }
 
-  onToggleChange(element: Faculty) {
-    console.log('Toggle changed for:', element);
+  onToggleAllChange(event: any) {
+    const isPublished = event.checked ? 1 : 0;
+
+    this.snackBar.open('Loading, please wait...', 'Close', {
+      duration: undefined,
+    });
+
+    this.reportsService.togglePublishAllSchedules(isPublished).subscribe({
+      next: (response) => {
+        this.dataSource.data.forEach((faculty) => {
+          if (faculty.schedules && faculty.schedules.length > 0) {
+            faculty.isEnabled = isPublished === 1;
+          }
+        });
+
+        this.isToggleAllChecked =
+          this.dataSource.data.length > 0 &&
+          this.dataSource.data
+            .filter(
+              (faculty) => faculty.schedules && faculty.schedules.length > 0
+            )
+            .every((faculty) => faculty.isEnabled);
+
+        this.snackBar.open(
+          'Schedules successfully published for all applicable faculty.',
+          'Close',
+          {
+            duration: 3000,
+          }
+        );
+      },
+      error: (error) => {
+        console.error('Error toggling all schedules:', error);
+        this.isToggleAllChecked = !event.checked;
+
+        this.snackBar.open(
+          'Error publishing schedules for all applicable faculty.',
+          'Close',
+          {
+            duration: 3000,
+          }
+        );
+      },
+    });
   }
 
-  onToggleAllChange(event: any) {
-    this.isToggleAllChecked = event.checked;
+  onToggleChange(element: Faculty) {
+    const isPublished = element.isEnabled ? 1 : 0;
+
+    this.snackBar.open('Loading, please wait...', 'Close', {
+      duration: undefined,
+    });
+
+    this.reportsService
+      .togglePublishSingleSchedule(element.facultyId, isPublished)
+      .subscribe({
+        next: (response) => {
+          this.isToggleAllChecked =
+            this.dataSource.data.length > 0 &&
+            this.dataSource.data.every((faculty) => faculty.isEnabled);
+
+          this.snackBar.open(
+            `Schedules successfully published for ${element.facultyName}.`,
+            'Close',
+            {
+              duration: 3000,
+            }
+          );
+        },
+        error: (error) => {
+          console.error(
+            `Error toggling schedule for faculty ${element.facultyId}:`,
+            error
+          );
+          element.isEnabled = !element.isEnabled;
+
+          this.snackBar.open(
+            `Error publishing schedules for ${element.facultyName}.`,
+            'Close',
+            {
+              duration: 3000,
+            }
+          );
+        },
+      });
   }
 
   updateDisplayedData() {

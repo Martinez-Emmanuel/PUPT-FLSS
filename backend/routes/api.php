@@ -46,9 +46,18 @@ Route::post('/assign-schedule', [SchedulingController::class, 'assignSchedule'])
 Route::get('/get-faculty', [SchedulingController::class, 'getFacultyDetails']);
 Route::get('/get-rooms', [RoomController::class, 'getAllRooms']);
 
+//Email routes for scheduling
+Route::post('/preferences-submitted-email', [FacultyController::class, 'sendPreferencesSubmittedEmail']); //send email to faculty that their preferences are submitted
+Route::post('/schedule-set-email', [FacultyController::class, 'sendSubjectsScheduleSetEmail']); // Schedule Set 1 by 1
+Route::post('/schedule-set-email-all', [FacultyController::class, 'sendEmailsToAllFaculties']); //Schedule Set to all faculties
+
 // Scheduling Reports Routes
 Route::get('/faculty-schedules-report', [ReportsController::class, 'getFacultySchedulesReport']);
-
+Route::get('/room-schedules-report', [ReportsController::class, 'getRoomSchedulesReport']);
+Route::get('/program-schedules-report', [ReportsController::class, 'getProgramSchedulesReport']);
+Route::get('/single-faculty-schedule/{faculty_id}', [ReportsController::class, 'getSingleFacultySchedule']);
+Route::post('/toggle-all-schedule', [ReportsController::class, 'toggleAllSchedules']);
+Route::post('/toggle-single-schedule', [ReportsController::class, 'toggleSingleSchedule']);
 
 //Scheduling routes
 Route::post('/submit-preferences', [PreferenceController::class, 'submitPreferences']);

@@ -23,7 +23,7 @@ import { PreferencesService, ActiveSemester } from '../../../services/faculty/pr
 import { fadeAnimation } from '../../../animations/animations';
 
 import jsPDF from 'jspdf';
-import 'jspdf-autotable'; 
+import 'jspdf-autotable';
 
 interface Faculty {
   faculty_id: number;
@@ -32,7 +32,7 @@ interface Faculty {
   facultyType: string;
   facultyUnits: number;
   is_enabled: boolean;
-  active_semesters?: ActiveSemester[]; 
+  active_semesters?: ActiveSemester[];
 }
 
 @Component({
@@ -191,9 +191,9 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
       .subscribe(
         (response) => {
           this.snackBar.open(
-            `Preferences submission ${
-              status ? 'enabled' : 'disabled'
-            } for Prof. ${faculty.facultyName}.`,
+            `Preferences submission ${status ? 'enabled' : 'disabled'} for ${
+              faculty.facultyName
+            }.`,
             'Close',
             { duration: 3000 }
           );
@@ -254,12 +254,20 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     const searchValue = inputValues['searchFaculty'] || '';
     this.applyFilter(searchValue);
   }
-  
+
   onView(faculty: Faculty): void {
+    const generatePdfFunction = (preview: boolean): Blob | void => {
+      return this.generateFacultyPDF(false, [faculty], preview);
+    };
+
     const dialogRef = this.dialog.open(DialogPrefComponent, {
       maxWidth: '70rem',
       width: '100%',
-      data: faculty,
+      data: {
+        facultyName: faculty.facultyName,
+        faculty_id: faculty.faculty_id,
+        generatePdfFunction: generatePdfFunction,
+      },
       disableClose: true,
     });
 
@@ -308,6 +316,11 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
         },
         generatePdfFunction: () =>
           this.generateFacultyPDF(true, this.allData, true),
+        generateFileNameFunction: () =>
+          `${academic_year.replace(
+            '/',
+            '_'
+          )}_${semester_label.toLowerCase()}_faculty_preferences_report.pdf`,
       },
       disableClose: true,
     });
@@ -322,31 +335,18 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     if (!activeSemester || !activeSemester.courses?.length) {
       const message = !activeSemester
         ? `No active semesters available for ${faculty.facultyName}.`
-        : `No courses available for ${faculty.facultyName}.`;
+        : `No preferences available for ${faculty.facultyName}.`;
       this.snackBar.open(message, 'Close', { duration: 3000 });
       return;
     }
 
-    const dialogRef = this.dialog.open(DialogExportComponent, {
-      maxWidth: '70rem',
-      width: '100%',
-      data: {
-        exportType: 'single',
-        entity: 'faculty',
-        entityData: {
-          name: faculty.facultyName,
-          academic_year: activeSemester.academic_year,
-          semester_label: activeSemester.semester_label,
-        },
-        generatePdfFunction: () =>
-          this.generateFacultyPDF(false, [faculty], true),
-      },
-      disableClose: true,
-    });
+    this.generateFacultyPDF(false, [faculty], false);
 
-    dialogRef.afterClosed().subscribe((result) => {
-      console.log('Export Single dialog closed', result);
-    });
+    this.snackBar.open(
+      `Downloading PDF for ${faculty.facultyName}...`,
+      'Close',
+      { duration: 3000 }
+    );
   }
 
   generateFacultyPDF(
@@ -506,12 +506,28 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     if (showPreview) {
       return pdfBlob;
     } else {
-      doc.save(
-        isAll
-          ? 'all_faculty_preferences_report.pdf'
-          : 'faculty_preferences_report.pdf'
-      );
+      let fileName = 'faculty_preferences_report.pdf'; // Default name
+
+      if (isAll) {
+        const firstFaculty = faculties[0];
+        const activeSemester = firstFaculty.active_semesters?.[0];
+        if (activeSemester) {
+          const academicYear = activeSemester.academic_year.replace('/', '_'); // Replace '/' to avoid file name issues
+          const semester = activeSemester.semester_label.toLowerCase();
+          fileName = `${academicYear}_${semester}_faculty_preferences.pdf`;
+        }
+      } else {
+        fileName = `${this.sanitizeFileName(
+          faculties[0].facultyName
+        )}_preferences_report.pdf`;
+      }
+
+      doc.save(fileName);
     }
+  }
+
+  sanitizeFileName(fileName: string): string {
+    return fileName.toLowerCase().replace(/[^a-z0-9]/g, '_');
   }
 
   formatTimeTo12Hour(time: string): string {

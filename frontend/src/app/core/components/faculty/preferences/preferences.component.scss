@@ -17,7 +17,6 @@
 
   .disabled {
     opacity: 0.5;
-    pointer-events: none;
     user-select: none;
     transition: opacity 0.3s ease-in-out;
   }
@@ -196,6 +195,15 @@
       margin-bottom: var(--spacing-xs);
       border-radius: var(--border-radius-sm);
       cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+      &:hover {
+        transform: scale(0.98);
+      }
+
+      &:active {
+        transform: scale(0.96);
+      }
 
       .course-info,
       .program-info {
@@ -251,6 +259,10 @@
     text-wrap: wrap;
     text-align: center;
     background-color: var(--neutral-light);
+
+    &.title-cell {
+      max-width: 12rem;
+    }
 
     .display-time {
       @include ellipsis;
