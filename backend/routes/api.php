@@ -123,7 +123,7 @@ Route::put('/updateProgram/{id}', [ProgramController::class, 'updateProgram']);
 Route::delete('/deleteProgram/{id}', [ProgramController::class, 'deleteProgram']);
 
 // CRUD for rooms
-Route::get('/rooms', [RoomController::class, 'index']);
+Route::get('/rooms', [RoomController::class, 'getRooms']);
 Route::post('/addRoom', [RoomController::class, 'addRoom']);
 Route::put('/rooms/{room_id}', [RoomController::class, 'updateRoom']);
 Route::delete('/rooms/{room_id}', [RoomController::class, 'deleteRoom']);
