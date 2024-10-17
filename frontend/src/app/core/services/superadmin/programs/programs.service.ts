@@ -3,6 +3,14 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../../environments/environment.dev';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 
+export interface Curriculum {
+  curriculum_id: number;
+  curriculum_year: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Program {
   program_id: number;
   program_code: string;
@@ -10,15 +18,24 @@ export interface Program {
   program_info: string;
   status: string;
   number_of_years: number;
-  curricula: Curriculum[]; 
+  curricula: Curriculum[];
+  curriculum_years?: string;
 }
 
-export interface Curriculum {
-  curriculum_id: number;
-  curriculum_year: string;
+export interface AddProgramRequest {
+  program_code: string;
+  program_title: string;
+  program_info: string;
   status: string;
-  created_at: string;
-  updated_at: string;
+  number_of_years: number;
+}
+
+export interface UpdateProgramRequest {
+  program_code: string;
+  program_title: string;
+  program_info: string;
+  status: string;
+  number_of_years: number;
 }
 
 @Injectable({
@@ -36,14 +53,14 @@ export class ProgramsService {
   }
 
   // Add a new program
-  addProgram(program: Program): Observable<Program> {
+  addProgram(program: AddProgramRequest): Observable<Program> {
     return this.http.post<Program>(`${this.baseUrl}/addProgram`, program, {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
     });
   }
 
   // Update an existing program   
-  updateProgram(program_id: number, program: Program): Observable<Program> {
+  updateProgram(program_id: number, program: UpdateProgramRequest): Observable<Program> {
     const url = `${this.baseUrl}/updateProgram/${program_id}`;
     return this.http.put<Program>(url, program, {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
