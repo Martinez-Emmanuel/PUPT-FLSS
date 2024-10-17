@@ -1,6 +1,8 @@
-import { Component, OnInit, AfterViewInit, ViewChild } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ChangeDetectionStrategy  } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
+import { BehaviorSubject } from 'rxjs';
 
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -57,6 +59,7 @@ interface Faculty {
   templateUrl: './faculty-pref.component.html',
   styleUrls: ['./faculty-pref.component.scss'],
   animations: [fadeAnimation],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FacultyPrefComponent implements OnInit, AfterViewInit {
   inputFields: InputField[] = [
@@ -81,7 +84,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   allData: Faculty[] = [];
   filteredData: Faculty[] = [];
   isToggleAllChecked = false;
-  isLoading = true;
+  isLoading = new BehaviorSubject<boolean>(true);
   currentFilter = '';
 
   @ViewChild(MatPaginator) paginator?: MatPaginator;
@@ -89,7 +92,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   constructor(
     private preferencesService: PreferencesService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
   ) {}
 
   ngOnInit(): void {
@@ -109,7 +112,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   }
 
   loadFacultyPreferences(): void {
-    this.isLoading = true;
+    this.isLoading.next(true);
     this.preferencesService.getPreferences().subscribe(
       (response) => {
         const faculties = response.preferences.map((faculty: any) => ({
@@ -121,14 +124,14 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
           is_enabled: faculty.is_enabled === 1,
           active_semesters: faculty.active_semesters,
         }));
-
+  
         console.log('Processed Faculty Data:', faculties);
-
+  
         this.allData = faculties;
         this.filteredData = faculties;
         this.applyFilter(this.currentFilter);
         this.checkToggleAllState();
-        this.isLoading = false;
+        this.isLoading.next(false);
       },
       (error) => {
         console.error('Error loading faculty preferences:', error);
@@ -137,7 +140,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
           'Close',
           { duration: 3000 }
         );
-        this.isLoading = false;
+        this.isLoading.next(false);
       }
     );
   }
