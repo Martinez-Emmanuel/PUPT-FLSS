@@ -19,8 +19,16 @@
         [(ngModel)]="selectedView"
         aria-label="Select view option"
       >
-        <mat-button-toggle value="table-view">Table view</mat-button-toggle>
-        <mat-button-toggle value="pdf-view">PDF view</mat-button-toggle>
+        <!--Table View Option-->
+        <mat-button-toggle value="table-view">
+          <mat-icon class="icon-spacing">table_chart</mat-icon>
+          <span>Table view</span>
+        </mat-button-toggle>
+        <!--PDF View Option-->
+        <mat-button-toggle value="pdf-view">
+          <mat-icon class="icon-spacing">picture_as_pdf</mat-icon>
+          <span>PDF view</span>
+        </mat-button-toggle>
       </mat-button-toggle-group>
     </div>
   </div>
@@ -64,6 +72,12 @@
     <button mat-button class="close-button" (click)="closeDialog()">
       Close
     </button>
+    @if (selectedView === 'pdf-view') {
+    <button mat-flat-button>
+      <mat-icon>print</mat-icon>
+      Download PDF
+    </button>
+    }
   </div>
   }
 </div>

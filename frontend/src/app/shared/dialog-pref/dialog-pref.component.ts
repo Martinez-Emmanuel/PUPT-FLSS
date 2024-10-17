@@ -56,7 +56,7 @@ export class DialogPrefComponent implements OnInit {
   semesterLabel: string = '';
   courses: Course[] = [];
   isLoading = true;
-  currentView: 'table-view' | 'pdf-view' = 'table-view';
+  selectedView: 'table-view' | 'pdf-view' = 'table-view';
   pdfBlobUrl: SafeResourceUrl | null = null;
 
   constructor(
@@ -102,7 +102,7 @@ export class DialogPrefComponent implements OnInit {
   }
 
   onViewChange(): void {
-    if (this.currentView === 'pdf-view') {
+    if (this.selectedView === 'pdf-view') {
       this.generateAndDisplayPdf();
     } else {
       this.pdfBlobUrl = null;
