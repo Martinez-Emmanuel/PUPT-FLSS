@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
 
 import { BehaviorSubject, Subject } from 'rxjs';
 import { takeUntil, catchError, map, finalize } from 'rxjs/operators';
@@ -12,6 +12,7 @@ import { TableGenericComponent } from '../../../../../shared/table-generic/table
 import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
+import { DialogExportComponent } from '../../../../../shared/dialog-export/dialog-export.component'; // Imported DialogExportComponent
 
 import { Room, RoomService } from '../../../../services/superadmin/rooms/rooms.service';
 
@@ -29,6 +30,7 @@ import 'jspdf-autotable';
     TableGenericComponent,
     TableHeaderComponent,
     LoadingComponent,
+    DialogExportComponent, // Added DialogExportComponent to imports
   ],
   templateUrl: './rooms.component.html',
   styleUrls: ['./rooms.component.scss'],
@@ -71,8 +73,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
     },
   ];
 
-  showPreview = false;
-  isLoading = true;
+  isLoading = true; // Removed showPreview
 
   private destroy$ = new Subject<void>();
 
@@ -312,138 +313,130 @@ export class RoomsComponent implements OnInit, OnDestroy {
   // PDF Generation
   // ======================
 
-  generatePDF(showPreview: boolean = false): void {
-    this.rooms$.pipe(takeUntil(this.destroy$)).subscribe((rooms) => {
-      try {
-        const doc = new jsPDF('p', 'mm', 'legal') as any;
-        const pageWidth = doc.internal.pageSize.width;
-        const margin = 10;
-        const logoSize = 22;
-        const topMargin = 15;
-        let currentY = topMargin;
+  private createPdfBlob(): Blob {
+    const doc = new jsPDF('p', 'mm', 'legal');
+    const pageWidth = doc.internal.pageSize.width;
+    const margin = 10;
+    const logoSize = 22;
+    const topMargin = 15;
+    let currentY = topMargin;
 
-        // Add the left logo
-        const leftLogoUrl =
-          'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
-        doc.addImage(leftLogoUrl, 'PNG', margin, 10, logoSize, logoSize);
+    try {
+      // Add the university logo
+      const leftLogoUrl = 'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
+      doc.addImage(leftLogoUrl, 'PNG', margin, 10, logoSize, logoSize);
 
-        // Add the header text with different styles
-        doc.setFontSize(12);
-        doc.setFont('times', 'bold');
-        doc.text(
-          'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
-          pageWidth / 2,
-          currentY,
-          { align: 'center' }
-        );
-        currentY += 5;
+      // Add header text
+      doc.setFontSize(12);
+      doc.setFont('times', 'bold');
+      doc.text(
+        'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
+        pageWidth / 2,
+        currentY,
+        { align: 'center' }
+      );
+      currentY += 5;
 
-        doc.setFontSize(12);
-        doc.text(
-          'Gen. Santos Ave. Upper Bicutan, Taguig City',
-          pageWidth / 2,
-          currentY,
-          { align: 'center' }
-        );
-        currentY += 10;
+      doc.setFontSize(12);
+      doc.text(
+        'Gen. Santos Ave. Upper Bicutan, Taguig City',
+        pageWidth / 2,
+        currentY,
+        { align: 'center' }
+      );
+      currentY += 10;
 
-        doc.setFontSize(15);
-        doc.setTextColor(0, 0, 0);
-        doc.text('Room Report', pageWidth / 2, currentY, { align: 'center' });
-        currentY += 8;
+      doc.setFontSize(15);
+      doc.setTextColor(0, 0, 0);
+      doc.text('Room Report', pageWidth / 2, currentY, { align: 'center' });
+      currentY += 8;
 
-        // Add the horizontal line below the header
-        doc.setDrawColor(0, 0, 0);
-        doc.setLineWidth(0.5);
-        doc.line(margin, currentY, pageWidth - margin, currentY);
+      // Add the horizontal line below the header
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.5);
+      doc.line(margin, currentY, pageWidth - margin, currentY);
+      currentY += 7; // Move down after the header and line
 
-        currentY += 7; // Move down after the header and line
+      const rooms = this.roomsSubject.getValue();
+      const bodyData = rooms.map((room, index) => [
+        (index + 1).toString(),
+        room.room_code,
+        room.location,
+        room.floor_level,
+        room.room_type,
+        room.capacity.toString(),
+        room.status,
+      ]);
 
-        const bodyData = rooms.map((room, index) => [
-          (index + 1).toString(),
-          room.room_code,
-          room.location,
-          room.floor_level,
-          room.room_type,
-          room.capacity.toString(),
-          room.status,
-        ]);
-
-        doc.autoTable({
-          startY: currentY,
-          head: [
-            [
-              '#',
-              'Room Code',
-              'Location',
-              'Floor Level',
-              'Room Type',
-              'Capacity',
-              'Status',
-            ],
+      // Add table to PDF
+      (doc as any).autoTable({
+        startY: currentY,
+        head: [
+          [
+            '#',
+            'Room Code',
+            'Location',
+            'Floor Level',
+            'Room Type',
+            'Capacity',
+            'Status',
           ],
-          body: bodyData,
-          theme: 'grid',
-          headStyles: {
-            fillColor: [128, 0, 0],
-            textColor: [255, 255, 255],
-            fontSize: 9,
-          },
-          bodyStyles: {
-            fontSize: 8,
-            textColor: [0, 0, 0],
-          },
-          styles: {
-            lineWidth: 0.1,
-            overflow: 'linebreak',
-            cellPadding: 2,
-          },
-          columnStyles: {
-            0: { cellWidth: 15 }, // # (index)
-            1: { cellWidth: 30 }, // Room Code
-            2: { cellWidth: 40 }, // Location
-            3: { cellWidth: 30 }, // Floor Level
-            4: { cellWidth: 40 }, // Room Type
-            5: { cellWidth: 20 }, // Capacity
-            6: { cellWidth: 25 }, // Status
-          },
-          margin: { left: margin, right: margin },
-          didDrawPage: (data: any) => {
-            currentY = data.cursor.y + 10;
-          },
-        });
+        ],
+        body: bodyData,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [128, 0, 0],
+          textColor: [255, 255, 255],
+          fontSize: 9,
+        },
+        bodyStyles: {
+          fontSize: 8,
+          textColor: [0, 0, 0],
+        },
+        styles: {
+          lineWidth: 0.1,
+          overflow: 'linebreak',
+          cellPadding: 2,
+        },
+        columnStyles: {
+          0: { cellWidth: 15 }, // # (index)
+          1: { cellWidth: 30 }, // Room Code
+          2: { cellWidth: 40 }, // Location
+          3: { cellWidth: 30 }, // Floor Level
+          4: { cellWidth: 40 }, // Room Type
+          5: { cellWidth: 20 }, // Capacity
+          6: { cellWidth: 25 }, // Status
+        },
+        margin: { left: margin, right: margin },
+        didDrawPage: (data: any) => {
+          currentY = data.cursor.y + 10;
+        },
+      });
 
-        // Create the blob and generate the URL before setting the iframe source
-        const pdfBlob = doc.output('blob');
-        const blobUrl = URL.createObjectURL(pdfBlob);
-
-        if (showPreview) {
-          this.showPreview = true;
-          setTimeout(() => {
-            const iframe = document.getElementById(
-              'pdfPreview'
-            ) as HTMLIFrameElement;
-
-            if (iframe) {
-              iframe.src = blobUrl;
-            }
-          }, 0);
-        } else {
-          doc.save('rooms_report.pdf');
-        }
-      } catch (error) {
-        this.snackBar.open('Failed to generate PDF.', 'Close', {
-          duration: 3000,
-        });
-      }
-    });
+      return doc.output('blob');
+    } catch (error) {
+      this.snackBar.open('Failed to generate PDF.', 'Close', {
+        duration: 3000,
+      });
+      throw error; // Re-throw the error after handling
+    }
   }
 
   onExport() {
-    this.generatePDF(true);
+    this.dialog.open(DialogExportComponent, {
+      maxWidth: '70rem',
+      width: '100%',
+      data: {
+        exportType: 'all',
+        entity: 'Rooms',
+        customTitle: 'Export All Rooms',
+        generatePdfFunction: (showPreview: boolean) => {
+          return this.createPdfBlob();
+        },
+        generateFileNameFunction: () => 'pup_taguig_rooms_report.pdf',
+      },
+    });
   }
 
-  cancelPreview() {
-    this.showPreview = false;
-  }
+  // Removed the original generatePDF and related preview logic
 }

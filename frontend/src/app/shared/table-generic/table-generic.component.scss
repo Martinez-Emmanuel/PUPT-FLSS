@@ -34,7 +34,6 @@
     padding: var(--spacing-md);
     color: var(--neutral-base); 
     border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);
-    border: 1px solid red;
     
   .no-data-text {
     @include flex-layout($gap: var(--spacing-xs));

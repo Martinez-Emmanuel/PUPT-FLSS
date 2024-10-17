@@ -422,7 +422,6 @@ export class ProgramsComponent implements OnInit, OnDestroy {
         exportType: 'all',
         entity: 'Programs',
         customTitle: 'Export All Programs',
-        subtitle: 'All programs offered by the university right now', 
         generatePdfFunction: (showPreview: boolean) => {
           return this.createPdfBlob();
         },

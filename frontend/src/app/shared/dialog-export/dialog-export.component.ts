@@ -17,7 +17,7 @@ interface ExportDialogData {
   entity: string;
   entityData?: any;
   customTitle?: string;
-  subtitle: string;
+  subtitle?: string;
   generatePdfFunction?: (showPreview: boolean) => Blob | void;
   generateFileNameFunction?: () => string; 
 }
