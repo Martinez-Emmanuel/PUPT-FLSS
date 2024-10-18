@@ -1,3 +1,5 @@
+//scheduling last 
+//scheduling
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable, Subject, forkJoin, of } from 'rxjs';
@@ -268,7 +270,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       return;
     }
 
-    console.log('Selected Program ID:', selectedProgram.id);
+    // console.log('Selected Program ID:', selectedProgram.id);
     this.selectedProgram = selectedProgramDisplay;
     this.selectedYear = selectedYearLevel;
     this.selectedSection = selectedSectionDisplay;
@@ -288,17 +290,17 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       return;
     }
 
-    console.log('Selected Year Level:', selectedYearLevelObj);
+    // console.log('Selected Year Level:', selectedYearLevelObj);
     this.selectedCurriculumId = selectedYearLevelObj.curriculum_id;
     this.sectionOptions = selectedYearLevelObj.sections;
 
     this.headerInputFields.find((field) => field.key === 'section')!.options =
       this.sectionOptions.map((section) => section.section_name);
 
-    console.log(
-      'Available Sections for Selected Year Level:',
-      this.sectionOptions
-    );
+    // console.log(
+    //   'Available Sections for Selected Year Level:',
+    //   this.sectionOptions
+    // );
 
     const selectedSection = this.sectionOptions.find(
       (section) => section.section_name === selectedSectionDisplay
@@ -310,7 +312,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       return;
     }
 
-    console.log('Selected Section ID:', selectedSection.section_id);
+    // console.log('Selected Section ID:', selectedSection.section_id);
 
     this.fetchCourses(
       selectedProgram.id,
@@ -337,6 +339,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     return this.schedulingService.populateSchedules().pipe(
       tap((response: PopulateSchedulesResponse) => {
         // Find the selected program
+        console.log('Response', response);
+
         const program = response.programs.find(
           (p) => p.program_id === programId
         );
@@ -633,7 +637,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         const professorOptions = faculty.faculty.map(
           (professor) => professor.name
         );
-
+        const program = this.programOptions.find(
+          (p) => p.display === this.selectedProgram);
         const selectedProgramInfo = 
           `${schedule.program_code} ${schedule.year}-${schedule.section}`;
         const selectedCourseInfo = 
@@ -680,6 +685,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           width: '100%',
           disableClose: true,
           data: {
+            selectedProgramId: program?.id,  // Ensure this is correct
+            year_level: this.selectedYear,          // Ensure this is correct
+            section_id: this.selectedSection,        // Ensure this is correct
             dayOptions: this.dayOptions,
             timeOptions: this.timeOptions,
             endTimeOptions: this.timeOptions,
