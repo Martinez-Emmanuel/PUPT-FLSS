@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormControl } from '@angular/forms';
+import { ReactiveFormsModule } from '@angular/forms';
 
 import { BehaviorSubject, Subject } from 'rxjs';
 import { takeUntil, catchError, map, finalize } from 'rxjs/operators';
@@ -12,7 +12,7 @@ import { TableGenericComponent } from '../../../../../shared/table-generic/table
 import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
-import { DialogExportComponent } from '../../../../../shared/dialog-export/dialog-export.component'; // Imported DialogExportComponent
+import { DialogExportComponent } from '../../../../../shared/dialog-export/dialog-export.component';
 
 import { Room, RoomService } from '../../../../services/superadmin/rooms/rooms.service';
 
@@ -30,7 +30,7 @@ import 'jspdf-autotable';
     TableGenericComponent,
     TableHeaderComponent,
     LoadingComponent,
-    DialogExportComponent, // Added DialogExportComponent to imports
+    DialogExportComponent,
   ],
   templateUrl: './rooms.component.html',
   styleUrls: ['./rooms.component.scss'],
@@ -73,7 +73,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
     },
   ];
 
-  isLoading = true; // Removed showPreview
+  isLoading = true;
 
   private destroy$ = new Subject<void>();
 
@@ -229,9 +229,13 @@ export class RoomsComponent implements OnInit, OnDestroy {
             .subscribe((newRoom) => {
               const currentRooms = this.roomsSubject.getValue();
               this.roomsSubject.next([...currentRooms, newRoom]);
-              this.snackBar.open(`Room ${newRoom.room_code} added successfully.`, 'Close', {
-                duration: 3000,
-              });
+              this.snackBar.open(
+                `Room ${newRoom.room_code} added successfully.`,
+                'Close',
+                {
+                  duration: 3000,
+                }
+              );
             });
         }
       });
@@ -275,9 +279,13 @@ export class RoomsComponent implements OnInit, OnDestroy {
           if (index !== -1) {
             currentRooms[index] = updated;
             this.roomsSubject.next([...currentRooms]);
-            this.snackBar.open(`Room ${updated.room_code} updated successfully.`, 'Close', {
-              duration: 3000,
-            });
+            this.snackBar.open(
+              `Room ${updated.room_code} updated successfully.`,
+              'Close',
+              {
+                duration: 3000,
+              }
+            );
           }
         });
     }
@@ -289,22 +297,29 @@ export class RoomsComponent implements OnInit, OnDestroy {
       this.roomService
         .deleteRoom(roomId)
         .pipe(
-          catchError(() => {
-            this.snackBar.open('Error deleting room.', 'Close', {
+          catchError((error) => {
+            const errorMessage = error.error?.message || 'Error deleting room.';
+            this.snackBar.open(errorMessage, 'Close', {
               duration: 3000,
             });
             return [];
           }),
           takeUntil(this.destroy$)
         )
-        .subscribe(() => {
-          const updatedRooms = this.roomsSubject
-            .getValue()
-            .filter((r) => r.room_id !== roomId);
-          this.roomsSubject.next(updatedRooms);
-          this.snackBar.open(`Room ${room.room_code} deleted successfully.`, 'Close', {
-            duration: 3000,
-          });
+        .subscribe((response) => {
+          if (response.success) {
+            const updatedRooms = this.roomsSubject
+              .getValue()
+              .filter((r) => r.room_id !== roomId);
+            this.roomsSubject.next(updatedRooms);
+            this.snackBar.open(
+              `Room ${room.room_code} deleted successfully.`,
+              'Close',
+              {
+                duration: 3000,
+              }
+            );
+          }
         });
     }
   }
@@ -323,7 +338,8 @@ export class RoomsComponent implements OnInit, OnDestroy {
 
     try {
       // Add the university logo
-      const leftLogoUrl = 'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
+      const leftLogoUrl =
+        'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
       doc.addImage(leftLogoUrl, 'PNG', margin, 10, logoSize, logoSize);
 
       // Add header text
@@ -418,7 +434,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
       this.snackBar.open('Failed to generate PDF.', 'Close', {
         duration: 3000,
       });
-      throw error; // Re-throw the error after handling
+      throw error;
     }
   }
 
@@ -437,6 +453,4 @@ export class RoomsComponent implements OnInit, OnDestroy {
       },
     });
   }
-
-  // Removed the original generatePDF and related preview logic
 }

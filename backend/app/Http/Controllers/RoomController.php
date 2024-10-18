@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Room;
+use App\Models\Schedule;
 
 class RoomController extends Controller
 {
@@ -96,6 +97,17 @@ class RoomController extends Controller
     public function deleteRoom($id)
     {
         $room = Room::findOrFail($id);
+    
+        // Check if the room is used in scheduling
+        $schedulesCount = Schedule::where('room_id', $room->room_id)->count();
+        if ($schedulesCount > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Room with assigned schedules cannot be deleted.',
+            ], 400);
+        }
+    
+        // Proceed with deletion if room is not used in any schedule
         $room->delete();
 
         return response()->json([
