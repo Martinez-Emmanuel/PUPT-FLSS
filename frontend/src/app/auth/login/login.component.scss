@@ -169,7 +169,7 @@
           transform: translateY(-50%);
           border-radius: var(--border-radius-xl);
           padding: var(--spacing-xs);
-          color: var(--neutral-base);
+          opacity: var(--opacity-semi-opaque);
           cursor: pointer;
 
           &:hover {

@@ -32,7 +32,12 @@
       </div>
 
       <!-- Form Fields -->
-      <form id="form_fields" [formGroup]="loginForm" (ngSubmit)="onSubmit()" (keydown.enter)="onEnterPressed()">
+      <form
+        id="form_fields"
+        [formGroup]="loginForm"
+        (ngSubmit)="onSubmit()"
+        (keydown.enter)="onEnterPressed()"
+      >
         <div class="input-group">
           <div class="input-container">
             <span mat-symbol="person" class="input-icon"></span>
@@ -75,12 +80,14 @@
               minlength="8"
               maxlength="40"
             />
+            @if (passwordHasValue) {
             <mat-icon
               class="password-visibility-toggle"
               (click)="togglePasswordVisibility()"
             >
-              {{ showPassword ? 'visibility' : 'visibility_off' }}
+              {{ showPassword ? "visibility_off" : "visibility" }}
             </mat-icon>
+            }
           </div>
 
           @if (password && password.invalid && (password.dirty ||

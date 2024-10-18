@@ -55,6 +55,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   loginForm!: FormGroup;
   errorMessage = '';
   showPassword = false;
+  passwordHasValue = false;
 
   constructor(
     private renderer: Renderer2,
@@ -74,6 +75,15 @@ export class LoginComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.updateBackgroundImage(0);
     this.isDarkTheme$.pipe(takeUntil(this.destroy$)).subscribe();
+
+    this.loginForm.get('password')!.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(value => {
+        this.passwordHasValue = !!value;
+        if (!value) {
+          this.showPassword = false;
+        }
+      });
   }
 
   ngOnDestroy(): void {
@@ -138,7 +148,9 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   togglePasswordVisibility(): void {
-    this.showPassword = !this.showPassword;
+    if (this.passwordHasValue) {
+      this.showPassword = !this.showPassword;
+    }
   }
 
   onSubmit(): void {
