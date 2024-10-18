@@ -287,28 +287,36 @@ export class ProgramsComponent implements OnInit, OnDestroy {
   deleteProgram(program: Program) {
     this.programService
       .deleteProgram(program.program_id)
-      .pipe(
-        takeUntil(this.destroy$),
-        catchError((err) => {
-          const errorMessage = err.error?.message || 'Failed to delete program.';
-          this.snackBar.open(errorMessage, 'Close', {
-            duration: 3000,
-          });
-          return EMPTY;
-        })
-      )
-      .subscribe(() => {
-        const currentPrograms = this.programsSubject.getValue();
-        const updatedPrograms = currentPrograms.filter(
-          (p) => p.program_id !== program.program_id
-        );
-        this.programsSubject.next(updatedPrograms);
-        this.snackBar.open(
-          `Program "${program.program_title}" has been deleted successfully.`,
-          'Close',
-          { duration: 3000 }
-        );
-      });
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
+        (response) => {
+          if (response.success) {
+            const currentPrograms = this.programsSubject.getValue();
+            const updatedPrograms = currentPrograms.filter(
+              (p) => p.program_id !== program.program_id
+            );
+            this.programsSubject.next(updatedPrograms);
+            this.snackBar.open(
+              `Program "${program.program_title}" has been deleted successfully.`,
+              'Close',
+              { duration: 3000 }
+            );
+          } else {
+            this.snackBar.open(response.message, 'Close', {
+              duration: 3000,
+            });
+          }
+        },
+        (err) => {
+          this.snackBar.open(
+            'Failed to delete program due to a server error.',
+            'Close',
+            {
+              duration: 3000,
+            }
+          );
+        }
+      );
   }
 
   // ======================

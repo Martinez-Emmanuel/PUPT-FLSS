@@ -107,21 +107,23 @@ class ProgramController extends Controller
     {
         // Check if the program is associated with any academic year
         $isUsedInAcademicYear = ProgramYearLevelCurricula::where('program_id', $id)->exists();
-
+    
         if ($isUsedInAcademicYear) {
             return response()->json([
-                'message' => 'Cannot delete the program associated with an academic year.'
-            ], 409); 
+                'message' => 'Cannot delete the program associated with an academic year.',
+                'success' => false
+            ], 200);
         }
-
+    
         // Proceed to delete the program
         $program = Program::findOrFail($id);
         $program->delete();
-
+    
         return response()->json([
-            'message' => 'Program deleted successfully.'
+            'message' => 'Program deleted successfully.',
+            'success' => true
         ], 200);
-    }
+    }    
 
 
     public function getProgramsByCurriculumYear($curriculumYear)
