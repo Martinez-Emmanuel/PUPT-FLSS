@@ -11,7 +11,10 @@
     <div id="preferences_title" [@fadeAnimation]>
       <h1>Set Preferences</h1>
       <p class="pref-description">
-        Submit your preferred courses and schedule for the upcoming semester.
+        Submit your preferred courses and schedule for the upcoming
+        <span class="highlight"
+          >A.Y. {{ academicYear }}, {{ semesterLabel }}</span
+        >.
       </p>
     </div>
 
@@ -92,10 +95,7 @@
                 <span class="course-code">{{ course.course_code }}</span>
                 <span class="course-title">{{ course.course_title }}</span>
               </div>
-              <button
-                mat-icon-button
-                class="add-button"
-              >
+              <button mat-icon-button class="add-button">
                 <span mat-symbol="add" variant="outlined" size="20px"></span>
               </button>
             </div>
@@ -148,10 +148,7 @@
                 <span class="course-code">{{ course.course_code }}</span>
                 <span class="course-title">{{ course.course_title }}</span>
               </div>
-              <button
-                mat-icon-button
-                class="add-button"
-              >
+              <button mat-icon-button class="add-button">
                 <span mat-symbol="add" variant="outlined" size="20px"></span>
               </button>
             </div>

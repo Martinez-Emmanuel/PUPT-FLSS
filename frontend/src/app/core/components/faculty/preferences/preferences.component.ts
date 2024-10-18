@@ -77,6 +77,8 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   isDarkMode = false;
   isLoading = true;
 
+  academicYear: string = '';
+  semesterLabel: string = '';
   programs: Program[] = [];
   courses: Course[] = [];
   filteredCourses: Course[] = [];
@@ -183,6 +185,8 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
             const preferences = facultyPreference.active_semesters.flatMap(
               (semester: any) => {
                 this.activeSemesterId = semester.active_semester_id;
+                this.academicYear = semester.academic_year;
+                this.semesterLabel = semester.semester_label;
                 return semester.courses;
               }
             );
@@ -225,77 +229,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       })
     );
   }
-
-  // private loadPrograms() {
-  //   this.preferencesService.getPrograms().subscribe({
-  //     next: (response) => {
-  //       this.programs = response.programs;
-  //       this.activeSemesterId = response.active_semester_id;
-
-  //       this.isLoading = false;
-  //       this.cdr.markForCheck();
-  //     },
-  //     error: (error) => {
-  //       console.error('Error loading programs:', error);
-  //       this.programsLoading = false;
-  //       this.showSnackBar('Error loading programs.');
-  //       this.isLoading = false;
-  //       this.cdr.markForCheck();
-  //     },
-  //   });
-  // }
-
-  // private loadFacultyPreferences() {
-  //   this.preferencesService.getPreferences().subscribe({
-  //     next: (response) => {
-  //       const facultyId = this.cookieService.get('faculty_id');
-  //       const facultyPreference = response.preferences.find(
-  //         (pref: any) => pref.faculty_id == facultyId
-  //       );
-  //       if (facultyPreference) {
-  //         this.isPreferencesEnabled = facultyPreference.is_enabled === 1;
-
-  //         const preferences = facultyPreference.active_semesters.flatMap(
-  //           (semester: any) => {
-  //             this.activeSemesterId = semester.active_semester_id;
-  //             return semester.courses;
-  //           }
-  //         );
-
-  //         this.allSelectedCourses = preferences.map((course: any) => ({
-  //           course_id: course.course_details.course_id,
-  //           course_assignment_id: course.course_assignment_id,
-  //           course_code: course.course_details.course_code,
-  //           course_title: course.course_details.course_title,
-  //           lec_hours: course.lec_hours,
-  //           lab_hours: course.lab_hours,
-  //           units: course.units,
-  //           preferredDay: course.preferred_day,
-  //           preferredTime:
-  //             course.preferred_start_time === '00:00:00' &&
-  //             course.preferred_end_time === '23:59:59'
-  //               ? 'Whole Day'
-  //               : course.preferred_start_time && course.preferred_end_time
-  //               ? `${this.convertTo12HourFormat(course.preferred_start_time)}
-  //                 - ${this.convertTo12HourFormat(course.preferred_end_time)}`
-  //               : '',
-  //           isSubmitted: true,
-  //         }));
-
-  //         this.updateDataSource();
-  //         this.updateTotalUnits();
-  //       } else {
-  //         this.isPreferencesEnabled = true;
-  //       }
-  //       this.cdr.markForCheck();
-  //     },
-  //     error: (error) => {
-  //       console.error('Error loading preferences:', error);
-  //       this.showSnackBar('Error loading preferences.');
-  //       this.isLoading = false;
-  //     },
-  //   });
-  // }
 
   private subscribeToThemeChanges() {
     this.subscriptions.add(
