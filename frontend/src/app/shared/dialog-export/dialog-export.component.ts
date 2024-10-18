@@ -17,6 +17,7 @@ interface ExportDialogData {
   entity: string;
   entityData?: any;
   customTitle?: string;
+  subtitle?: string;
   generatePdfFunction?: (showPreview: boolean) => Blob | void;
   generateFileNameFunction?: () => string; 
 }
@@ -66,17 +67,17 @@ export class DialogExportComponent implements OnInit, AfterViewInit {
   }
 
   private setTitleAndSubtitle(): void {
-    const { customTitle, entityData } = this.data;
-
+    const { customTitle, entityData, subtitle } = this.data;
+  
     if (entityData) {
-      this.title =
-        entityData.name || entityData.title || customTitle || 'Export to PDF';
+      this.title = entityData.name || entityData.title || customTitle || 'Export to PDF';
       this.subtitle = this.getSubtitle(entityData);
     } else {
       this.title = customTitle || 'Export to PDF';
-      this.subtitle = '';
+      this.subtitle = subtitle || ''; 
     }
   }
+  
 
   private getSubtitle(entityData: any): string {
     if (entityData.academic_year && entityData.semester_label) {

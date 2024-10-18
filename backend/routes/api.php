@@ -116,14 +116,14 @@ Route::put('/updateYearLevel/{id}', [YearLevelController::class, 'update']);
 Route::delete('/deleteYearLevel/{id}', [YearLevelController::class, 'destroy']);
 
 // Program routes
-Route::get('/programs', [ProgramController::class, 'index']);
-Route::post('/addProgram', [ProgramController::class, 'store']);
-Route::get('/programs/{id}', [ProgramController::class, 'show']);
-Route::put('/updateProgram/{id}', [ProgramController::class, 'update']);
-Route::delete('/deleteProgram/{id}', [ProgramController::class, 'destroy']);
+Route::get('/programs', [ProgramController::class, 'getPrograms']);
+Route::post('/addProgram', [ProgramController::class, 'addProgram']);
+Route::get('/programs/{id}', [ProgramController::class, 'getProgramDetails']);
+Route::put('/updateProgram/{id}', [ProgramController::class, 'updateProgram']);
+Route::delete('/deleteProgram/{id}', [ProgramController::class, 'deleteProgram']);
 
 // CRUD for rooms
-Route::get('/rooms', [RoomController::class, 'index']);
+Route::get('/rooms', [RoomController::class, 'getRooms']);
 Route::post('/addRoom', [RoomController::class, 'addRoom']);
 Route::put('/rooms/{room_id}', [RoomController::class, 'updateRoom']);
 Route::delete('/rooms/{room_id}', [RoomController::class, 'deleteRoom']);

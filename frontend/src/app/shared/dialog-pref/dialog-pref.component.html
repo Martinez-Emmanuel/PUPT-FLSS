@@ -20,11 +20,19 @@
     <div class="view-option">
       <mat-button-toggle-group
         name="viewOption"
-        [(ngModel)]="currentView"
+        [(ngModel)]="selectedView"
         (ngModelChange)="onViewChange()"
       >
-        <mat-button-toggle value="table-view">Table view</mat-button-toggle>
-        <mat-button-toggle value="pdf-view">PDF view</mat-button-toggle>
+        <!--Table View Option-->
+        <mat-button-toggle value="table-view">
+          <mat-icon class="icon-spacing">table_chart</mat-icon>
+          <span>Table view</span>
+        </mat-button-toggle>
+        <!--PDF View Option-->
+        <mat-button-toggle value="pdf-view">
+          <mat-icon class="icon-spacing">picture_as_pdf</mat-icon>
+          <span>PDF view</span>
+        </mat-button-toggle>
       </mat-button-toggle-group>
     </div>
   </div>
@@ -32,7 +40,7 @@
   <!-- Faculty Preferences Table or PDF View -->
   <div class="dialog-pref-content">
     <!-- Table View -->
-    @if (currentView === 'table-view') {
+    @if (selectedView === 'table-view') {
     <div class="dialog-pref-table-container">
       <div class="table-container">
         <table
@@ -166,7 +174,7 @@
     </div>
     }
     <!-- PDF View -->
-    @else if (currentView === 'pdf-view') {
+    @else if (selectedView === 'pdf-view') {
     <div class="dialog-pref-pdf-container">
       @if (pdfBlobUrl) {
       <div class="pdf-container">
@@ -184,7 +192,7 @@
   <!-- Action buttons -->
   <div class="dialog-actions" [@fadeAnimation]>
     <button mat-button (click)="closeDialog()">Close</button>
-    @if (currentView === 'pdf-view') {
+    @if (selectedView === 'pdf-view') {
     <button mat-flat-button (click)="downloadPdf()">
       <mat-icon>print</mat-icon>
       Download PDF

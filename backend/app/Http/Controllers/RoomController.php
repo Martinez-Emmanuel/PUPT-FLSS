@@ -4,14 +4,19 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Room;
+use App\Models\Schedule;
 
 class RoomController extends Controller
 {
     // Fetch all rooms
-    public function index()
+    public function getRooms()
     {
         $rooms = Room::all();
-        return response()->json($rooms);
+        return response()->json([
+            'success' => true,
+            'message' => 'Rooms fetched successfully.',
+            'data' => $rooms
+        ], 200);
     }
 
     // Get all rooms (with a wrapper)
@@ -39,11 +44,11 @@ class RoomController extends Controller
     {
         // Validate the incoming request data
         $validated = $request->validate([
-            'room_code' => 'required|string|max:255',
+            'room_code' => 'required|string|max:255|unique:rooms,room_code',
             'location' => 'required|string|max:255',
             'floor_level' => 'required|string|max:255',
             'room_type' => 'required|string|max:255',
-            'capacity' => 'required|integer',
+            'capacity' => 'required|integer|min:1|max:999',
             'status' => 'required|string|max:255',
         ]);
 
@@ -75,15 +80,16 @@ class RoomController extends Controller
             'location' => 'required|string',
             'floor_level' => 'required|string',
             'room_type' => 'required|string',
-            'capacity' => 'required|integer',
+            'capacity' => 'required|integer|min:1|max:999',
             'status' => 'required|string',
         ]);
 
         $room->update($validatedData);
 
         return response()->json([
-            'message' => 'Room updated successfully',
-            'room' => $room
+            'success' => true,
+            'message' => 'Room updated successfully!',
+            'data' => $room
         ], 200);
     }
 
@@ -91,10 +97,22 @@ class RoomController extends Controller
     public function deleteRoom($id)
     {
         $room = Room::findOrFail($id);
+    
+        // Check if the room is used in scheduling
+        $schedulesCount = Schedule::where('room_id', $room->room_id)->count();
+        if ($schedulesCount > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Room with assigned schedules cannot be deleted.',
+            ], 400);
+        }
+    
+        // Proceed with deletion if room is not used in any schedule
         $room->delete();
 
         return response()->json([
-            'message' => 'Room deleted successfully'
+            'success' => true,
+            'message' => 'Room deleted successfully!'
         ], 200);
     }
 }

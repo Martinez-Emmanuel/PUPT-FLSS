@@ -55,7 +55,7 @@
     .schedule-history {
       color: white;
       padding: var(--spacing-xs) var(--spacing-sm);
-      border-radius: var(--border-radius-sm);
+      border-radius: var(--border-radius-md);
 
       .mini-heading {
         @include flex-layout($justify: flex-start, $gap: var(--spacing-xxs));
