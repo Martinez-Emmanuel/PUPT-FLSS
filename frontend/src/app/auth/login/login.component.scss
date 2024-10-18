@@ -162,6 +162,21 @@
       .input-container {
         position: relative;
 
+        .password-visibility-toggle {
+          position: absolute;
+          right: var(--spacing-xs);
+          top: 50%;
+          transform: translateY(-50%);
+          border-radius: var(--border-radius-xl);
+          padding: var(--spacing-xs);
+          color: var(--neutral-base);
+          cursor: pointer;
+
+          &:hover {
+            background-color: var(--neutral-fade);
+          }
+        }
+
         .input-icon {
           position: absolute;
           left: var(--spacing-lg);

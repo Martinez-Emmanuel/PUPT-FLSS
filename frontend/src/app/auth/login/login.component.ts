@@ -54,6 +54,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   isLoading = false;
   loginForm!: FormGroup;
   errorMessage = '';
+  showPassword = false;
 
   constructor(
     private renderer: Renderer2,
@@ -134,6 +135,10 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   get password() {
     return this.loginForm.get('password');
+  }
+
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
   }
 
   onSubmit(): void {
