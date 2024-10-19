@@ -40,6 +40,7 @@ interface DialogData {
     room: string;
   };
   schedule_id: number;
+  course_id: number;
   year_level: number;
   section_id: number;
 }
@@ -156,6 +157,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
         type: 'program',
         observable: this.schedulingService.validateProgramOverlap(
           this.data.schedule_id,
+          this.data.course_id,
           program_id,
           year_level,
           day,
@@ -333,6 +335,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     this.schedulingService
       .assignSchedule(
         this.data.schedule_id,
+        this.data.course_id,
         selectedFaculty.faculty_id,
         selectedRoom.room_id,
         day,
@@ -465,15 +468,6 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     const formattedHours = hours.toString().padStart(2, '0');
     const formattedMinutes = minutes.toString().padStart(2, '0');
     return `${formattedHours}:${formattedMinutes}:00`;
-  }
-
-  private handleError(message: string) {
-    return (error: any): void => {
-      console.error(`${message}:`, error);
-      this.snackBar.open(`${message}. Please try again.`, 'Close', {
-        duration: 3000,
-      });
-    };
   }
 
   public isFacultySelected(faculty: {

@@ -700,6 +700,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
             suggestedFaculty: suggestedFaculty,
             existingSchedule: schedule,
             schedule_id: schedule.schedule_id,
+            course_id: schedule.course_id, // Added course_id
           },
         });
 
