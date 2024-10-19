@@ -141,6 +141,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     const room_id = selectedRoom ? selectedRoom.room_id : null;
     const program_id = this.data.selectedProgramId;
     const year_level = this.data.year_level;
+    const section_id = this.data.section_id;
 
     const validationObservables: {
       type: string;
@@ -151,8 +152,8 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     const formattedStartTime = this.formatTimeToBackend(startTime);
     const formattedEndTime = this.formatTimeToBackend(endTime);
 
-    // Check for program conflicts
-    if (day && startTime && endTime && program_id && year_level) {
+    // Check for program conflicts within the same section
+    if (day && startTime && endTime && program_id && year_level && section_id) {
       validationObservables.push({
         type: 'program',
         observable: this.schedulingService.validateProgramOverlap(
@@ -162,7 +163,8 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
           year_level,
           day,
           formattedStartTime,
-          formattedEndTime
+          formattedEndTime,
+          section_id
         ),
       });
     }
@@ -179,7 +181,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
           formattedEndTime,
           program_id,
           year_level,
-          this.data.section_id
+          section_id
         ),
       });
     }
@@ -196,7 +198,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
           formattedEndTime,
           program_id,
           year_level,
-          this.data.section_id
+          section_id
         ),
       });
     }
