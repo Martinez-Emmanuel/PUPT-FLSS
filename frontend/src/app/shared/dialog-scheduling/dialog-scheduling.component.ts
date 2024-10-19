@@ -2,8 +2,8 @@ import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
-import { Observable, Subject, forkJoin } from 'rxjs';
-import { map, startWith, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Observable, Subject, forkJoin, of } from 'rxjs';
+import { map, startWith, takeUntil, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -132,6 +132,8 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
 
     const faculty_id = selectedFaculty ? selectedFaculty.faculty_id : null;
     const room_id = selectedRoom ? selectedRoom.room_id : null;
+    const program_id = this.data.selectedProgramId;
+    const year_level = this.data.year_level;
 
     const validationObservables: Observable<{
       isValid: boolean;
@@ -151,8 +153,8 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
           day,
           formattedStartTime,
           formattedEndTime,
-          this.data.selectedProgramId,
-          this.data.year_level,
+          program_id,
+          year_level,
           this.data.section_id
         )
       );
@@ -167,9 +169,23 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
           day,
           formattedStartTime,
           formattedEndTime,
-          this.data.selectedProgramId,
-          this.data.year_level,
+          program_id,
+          year_level,
           this.data.section_id
+        )
+      );
+    }
+
+    // Check for program overlap
+    if (day && startTime && endTime && program_id && year_level) {
+      validationObservables.push(
+        this.schedulingService.validateProgramOverlap(
+          this.data.schedule_id,
+          program_id,
+          year_level,
+          day,
+          formattedStartTime,
+          formattedEndTime
         )
       );
     }
