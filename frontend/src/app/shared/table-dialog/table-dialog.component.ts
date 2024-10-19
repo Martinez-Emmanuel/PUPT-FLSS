@@ -50,6 +50,7 @@ export interface DialogFieldConfig {
   hint?: string;
   disabled?: boolean;
   filter?: (value: string) => string[];
+  confirmPassword?: boolean; 
 }
 
 export interface DialogConfig {
@@ -181,6 +182,10 @@ export class TableDialogComponent {
     if (field.type === 'autocomplete') {
       this.initAutocompleteOptions(field);
     }
+    
+    if (field.confirmPassword) {
+      control.setValidators([...validators, this.passwordMatchValidator.bind(this)]);
+    } 
   }
 
   private initAutocompleteOptions(field: DialogFieldConfig): void {
@@ -266,6 +271,12 @@ export class TableDialogComponent {
 
     return null;
   }
+  
+  private passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
+    const password = this.form.get('password')?.value;
+    const confirmPassword = control.value;
+    return password === confirmPassword ? null : {passwordMismatch: true};
+  } 
 
   getErrorMessage(formControlName: string, label: string): string {
     const control = this.form.get(formControlName);
@@ -292,6 +303,8 @@ export class TableDialogComponent {
     if (control.hasError('whitespace')) return `Your ${label} is invalid.`;
     if (control.hasError('endDateBeforeStartDate'))
       return `End Date cannot be earlier than Start Date.`;
+
+    if (control.hasError('passwordMismatch')) return 'Passwords do not match.'; //added
 
     return '';
   }
