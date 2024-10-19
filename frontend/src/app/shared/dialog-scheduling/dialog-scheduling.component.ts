@@ -119,6 +119,12 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
       });
   }
 
+  private conflictPriorities: { [key: string]: number } = {
+    program: 1,
+    faculty: 2,
+    room: 3,
+  };
+
   private detectConflicts(): void {
     const formValues = this.scheduleForm.value;
     const { day, startTime, endTime, professor, room } = formValues;
@@ -135,19 +141,35 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     const program_id = this.data.selectedProgramId;
     const year_level = this.data.year_level;
 
-    const validationObservables: Observable<{
-      isValid: boolean;
-      message: string;
-    }>[] = [];
-    const conflictMessages: string[] = [];
+    const validationObservables: {
+      type: string;
+      observable: Observable<{ isValid: boolean; message: string }>;
+    }[] = [];
+    const conflictMessages: { type: string; message: string }[] = [];
 
     const formattedStartTime = this.formatTimeToBackend(startTime);
     const formattedEndTime = this.formatTimeToBackend(endTime);
 
+    // Check for program conflicts
+    if (day && startTime && endTime && program_id && year_level) {
+      validationObservables.push({
+        type: 'program',
+        observable: this.schedulingService.validateProgramOverlap(
+          this.data.schedule_id,
+          program_id,
+          year_level,
+          day,
+          formattedStartTime,
+          formattedEndTime
+        ),
+      });
+    }
+
     // Check for faculty conflicts
     if (day && startTime && endTime && faculty_id) {
-      validationObservables.push(
-        this.schedulingService.validateFacultyAvailability(
+      validationObservables.push({
+        type: 'faculty',
+        observable: this.schedulingService.validateFacultyAvailability(
           this.data.schedule_id,
           faculty_id,
           day,
@@ -156,14 +178,15 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
           program_id,
           year_level,
           this.data.section_id
-        )
-      );
+        ),
+      });
     }
 
     // Check for room conflicts
     if (day && startTime && endTime && room_id) {
-      validationObservables.push(
-        this.schedulingService.validateRoomAvailability(
+      validationObservables.push({
+        type: 'room',
+        observable: this.schedulingService.validateRoomAvailability(
           this.data.schedule_id,
           room_id,
           day,
@@ -172,22 +195,8 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
           program_id,
           year_level,
           this.data.section_id
-        )
-      );
-    }
-
-    // Check for program overlap
-    if (day && startTime && endTime && program_id && year_level) {
-      validationObservables.push(
-        this.schedulingService.validateProgramOverlap(
-          this.data.schedule_id,
-          program_id,
-          year_level,
-          day,
-          formattedStartTime,
-          formattedEndTime
-        )
-      );
+        ),
+      });
     }
 
     if (validationObservables.length === 0) {
@@ -197,17 +206,35 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
       return;
     }
 
-    forkJoin(validationObservables)
+    // Execute all validations in parallel
+    forkJoin(
+      validationObservables.map((vo) =>
+        vo.observable.pipe(map((result) => ({ type: vo.type, ...result })))
+      )
+    )
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (results) => {
           results.forEach((result) => {
             if (!result.isValid) {
-              conflictMessages.push(result.message);
+              conflictMessages.push({
+                type: result.type,
+                message: result.message,
+              });
             }
           });
+
           if (conflictMessages.length > 0) {
-            this.conflictMessage = conflictMessages.join(' ');
+            // Sort conflict messages based on priority
+            conflictMessages.sort(
+              (a, b) =>
+                this.conflictPriorities[a.type] -
+                this.conflictPriorities[b.type]
+            );
+
+            // Pick the highest priority conflict message
+            const highestPriorityConflict = conflictMessages[0];
+            this.conflictMessage = highestPriorityConflict.message;
             this.hasConflicts = true;
           } else {
             this.conflictMessage = '';
