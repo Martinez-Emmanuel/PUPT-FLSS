@@ -12,6 +12,7 @@
 }
 
 .faculty-info {
+  @include flex-layout($align: stretch, $justify: space-between);
   color: var(--primary-text);
 
   .faculty-name {
@@ -26,7 +27,7 @@
   overflow: scroll;
   position: relative;
   border-radius: var(--border-radius-md);
-  max-height: 30vw;
+  max-height: var(--dialog-base-height);
   box-shadow: var(--shadow-level-1);
 
   .table-container {
@@ -85,8 +86,17 @@
   }
 }
 
+.dialog-pref-pdf-container {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start
+  );
+  max-height: var(--dialog-base-height);
+}
+
 .dialog-actions {
-  @include flex-layout($justify: flex-end);
+  @include flex-layout($justify: flex-end, $gap: var(--spacing-sm));
   padding-top: var(--spacing-xs);
 
   button {

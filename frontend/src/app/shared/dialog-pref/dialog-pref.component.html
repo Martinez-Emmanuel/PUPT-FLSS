@@ -4,116 +4,135 @@
     <app-loading></app-loading>
   </div>
   } @else {
-
-  <!-- Faculty Info-->
+  <!-- Faculty Info and View Toggle -->
   <div class="faculty-info" [@fadeAnimation]>
-    <!--Faculty Name-->
-    <h2 class="faculty-name">Prof. {{ facultyName }}</h2>
-    <span>
-      Submitted Preferences for A.Y. {{ academicYear }},
-      {{ semesterLabel }}</span
-    >
+    <!-- Info Text -->
+    <div class="info-text">
+      <!-- Faculty Name -->
+      <h2 class="faculty-name">{{ facultyName }}</h2>
+      <span>
+        Submitted Preferences for A.Y. {{ academicYear }},
+        {{ semesterLabel }}
+      </span>
+    </div>
+
+    <!-- Toggle View -->
+    <div class="view-option">
+      <mat-button-toggle-group
+        name="viewOption"
+        [(ngModel)]="selectedView"
+        (ngModelChange)="onViewChange()"
+      >
+        <!--Table View Option-->
+        <mat-button-toggle value="table-view">
+          <mat-icon class="icon-spacing">table_chart</mat-icon>
+          <span>Table view</span>
+        </mat-button-toggle>
+        <!--PDF View Option-->
+        <mat-button-toggle value="pdf-view">
+          <mat-icon class="icon-spacing">picture_as_pdf</mat-icon>
+          <span>PDF view</span>
+        </mat-button-toggle>
+      </mat-button-toggle-group>
+    </div>
   </div>
 
-  <!-- Faculty Preferences Table-->
-  <div class="dialog-pref-table-container" [@fadeAnimation]>
-    <div class="table-container">
-      <table mat-table [dataSource]="courses" class="custom-table">
-        <!-- Index Column -->
-        <ng-container matColumnDef="index">
-          <th mat-header-cell *matHeaderCellDef class="custom-header index">
-            #
-          </th>
-          <td mat-cell *matCellDef="let element; let i = index" class="index">
-            <span>{{ i + 1 }}</span>
-          </td>
-        </ng-container>
+  <!-- Faculty Preferences Table or PDF View -->
+  <div class="dialog-pref-content">
+    <!-- Table View -->
+    @if (selectedView === 'table-view') {
+    <div class="dialog-pref-table-container">
+      <div class="table-container">
+        <table
+          mat-table
+          [dataSource]="courses"
+          class="custom-table"
+          [@fadeAnimation]
+        >
+          <!-- Index Column -->
+          <ng-container matColumnDef="index">
+            <th mat-header-cell *matHeaderCellDef class="custom-header index">
+              #
+            </th>
+            <td mat-cell *matCellDef="let element; let i = index" class="index">
+              <span>{{ i + 1 }}</span>
+            </td>
+          </ng-container>
 
-        <!-- Course Code Column -->
-        <ng-container matColumnDef="courseCode">
-          <th mat-header-cell *matHeaderCellDef class="custom-header">
-            Course Code
-          </th>
-          <td mat-cell *matCellDef="let element" class="custom-cell">
-            {{ element.course_code }}
-          </td>
-        </ng-container>
+          <!-- Course Code Column -->
+          <ng-container matColumnDef="courseCode">
+            <th mat-header-cell *matHeaderCellDef class="custom-header">
+              Course Code
+            </th>
+            <td mat-cell *matCellDef="let element" class="custom-cell">
+              {{ element.course_code }}
+            </td>
+          </ng-container>
 
-        <!-- Course Title Column -->
-        <ng-container matColumnDef="courseTitle">
-          <th mat-header-cell *matHeaderCellDef class="custom-header">
-            Course Title
-          </th>
-          <td mat-cell *matCellDef="let element" class="custom-cell">
-            {{ element.course_title }}
-          </td>
-        </ng-container>
+          <!-- Course Title Column -->
+          <ng-container matColumnDef="courseTitle">
+            <th mat-header-cell *matHeaderCellDef class="custom-header">
+              Course Title
+            </th>
+            <td mat-cell *matCellDef="let element" class="custom-cell">
+              {{ element.course_title }}
+            </td>
+          </ng-container>
 
-        <!-- Lecture Hours Column -->
-        <ng-container matColumnDef="lecHours">
-          <th mat-header-cell *matHeaderCellDef class="custom-header">Lec</th>
-          <td mat-cell *matCellDef="let element" class="custom-cell">
-            {{ element.lec_hours }}
-          </td>
-        </ng-container>
+          <!-- Lecture Hours Column -->
+          <ng-container matColumnDef="lecHours">
+            <th mat-header-cell *matHeaderCellDef class="custom-header">Lec</th>
+            <td mat-cell *matCellDef="let element" class="custom-cell">
+              {{ element.lec_hours }}
+            </td>
+          </ng-container>
 
-        <!-- Lab Hours Column -->
-        <ng-container matColumnDef="labHours">
-          <th mat-header-cell *matHeaderCellDef class="custom-header">Lab</th>
-          <td mat-cell *matCellDef="let element" class="custom-cell">
-            {{ element.lab_hours }}
-          </td>
-        </ng-container>
+          <!-- Lab Hours Column -->
+          <ng-container matColumnDef="labHours">
+            <th mat-header-cell *matHeaderCellDef class="custom-header">Lab</th>
+            <td mat-cell *matCellDef="let element" class="custom-cell">
+              {{ element.lab_hours }}
+            </td>
+          </ng-container>
 
-        <!-- Units Column -->
-        <ng-container matColumnDef="units">
-          <th mat-header-cell *matHeaderCellDef class="custom-header">Units</th>
-          <td mat-cell *matCellDef="let element" class="custom-cell">
-            {{ element.units }}
-          </td>
-        </ng-container>
+          <!-- Units Column -->
+          <ng-container matColumnDef="units">
+            <th mat-header-cell *matHeaderCellDef class="custom-header">
+              Units
+            </th>
+            <td mat-cell *matCellDef="let element" class="custom-cell">
+              {{ element.units }}
+            </td>
+          </ng-container>
 
-        <!-- Preferred Day Column -->
-        <ng-container matColumnDef="preferredDay">
-          <th mat-header-cell *matHeaderCellDef class="custom-header">
-            Preferred Day
-          </th>
-          <td mat-cell *matCellDef="let element" class="custom-cell">
-            {{ element.preferred_day }}
-          </td>
-        </ng-container>
+          <!-- Preferred Day Column -->
+          <ng-container matColumnDef="preferredDay">
+            <th mat-header-cell *matHeaderCellDef class="custom-header">
+              Preferred Day
+            </th>
+            <td mat-cell *matCellDef="let element" class="custom-cell">
+              {{ element.preferred_day }}
+            </td>
+          </ng-container>
 
-        <!-- Preferred Time Column -->
-        <ng-container matColumnDef="preferredTime">
-          <th mat-header-cell *matHeaderCellDef class="custom-header">
-            Preferred Time
-          </th>
-          <td mat-cell *matCellDef="let element" class="custom-cell">
-            {{ convertToDate(element.preferred_start_time) | date : "h:mm a" }}
-            -
-            {{ convertToDate(element.preferred_end_time) | date : "h:mm a" }}
-          </td>
-        </ng-container>
+          <!-- Preferred Time Column -->
+          <ng-container matColumnDef="preferredTime">
+            <th mat-header-cell *matHeaderCellDef class="custom-header">
+              Preferred Time
+            </th>
+            <td mat-cell *matCellDef="let element" class="custom-cell">
+              {{
+                convertToDate(element.preferred_start_time) | date : "h:mm a"
+              }}
+              -
+              {{ convertToDate(element.preferred_end_time) | date : "h:mm a" }}
+            </td>
+          </ng-container>
 
-        <!-- Table rows -->
-        <tr
-          mat-header-row
-          *matHeaderRowDef="[
-            'index',
-            'courseCode',
-            'courseTitle',
-            'lecHours',
-            'labHours',
-            'units',
-            'preferredDay',
-            'preferredTime'
-          ]"
-        ></tr>
-        <tr
-          mat-row
-          *matRowDef="
-            let row;
-            columns: [
+          <!-- Table rows -->
+          <tr
+            mat-header-row
+            *matHeaderRowDef="[
               'index',
               'courseCode',
               'courseTitle',
@@ -122,25 +141,63 @@
               'units',
               'preferredDay',
               'preferredTime'
-            ]
-          "
-        ></tr>
+            ]"
+          ></tr>
+          <tr
+            mat-row
+            *matRowDef="
+              let row;
+              columns: [
+                'index',
+                'courseCode',
+                'courseTitle',
+                'lecHours',
+                'labHours',
+                'units',
+                'preferredDay',
+                'preferredTime'
+              ]
+            "
+          ></tr>
 
-        <!-- No Data Row -->
-        <tr *matNoDataRow>
-          <td class="no-data-cell" [attr.colspan]="8">
-            <div class="flex-cell">
-              <span mat-symbol="info"></span>
-              <span>No preferences has been submitted yet.</span>
-            </div>
-          </td>
-        </tr>
-      </table>
+          <!-- No Data Row -->
+          <tr *matNoDataRow>
+            <td class="no-data-cell" [attr.colspan]="8">
+              <div class="flex-cell">
+                <span mat-symbol="info"></span>
+                <span>No preferences has been submitted yet.</span>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </div>
     </div>
+    }
+    <!-- PDF View -->
+    @else if (selectedView === 'pdf-view') {
+    <div class="dialog-pref-pdf-container">
+      @if (pdfBlobUrl) {
+      <div class="pdf-container">
+        <iframe [src]="pdfBlobUrl" class="pdf-iframe"></iframe>
+      </div>
+      } @else {
+      <div class="pdf-container">
+        <span>No PDF available.</span>
+      </div>
+      }
+    </div>
+    }
   </div>
 
+  <!-- Action buttons -->
   <div class="dialog-actions" [@fadeAnimation]>
     <button mat-button (click)="closeDialog()">Close</button>
+    @if (selectedView === 'pdf-view') {
+    <button mat-flat-button (click)="downloadPdf()">
+      <mat-icon>print</mat-icon>
+      Download PDF
+    </button>
+    }
   </div>
   }
 </div>

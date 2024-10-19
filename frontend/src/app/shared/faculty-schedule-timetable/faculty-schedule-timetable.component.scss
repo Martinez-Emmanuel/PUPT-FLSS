@@ -1,18 +1,28 @@
 @import "../../../styles/mixins.scss";
 
 $day-colors: (
-  monday: var(--primary-text),
-  tuesday: var(--secondary-text),
-  wednesday: var(--blue-primary),
-  thursday: var(--aqua-primary),
-  friday: var(--purple-primary),
-  saturday: var(--green-primary),
-  sunday: var(--primary-text),
+  monday: (var(--primary-text), var(--primary-text-two)),
+  tuesday: (var(--secondary-text), var(--secondary-text-two)),
+  wednesday: (var(--blue-primary), var(--blue-text)),
+  thursday: (var(--aqua-primary), var(--aqua-text)),
+  friday: (var(--purple-primary), var(--purple-text)),
+  saturday: (var(--green-primary), var(--green-text)),
+  sunday: (var(--primary-text), var(--primary-text))
 );
 
-@each $day, $color in $day-colors {
+@each $day, $colors in $day-colors {
+  $primary-color: nth($colors, 1);
+  $text-color: nth($colors, 2);
+
   .schedule-content.schedule-#{$day} .course {
-    color: #{$color};
+    color: #{$primary-color};
+  }
+
+  .schedule-content.schedule-#{$day} .time {
+    background-color: #{$primary-color};
+    color: #{$text-color};
+    padding: var(--spacing-xxs) var(--spacing-xs);
+    border-radius: var(--border-radius-xl);
   }
 }
 

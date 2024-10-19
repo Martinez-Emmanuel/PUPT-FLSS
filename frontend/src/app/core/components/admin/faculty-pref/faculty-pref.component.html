@@ -1,5 +1,5 @@
 <div class="faculty-pref-container">
-  @if (isLoading) {
+  @if (isLoading | async) {
   <div class="loading-wrapper">
     <app-loading></app-loading>
   </div>

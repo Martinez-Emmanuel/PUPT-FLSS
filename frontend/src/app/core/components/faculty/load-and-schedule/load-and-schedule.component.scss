@@ -17,33 +17,70 @@
 
 .row-one {
   @include flex-layout(
-    $direction: column,
-    $align: flex-start,
-    $justify: flex-start,
+    $align: stretch,
+    $justify: space-between,
     $gap: var(--spacing-md)
   );
 
-  .row-title {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xxs);
-
+  .page-header {
+    @include flex-layout(
+      $direction: column,
+      $align: flex-start,
+      $gap: var(--spacing-xxs)
+    );
+  
     h1 {
       @include reset-styles;
-      width: max-content;
       font-size: var(--font-size-2xxl);
       font-weight: 700;
-
+  
       @include gradient-primary(315deg);
       background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-
+  
     p {
       @include reset-styles;
-      width: max-content;
-      font-size: var(--font-size-lg);
+      font-size: var(--font-size-mdx);
+    }
+  }
+  
+
+  .schedule-overview {
+    @include flex-layout($align: stretch, $gap: var(--spacing-md));
+    width: 25rem;
+
+    .schedule-summary,
+    .schedule-history {
+      color: white;
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: var(--border-radius-md);
+
+      .mini-heading {
+        @include flex-layout($justify: flex-start, $gap: var(--spacing-xxs));
+        font-weight: 600;
+        max-width: max-content;
+
+        span[mat-symbol] {
+          font-size: medium;
+        }
+      }
+    }
+
+    .schedule-summary {
+      flex: 1;
+      @include gradient-primary(315deg);
+    }
+
+    .schedule-history {
+      flex: 1;
+      @include gradient-secondary(315deg);
+      cursor: pointer;
+
+      p {
+        opacity: var(--opacity-semi-opaque);
+      }
     }
   }
 }
@@ -51,5 +88,45 @@
 .row-two {
   flex: 1;
   overflow: hidden;
+
+  .unpublished-container {
+    @include flex-layout(
+      $direction: column,
+      $align: center,
+      $justify: center,
+      $gap: var(--spacing-lg)
+    );
+    height: 100%;
+    opacity: var(--opacity-semi-opaque);
+
+    svg {
+      width: 30%;
+      height: auto;
+    }
+
+    .unpublished-text {
+      @include flex-layout($gap: var(--spacing-xs));
+      font-size: var(--font-size-mdx);
+
+      span[mat-symbol] {
+        font-size: var(--font-size-mdx);
+      }
+    }
+  }
 }
 
+@media screen and (max-width: 1024px) {
+  .row-one {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $gap: var(--spacing-md)
+    );
+
+    .schedule-overview {
+
+      width: auto;
+    }
+
+  }
+}

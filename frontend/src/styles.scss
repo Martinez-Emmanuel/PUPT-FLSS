@@ -92,6 +92,7 @@
   --dialog-small: 20rem;
   --dialog-base: 25rem;
   --dialog-medium: 30rem;
+  --dialog-base-height: 60vh;
 
   // Breakpoints
   --breakpoint-sm: 576px;
@@ -124,6 +125,28 @@ body {
 }
 
 /* Custom Styling applied globally */
+
+.pdf-iframe {
+  width: 100%;
+  height: var(--dialog-base-height);
+  border: none;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-level-1);
+}
+
+.view-option {
+  @include flex-layout($align: flex-end);
+
+  .mat-button-toggle {
+    @include flex-layout();
+  }
+
+  .icon-spacing {
+    margin-top: var(--spacing-xxxs);
+    margin-right: var(--spacing-xxs);
+    font-size: var(--font-size-lg);
+  }
+}
 
 .pop {
   transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -221,6 +244,12 @@ span[mat-symbol] {
 
 .mat-step-icon .mat-icon {
   color: white !important;
+}
+
+.mat-button-toggle-standalone.mat-button-toggle-appearance-standard,
+.mat-button-toggle-group-appearance-standard {
+  border: 1px solid
+    var(--mat-standard-button-toggle-divider-color, var(--mat-app-outline)) !important;
 }
 
 [mat-flat-button] {
