@@ -1,5 +1,3 @@
-//service last
-//service
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, forkJoin, of } from 'rxjs';
@@ -497,7 +495,66 @@ export class SchedulingService {
     );
   }
   
-  // Validates whether a room is available for the given day and time. It checks if the room is already booked by another course.
+
+  /**
+   * Validates faculty availability based on provided details.
+   */
+  public validateFacultyAvailability(
+    schedule_id: number,
+    faculty_id: number | null,
+    day: string | null,
+    start_time: string | null,
+    end_time: string | null,
+    program_id: number,
+    year_level: number,
+    section_id: number
+  ): Observable<{ isValid: boolean; message: string }> {
+    return forkJoin([
+      this.populateSchedules(),
+      this.getAllRooms(),
+      this.getFacultyDetails()
+    ]).pipe(
+      switchMap(([schedules, rooms, faculty]) => {
+        const result = this.checkFacultyAvailability(
+          faculty_id, day, start_time, end_time, schedules, schedule_id
+        );
+        return of(result);
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Validates room availability based on provided details.
+   */
+  public validateRoomAvailability(
+    schedule_id: number,
+    room_id: number | null,
+    day: string | null,
+    start_time: string | null,
+    end_time: string | null,
+    program_id: number,
+    year_level: number,
+    section_id: number
+  ): Observable<{ isValid: boolean; message: string }> {
+    return forkJoin([
+      this.populateSchedules(),
+      this.getAllRooms(),
+      this.getFacultyDetails()
+    ]).pipe(
+      switchMap(([schedules, rooms, faculty]) => {
+        const result = this.checkRoomAvailability(
+          room_id, day, start_time, end_time, schedules, rooms, schedule_id
+        );
+        return of(result);
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+
+  // Validates whether a room is available for the given day and time. 
+  // It checks if the room is already booked by another course.
   private checkRoomAvailability(
     room_id: number | null,
     day: string | null,
@@ -518,15 +575,15 @@ export class SchedulingService {
   
     const conflictingSchedule = this.findConflictingSchedule(
       schedules, (course) => 
-      (course.schedule?.room_id === room_id || course.room?.room_id === room_id)
-      && course.schedule?.day === day && 
-      course.schedule.schedule_id !== currentScheduleId && // Exclude the current schedule being edited
-      this.isTimeOverlap(
-        start_time, 
-        end_time, 
-        course.schedule?.start_time, 
-        course.schedule?.end_time
-      )
+        (course.schedule?.room_id === room_id || course.room?.room_id === room_id)
+        && course.schedule?.day === day && 
+        course.schedule.schedule_id !== currentScheduleId &&
+        this.isTimeOverlap(
+          start_time, 
+          end_time, 
+          course.schedule?.start_time, 
+          course.schedule?.end_time
+        )
     );
   
     return conflictingSchedule
@@ -534,19 +591,21 @@ export class SchedulingService {
           isValid: false, 
           message: `Room ${room.room_code} is already booked for ${conflictingSchedule.course_code} 
                     (${conflictingSchedule.course_title}) on ${day} from 
-                    ${conflictingSchedule.schedule?.start_time} to ${conflictingSchedule.schedule?.end_time}.`
+                    ${this.formatTimeForDisplay(conflictingSchedule.schedule?.start_time || '')} to 
+                    ${this.formatTimeForDisplay(conflictingSchedule.schedule?.end_time || '')}.`
         }
       : { isValid: true, message: 'Room is available' };
   }
   
-  // Checks if a professor is available for a specific day and time or if they are already teaching another course during that time.
+  // Checks if a professor is available for a specific day and time or 
+  // if they are already teaching another course during that time.
   private checkFacultyAvailability(
     faculty_id: number | null,
     day: string | null,
     start_time: string | null,
     end_time: string | null,
     schedules: PopulateSchedulesResponse,
-    currentScheduleId: number  // Pass the current schedule ID
+    currentScheduleId: number 
   ): { isValid: boolean; message: string } {
     if (!faculty_id || !day || !start_time || !end_time) {
       return { isValid: true, message: 'Faculty availability check skipped' };
@@ -555,7 +614,7 @@ export class SchedulingService {
     const conflictingSchedule = this.findConflictingSchedule(
       schedules, (course) => 
         course.faculty_id === faculty_id &&
-        course.schedule?.schedule_id !== currentScheduleId &&  // Exclude current schedule being edited
+        course.schedule?.schedule_id !== currentScheduleId && 
         course.schedule?.day === day &&
         this.isTimeOverlap(
           start_time, 
@@ -570,12 +629,11 @@ export class SchedulingService {
           isValid: false, 
           message: `Professor ${conflictingSchedule.professor} is already assigned to ${conflictingSchedule.course_code} 
                     (${conflictingSchedule.course_title}) on ${day} from 
-                    ${conflictingSchedule.schedule?.start_time} to 
-                    ${conflictingSchedule.schedule?.end_time}.`
+                    ${this.formatTimeForDisplay(conflictingSchedule.schedule?.start_time || '')} to 
+                    ${this.formatTimeForDisplay(conflictingSchedule.schedule?.end_time || '')}.`
         }
       : { isValid: true, message: 'Faculty is available' };
   }
-  
 
   // Verifies that assigning the new course to the professor does not exceed their allowed teaching load (in terms of units).
   // private checkFacultyLoad(
@@ -613,18 +671,20 @@ export class SchedulingService {
   //       };
   // }
 
-private timeToMinutes(time: string): number {
-  const [hours, minutes] = time.split(':').map(Number);
-  return hours * 60 + minutes;
-}
+  private timeToMinutes(time: string): number {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+  }
 
-// Helper method to format time for display
-private formatTimeForDisplay(time: string): string {
-  const [hours, minutes] = time.split(':').map(Number);
-  const period = hours >= 12 ? 'PM' : 'AM';
-  const displayHours = hours % 12 || 12;
-  return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
-}
+  // Helper method to format time for display
+  private formatTimeForDisplay(time: string): string {
+    if (!time) return '';
+    const [hours, minutes, seconds] = time.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+  }
+
   //Checks if two time blocks overlap by comparing their start and end times.
   
   private isTimeOverlap(
