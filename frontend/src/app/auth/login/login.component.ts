@@ -9,9 +9,10 @@ import { MatIcon } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatButton } from '@angular/material/button';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatRippleModule } from '@angular/material/core';
+import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 import { SlideshowComponent } from '../../shared/slideshow/slideshow.component';
-import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 import { ThemeService } from '../../core/services/theme/theme.service';
 import { AuthService } from '../../core/services/auth/auth.service';
@@ -30,6 +31,7 @@ import { RoleService } from '../../core/services/role/role.service';
     MatIcon,
     MatButton,
     MatProgressSpinner,
+    MatRippleModule,
   ],
   providers: [AuthService],
 })
