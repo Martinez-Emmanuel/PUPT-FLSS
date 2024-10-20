@@ -123,6 +123,7 @@ export class AdminComponent implements OnInit {
           type: 'text',
           maxLength: 20,
           required: true,
+          disabled: !admin, // disable for new admins, enable for editing
         },
         {
           label: 'Name',
@@ -136,14 +137,14 @@ export class AdminComponent implements OnInit {
           formControlName: 'password',
           type: 'text',
           maxLength: 100,
-          required: false,
+          required: !admin, // required for new admins, optional for editing
         },
         {
           label: 'Confirm Password',
           formControlName: 'confirmPassword',
           type: 'text',
           maxLength: 100,
-          required: false,
+          required: !admin, // required for new admins, optional for editing
           confirmPassword: true,
         }, 
         // {
@@ -168,7 +169,9 @@ export class AdminComponent implements OnInit {
           required: true,
         },
       ],
-      initialValue: admin ? { ...admin, password: '' } : {},
+      initialValue: admin 
+      ? { ...admin, password: '' } 
+      : { status: 'Active' }, // set default status for new admins
     };
   }
 
@@ -181,17 +184,28 @@ export class AdminComponent implements OnInit {
   
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.adminService.addAdmin(result).subscribe((newAdmin) => {
-          this.admins.push(newAdmin);
+        // remove the confirmPass field before sending the API
+        const { confirmPassword, ...adminData } = result;
+
+        this.adminService.addAdmin(adminData).subscribe({
+          next: (newAdmin) => {
+          // this.admins.push(newAdmin);
           this.snackBar.open('Admin added successfully', 'Close', {
             duration: 3000,
           });
           this.fetchAdmins();
-          this.cdr.markForCheck();
+          // this.cdr.markForCheck();
+        },
+        error: (error) => {
+          this.snackBar.open('Error adding admin. Please try again.', 'Close', {
+            duration: 3000,
         });
+        console.error('Error adding admin:', error);
       }
     });
   }
+});
+}
   
 
   openEditAdminDialog(admin: User) {
@@ -210,39 +224,39 @@ export class AdminComponent implements OnInit {
   }
   
   updateAdmin(id: string, updatedAdmin: any) {
-    const adminData: any = {
-      name: updatedAdmin.name,
-      role: updatedAdmin.role,
-      status: updatedAdmin.status,
-    };
-  
-    // Include the password only if it is not empty
-    if (updatedAdmin.password) {
-      adminData.password = updatedAdmin.password;
+    
+    // Remove confirmPassword from the update data
+    const { confirmPassword, ...adminData } = updatedAdmin;
+
+    // Only include password if it was changed
+    if (!adminData.password) {
+      delete adminData.password;
     }
-  
-    this.adminService.updateAdmin(id, adminData).subscribe((updatedAdminResponse) => {
-      const index = this.admins.findIndex(admin => admin.id === id);
-  
-      if (index !== -1) {
-        this.admins[index] = {
-          ...updatedAdminResponse,
-          passwordDisplay: '••••••••',  // Keep showing the masked password in the table
-          email: updatedAdminResponse.faculty?.faculty_email || '',
-        };
+
+    this.adminService.updateAdmin(id, adminData).subscribe({
+      next: (updatedAdminResponse) => {
+        const index = this.admins.findIndex(admin => admin.id === id);
+        if (index !== -1) {
+          this.admins[index] = {
+            ...updatedAdminResponse,
+            passwordDisplay: '••••••••',
+          };
+        }
+
+        this.snackBar.open('Admin updated successfully', 'Close', {
+          duration: 3000,
+        });
+        this.fetchAdmins();
+        this.cdr.markForCheck();
+      },
+      error: (error) => {
+        this.snackBar.open('Error updating admin. Please try again.', 'Close', {
+          duration: 3000,
+        });
+        console.error('Error updating admin:', error);
       }
-  
-      this.snackBar.open('Admin updated successfully', 'Close', {
-        duration: 3000,
-      });
-      this.fetchAdmins();
-      this.cdr.markForCheck();
     });
   }
-  
-  
-  
-  
 
   deleteAdmin(admin: User) {
     const index = this.admins.indexOf(admin);
