@@ -68,4 +68,38 @@ export class AdminService {
   deleteAdmin(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/deleteAdmins/${id}`, { headers: this.getHeaders() });
   }
+
+  // Generate next admin code
+  getNextAdminCode(role: string): Observable<string> {
+    return this.getAdmins().pipe(
+      map(admins => {
+        const prefix = role.toLowerCase() === 'superadmin' ? 'SDM' : 'ADM';
+        const year = new Date().getFullYear();
+        const suffix = 'TG' + year;
+
+        // Filter codes by role prefix and current year
+        const existingCodes = admins
+          .filter(admin =>
+            admin.code.startsWith(prefix) &&
+            admin.code.endsWith(year.toString())
+          )
+          .map(admin => admin.code);
+
+        if (existingCodes.length === 0) {
+          return `${prefix}001${suffix}`;
+        }
+
+        // Extract the numeric portions and find the highest number
+        const numbers = existingCodes.map(code => {
+          const match = code.match(/\d{3}/);
+          return match ? parseInt(match[0], 10) : 0;
+        });
+
+        const maxNumber = Math.max(...numbers);
+        const nextNumber = (maxNumber + 1).toString().padStart(3, '0');
+
+        return `${prefix}${nextNumber}${suffix}`;
+      })
+    );
+  }
 }

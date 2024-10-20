@@ -36,6 +36,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { provideNativeDateAdapter } from '@angular/material/core';
 
+import { AdminService } from '../../core/services/superadmin/management/admin/admin.service';
 import { TwoDigitInputDirective } from '../../core/imports/two-digit-input.directive';
 
 export interface DialogFieldConfig {
@@ -108,6 +109,7 @@ export class TableDialogComponent {
     private dialogRef: MatDialogRef<TableDialogComponent>,
     private cdr: ChangeDetectorRef,
     private router: Router,
+    private adminService: AdminService,
     @Inject(MAT_DIALOG_DATA) public data: DialogConfig
   ) {
     this.initializeComponent();
@@ -147,6 +149,23 @@ export class TableDialogComponent {
     this.form.reset();
     this.data.fields.forEach(this.addFormControl.bind(this));
     this.initialFormValues = this.form.getRawValue();
+    // Add role change listener for admin code generation
+    if (this.data.title === 'Admin' && !this.data.isEdit) {
+      const roleControl = this.form.get('role');
+      const codeControl = this.form.get('code');
+      
+      if (roleControl && codeControl) {
+        roleControl.valueChanges.subscribe(role => {
+          if (role) {
+            this.generateAdminCode(role);
+          }
+        });
+
+        // Disable the code field for new admins
+        codeControl.disable();
+      }
+    }
+
     this.trackFormChanges();
   }
 
@@ -186,6 +205,22 @@ export class TableDialogComponent {
     if (field.confirmPassword) {
       control.setValidators([...validators, this.passwordMatchValidator.bind(this)]);
     } 
+  }
+
+  private generateAdminCode(role: string): void {
+    const codeControl = this.form.get('code');
+    if (codeControl) {
+      this.adminService.getNextAdminCode(role).subscribe({
+        next: (nextCode) => {
+          codeControl.setValue(nextCode);
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          console.error('Error generating admin code:', error);
+          // Optionally handle the error (e.g., show a message to the user)
+        }
+      });
+    }
   }
 
   private initAutocompleteOptions(field: DialogFieldConfig): void {
@@ -336,7 +371,15 @@ export class TableDialogComponent {
   onSave(): void {
     if (this.form.valid) {
       this.isLoading = true;
+      
+      // Enable the code control before saving if it was disabled
+      const codeControl = this.form.get('code');
+      if (codeControl?.disabled) {
+        codeControl.enable();
+      }
 
+      const formValue = this.form.value;
+      
       const minimumSpinnerDuration = 500;
       const startTime = Date.now();
 
@@ -349,7 +392,7 @@ export class TableDialogComponent {
         setTimeout(() => {
           this.isLoading = false;
           this.dialogRef.disableClose = false;
-          this.dialogRef.close(this.form.value);
+          this.dialogRef.close(formValue);
         }, Math.max(remainingTime, 0));
       };
 
