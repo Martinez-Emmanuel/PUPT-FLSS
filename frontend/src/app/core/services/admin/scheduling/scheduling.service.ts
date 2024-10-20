@@ -190,6 +190,18 @@ export interface CourseDetails {
   course_title: string;
 }
 
+interface ConflictingCourseDetail {
+  course: CourseResponse;
+  sectionName: string;
+}
+
+interface ConflictingScheduleDetail {
+  course: CourseResponse;
+  programCode: string;
+  yearLevel: number;
+  sectionName: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -603,16 +615,18 @@ export class SchedulingService {
 
     return this.populateSchedules().pipe(
       map((schedules) => {
-        const conflictingCourse = this.findConflictingCourseInProgram(
+        const conflictingDetail = this.findConflictingCourseInProgram(
           schedules,
           program_id,
           year_level,
-          day,
-          start_time,
-          end_time,
+          day!,
+          start_time!,
+          end_time!,
           schedule_id
         );
-        if (conflictingCourse) {
+
+        if (conflictingDetail) {
+          const { course, sectionName } = conflictingDetail;
           const program = schedules.programs.find(
             (p) => p.program_id === program_id
           );
@@ -621,12 +635,12 @@ export class SchedulingService {
             : 'Unknown Program';
           return {
             isValid: false,
-            message: `Course ${conflictingCourse.course_code} (${
-              conflictingCourse.course_title
-            }) in Year Level ${year_level} of Program ${programCode} is already scheduled on ${day} from ${this.formatTimeForDisplay(
-              conflictingCourse.schedule?.start_time || ''
+            message: `${course.course_code} (${
+              course.course_title
+            }) of ${programCode} ${year_level}-${sectionName} is already scheduled on ${day} from ${this.formatTimeForDisplay(
+              course.schedule?.start_time || ''
             )} to ${this.formatTimeForDisplay(
-              conflictingCourse.schedule?.end_time || ''
+              course.schedule?.end_time || ''
             )}.`,
           };
         } else {
@@ -637,7 +651,59 @@ export class SchedulingService {
     );
   }
 
-  // Validates whether a room is available for the given day and time. It checks if the room is already booked by another course.
+  /**
+   * Validates whether a professor is available for a specific day and time 
+   * or if they are already teaching another course during that time.
+   */
+
+  private checkFacultyAvailability(
+    faculty_id: number | null,
+    day: string | null,
+    start_time: string | null,
+    end_time: string | null,
+    schedules: PopulateSchedulesResponse,
+    currentScheduleId: number
+  ): { isValid: boolean; message: string } {
+    if (!faculty_id || !day || !start_time || !end_time) {
+      return { isValid: true, message: 'Faculty availability check skipped' };
+    }
+
+    const conflictingDetail = this.findConflictingSchedule(
+      schedules,
+      (course) =>
+        course.faculty_id === faculty_id &&
+        course.schedule?.day === day &&
+        course.schedule.schedule_id !== currentScheduleId &&
+        this.isTimeOverlap(
+          start_time,
+          end_time,
+          course.schedule.start_time,
+          course.schedule.end_time
+        )
+    );
+
+    if (conflictingDetail) {
+      const { course, programCode, yearLevel, sectionName } = conflictingDetail;
+      return {
+        isValid: false,
+        message: `${course.professor} is already assigned to ${
+          course.course_code
+        } (${
+          course.course_title
+        }) for ${programCode} ${yearLevel}-${sectionName} on ${day} from ${this.formatTimeForDisplay(
+          course.schedule?.start_time || ''
+        )} to ${this.formatTimeForDisplay(course.schedule?.end_time || '')}.`,
+      };
+    }
+
+    return { isValid: true, message: 'Faculty is available' };
+  }
+
+  /**
+   * Validates whether a room is available for the given day and time. 
+   * It checks if the room is already booked by another course.
+   */
+
   private checkRoomAvailability(
     room_id: number | null,
     day: string | null,
@@ -645,7 +711,7 @@ export class SchedulingService {
     end_time: string | null,
     schedules: PopulateSchedulesResponse,
     rooms: { rooms: Room[] },
-    currentScheduleId: number // New argument for current schedule ID
+    currentScheduleId: number
   ): { isValid: boolean; message: string } {
     if (!room_id || !day || !start_time || !end_time) {
       return { isValid: true, message: 'Room availability check skipped' };
@@ -656,13 +722,13 @@ export class SchedulingService {
       return { isValid: false, message: 'Invalid room selected' };
     }
 
-    const conflictingSchedule = this.findConflictingSchedule(
+    const conflictingDetail = this.findConflictingSchedule(
       schedules,
       (course) =>
         (course.schedule?.room_id === room_id ||
           course.room?.room_id === room_id) &&
         course.schedule?.day === day &&
-        course.schedule.schedule_id !== currentScheduleId && // Exclude the current schedule being edited
+        course.schedule.schedule_id !== currentScheduleId &&
         this.isTimeOverlap(
           start_time,
           end_time,
@@ -671,68 +737,27 @@ export class SchedulingService {
         )
     );
 
-    return conflictingSchedule
-      ? {
-          isValid: false,
-          message: `Room ${room.room_code} is already booked for ${
-            conflictingSchedule.course_code
-          } 
-                    (${conflictingSchedule.course_title}) on ${day} from 
-                    ${this.formatTimeForDisplay(
-                      conflictingSchedule.schedule?.start_time || ''
-                    )} to 
-                    ${this.formatTimeForDisplay(
-                      conflictingSchedule.schedule?.end_time || ''
-                    )}.`,
-        }
-      : { isValid: true, message: 'Room is available' };
-  }
-
-  // Checks if a professor is available for a specific day and time or if they are already teaching another course during that time.
-  private checkFacultyAvailability(
-    faculty_id: number | null,
-    day: string | null,
-    start_time: string | null,
-    end_time: string | null,
-    schedules: PopulateSchedulesResponse,
-    currentScheduleId: number // Pass the current schedule ID
-  ): { isValid: boolean; message: string } {
-    if (!faculty_id || !day || !start_time || !end_time) {
-      return { isValid: true, message: 'Faculty availability check skipped' };
+    if (conflictingDetail) {
+      const { course, programCode, yearLevel, sectionName } = conflictingDetail;
+      return {
+        isValid: false,
+        message: `Room ${room.room_code} is already booked for ${
+          course.course_code
+        } (${
+          course.course_title
+        }) in ${programCode} ${yearLevel}-${sectionName} on ${day} from ${this.formatTimeForDisplay(
+          course.schedule?.start_time || ''
+        )} to ${this.formatTimeForDisplay(course.schedule?.end_time || '')}.`,
+      };
     }
 
-    const conflictingSchedule = this.findConflictingSchedule(
-      schedules,
-      (course) =>
-        course.faculty_id === faculty_id &&
-        course.schedule?.schedule_id !== currentScheduleId && // Exclude current schedule being edited
-        course.schedule?.day === day &&
-        this.isTimeOverlap(
-          start_time,
-          end_time,
-          course.schedule.start_time,
-          course.schedule.end_time
-        )
-    );
-
-    return conflictingSchedule
-      ? {
-          isValid: false,
-          message: `Professor ${
-            conflictingSchedule.professor
-          } is already assigned to ${conflictingSchedule.course_code} 
-                    (${conflictingSchedule.course_title}) on ${day} from 
-                    ${this.formatTimeForDisplay(
-                      conflictingSchedule.schedule?.start_time || ''
-                    )} to 
-                    ${this.formatTimeForDisplay(
-                      conflictingSchedule.schedule?.end_time || ''
-                    )}.`,
-        }
-      : { isValid: true, message: 'Faculty is available' };
+    return { isValid: true, message: 'Room is available' };
   }
 
-  // Helper method to find conflicting course within the same program and year level
+  /**
+   * Helper method to find conflicting course within the same program and year level 
+   */
+
   private findConflictingCourseInProgram(
     schedules: PopulateSchedulesResponse,
     program_id: number,
@@ -741,7 +766,7 @@ export class SchedulingService {
     start_time: string,
     end_time: string,
     currentScheduleId: number
-  ): CourseResponse | undefined {
+  ): ConflictingCourseDetail | undefined {
     for (const program of schedules.programs) {
       if (program.program_id !== program_id) continue;
       for (const yl of program.year_levels) {
@@ -759,7 +784,10 @@ export class SchedulingService {
                   course.schedule?.end_time
                 )
               ) {
-                return course;
+                return {
+                  course,
+                  sectionName: section.section_name,
+                };
               }
             }
           }
@@ -776,14 +804,20 @@ export class SchedulingService {
   private findConflictingSchedule(
     schedules: PopulateSchedulesResponse,
     predicate: (course: CourseResponse) => boolean
-  ): CourseResponse | undefined {
+  ): ConflictingScheduleDetail | undefined {
     for (const program of schedules.programs) {
       for (const yearLevel of program.year_levels) {
         for (const semester of yearLevel.semesters) {
           for (const section of semester.sections) {
-            const conflictingCourse = section.courses.find(predicate);
-            if (conflictingCourse) {
-              return conflictingCourse;
+            for (const course of section.courses) {
+              if (predicate(course)) {
+                return {
+                  course,
+                  programCode: program.program_code,
+                  yearLevel: yearLevel.year_level,
+                  sectionName: section.section_name,
+                };
+              }
             }
           }
         }
@@ -793,7 +827,7 @@ export class SchedulingService {
   }
 
   // =============================
-  // Helper Methods
+  // Time Helper Methods
   // =============================
 
   public formatTimeForDisplay(time: string): string {
