@@ -9,7 +9,11 @@
     <!-- Page Title -->
     <div class="page-header" [@fadeAnimation]>
       <h1>Load and Schedule</h1>
-      <p>Here's your official load and schedule for this semester.</p>
+      <p>
+        Here's your official load and schedule for
+        <span class="highlight">A.Y. {{ academicYear }}, {{ semester }}</span
+        >.
+      </p>
     </div>
 
     <!--Schedule Overview-->
@@ -1817,11 +1821,12 @@
           </filter>
         </defs>
       </svg>
-      <span class="unpublished-text">
+      <div class="unpublished-text">
         <span mat-symbol="info"></span>
-        Your official schedule is not yet published. Please wait for its release
-        soon.
-      </span>
+        <span>
+          Your official schedule is not yet published.
+        </span>
+      </div>
     </div>
     }
   </div>

@@ -52,4 +52,27 @@ export class LoadAndScheduleComponent implements OnInit {
       this.isLoading = false;
     }
   }
+  
+  get academicYear(): string {
+    if (this.facultySchedule) {
+      return `${this.facultySchedule.year_start}-${this.facultySchedule.year_end}`;
+    }
+    return '';
+  }
+
+  get semester(): string {
+    if (this.facultySchedule) {
+      switch (this.facultySchedule.semester) {
+        case 1:
+          return '1st Semester';
+        case 2:
+          return '2nd Semester';
+        case 3:
+          return 'Summer Term';
+        default:
+          return '';
+      }
+    }
+    return '';
+  }
 }
