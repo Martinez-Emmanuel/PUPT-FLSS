@@ -145,8 +145,15 @@ export class CurriculumComponent implements OnInit, OnDestroy {
         this.showSuccessMessage(response.message);
         this.fetchCurricula();
       },
-      error: () =>
-        this.showErrorMessage('Error adding curriculum. Please try again.'),
+      error: (errorResponse) => {
+        if (errorResponse.error?.message?.includes('already exists')) {
+          this.showErrorMessage(
+            `${newCurriculum.curriculum_year} Curriculum already exists.`
+          );
+        } else {
+          this.showErrorMessage('Error adding curriculum. Please try again.');
+        }
+      },
     });
   }
 
