@@ -56,7 +56,6 @@ export class CurriculumComponent implements OnInit, OnDestroy {
     },
   ];
 
-
   constructor(
     private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
@@ -201,31 +200,61 @@ export class CurriculumComponent implements OnInit, OnDestroy {
 
   // Open Add Curriculum Dialog
   openAddCurriculumDialog() {
-    this.curriculumService.getCurricula().subscribe({
-      next: (availableCurricula) => {
-        const dialogConfig = this.getDialogConfig(availableCurricula);
+    this.curriculumService
+      .getAllPrograms()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (programs) => {
+          // Check if no programs exist or all programs are inactive
+          const activePrograms = programs.filter(
+            (program) => program.status === 'Active'
+          );
 
-        const dialogRef = this.dialog.open(TableDialogComponent, {
-          data: dialogConfig,
-          disableClose: true,
-        });
-
-        dialogRef.afterClosed().subscribe((result) => {
-          if (result) {
-            if (result.copy_from && result.copy_from !== 'None') {
-              this.copyCurriculum(result);
-            } else {
-              this.addCurriculum(result);
-            }
+          if (
+            !programs ||
+            programs.length === 0 ||
+            activePrograms.length === 0
+          ) {
+            this.showErrorMessage(
+              'No programs found. Add at least one active program to create a curriculum.'
+            );
+            return;
           }
-        });
-      },
-      error: () => {
-        this.showErrorMessage(
-          'Error fetching available curricula. Please try again.'
-        );
-      },
-    });
+
+          // If active programs exist, proceed to fetch available curricula
+          this.curriculumService
+            .getCurricula()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: (availableCurricula) => {
+                const dialogConfig = this.getDialogConfig(availableCurricula);
+
+                const dialogRef = this.dialog.open(TableDialogComponent, {
+                  data: dialogConfig,
+                  disableClose: true,
+                });
+
+                dialogRef.afterClosed().subscribe((result) => {
+                  if (result) {
+                    if (result.copy_from && result.copy_from !== 'None') {
+                      this.copyCurriculum(result);
+                    } else {
+                      this.addCurriculum(result);
+                    }
+                  }
+                });
+              },
+              error: () => {
+                this.showErrorMessage(
+                  'Error fetching available curricula. Please try again.'
+                );
+              },
+            });
+        },
+        error: () => {
+          this.showErrorMessage('Error fetching programs. Please try again.');
+        },
+      });
   }
 
   // Open Edit Curriculum Dialog

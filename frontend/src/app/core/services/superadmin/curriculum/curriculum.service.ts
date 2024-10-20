@@ -38,6 +38,7 @@ export interface YearLevel {
 }
 
 export interface Program {
+  status: string;
   name: string;
   year_levels: YearLevel[];
   number_of_years: number;
