@@ -635,9 +635,9 @@ export class SchedulingService {
             : 'Unknown Program';
           return {
             isValid: false,
-            message: `${course.course_code} (${
-              course.course_title
-            }) of ${programCode} ${year_level}-${sectionName} is already scheduled on ${day} from ${this.formatTimeForDisplay(
+            message: `${programCode} ${year_level}-${sectionName} is already 
+            scheduled for ${course.course_code} (${course.course_title}) on 
+            ${day} from ${this.formatTimeForDisplay(
               course.schedule?.start_time || ''
             )} to ${this.formatTimeForDisplay(
               course.schedule?.end_time || ''
