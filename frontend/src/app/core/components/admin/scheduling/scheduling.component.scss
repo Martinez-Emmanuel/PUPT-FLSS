@@ -93,5 +93,22 @@
         }
       }
     }
+
+    .no-data-cell {
+      text-align: center;
+      padding: var(--spacing-lg);
+
+      .flex-cell {
+        @include flex-layout(
+          $align: center,
+          $justify: center,
+          $gap: var(--spacing-xs)
+        );
+
+        span {
+          opacity: var(--opacity-semi-opaque);
+        }
+      }
+    }
   }
 }
