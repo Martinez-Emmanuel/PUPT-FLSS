@@ -298,7 +298,7 @@ export class TableDialogComponent {
 
   navigateToAcademicYear(): void {
     this.dialogRef.close();
-    this.router.navigate(['/admin/scheduling/academic-year']);
+    this.router.navigate(['/admin/academic-years']);
   }
 
   filterOptions(field: DialogFieldConfig): void {

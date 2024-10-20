@@ -7,6 +7,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 import { TableHeaderComponent, InputField } from '../../../../shared/table-header/table-header.component';
 import { TableDialogComponent, DialogConfig, DialogFieldConfig } from '../../../../shared/table-dialog/table-dialog.component';
@@ -27,6 +28,7 @@ import { LoadingComponent } from '../../../../shared/loading/loading.component';
     MatButtonModule,
     MatIconModule,
     LoadingComponent,
+    MatSymbolDirective
   ],
   templateUrl: './academic-year.component.html',
   styleUrls: ['./academic-year.component.scss'],
