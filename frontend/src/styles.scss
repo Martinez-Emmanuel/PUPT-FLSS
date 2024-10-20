@@ -175,6 +175,7 @@ span[mat-symbol] {
 
 .loading-wrapper {
   height: 100%;
+  width: 100%;
 }
 
 .dialog-base {
@@ -288,6 +289,23 @@ span[mat-symbol] {
 .fc-scrollgrid {
   border-radius: var(--border-radius-md);
   background-color: var(--neutral-space);
+}
+
+.fc-daygrid-event-dot {
+  border: calc(var(--fc-daygrid-event-dot-width) / 2) solid var(--primary-text);
+}
+
+.fc .fc-highlight {
+  background: var(--neutral-fade);
+}
+
+.fc .fc-scrollgrid-liquid {
+  @include default-transition;
+}
+
+.fc-v-event {
+  background-color: var(--primary-one);
+  border: none;
 }
 
 .fc {
