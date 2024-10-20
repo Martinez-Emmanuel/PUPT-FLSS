@@ -438,7 +438,7 @@ class ReportsController extends Controller
             return response()->json(['message' => 'Invalid faculty_id provided.'], 400);
         }
 
-        // Step 2: Retrieve the current active semester with academic year details
+        // Step 2: Retrieve the current active semester with academic year details, including start and end dates
         $activeSemester = DB::table('active_semesters')
             ->join('academic_years', 'active_semesters.academic_year_id', '=', 'academic_years.academic_year_id')
             ->join('semesters', 'active_semesters.semester_id', '=', 'semesters.semester_id')
@@ -449,7 +449,9 @@ class ReportsController extends Controller
                 'academic_years.academic_year_id',
                 'academic_years.year_start',
                 'academic_years.year_end',
-                'semesters.semester'
+                'semesters.semester',
+                'active_semesters.start_date',
+                'active_semesters.end_date'
             )
             ->first();
 
@@ -535,13 +537,15 @@ class ReportsController extends Controller
             )
             ->get();
 
-        // Step 6: Structure the data
+        // Step 6: Structure the data, including start_date and end_date
         $facultyData = [
             'academic_year_id' => $activeSemester->academic_year_id,
             'year_start' => $activeSemester->year_start,
             'year_end' => $activeSemester->year_end,
             'active_semester_id' => $activeSemester->active_semester_id,
             'semester' => $activeSemester->semester,
+            'start_date' => $activeSemester->start_date,
+            'end_date' => $activeSemester->end_date,
             'faculty_id' => $faculty->faculty_id,
             'faculty_name' => $faculty->faculty_name,
             'faculty_code' => $faculty->faculty_code,
