@@ -596,17 +596,17 @@ class ReportsController extends Controller
         $activeSemester = DB::table('active_semesters')
             ->where('is_active', 1)
             ->first();
-
+    
         if (!$activeSemester) {
             return response()->json(['message' => 'No active semester found'], 404);
         }
-
+    
         $activeAcademicYearId = $activeSemester->academic_year_id;
         $activeSemesterId = $activeSemester->semester_id;
-
+    
         // Step 2: Define the new `is_published` value (toggle between 0 and 1)
         $isPublished = $request->input('is_published'); 
-
+    
         // Step 3: Fetch schedule IDs for the active semester and academic year
         $activeSchedules = DB::table('schedules')
             ->select('schedules.schedule_id')
@@ -617,18 +617,22 @@ class ReportsController extends Controller
             ->where('sections_per_program_year.academic_year_id', $activeAcademicYearId)
             ->where('semesters.semester', $activeSemesterId)
             ->pluck('schedules.schedule_id'); 
-
+    
         // Step 4: Update `is_published` for the fetched schedules in the `schedules` table
         $updatedCount = DB::table('schedules')
             ->whereIn('schedule_id', $activeSchedules)
             ->update(['is_published' => $isPublished]);
-
+    
         // Step 5: Update `is_published` in the `faculty_schedule_publication` table based on the same schedule IDs
         DB::table('faculty_schedule_publication')
             ->whereIn('schedule_id', $activeSchedules)
             ->update(['is_published' => $isPublished]);
-
-        // Step 6: Return a response
+    
+        // Step 6: Disable preferences for all faculty by setting `is_enabled` to 0
+        DB::table('preferences_settings')
+            ->update(['is_enabled' => 0, 'updated_at' => now()]);
+    
+        // Step 7: Return a response
         return response()->json([
             'message' => 'Schedules and faculty schedule publications updated successfully',
             'updated_count' => $updatedCount,
@@ -638,7 +642,7 @@ class ReportsController extends Controller
             'semester_id' => $activeSemesterId
         ]);
     }
-
+    
     public function toggleSingleSchedule(Request $request)
     {
         // Step 1: Validate the input
@@ -646,23 +650,22 @@ class ReportsController extends Controller
             'faculty_id' => 'required|integer|exists:faculty_schedule_publication,faculty_id',
             'is_published' => 'required|boolean'
         ]);
-
+    
         $facultyId = $request->input('faculty_id');
         $isPublished = $request->input('is_published');
-
+    
         // Step 2: Get the active semester and academic year
         $activeSemester = DB::table('active_semesters')
             ->where('is_active', 1)
             ->first();
-
+    
         if (!$activeSemester) {
             return response()->json(['message' => 'No active semester found'], 404);
         }
-
+    
         $activeAcademicYearId = $activeSemester->academic_year_id;
         $activeSemesterId = $activeSemester->semester_id;
-
-
+    
         // Step 3: Fetch all related schedule_ids from the faculty_schedule_publication table
         // Only for schedules that match the active academic year and semester
         $facultySchedules = DB::table('faculty_schedule_publication')
@@ -675,22 +678,27 @@ class ReportsController extends Controller
             ->where('sections_per_program_year.academic_year_id', $activeAcademicYearId)
             ->where('semesters.semester', $activeSemesterId)
             ->pluck('schedules.schedule_id', 'faculty_schedule_publication.faculty_schedule_publication_id');
-
+    
         if ($facultySchedules->isEmpty()) {
             return response()->json(['message' => 'No schedules found for the given faculty in the active semester and academic year'], 404);
         }
-
+    
         // Step 4: Update the is_published value in the faculty_schedule_publication table for active schedules
         DB::table('faculty_schedule_publication')
             ->whereIn('faculty_schedule_publication_id', $facultySchedules->keys())
             ->update(['is_published' => $isPublished, 'updated_at' => now()]);
-
+    
         // Step 5: Update the corresponding is_published value in the schedules table for active schedules
         DB::table('schedules')
             ->whereIn('schedule_id', $facultySchedules->values())
             ->update(['is_published' => $isPublished, 'updated_at' => now()]);
-
-        // Step 6: Return a success response
+    
+        // Step 6: Disable preferences for the individual faculty** by setting `is_enabled` to 0
+        DB::table('preferences_settings')
+            ->where('faculty_id', $facultyId)
+            ->update(['is_enabled' => 0, 'updated_at' => now()]);
+    
+        // Step 7: Return a success response
         return response()->json([
             'message' => 'Publication status updated successfully for the faculty',
             'faculty_id' => $facultyId,
@@ -698,7 +706,7 @@ class ReportsController extends Controller
             'updated_schedule_ids' => $facultySchedules->values()
         ]);
     }
-
+    
     private function isScheduleValid($schedule)
     {
         return !(
