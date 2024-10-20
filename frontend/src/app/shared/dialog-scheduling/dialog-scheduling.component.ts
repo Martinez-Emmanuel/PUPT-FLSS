@@ -40,7 +40,6 @@ interface DialogData {
     room: string;
   };
   schedule_id: number;
-  course_id: number;
   year_level: number;
   section_id: number;
 }
@@ -141,7 +140,6 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     const room_id = selectedRoom ? selectedRoom.room_id : null;
     const program_id = this.data.selectedProgramId;
     const year_level = this.data.year_level;
-    const section_id = this.data.section_id;
 
     const validationObservables: {
       type: string;
@@ -152,19 +150,17 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     const formattedStartTime = this.formatTimeToBackend(startTime);
     const formattedEndTime = this.formatTimeToBackend(endTime);
 
-    // Check for program conflicts within the same section
-    if (day && startTime && endTime && program_id && year_level && section_id) {
+    // Check for program conflicts
+    if (day && startTime && endTime && program_id && year_level) {
       validationObservables.push({
         type: 'program',
         observable: this.schedulingService.validateProgramOverlap(
           this.data.schedule_id,
-          this.data.course_id,
           program_id,
           year_level,
           day,
           formattedStartTime,
-          formattedEndTime,
-          section_id
+          formattedEndTime
         ),
       });
     }
@@ -181,7 +177,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
           formattedEndTime,
           program_id,
           year_level,
-          section_id
+          this.data.section_id
         ),
       });
     }
@@ -198,7 +194,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
           formattedEndTime,
           program_id,
           year_level,
-          section_id
+          this.data.section_id
         ),
       });
     }
@@ -337,7 +333,6 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     this.schedulingService
       .assignSchedule(
         this.data.schedule_id,
-        this.data.course_id,
         selectedFaculty.faculty_id,
         selectedRoom.room_id,
         day,
@@ -470,6 +465,15 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     const formattedHours = hours.toString().padStart(2, '0');
     const formattedMinutes = minutes.toString().padStart(2, '0');
     return `${formattedHours}:${formattedMinutes}:00`;
+  }
+
+  private handleError(message: string) {
+    return (error: any): void => {
+      console.error(`${message}:`, error);
+      this.snackBar.open(`${message}. Please try again.`, 'Close', {
+        duration: 3000,
+      });
+    };
   }
 
   public isFacultySelected(faculty: {

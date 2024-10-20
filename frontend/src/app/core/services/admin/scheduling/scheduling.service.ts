@@ -198,15 +198,15 @@ export class SchedulingService {
 
   constructor(private http: HttpClient) {}
 
-  /**
-   * Handle HTTP errors.
-   * This is a higher-order function that accepts a custom message and returns an error handler function.
-   */
-  private handleError(message: string) {
-    return (error: HttpErrorResponse): Observable<never> => {
-      console.error(`${message}:`, error);
-      return throwError(() => new Error(`${message}. Please try again.`));
-    };
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    let errorMessage = 'Something went wrong; please try again later.';
+
+    if (error.error?.message) {
+      errorMessage = error.error.message;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    return throwError(() => new Error(errorMessage));
   }
 
   // =============================
@@ -217,7 +217,7 @@ export class SchedulingService {
   getAcademicYears(): Observable<any[]> {
     return this.http
       .get<any[]>(`${this.baseUrl}/get-academic-years`)
-      .pipe(catchError(this.handleError('Failed to fetch academic years')));
+      .pipe(catchError(this.handleError));
   }
 
   // Set the active academic year and semester
@@ -234,9 +234,7 @@ export class SchedulingService {
         start_date: startDate,
         end_date: endDate,
       })
-      .pipe(
-        catchError(this.handleError('Failed to set active year and semester'))
-      );
+      .pipe(catchError(this.handleError));
   }
 
   // Delete academic year
@@ -245,7 +243,7 @@ export class SchedulingService {
       .request('DELETE', `${this.baseUrl}/delete-ay`, {
         body: { academic_year_id: academicYearId },
       })
-      .pipe(catchError(this.handleError('Failed to delete academic year')));
+      .pipe(catchError(this.handleError));
   }
 
   // Add new academic year
@@ -255,7 +253,7 @@ export class SchedulingService {
         year_start: yearStart,
         year_end: yearEnd,
       })
-      .pipe(catchError(this.handleError('Failed to add academic year')));
+      .pipe(catchError(this.handleError));
   }
 
   // Get active academic year and semester details
@@ -272,9 +270,7 @@ export class SchedulingService {
         startDate: string;
         endDate: string;
       }>(`${this.baseUrl}/active-year-semester`)
-      .pipe(
-        catchError(this.handleError('Failed to fetch active year and semester'))
-      );
+      .pipe(catchError(this.handleError));
   }
 
   // =============================
@@ -287,11 +283,7 @@ export class SchedulingService {
   }): Observable<any> {
     return this.http
       .post<any>(`${this.baseUrl}/fetch-ay-prog-details`, payload)
-      .pipe(
-        catchError(
-          this.handleError('Failed to fetch program details by academic year')
-        )
-      );
+      .pipe(catchError(this.handleError));
   }
 
   // Update year levels' curricula for a specific academic year and program
@@ -310,9 +302,7 @@ export class SchedulingService {
     };
     return this.http
       .post<any>(`${this.baseUrl}/update-yr-lvl-curricula`, payload)
-      .pipe(
-        catchError(this.handleError('Failed to update year levels curricula'))
-      );
+      .pipe(catchError(this.handleError));
   }
 
   // Remove a program from an academic year
@@ -324,11 +314,7 @@ export class SchedulingService {
       .request('DELETE', `${this.baseUrl}/remove-program`, {
         body: { academic_year_id: academicYearId, program_id: programId },
       })
-      .pipe(
-        catchError(
-          this.handleError('Failed to remove program from academic year')
-        )
-      );
+      .pipe(catchError(this.handleError));
   }
 
   // Edit section on a specific year level
@@ -345,7 +331,7 @@ export class SchedulingService {
         year_level: yearLevel,
         number_of_sections: numberOfSections,
       })
-      .pipe(catchError(this.handleError('Failed to update sections')));
+      .pipe(catchError(this.handleError));
   }
 
   // Fetch sections by program and year level
@@ -354,29 +340,21 @@ export class SchedulingService {
       .get<string[]>(
         `${this.baseUrl}/programs/${program}/year/${year}/sections`
       )
-      .pipe(catchError(this.handleError('Failed to fetch sections')));
+      .pipe(catchError(this.handleError));
   }
 
   // Fetch active year levels and curricula for programs
   getProgramsFromYearLevels(): Observable<any[]> {
     return this.http
       .get<any[]>(`${this.baseUrl}/active-year-levels-curricula`)
-      .pipe(
-        catchError(
-          this.handleError('Failed to fetch programs from year levels')
-        )
-      );
+      .pipe(catchError(this.handleError));
   }
 
   // Get active year levels curricula
   getActiveYearLevelsCurricula(): Observable<any[]> {
     return this.http
       .get<any[]>(`${this.baseUrl}/active-year-levels-curricula`)
-      .pipe(
-        catchError(
-          this.handleError('Failed to fetch active year levels curricula')
-        )
-      );
+      .pipe(catchError(this.handleError));
   }
 
   // =============================
@@ -397,42 +375,39 @@ export class SchedulingService {
           sectionId: sectionId.toString(),
         },
       })
-      .pipe(catchError(this.handleError('Failed to fetch assigned courses')));
+      .pipe(catchError(this.handleError));
   }
 
   // Populate schedules
   populateSchedules(): Observable<PopulateSchedulesResponse> {
     return this.http
       .get<PopulateSchedulesResponse>(`${this.baseUrl}/populate-schedules`)
-      .pipe(catchError(this.handleError('Failed to populate schedules')));
+      .pipe(catchError(this.handleError));
   }
 
   // Get all available rooms
   getAllRooms(): Observable<{ rooms: Room[] }> {
     return this.http
       .get<{ rooms: Room[] }>(`${this.baseUrl}/get-rooms`)
-      .pipe(catchError(this.handleError('Failed to fetch rooms')));
+      .pipe(catchError(this.handleError));
   }
 
   // Get faculty details
   getFacultyDetails(): Observable<{ faculty: Faculty[] }> {
     return this.http
       .get<{ faculty: Faculty[] }>(`${this.baseUrl}/get-faculty`)
-      .pipe(catchError(this.handleError('Failed to fetch faculty details')));
+      .pipe(catchError(this.handleError));
   }
 
   getSubmittedPreferencesForActiveSemester(): Observable<SubmittedPrefResponse> {
     return this.http
       .get<SubmittedPrefResponse>(`${this.baseUrl}/view-preferences`)
-      .pipe(
-        catchError(this.handleError('Failed to fetch submitted preferences'))
-      );
+      .pipe(catchError(this.handleError));
   }
 
   // Assign schedule to faculty, room, and time
   public assignSchedule(
     schedule_id: number,
-    course_id: number,
     faculty_id: number | null,
     room_id: number | null,
     day: string | null,
@@ -444,7 +419,6 @@ export class SchedulingService {
   ): Observable<any> {
     return this.validateSchedule(
       schedule_id,
-      course_id,
       faculty_id,
       room_id,
       day,
@@ -472,7 +446,7 @@ export class SchedulingService {
           return throwError(() => new Error(validationResult.message));
         }
       }),
-      catchError(this.handleError('Failed to assign schedule'))
+      catchError(this.handleError)
     );
   }
 
@@ -482,8 +456,107 @@ export class SchedulingService {
 
   public validateSchedule(
     schedule_id: number,
-    course_id: number, // added course_id
     faculty_id: number | null,
+    room_id: number | null,
+    day: string | null,
+    start_time: string | null,
+    end_time: string | null,
+    program_id: number,
+    year_level: number,
+    section_id: number
+  ): Observable<{ isValid: boolean; message: string }> {
+    console.log(`Received parameters:`, {
+      schedule_id,
+      faculty_id,
+      room_id,
+      day,
+      start_time,
+      end_time,
+      program_id,
+      year_level,
+      section_id,
+    });
+
+    return forkJoin([
+      this.populateSchedules(),
+      this.getAllRooms(),
+      this.getFacultyDetails(),
+    ]).pipe(
+      switchMap(([schedules, rooms, faculty]) => {
+        const roomCheck = this.checkRoomAvailability(
+          room_id,
+          day,
+          start_time,
+          end_time,
+          schedules,
+          rooms,
+          schedule_id
+        );
+        const facultyCheck = this.checkFacultyAvailability(
+          faculty_id,
+          day,
+          start_time,
+          end_time,
+          schedules,
+          schedule_id
+        );
+        // const loadCheck = this.checkFacultyLoad(
+        //   faculty_id,
+        //   schedule_id,
+        //   schedules,
+        //   faculty
+        // );
+        // Removed timeCheck validation
+        // const timeCheck = this.validateTimeBlock(start_time, end_time);
+
+        if (!roomCheck.isValid) return of(roomCheck);
+        if (!facultyCheck.isValid) return of(facultyCheck);
+        // if (!loadCheck.isValid) return of(loadCheck);
+        // Removed timeCheck validation
+        // if (!timeCheck.isValid) return of(timeCheck);
+        return of({ isValid: true, message: 'All validations passed' });
+      })
+    );
+  }
+
+  /**
+   * Validates faculty availability based on provided details.
+   */
+  public validateFacultyAvailability(
+    schedule_id: number,
+    faculty_id: number | null,
+    day: string | null,
+    start_time: string | null,
+    end_time: string | null,
+    program_id: number,
+    year_level: number,
+    section_id: number
+  ): Observable<{ isValid: boolean; message: string }> {
+    return forkJoin([
+      this.populateSchedules(),
+      this.getAllRooms(),
+      this.getFacultyDetails(),
+    ]).pipe(
+      map(([schedules, rooms, faculty]) => {
+        const result = this.checkFacultyAvailability(
+          faculty_id,
+          day,
+          start_time,
+          end_time,
+          schedules,
+          schedule_id
+        );
+        return result;
+      }),
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Validates room availability based on provided details.
+   */
+  public validateRoomAvailability(
+    schedule_id: number,
     room_id: number | null,
     day: string | null,
     start_time: string | null,
@@ -497,86 +570,34 @@ export class SchedulingService {
       this.getAllRooms(),
       this.getFacultyDetails(),
     ]).pipe(
-      switchMap(([schedules, rooms, faculty]) => {
-        // Perform all checks: program overlap, faculty availability, room availability
-        // Return isValid and message
-        return this.validateProgramOverlap(
-          schedule_id,
-          course_id,
-          program_id,
-          year_level,
+      map(([schedules, rooms, faculty]) => {
+        const result = this.checkRoomAvailability(
+          room_id,
           day,
           start_time,
           end_time,
-          section_id
-        ).pipe(
-          switchMap((programResult) => {
-            if (!programResult.isValid) {
-              return of(programResult);
-            }
-            return this.validateFacultyAvailability(
-              schedule_id,
-              faculty_id,
-              day,
-              start_time,
-              end_time,
-              program_id,
-              year_level,
-              section_id
-            ).pipe(
-              switchMap((facultyResult) => {
-                if (!facultyResult.isValid) {
-                  return of(facultyResult);
-                }
-                return this.validateRoomAvailability(
-                  schedule_id,
-                  room_id,
-                  day,
-                  start_time,
-                  end_time,
-                  program_id,
-                  year_level,
-                  section_id
-                ).pipe(
-                  map((roomResult) => {
-                    if (!roomResult.isValid) {
-                      return roomResult;
-                    }
-                    return { isValid: true, message: 'All validations passed' };
-                  })
-                );
-              })
-            );
-          })
+          schedules,
+          rooms,
+          schedule_id
         );
+        return result;
       }),
-      catchError(this.handleError('Failed to validate schedule'))
+      catchError(this.handleError)
     );
   }
 
   /**
-   * Validates program overlap by checking if any course in the same program and year level
-   * is scheduled on the same day and overlapping time within the same section, excluding the current schedule,
-   * and excluding courses with the same course_id.
+   * Validates program schedule overlap based on provided details.
    */
   public validateProgramOverlap(
     schedule_id: number,
-    course_id: number,
     program_id: number,
     year_level: number,
     day: string | null,
     start_time: string | null,
-    end_time: string | null,
-    section_id: number
+    end_time: string | null
   ): Observable<{ isValid: boolean; message: string }> {
-    if (
-      !program_id ||
-      !year_level ||
-      !day ||
-      !start_time ||
-      !end_time ||
-      !section_id
-    ) {
+    if (!program_id || !year_level || !day || !start_time || !end_time) {
       return of({ isValid: true, message: 'Program overlap check skipped' });
     }
 
@@ -589,9 +610,7 @@ export class SchedulingService {
           day,
           start_time,
           end_time,
-          schedule_id,
-          course_id,
-          section_id // pass section_id
+          schedule_id
         );
         if (conflictingCourse) {
           const program = schedules.programs.find(
@@ -614,117 +633,140 @@ export class SchedulingService {
           return { isValid: true, message: 'No program overlap detected' };
         }
       }),
-      catchError(this.handleError('Failed to validate program overlap'))
+      catchError(this.handleError)
     );
   }
 
-  /**
-   * Validates faculty availability based on provided details.
-   */
-  public validateFacultyAvailability(
-    schedule_id: number,
-    faculty_id: number | null,
-    day: string | null,
-    start_time: string | null,
-    end_time: string | null,
-    program_id: number,
-    year_level: number,
-    section_id: number
-  ): Observable<{ isValid: boolean; message: string }> {
-    if (!faculty_id || !day || !start_time || !end_time) {
-      return of({
-        isValid: true,
-        message: 'Faculty availability check skipped',
-      });
-    }
-
-    return this.populateSchedules().pipe(
-      map((schedules) => {
-        const conflictingSchedule = this.findConflictingSchedule(
-          schedules,
-          (course) =>
-            course.faculty_id === faculty_id &&
-            course.schedule?.schedule_id !== schedule_id &&
-            course.schedule?.day === day &&
-            this.isTimeOverlap(
-              start_time,
-              end_time,
-              course.schedule?.start_time || '',
-              course.schedule?.end_time || ''
-            )
-        );
-
-        return conflictingSchedule
-          ? {
-              isValid: false,
-              message: `Professor ${
-                conflictingSchedule.professor
-              } is already assigned to ${conflictingSchedule.course_code} 
-                        (${conflictingSchedule.course_title}) on ${day} from 
-                        ${this.formatTimeForDisplay(
-                          conflictingSchedule.schedule?.start_time || ''
-                        )} to 
-                        ${this.formatTimeForDisplay(
-                          conflictingSchedule.schedule?.end_time || ''
-                        )}.`,
-            }
-          : { isValid: true, message: 'Faculty is available' };
-      }),
-      catchError(this.handleError('Failed to validate faculty availability'))
-    );
-  }
-
-  /**
-   * Validates room availability based on provided details.
-   */
-  public validateRoomAvailability(
-    schedule_id: number,
+  // Validates whether a room is available for the given day and time. It checks if the room is already booked by another course.
+  private checkRoomAvailability(
     room_id: number | null,
     day: string | null,
     start_time: string | null,
     end_time: string | null,
-    program_id: number,
-    year_level: number,
-    section_id: number
-  ): Observable<{ isValid: boolean; message: string }> {
+    schedules: PopulateSchedulesResponse,
+    rooms: { rooms: Room[] },
+    currentScheduleId: number // New argument for current schedule ID
+  ): { isValid: boolean; message: string } {
     if (!room_id || !day || !start_time || !end_time) {
-      return of({ isValid: true, message: 'Room availability check skipped' });
+      return { isValid: true, message: 'Room availability check skipped' };
     }
 
-    return this.populateSchedules().pipe(
-      map((schedules) => {
-        const conflictingSchedule = this.findConflictingSchedule(
-          schedules,
-          (course) =>
-            (course.schedule?.room_id === room_id ||
-              course.room?.room_id === room_id) &&
-            course.schedule?.day === day &&
-            course.schedule.schedule_id !== schedule_id &&
-            this.isTimeOverlap(
-              start_time,
-              end_time,
-              course.schedule?.start_time || '',
-              course.schedule?.end_time || ''
-            )
-        );
+    const room = rooms.rooms.find((r) => r.room_id === room_id);
+    if (!room) {
+      return { isValid: false, message: 'Invalid room selected' };
+    }
 
-        return conflictingSchedule
-          ? {
-              isValid: false,
-              message: `Room ${
-                conflictingSchedule.room?.room_code || 'Unknown Room'
-              } is already booked for ${conflictingSchedule.course_code} 
-                        (${conflictingSchedule.course_title}) on ${day} from 
-                        ${this.formatTimeForDisplay(
-                          conflictingSchedule.schedule?.start_time || ''
-                        )} to ${this.formatTimeForDisplay(
-                conflictingSchedule.schedule?.end_time || ''
-              )}.`,
-            }
-          : { isValid: true, message: 'Room is available' };
-      }),
-      catchError(this.handleError('Failed to validate room availability'))
+    const conflictingSchedule = this.findConflictingSchedule(
+      schedules,
+      (course) =>
+        (course.schedule?.room_id === room_id ||
+          course.room?.room_id === room_id) &&
+        course.schedule?.day === day &&
+        course.schedule.schedule_id !== currentScheduleId && // Exclude the current schedule being edited
+        this.isTimeOverlap(
+          start_time,
+          end_time,
+          course.schedule?.start_time,
+          course.schedule?.end_time
+        )
     );
+
+    return conflictingSchedule
+      ? {
+          isValid: false,
+          message: `Room ${room.room_code} is already booked for ${
+            conflictingSchedule.course_code
+          } 
+                    (${conflictingSchedule.course_title}) on ${day} from 
+                    ${this.formatTimeForDisplay(
+                      conflictingSchedule.schedule?.start_time || ''
+                    )} to 
+                    ${this.formatTimeForDisplay(
+                      conflictingSchedule.schedule?.end_time || ''
+                    )}.`,
+        }
+      : { isValid: true, message: 'Room is available' };
+  }
+
+  // Checks if a professor is available for a specific day and time or if they are already teaching another course during that time.
+  private checkFacultyAvailability(
+    faculty_id: number | null,
+    day: string | null,
+    start_time: string | null,
+    end_time: string | null,
+    schedules: PopulateSchedulesResponse,
+    currentScheduleId: number // Pass the current schedule ID
+  ): { isValid: boolean; message: string } {
+    if (!faculty_id || !day || !start_time || !end_time) {
+      return { isValid: true, message: 'Faculty availability check skipped' };
+    }
+
+    const conflictingSchedule = this.findConflictingSchedule(
+      schedules,
+      (course) =>
+        course.faculty_id === faculty_id &&
+        course.schedule?.schedule_id !== currentScheduleId && // Exclude current schedule being edited
+        course.schedule?.day === day &&
+        this.isTimeOverlap(
+          start_time,
+          end_time,
+          course.schedule.start_time,
+          course.schedule.end_time
+        )
+    );
+
+    return conflictingSchedule
+      ? {
+          isValid: false,
+          message: `Professor ${
+            conflictingSchedule.professor
+          } is already assigned to ${conflictingSchedule.course_code} 
+                    (${conflictingSchedule.course_title}) on ${day} from 
+                    ${this.formatTimeForDisplay(
+                      conflictingSchedule.schedule?.start_time || ''
+                    )} to 
+                    ${this.formatTimeForDisplay(
+                      conflictingSchedule.schedule?.end_time || ''
+                    )}.`,
+        }
+      : { isValid: true, message: 'Faculty is available' };
+  }
+
+  // Helper method to find conflicting course within the same program and year level
+  private findConflictingCourseInProgram(
+    schedules: PopulateSchedulesResponse,
+    program_id: number,
+    year_level: number,
+    day: string,
+    start_time: string,
+    end_time: string,
+    currentScheduleId: number
+  ): CourseResponse | undefined {
+    for (const program of schedules.programs) {
+      if (program.program_id !== program_id) continue;
+      for (const yl of program.year_levels) {
+        if (yl.year_level !== year_level) continue;
+        for (const semester of yl.semesters) {
+          for (const section of semester.sections) {
+            for (const course of section.courses) {
+              if (course.schedule?.day !== day) continue;
+              if (course.schedule?.schedule_id === currentScheduleId) continue;
+              if (
+                this.isTimeOverlap(
+                  start_time,
+                  end_time,
+                  course.schedule?.start_time,
+                  course.schedule?.end_time
+                )
+              ) {
+                return course;
+              }
+            }
+          }
+        }
+      }
+    }
+    return undefined;
   }
 
   /**
@@ -742,50 +784,6 @@ export class SchedulingService {
             const conflictingCourse = section.courses.find(predicate);
             if (conflictingCourse) {
               return conflictingCourse;
-            }
-          }
-        }
-      }
-    }
-    return undefined;
-  }
-
-  /**
-   * Searches for conflicting courses within the same program, year level, day, and time
-   * within the same section, excluding the current schedule and excluding courses with the same course_id.
-   */
-  private findConflictingCourseInProgram(
-    schedules: PopulateSchedulesResponse,
-    program_id: number,
-    year_level: number,
-    day: string,
-    start_time: string,
-    end_time: string,
-    currentScheduleId: number,
-    currentCourseId: number,
-    section_id: number
-  ): CourseResponse | undefined {
-    for (const program of schedules.programs) {
-      if (program.program_id !== program_id) continue;
-      for (const yl of program.year_levels) {
-        if (yl.year_level !== year_level) continue;
-        for (const semester of yl.semesters) {
-          for (const section of semester.sections) {
-            if (section.section_per_program_year_id !== section_id) continue;
-            for (const course of section.courses) {
-              if (course.schedule?.day !== day) continue;
-              if (course.schedule?.schedule_id === currentScheduleId) continue;
-              if (course.course_id === currentCourseId) continue;
-              if (
-                this.isTimeOverlap(
-                  start_time,
-                  end_time,
-                  course.schedule?.start_time || '',
-                  course.schedule?.end_time || ''
-                )
-              ) {
-                return course;
-              }
             }
           }
         }
