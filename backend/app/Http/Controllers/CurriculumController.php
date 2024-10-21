@@ -25,6 +25,16 @@ class CurriculumController extends Controller
             'curriculum_year.unique' => 'A curriculum for this year already exists.',
         ]);
 
+        // Check if there are any active programs
+        $activeProgramsCount = DB::table('programs')->where('status', 'Active')->count();
+    
+        if ($activeProgramsCount === 0) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'No programs found. The curriculum cannot be created without active programs.'
+            ]);
+        }
+
         DB::transaction(function () use ($request) {
             // Step 1: Create the new curriculum
             $curriculum = Curriculum::create([

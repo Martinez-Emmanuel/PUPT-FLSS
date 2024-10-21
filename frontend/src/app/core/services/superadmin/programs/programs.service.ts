@@ -42,7 +42,6 @@ export interface UpdateProgramRequest {
   providedIn: 'root',
 })
 export class ProgramsService {
-  
   private baseUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
@@ -59,17 +58,22 @@ export class ProgramsService {
     });
   }
 
-  // Update an existing program   
-  updateProgram(program_id: number, program: UpdateProgramRequest): Observable<Program> {
+  // Update an existing program
+  updateProgram(
+    program_id: number,
+    program: UpdateProgramRequest
+  ): Observable<Program> {
     const url = `${this.baseUrl}/updateProgram/${program_id}`;
     return this.http.put<Program>(url, program, {
       headers: new HttpHeaders({ 'Content-Type': 'application/json' }),
     });
   }
 
-  // Delete a program 
-  deleteProgram(program_id: number): Observable<void> {
+  // Delete a program
+  deleteProgram(
+    program_id: number
+  ): Observable<{ message: string; success: boolean }> {
     const url = `${this.baseUrl}/deleteProgram/${program_id}`;
-    return this.http.delete<void>(url);
+    return this.http.delete<{ message: string; success: boolean }>(url);
   }
 }

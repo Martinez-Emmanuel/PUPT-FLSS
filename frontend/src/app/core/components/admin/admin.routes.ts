@@ -20,7 +20,7 @@ export const ADMIN_ROUTES: Routes = [
         data: { pageTitle: 'Overview' },
       },
       {
-        path: 'faculty',
+        path: 'faculty-preferences',
         loadComponent: () =>
           import('./faculty-pref/faculty-pref.component').then(
             (m) => m.FacultyPrefComponent
@@ -36,7 +36,7 @@ export const ADMIN_ROUTES: Routes = [
         data: { pageTitle: 'Scheduling' },
       },
       {
-        path: 'scheduling/academic-year',
+        path: 'academic-years',
         loadComponent: () =>
           import('./academic-year/academic-year.component').then(
             (m) => m.AcademicYearComponent

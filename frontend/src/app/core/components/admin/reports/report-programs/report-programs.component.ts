@@ -9,6 +9,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSymbolDirective } from '../../../../imports/mat-symbol.directive';
 
 import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
 import { TableDialogComponent, DialogConfig, DialogFieldConfig } from '../../../../../shared/table-dialog/table-dialog.component';
@@ -73,6 +74,7 @@ interface Program {
     TableHeaderComponent,
     TableDialogComponent,
     LoadingComponent,
+    MatSymbolDirective,
   ],
   templateUrl: './report-programs.component.html',
   styleUrls: ['./report-programs.component.scss'],
