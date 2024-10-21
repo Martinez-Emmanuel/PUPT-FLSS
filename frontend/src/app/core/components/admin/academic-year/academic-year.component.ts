@@ -508,21 +508,23 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
                   });
 
                   this.fetchProgramsForAcademicYear(this.selectedAcademicYear);
-                } else if (response.status === 'error') {
+                } else if (response.status === 'error' && response.message) {
                   this.snackBar.open(response.message, 'Close', {
                     duration: 5000,
                   });
                 }
               },
-              (error: Error) => {
-                console.error('Unexpected error deleting the program:', error);
-                this.snackBar.open(
-                  'Failed to delete the program. Please try again.',
-                  'Close',
-                  {
-                    duration: 5000,
-                  }
-                );
+              (error) => {
+                let errorMessage =
+                  'Failed to delete the program. Please try again.';
+                if (error.error && error.error.message) {
+                  errorMessage = error.error.message;
+                } else if (error.message) {
+                  errorMessage = error.message;
+                }
+                this.snackBar.open(errorMessage, 'Close', {
+                  duration: 5000,
+                });
               }
             );
         } else {

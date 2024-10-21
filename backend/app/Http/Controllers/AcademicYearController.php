@@ -705,16 +705,33 @@ class AcademicYearController extends Controller
             'academic_year_id' => 'required|integer',
             'program_id' => 'required|integer'
         ]);
-    
+
         $academicYearId = $request->input('academic_year_id');
         $programId = $request->input('program_id');
-    
+
         try {
+            // Step 0: Count the number of programs associated with this academic year
+            $programCount = ProgramYearLevelCurricula::where('academic_year_id', $academicYearId)
+                ->distinct('program_id')
+                ->count('program_id');
+
+            if ($programCount <= 1) {
+                // Fetch the program code
+                $programCode = DB::table('programs')
+                    ->where('program_id', $programId)
+                    ->value('program_code') ?? 'Unknown Program';
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => "Cannot delete \"{$programCode}\". At least one program must be present."
+                ], 200);
+            }
+
             // Fetch the program code based on the program ID
             $programCode = DB::table('programs')
                 ->where('program_id', $programId)
-                ->value('program_code');
-    
+                ->value('program_code') ?? 'Unknown Program';
+
             // Step 1: Check for existing schedules with non-null fields
             $hasSchedules = DB::table('schedules')
                 ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
@@ -729,45 +746,45 @@ class AcademicYearController extends Controller
                           ->orWhereNotNull('schedules.room_id');
                 })
                 ->exists();
-    
+
             if ($hasSchedules) {
                 return response()->json([
                     'status' => 'error',
-                    'message' => "Cannot delete the \"{$programCode}\" program because it has associated schedules."
+                    'message' => "Cannot delete \"{$programCode}\" program because it has associated schedules."
                 ], 200);
             }
-    
+
             // Step 2: Start the transaction
             DB::beginTransaction();
-    
+
             // Step 3: Remove Year Levels associated with this program and academic year
             ProgramYearLevelCurricula::where('academic_year_id', $academicYearId)
                 ->where('program_id', $programId)
                 ->delete();
-    
+
             // Step 4: Remove Sections associated with this program, year levels, and academic year
             SectionsPerProgramYear::where('academic_year_id', $academicYearId)
                 ->where('program_id', $programId)
                 ->delete();
-    
+
             // Commit the transaction after everything is deleted
             DB::commit();
-    
+
             return response()->json([
                 'status' => 'success',
                 'message' => "Program \"{$programCode}\" removed successfully from this academic year."
             ], 200);
-    
+
         } catch (\Exception $e) {
             // Rollback the transaction if any error occurs
             DB::rollBack();
-    
+
             return response()->json([
                 'status' => 'error',
                 'message' => 'An error occurred: ' . $e->getMessage()
             ], 500);
         }
-    } 
+    }
 
 
     public function deleteAcademicYear(Request $request)
