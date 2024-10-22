@@ -1,4 +1,6 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+
+import { Subject, takeUntil } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -13,6 +15,11 @@ import { OverviewService, OverviewDetails } from '../../../services/admin/overvi
 
 import { fadeAnimation } from '../../../animations/animations';
 
+interface CurriculumInfo {
+  curriculum_id: number;
+  curriculum_year: string;
+}
+
 @Component({
   selector: 'app-overview',
   standalone: true,
@@ -26,98 +33,112 @@ import { fadeAnimation } from '../../../animations/animations';
   styleUrls: ['./overview.component.scss'],
   animations: [fadeAnimation],
 })
-export class OverviewComponent implements OnInit {
-  activeYear: string = '';
-  activeSemester: string = '';
+export class OverviewComponent implements OnInit, OnDestroy {
+  private readonly destroy$ = new Subject<void>();
+  private readonly ANIMATION_DELAY = 100;
+  private readonly SNACKBAR_DURATION = 3000;
 
-  activeFacultyCount: number = 0;
-  activeProgramsCount: number = 0;
-  activeCurricula: Array<{ curriculum_id: number; curriculum_year: string }> =
-    [];
+  // Academic info
+  activeYear = '';
+  activeSemester = '';
+  activeFacultyCount = 0;
+  activeProgramsCount = 0;
+  activeCurricula: CurriculumInfo[] = [];
 
-  preferencesProgress: number = 0;
-  schedulingProgress: number = 0;
-  roomUtilization: number = 0;
-  publishProgress: number = 0;
+  // Progress metrics
+  preferencesProgress = 0;
+  schedulingProgress = 0;
+  roomUtilization = 0;
+  publishProgress = 0;
 
-  facultyWithSchedulesCount: number = 0;
-
+  // State flags
   isLoading = true;
-
-  preferencesEnabled: boolean = true;
-  schedulesPublished: boolean = false;
+  preferencesEnabled = true;
+  schedulesPublished = false;
+  facultyWithSchedulesCount = 0;
 
   constructor(
     private cdr: ChangeDetectorRef,
-    public dialog: MatDialog,
+    private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private overviewService: OverviewService
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.fetchOverviewDetails(true);
   }
 
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   /**
-   * Fetches overview details.
-   * @param resetAnimation - If true, resets progress variables to 0 before updating to trigger animations.
+   * Fetches overview details and updates component state
+   * @param resetAnimation - Whether to reset progress animations
    */
-  fetchOverviewDetails(resetAnimation: boolean = false) {
-    this.overviewService.getOverviewDetails().subscribe({
-      next: (data: OverviewDetails) => {
-        // Assign non-progress data first
-        this.activeYear = data.activeAcademicYear;
-        this.activeSemester = data.activeSemester;
-        this.activeFacultyCount = data.activeFacultyCount;
-        this.activeProgramsCount = data.activeProgramsCount;
-        this.activeCurricula = data.activeCurricula;
+  fetchOverviewDetails(resetAnimation = false): void {
+    this.overviewService
+      .getOverviewDetails()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (data: OverviewDetails) =>
+          this.handleOverviewData(data, resetAnimation),
+        error: this.handleError(
+          'Failed to load overview details. Please try again later.'
+        ),
+      });
+  }
 
-        this.facultyWithSchedulesCount = data.facultyWithSchedulesCount;
+  /**
+   * Processes overview data and updates component state
+   */
+  private handleOverviewData(
+    data: OverviewDetails,
+    resetAnimation: boolean
+  ): void {
+    // Update non-progress data
+    this.updateBasicInfo(data);
 
-        this.preferencesEnabled = data.preferencesSubmissionEnabled;
-        this.schedulesPublished = data.publishProgress > 0;
+    if (resetAnimation) {
+      this.resetProgressMetrics();
+      this.isLoading = false;
+      this.cdr.detectChanges();
 
-        if (resetAnimation) {
-          // Reset progress variables to 0 to ensure animation triggers
-          this.preferencesProgress = 0;
-          this.schedulingProgress = 0;
-          this.roomUtilization = 0;
-          this.publishProgress = 0;
+      // Trigger animations after delay
+      setTimeout(() => {
+        this.updateProgressMetrics(data);
+        this.cdr.detectChanges();
+      }, this.ANIMATION_DELAY);
+    } else {
+      this.updateProgressMetrics(data);
+      this.cdr.detectChanges();
+    }
+  }
 
-          this.isLoading = false;
-          this.cdr.detectChanges();
+  private updateBasicInfo(data: OverviewDetails): void {
+    this.activeYear = data.activeAcademicYear;
+    this.activeSemester = data.activeSemester;
+    this.activeFacultyCount = data.activeFacultyCount;
+    this.activeProgramsCount = data.activeProgramsCount;
+    this.activeCurricula = data.activeCurricula;
+    this.facultyWithSchedulesCount = data.facultyWithSchedulesCount;
+    this.preferencesEnabled = data.preferencesSubmissionEnabled;
+    this.schedulesPublished = data.publishProgress > 0;
+  }
 
-          // Update progress values after a short delay to trigger CSS transitions
-          setTimeout(() => {
-            this.preferencesProgress = data.preferencesProgress;
-            this.schedulingProgress = data.schedulingProgress;
-            this.roomUtilization = data.roomUtilization;
-            this.publishProgress = data.publishProgress;
+  private resetProgressMetrics(): void {
+    this.preferencesProgress = 0;
+    this.schedulingProgress = 0;
+    this.roomUtilization = 0;
+    this.publishProgress = 0;
+  }
 
-            this.cdr.detectChanges();
-          }, 100);
-        } else {
-          // For user-initiated updates, set progress variables directly without resetting
-          this.preferencesProgress = data.preferencesProgress;
-          this.schedulingProgress = data.schedulingProgress;
-          this.roomUtilization = data.roomUtilization;
-          this.publishProgress = data.publishProgress;
-
-          this.cdr.detectChanges();
-        }
-      },
-      error: (error) => {
-        console.error('Error fetching overview details:', error);
-        this.snackBar.open(
-          'Failed to load overview details. Please try again later.',
-          'Close',
-          {
-            duration: 3000,
-          }
-        );
-        this.isLoading = false;
-      },
-    });
+  private updateProgressMetrics(data: OverviewDetails): void {
+    this.preferencesProgress = data.preferencesProgress;
+    this.schedulingProgress = data.schedulingProgress;
+    this.roomUtilization = data.roomUtilization;
+    this.publishProgress = data.publishProgress;
   }
 
   getCircleOffset(percentage: number): number {
@@ -129,9 +150,8 @@ export class OverviewComponent implements OnInit {
     const dialogRef = this.dialog.open(DialogGenericComponent, {
       data: {
         title: 'Send Email to All Faculty',
-        content: `Send an email to all the faculty members to submit their load 
-          and schedule preference for the current semester. 
-          Click "Send Email" below to proceed.`,
+        content:
+          'Send an email to all the faculty members to submit their load and schedule preference for the current semester. Click "Send Email" below to proceed.',
         actionText: 'Send Email',
         cancelText: 'Cancel',
         action: 'send-email',
@@ -139,101 +159,99 @@ export class OverviewComponent implements OnInit {
       disableClose: true,
     });
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result === 'send-email') {
-        this.sendEmailToFaculty();
-      }
-    });
+    dialogRef
+      .afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((result) => {
+        if (result === 'send-email') {
+          this.sendEmailToFaculty();
+        }
+      });
   }
 
-  sendEmailToFaculty() {
-    const sendingSnackBarRef: MatSnackBarRef<any> = this.snackBar.open(
+  private sendEmailToFaculty(): void {
+    const sendingSnackBarRef = this.snackBar.open(
       'Sending emails. Please wait...',
       'Close',
       { duration: undefined }
     );
 
-    this.overviewService.sendEmails().subscribe({
-      next: () => {
-        sendingSnackBarRef.dismiss();
-        this.snackBar.open('Emails sent successfully!', 'Close', {
-          duration: 3000,
-        });
-      },
-      error: (error) => {
-        sendingSnackBarRef.dismiss();
-        this.snackBar.open(
-          'Failed to send emails. Please try again.',
-          'Close',
-          {
-            duration: 3000,
-          }
-        );
-        console.error('Error sending email:', error);
-      },
-    });
+    this.overviewService
+      .sendEmails()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          sendingSnackBarRef.dismiss();
+          this.showSuccessMessage('Emails sent successfully!');
+        },
+        error: this.handleError('Failed to send emails. Please try again.'),
+      });
   }
 
-  togglePreferencesSubmission() {
+  togglePreferencesSubmission(): void {
     const newStatus = !this.preferencesEnabled;
 
-    this.overviewService.togglePreferencesSettings(newStatus).subscribe({
-      next: (response) => {
-        this.snackBar.open(
-          `Faculty Preferences Submission ${
-            newStatus ? 'enabled' : 'disabled'
-          } successfully.`,
-          'Close',
-          { duration: 3000 }
-        );
-        // User-initiated update: do not reset animations
-        this.fetchOverviewDetails();
-      },
-      error: (error) => {
-        console.error('Error toggling preferences settings:', error);
-        this.snackBar.open(
+    this.overviewService
+      .togglePreferencesSettings(newStatus)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.showSuccessMessage(
+            `Faculty Preferences Submission ${
+              newStatus ? 'enabled' : 'disabled'
+            } successfully.`
+          );
+          this.fetchOverviewDetails();
+        },
+        error: this.handleError(
           `Failed to ${
             newStatus ? 'enable' : 'disable'
-          } Faculty Preferences Submission. Please try again.`,
-          'Close',
-          { duration: 3000 }
-        );
-      },
-    });
+          } Faculty Preferences Submission. Please try again.`
+        ),
+      });
   }
 
-  togglePublishSchedules() {
+  togglePublishSchedules(): void {
     if (this.facultyWithSchedulesCount === 0) {
-      this.snackBar.open('No faculty has been scheduled yet.', 'Close', {
-        duration: 3000,
-      });
+      this.showErrorMessage('No faculty has been scheduled yet.');
       return;
     }
 
     const newStatus = !this.schedulesPublished;
 
-    this.overviewService.toggleAllSchedules(newStatus).subscribe({
-      next: (response) => {
-        this.snackBar.open(
-          `Faculty Load and Schedule ${
-            newStatus ? 'published' : 'unpublished'
-          } successfully.`,
-          'Close',
-          { duration: 3000 }
-        );
-        // User-initiated update: do not reset animations
-        this.fetchOverviewDetails();
-      },
-      error: (error) => {
-        console.error('Error toggling schedule publication:', error);
-        this.snackBar.open(
+    this.overviewService
+      .toggleAllSchedules(newStatus)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: () => {
+          this.showSuccessMessage(
+            `Faculty Load and Schedule ${
+              newStatus ? 'published' : 'unpublished'
+            } successfully.`
+          );
+          this.fetchOverviewDetails();
+        },
+        error: this.handleError(
           `Failed to ${
             newStatus ? 'publish' : 'unpublish'
-          } Faculty Load and Schedule. Please try again.`,
-          'Close',
-          { duration: 3000 }
-        );
-      },
-    });
+          } Faculty Load and Schedule. Please try again.`
+        ),
+      });
+  }
+
+  private showSuccessMessage(message: string): void {
+    this.snackBar.open(message, 'Close', { duration: this.SNACKBAR_DURATION });
+  }
+
+  private showErrorMessage(message: string): void {
+    this.snackBar.open(message, 'Close', { duration: this.SNACKBAR_DURATION });
+  }
+
+  private handleError(errorMessage: string) {
+    return (error: any) => {
+      console.error('Operation failed:', error);
+      this.showErrorMessage(errorMessage);
+      this.isLoading = false;
+    };
   }
 }
