@@ -125,11 +125,11 @@
 
       <!-- Schedule Validator (if applicable) -->
       <div class="schedule-validator">
-        @if (hasConflicts) {
-        <div class="validation-message conflict">
-          <span mat-symbol="error"></span>
-          <span>Warning: Scheduling conflicts have been detected.</span>
-        </div>
+        @if (conflictMessage) {
+          <div class="validation-message conflict">
+            <span mat-symbol="error"></span>
+            <span>{{ conflictMessage }}</span>
+          </div>
         }
       </div>
     </mat-dialog-content>
@@ -151,7 +151,7 @@
         <button
           class="action-button pop"
           mat-flat-button
-          [disabled]="hasConflicts || isLoading"
+          [disabled]="hasConflicts || isLoading || scheduleForm.invalid"
           (click)="onAssign()"
         >
           @if (isLoading) {

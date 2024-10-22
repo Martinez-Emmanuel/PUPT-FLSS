@@ -11,6 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatSymbolDirective } from '../../../../imports/mat-symbol.directive';
 
 import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
@@ -51,6 +52,7 @@ interface Faculty {
     MatTooltipModule,
     FormsModule,
     MatDialogModule,
+    MatSymbolDirective,
   ],
   templateUrl: './report-faculty.component.html',
   styleUrl: './report-faculty.component.scss',

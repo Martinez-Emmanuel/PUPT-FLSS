@@ -9,9 +9,10 @@ import { MatIcon } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatButton } from '@angular/material/button';
 import { MatProgressSpinner } from '@angular/material/progress-spinner';
+import { MatRippleModule } from '@angular/material/core';
+import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 import { SlideshowComponent } from '../../shared/slideshow/slideshow.component';
-import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 import { ThemeService } from '../../core/services/theme/theme.service';
 import { AuthService } from '../../core/services/auth/auth.service';
@@ -30,6 +31,7 @@ import { RoleService } from '../../core/services/role/role.service';
     MatIcon,
     MatButton,
     MatProgressSpinner,
+    MatRippleModule,
   ],
   providers: [AuthService],
 })
@@ -54,6 +56,8 @@ export class LoginComponent implements OnInit, OnDestroy {
   isLoading = false;
   loginForm!: FormGroup;
   errorMessage = '';
+  showPassword = false;
+  passwordHasValue = false;
 
   constructor(
     private renderer: Renderer2,
@@ -73,6 +77,15 @@ export class LoginComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.updateBackgroundImage(0);
     this.isDarkTheme$.pipe(takeUntil(this.destroy$)).subscribe();
+
+    this.loginForm.get('password')!.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(value => {
+        this.passwordHasValue = !!value;
+        if (!value) {
+          this.showPassword = false;
+        }
+      });
   }
 
   ngOnDestroy(): void {
@@ -134,6 +147,12 @@ export class LoginComponent implements OnInit, OnDestroy {
 
   get password() {
     return this.loginForm.get('password');
+  }
+
+  togglePasswordVisibility(): void {
+    if (this.passwordHasValue) {
+      this.showPassword = !this.showPassword;
+    }
   }
 
   onSubmit(): void {

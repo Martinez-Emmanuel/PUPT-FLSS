@@ -198,6 +198,7 @@
           transition: background-color 0.3s ease;
           border-radius: var(--border-radius-sm);
           font-weight: 500;
+          user-select: none;
           cursor: pointer;
 
           &:hover {

@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSymbolDirective } from '../../../../imports/mat-symbol.directive';
 
 import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
@@ -45,6 +46,7 @@ interface Room {
     MatTooltipModule,
     FormsModule,
     MatDialogModule,
+    MatSymbolDirective,
   ],
   templateUrl: './report-rooms.component.html',
   styleUrls: ['./report-rooms.component.scss'],

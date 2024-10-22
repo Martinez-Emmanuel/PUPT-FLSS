@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRe
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 
-import { Subject, BehaviorSubject } from 'rxjs';
+import { Subject, BehaviorSubject, EMPTY } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil, catchError, map, finalize, take } from 'rxjs/operators';
 
 import { MatDialog } from '@angular/material/dialog';
@@ -287,27 +287,36 @@ export class ProgramsComponent implements OnInit, OnDestroy {
   deleteProgram(program: Program) {
     this.programService
       .deleteProgram(program.program_id)
-      .pipe(
-        takeUntil(this.destroy$),
-        catchError((err) => {
-          this.snackBar.open('Failed to delete program.', 'Close', {
-            duration: 3000,
-          });
-          return [];
-        })
-      )
-      .subscribe(() => {
-        const currentPrograms = this.programsSubject.getValue();
-        const updatedPrograms = currentPrograms.filter(
-          (p) => p.program_id !== program.program_id
-        );
-        this.programsSubject.next(updatedPrograms);
-        this.snackBar.open(
-          `Program ${program.program_code} has been deleted successfully.`,
-          'Close',
-          { duration: 3000 }
-        );
-      });
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(
+        (response) => {
+          if (response.success) {
+            const currentPrograms = this.programsSubject.getValue();
+            const updatedPrograms = currentPrograms.filter(
+              (p) => p.program_id !== program.program_id
+            );
+            this.programsSubject.next(updatedPrograms);
+            this.snackBar.open(
+              `Program "${program.program_title}" has been deleted successfully.`,
+              'Close',
+              { duration: 3000 }
+            );
+          } else {
+            this.snackBar.open(response.message, 'Close', {
+              duration: 3000,
+            });
+          }
+        },
+        (err) => {
+          this.snackBar.open(
+            'Failed to delete program due to a server error.',
+            'Close',
+            {
+              duration: 3000,
+            }
+          );
+        }
+      );
   }
 
   // ======================
@@ -323,7 +332,8 @@ export class ProgramsComponent implements OnInit, OnDestroy {
     let currentY = topMargin;
 
     // Add the university logo
-    const leftLogoUrl = 'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
+    const leftLogoUrl =
+      'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
     doc.addImage(leftLogoUrl, 'PNG', margin, 10, logoSize, logoSize);
 
     // Add header text

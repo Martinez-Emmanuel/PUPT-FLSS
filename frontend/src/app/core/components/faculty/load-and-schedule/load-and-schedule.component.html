@@ -9,23 +9,38 @@
     <!-- Page Title -->
     <div class="page-header" [@fadeAnimation]>
       <h1>Load and Schedule</h1>
-      <p>Here's your official load and schedule for this semester.</p>
+      <p>
+        Here's your official load and schedule for
+        <span class="highlight">A.Y. {{ academicYear }}, {{ semester }}</span
+        >.
+      </p>
     </div>
 
     <!--Schedule Overview-->
     <div class="schedule-overview" [@fadeAnimation]>
-     <!--Schedule Summary-->
-     <div class="schedule-summary">
-      <h4 class="mini-heading"><span mat-symbol="article"></span>Schedule Summary</h4>
-      <p>Total Units: {{ facultySchedule.assigned_units }} units</p>
-      <p>Total Hours: {{ facultySchedule.total_hours }} hours</p>
-     </div>
+      <!--Schedule Summary-->
+      <div class="schedule-summary">
+        <h4 class="mini-heading">
+          <span mat-symbol="article"></span>Schedule Summary
+        </h4>
+        <p>
+          Total Units: @if (isPublished) {
+          {{ facultySchedule.assigned_units }} units } @else { 0 }
+        </p>
+        <p>
+          Total Hours: @if (isPublished) {
 
-     <!--Schedule Summary-->
-     <div class="schedule-history">
-      <h4 class="mini-heading"><span mat-symbol="history"></span>Schedule History</h4>
-      <p>View your past load and schedule here.</p>
-     </div>
+          {{ facultySchedule.total_hours }} hours } @else { 0 }
+        </p>
+      </div>
+
+      <!--Schedule Summary-->
+      <div class="schedule-history">
+        <h4 class="mini-heading">
+          <span mat-symbol="history"></span>Schedule History
+        </h4>
+        <p>View your past load and schedule here.</p>
+      </div>
     </div>
   </div>
 
@@ -1806,11 +1821,12 @@
           </filter>
         </defs>
       </svg>
-      <span class="unpublished-text">
+      <div class="unpublished-text">
         <span mat-symbol="info"></span>
-        Your official schedule is not yet published. Please wait for its release
-        soon.
-      </span>
+        <span>
+          Your official schedule is not yet published.
+        </span>
+      </div>
     </div>
     }
   </div>

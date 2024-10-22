@@ -104,8 +104,10 @@
         <tr *matNoDataRow>
           <td class="no-data-cell" [attr.colspan]="displayedColumns.length">
             <div class="flex-cell">
-              <span mat-symbol="info"></span>
-              <span>No rooms found.</span>
+              <div class="no-data-text">
+                <span mat-symbol="info"></span>
+                <span> No rooms found.</span>
+              </div>
             </div>
           </td>
         </tr>

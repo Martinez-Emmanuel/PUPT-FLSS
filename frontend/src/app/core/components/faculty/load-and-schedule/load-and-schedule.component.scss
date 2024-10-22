@@ -28,24 +28,27 @@
       $align: flex-start,
       $gap: var(--spacing-xxs)
     );
-  
+
     h1 {
       @include reset-styles;
       font-size: var(--font-size-2xxl);
       font-weight: 700;
-  
+
       @include gradient-primary(315deg);
       background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
-  
+
     p {
       @include reset-styles;
       font-size: var(--font-size-mdx);
+
+      .highlight {
+        font-weight: 600;
+      }
     }
   }
-  
 
   .schedule-overview {
     @include flex-layout($align: stretch, $gap: var(--spacing-md));
@@ -100,13 +103,14 @@
     opacity: var(--opacity-semi-opaque);
 
     svg {
-      width: 30%;
+      width: 30rem;
       height: auto;
     }
 
     .unpublished-text {
       @include flex-layout($gap: var(--spacing-xs));
       font-size: var(--font-size-mdx);
+      text-align: center;
 
       span[mat-symbol] {
         font-size: var(--font-size-mdx);
@@ -124,9 +128,7 @@
     );
 
     .schedule-overview {
-
       width: auto;
     }
-
   }
 }

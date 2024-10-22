@@ -9,9 +9,10 @@
   @include flex-layout(
     $align: stretch,
     $justify: flex-start,
-    $gap: var(--spacing-xl)
+    $gap: var(--spacing-lg)
   );
   height: 100%;
+  overflow: hidden;
 }
 
 .home-row-one {
@@ -48,11 +49,12 @@
   }
 
   .faculty-calendar {
+    height: 100%;
     width: 100%;
     user-select: none;
 
-    full-calendar {
-      max-height: 450px;
+    .full-calendar {
+      max-height: 30rem;
       overflow-y: auto;
     }
   }
@@ -77,7 +79,6 @@
     padding: var(--spacing-sm);
     border-radius: var(--border-radius-md);
     color: white;
-    cursor: pointer;
 
     .text,
     .label {

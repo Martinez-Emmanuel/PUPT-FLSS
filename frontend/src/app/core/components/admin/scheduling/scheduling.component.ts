@@ -9,6 +9,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 import { TableHeaderComponent, InputField } from '../../../../shared/table-header/table-header.component';
 import { TableDialogComponent } from '../../../../shared/table-dialog/table-dialog.component';
@@ -24,9 +25,6 @@ import {
   YearLevel,
   PopulateSchedulesResponse,
   CourseResponse,
-  Faculty,
-  Room,
-  SubmittedPrefResponse,
 } from '../../../services/admin/scheduling/scheduling.service';
 
 import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
@@ -59,6 +57,7 @@ interface SectionOption {
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
+    MatSymbolDirective,
   ],
   templateUrl: './scheduling.component.html',
   styleUrls: ['./scheduling.component.scss'],
@@ -88,6 +87,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   selectedYear: number = 1;
   selectedSection: string = '';
   selectedCurriculumId: number | null = null;
+
+  previousProgram: string = '';
+  previousYear: number = 1;
 
   activeYear: string = '';
   activeSemester: number = 0;
@@ -216,32 +218,35 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     if (this.programOptions.length > 0) {
       const defaultProgram = this.programOptions[0];
       this.selectedProgram = defaultProgram.display;
+      this.previousProgram = defaultProgram.display;
+
       this.yearLevelOptions = defaultProgram.year_levels;
-  
+
       this.headerInputFields.find((field) => field.key === 'program')!.options =
         this.programOptions.map((p) => p.display);
-  
+
       this.headerInputFields.find(
         (field) => field.key === 'yearLevel'
       )!.options = this.yearLevelOptions.map((year) => year.year_level);
-  
+
       if (this.yearLevelOptions.length > 0) {
         const defaultYearLevel = this.yearLevelOptions[0];
         this.selectedYear = defaultYearLevel.year_level;
+        this.previousYear = defaultYearLevel.year_level;
         this.selectedCurriculumId = defaultYearLevel.curriculum_id;
-  
+
         this.sectionOptions = defaultYearLevel.sections.sort((a, b) =>
           a.section_name.localeCompare(b.section_name)
         );
-  
+
         this.headerInputFields.find(
           (field) => field.key === 'section'
         )!.options = this.sectionOptions.map((section) => section.section_name);
-  
+
         if (this.sectionOptions.length > 0) {
           this.selectedSection = this.sectionOptions[0].section_name;
         }
-  
+
         return this.fetchCourses(
           defaultProgram.id,
           this.selectedYear,
@@ -251,12 +256,14 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     }
     return of(void 0);
   }
-  
 
   protected onInputChange(values: { [key: string]: any }): void {
     const selectedProgramDisplay = values['program'];
     const selectedYearLevel = values['yearLevel'];
     const selectedSectionDisplay = values['section'];
+
+    let programChanged = selectedProgramDisplay !== this.previousProgram;
+    let yearLevelChanged = selectedYearLevel !== this.previousYear;
 
     const selectedProgram = this.programOptions.find(
       (p) => p.display === selectedProgramDisplay
@@ -268,18 +275,26 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       return;
     }
 
-    console.log('Selected Program ID:', selectedProgram.id);
     this.selectedProgram = selectedProgramDisplay;
-    this.selectedYear = selectedYearLevel;
-    this.selectedSection = selectedSectionDisplay;
 
     this.yearLevelOptions = selectedProgram.year_levels;
 
     this.headerInputFields.find((field) => field.key === 'yearLevel')!.options =
       this.yearLevelOptions.map((year) => year.year_level);
 
+    if (programChanged) {
+      if (this.yearLevelOptions.length > 0) {
+        this.selectedYear = this.yearLevelOptions[0].year_level;
+        yearLevelChanged = true;
+        this.previousYear = this.selectedYear;
+      }
+    } else if (yearLevelChanged) {
+      this.selectedYear = selectedYearLevel;
+      this.previousYear = this.selectedYear;
+    }
+
     const selectedYearLevelObj = this.yearLevelOptions.find(
-      (year) => year.year_level === selectedYearLevel
+      (year) => year.year_level === this.selectedYear
     );
 
     if (!selectedYearLevelObj) {
@@ -288,20 +303,24 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       return;
     }
 
-    console.log('Selected Year Level:', selectedYearLevelObj);
     this.selectedCurriculumId = selectedYearLevelObj.curriculum_id;
     this.sectionOptions = selectedYearLevelObj.sections;
 
     this.headerInputFields.find((field) => field.key === 'section')!.options =
       this.sectionOptions.map((section) => section.section_name);
 
-    console.log(
-      'Available Sections for Selected Year Level:',
-      this.sectionOptions
-    );
+    if (programChanged || yearLevelChanged) {
+      if (this.sectionOptions.length > 0) {
+        this.selectedSection = this.sectionOptions[0].section_name;
+      } else {
+        this.selectedSection = '';
+      }
+    } else {
+      this.selectedSection = selectedSectionDisplay;
+    }
 
     const selectedSection = this.sectionOptions.find(
-      (section) => section.section_name === selectedSectionDisplay
+      (section) => section.section_name === this.selectedSection
     );
 
     if (!selectedSection) {
@@ -310,18 +329,16 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       return;
     }
 
-    console.log('Selected Section ID:', selectedSection.section_id);
-
     this.fetchCourses(
       selectedProgram.id,
-      selectedYearLevel,
+      this.selectedYear,
       selectedSection.section_id
     ).subscribe({
-      next: () => {
-        // No additional actions needed here
-      },
+      next: () => {},
       error: this.handleError('Failed to fetch courses'),
     });
+
+    this.previousProgram = this.selectedProgram;
   }
 
   private fetchCourses(
@@ -337,6 +354,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     return this.schedulingService.populateSchedules().pipe(
       tap((response: PopulateSchedulesResponse) => {
         // Find the selected program
+        console.log('Response', response);
+
         const program = response.programs.find(
           (p) => p.program_id === programId
         );
@@ -424,17 +443,17 @@ export class SchedulingComponent implements OnInit, OnDestroy {
             console.error('No academic years available');
             return;
           }
-  
+
           this.academicYearOptions = academicYears;
           const academicYearOptions = academicYears.map(
             (year: AcademicYear) => year.academic_year
           );
-  
+
           const semesterOptions =
             academicYears[0]?.semesters?.map(
               (semester: Semester) => semester.semester_number
             ) || [];
-  
+
           const fields = [
             {
               label: 'Academic Year',
@@ -463,7 +482,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
               required: true,
             },
           ];
-  
+
           const dialogRef = this.dialog.open(TableDialogComponent, {
             data: {
               title: 'Set Active Year and Semester',
@@ -477,7 +496,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
             },
             disableClose: true,
           });
-  
+
           dialogRef.componentInstance.form
             .get('academicYear')
             ?.valueChanges.pipe(takeUntil(this.destroy$))
@@ -491,7 +510,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                   selectedYearObj.semesters.map(
                     (semester: Semester) => semester.semester_number
                   );
-  
+
                 // Automatically select the first semester and update dates
                 if (selectedYearObj.semesters.length > 0) {
                   const firstSemester = selectedYearObj.semesters[0];
@@ -507,7 +526,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                 }
               }
             });
-  
+
           dialogRef.componentInstance.form
             ?.get('semester')
             ?.valueChanges.pipe(takeUntil(this.destroy$))
@@ -522,7 +541,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                   (semester) =>
                     semester.semester_number === selectedSemesterNumber
                 );
-  
+
                 if (selectedSemesterObj) {
                   dialogRef.componentInstance.form
                     ?.get('startDate')
@@ -533,7 +552,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                 }
               }
             });
-  
+
           dialogRef
             .afterClosed()
             .pipe(takeUntil(this.destroy$))
@@ -545,7 +564,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                 const selectedSemesterObj = selectedYearObj?.semesters.find(
                   (semester) => semester.semester_number === result.semester
                 );
-  
+
                 if (selectedYearObj && selectedSemesterObj) {
                   const formattedStartDate = this.formatDateToYMD(
                     new Date(result.startDate)
@@ -553,8 +572,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                   const formattedEndDate = this.formatDateToYMD(
                     new Date(result.endDate)
                   );
-  
-  
+
                   this.schedulingService
                     .setActiveYearAndSemester(
                       selectedYearObj.academic_year_id,
@@ -572,7 +590,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                       next: () => {
                         this.activeYear = result.academicYear;
                         this.activeSemester = selectedSemesterObj.semester_id;
-  
+
                         this.loadPrograms()
                           .pipe(switchMap(() => this.setDefaultSelections()))
                           .subscribe({
@@ -592,9 +610,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                           });
                       },
                       error: (err) => {
-                        this.handleError('Error setting active year and semester')(
-                          err
-                        );
+                        this.handleError(
+                          'Error setting active year and semester'
+                        )(err);
                       },
                     });
                 }
@@ -633,11 +651,11 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         const professorOptions = faculty.faculty.map(
           (professor) => professor.name
         );
-
-        const selectedProgramInfo = 
-          `${schedule.program_code} ${schedule.year}-${schedule.section}`;
-        const selectedCourseInfo = 
-          `${schedule.course_code} - ${schedule.course_title}`;
+        const program = this.programOptions.find(
+          (p) => p.display === this.selectedProgram
+        );
+        const selectedProgramInfo = `${schedule.program_code} ${schedule.year}-${schedule.section}`;
+        const selectedCourseInfo = `${schedule.course_code} - ${schedule.course_title}`;
 
         const suggestedFaculty: {
           name: string;
@@ -680,6 +698,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           width: '100%',
           disableClose: true,
           data: {
+            selectedProgramId: program?.id,
+            year_level: this.selectedYear,
+            section_id: this.selectedSection,
             dayOptions: this.dayOptions,
             timeOptions: this.timeOptions,
             endTimeOptions: this.timeOptions,
@@ -692,6 +713,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
             suggestedFaculty: suggestedFaculty,
             existingSchedule: schedule,
             schedule_id: schedule.schedule_id,
+            course_id: schedule.course_id,
           },
         });
 
