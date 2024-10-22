@@ -142,7 +142,8 @@
                   fill: none;
                   stroke-width: 10;
                   stroke-linecap: round;
-                  transition: stroke-dashoffset 1s ease-in-out;
+                  transition: stroke-dashoffset 0.75s ease-in-out,
+                    opacity 0.5s ease-in-out;
                 }
 
                 .progress-bg {
@@ -152,6 +153,8 @@
                 .progress-bar {
                   stroke: url(#gradient);
                   stroke-dasharray: 283; // 2 * π * radius (45)
+                  stroke-dashoffset: 283;
+                  opacity: 0;
                 }
 
                 .progress-text {
