@@ -586,8 +586,11 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
                 this.loadAcademicYears();
               },
               (error) => {
-                this.snackBar.open('Failed to add academic year.', 'Close', {
-                  duration: 3000,
+                const errorMessage =
+                  error.message ||
+                  'Failed to add academic year. Please try again.';
+                this.snackBar.open(errorMessage, 'Close', {
+                  duration: 5000,
                 });
               }
             );

@@ -265,7 +265,14 @@ export class SchedulingService {
         year_start: yearStart,
         year_end: yearEnd,
       })
-      .pipe(catchError(this.handleError));
+      .pipe(
+        catchError((error) => {
+          if (error.error && error.error.message) {
+            return throwError(() => new Error(error.error.message));
+          }
+          return throwError(() => new Error('An unexpected error occurred.'));
+        })
+      );
   }
 
   // Get active academic year and semester details
@@ -652,7 +659,7 @@ export class SchedulingService {
   }
 
   /**
-   * Validates whether a professor is available for a specific day and time 
+   * Validates whether a professor is available for a specific day and time
    * or if they are already teaching another course during that time.
    */
 
@@ -700,7 +707,7 @@ export class SchedulingService {
   }
 
   /**
-   * Validates whether a room is available for the given day and time. 
+   * Validates whether a room is available for the given day and time.
    * It checks if the room is already booked by another course.
    */
 
@@ -755,7 +762,7 @@ export class SchedulingService {
   }
 
   /**
-   * Helper method to find conflicting course within the same program and year level 
+   * Helper method to find conflicting course within the same program and year level
    */
 
   private findConflictingCourseInProgram(

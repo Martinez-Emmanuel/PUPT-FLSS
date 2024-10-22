@@ -39,11 +39,11 @@ export class OverviewComponent implements OnInit, OnDestroy {
   private readonly SNACKBAR_DURATION = 3000;
 
   // Academic info
-  activeYear = '';
-  activeSemester = '';
+  activeYear = 'N/A';
+  activeSemester = 'N/A';
   activeFacultyCount = 0;
   activeProgramsCount = 0;
-  activeCurricula: CurriculumInfo[] = [];
+  activeCurricula: CurriculumInfo[] = [{ curriculum_id: 0, curriculum_year: '0' }];
 
   // Progress metrics
   preferencesProgress = 0;
