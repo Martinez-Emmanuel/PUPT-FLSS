@@ -8,10 +8,7 @@ import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { DialogGenericComponent } from '../../../../shared/dialog-generic/dialog-generic.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
-import {
-  OverviewService,
-  OverviewDetails,
-} from '../../../services/admin/overview/overview.service';
+import { OverviewService, OverviewDetails } from '../../../services/admin/overview/overview.service';
 
 import { fadeAnimation } from '../../../animations/animations';
 
@@ -39,6 +36,9 @@ export class OverviewComponent implements OnInit {
 
   isLoading = true;
 
+  preferencesEnabled: boolean = true;
+  schedulesPublished: boolean = false;
+
   constructor(
     private cdr: ChangeDetectorRef,
     public dialog: MatDialog,
@@ -59,22 +59,16 @@ export class OverviewComponent implements OnInit {
         this.activeProgramsCount = data.activeProgramsCount;
         this.activeCurricula = data.activeCurricula;
 
-        this.preferencesProgress = 0;
-        this.schedulingProgress = 0;
-        this.roomUtilization = 0;
-        this.publishProgress = 0;
+        this.preferencesProgress = data.preferencesProgress;
+        this.schedulingProgress = data.schedulingProgress;
+        this.roomUtilization = data.roomUtilization;
+        this.publishProgress = data.publishProgress;
+
+        this.preferencesEnabled = data.preferencesSubmissionEnabled;
+        this.schedulesPublished = data.publishProgress > 0;
 
         this.isLoading = false;
         this.cdr.detectChanges();
-
-        setTimeout(() => {
-          this.preferencesProgress = data.preferencesProgress;
-          this.schedulingProgress = data.schedulingProgress;
-          this.roomUtilization = data.roomUtilization;
-          this.publishProgress = data.publishProgress;
-
-          this.cdr.detectChanges();
-        }, 50);
       },
       error: (error) => {
         console.error('Error fetching overview details:', error);
@@ -91,7 +85,7 @@ export class OverviewComponent implements OnInit {
   }
 
   getCircleOffset(percentage: number): number {
-    const circumference = 2 * Math.PI * 45; // 2πr where r = 45
+    const circumference = 2 * Math.PI * 45;
     return circumference - (percentage / 100) * circumference;
   }
 
@@ -140,6 +134,60 @@ export class OverviewComponent implements OnInit {
           }
         );
         console.error('Error sending email:', error);
+      },
+    });
+  }
+
+  togglePreferencesSubmission() {
+    const newStatus = !this.preferencesEnabled;
+
+    this.overviewService.togglePreferencesSettings(newStatus).subscribe({
+      next: (response) => {
+        this.snackBar.open(
+          `Faculty Preferences Submission ${
+            newStatus ? 'enabled' : 'disabled'
+          } successfully.`,
+          'Close',
+          { duration: 3000 }
+        );
+        this.fetchOverviewDetails();
+      },
+      error: (error) => {
+        console.error('Error toggling preferences settings:', error);
+        this.snackBar.open(
+          `Failed to ${
+            newStatus ? 'enable' : 'disable'
+          } Faculty Preferences Submission. Please try again.`,
+          'Close',
+          { duration: 3000 }
+        );
+      },
+    });
+  }
+
+  togglePublishSchedules() {
+    const newStatus = !this.schedulesPublished;
+
+    this.overviewService.toggleAllSchedules(newStatus).subscribe({
+      next: (response) => {
+        this.snackBar.open(
+          `Faculty Load and Schedule ${
+            newStatus ? 'published' : 'unpublished'
+          } successfully.`,
+          'Close',
+          { duration: 3000 }
+        );
+        this.fetchOverviewDetails();
+      },
+      error: (error) => {
+        console.error('Error toggling schedule publication:', error);
+        this.snackBar.open(
+          `Failed to ${
+            newStatus ? 'publish' : 'unpublish'
+          } Faculty Load and Schedule. Please try again.`,
+          'Close',
+          { duration: 3000 }
+        );
       },
     });
   }

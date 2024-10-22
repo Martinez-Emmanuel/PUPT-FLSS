@@ -16,6 +16,7 @@ export interface OverviewDetails {
   schedulingProgress: number;
   roomUtilization: number;
   publishProgress: number;
+  preferencesSubmissionEnabled: boolean;
 }
 
 @Injectable({
@@ -33,5 +34,15 @@ export class OverviewService {
   sendEmails(): Observable<any> {
     const url = `${this.baseUrl}/faculties/send-emails`;
     return this.http.post(url, {});
+  }
+
+  togglePreferencesSettings(status: boolean): Observable<any> {
+    return this.http.post(`${this.baseUrl}/toggle-preferences-all`, { status });
+  }
+
+  toggleAllSchedules(is_published: boolean): Observable<any> {
+    return this.http.post(`${this.baseUrl}/toggle-all-schedule`, {
+      is_published,
+    });
   }
 }

@@ -209,18 +209,36 @@
                 <span mat-symbol="email"></span>
                 <span class="desc">Send Email to Faculty Members</span>
               </div>
-              <!--Action: Toggle Faculty Submission-->
-              <div class="item faculty-pref">
-                <span mat-symbol="toggle_on"></span>
-                <span class="desc">Toggle Faculty Preferences Submission</span>
+              <!--Action: Toggle Faculty Preferences Submission-->
+              <div
+                class="item faculty-pref"
+                (click)="togglePreferencesSubmission()"
+              >
+                <span mat-symbol="groups"></span>
+                <span class="desc">
+                  {{
+                    preferencesEnabled
+                      ? "Turn Off Faculty Preferences Submission"
+                      : "Turn On Faculty Preferences Submission"
+                  }}
+                </span>
               </div>
             </div>
             <!--Item Group two-->
             <div class="item-group two">
               <!--Action: Publish Schedule-->
-              <div class="item publish-sched">
+              <div
+                class="item publish-sched"
+                (click)="togglePublishSchedules()"
+              >
                 <span mat-symbol="schedule_send"></span>
-                <span class="desc">Publish Faculty Load and Schedule</span>
+                <span class="desc">
+                  {{
+                    schedulesPublished
+                      ? "Unpublish Faculty Load and Schedule"
+                      : "Publish Faculty Load and Schedule"
+                  }}
+                </span>
               </div>
               <!--Action: Open Generate Report-->
               <div class="item generate-report">
