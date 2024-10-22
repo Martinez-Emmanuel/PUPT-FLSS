@@ -55,30 +55,56 @@ export class OverviewComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.fetchOverviewDetails();
+    this.fetchOverviewDetails(true);
   }
 
-  fetchOverviewDetails() {
+  /**
+   * Fetches overview details.
+   * @param resetAnimation - If true, resets progress variables to 0 before updating to trigger animations.
+   */
+  fetchOverviewDetails(resetAnimation: boolean = false) {
     this.overviewService.getOverviewDetails().subscribe({
       next: (data: OverviewDetails) => {
+        // Assign non-progress data first
         this.activeYear = data.activeAcademicYear;
         this.activeSemester = data.activeSemester;
         this.activeFacultyCount = data.activeFacultyCount;
         this.activeProgramsCount = data.activeProgramsCount;
         this.activeCurricula = data.activeCurricula;
 
-        this.preferencesProgress = data.preferencesProgress;
-        this.schedulingProgress = data.schedulingProgress;
-        this.roomUtilization = data.roomUtilization;
-        this.publishProgress = data.publishProgress;
-
         this.facultyWithSchedulesCount = data.facultyWithSchedulesCount;
 
         this.preferencesEnabled = data.preferencesSubmissionEnabled;
         this.schedulesPublished = data.publishProgress > 0;
 
-        this.isLoading = false;
-        this.cdr.detectChanges();
+        if (resetAnimation) {
+          // Reset progress variables to 0 to ensure animation triggers
+          this.preferencesProgress = 0;
+          this.schedulingProgress = 0;
+          this.roomUtilization = 0;
+          this.publishProgress = 0;
+
+          this.isLoading = false;
+          this.cdr.detectChanges();
+
+          // Update progress values after a short delay to trigger CSS transitions
+          setTimeout(() => {
+            this.preferencesProgress = data.preferencesProgress;
+            this.schedulingProgress = data.schedulingProgress;
+            this.roomUtilization = data.roomUtilization;
+            this.publishProgress = data.publishProgress;
+
+            this.cdr.detectChanges();
+          }, 100);
+        } else {
+          // For user-initiated updates, set progress variables directly without resetting
+          this.preferencesProgress = data.preferencesProgress;
+          this.schedulingProgress = data.schedulingProgress;
+          this.roomUtilization = data.roomUtilization;
+          this.publishProgress = data.publishProgress;
+
+          this.cdr.detectChanges();
+        }
       },
       error: (error) => {
         console.error('Error fetching overview details:', error);
@@ -160,6 +186,7 @@ export class OverviewComponent implements OnInit {
           'Close',
           { duration: 3000 }
         );
+        // User-initiated update: do not reset animations
         this.fetchOverviewDetails();
       },
       error: (error) => {
@@ -194,6 +221,7 @@ export class OverviewComponent implements OnInit {
           'Close',
           { duration: 3000 }
         );
+        // User-initiated update: do not reset animations
         this.fetchOverviewDetails();
       },
       error: (error) => {
