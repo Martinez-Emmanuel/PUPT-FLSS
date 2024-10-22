@@ -69,7 +69,7 @@ Route::delete('/preferences', [PreferenceController::class, 'deleteAllPreference
 //Scheduling toggle preferences
 Route::get('/setting-preferences', [PreferenceController::class, 'getPreferencesSetting']);
 Route::post('/toggle-preferences-all', [PreferenceController::class, 'togglePreferencesSettings']);
-Route::post('/toggle-preferences', [PreferenceController::class, 'toggleSpecificFacultyPreferences']);
+Route::post('/toggle-preferences-single', [PreferenceController::class, 'toggleSpecificFacultyPreferences']);
 // Route::get('/submitted-pref', [PreferenceController::class, 'getPreferences']);
 // Route::post('/pref-courses-sem', [PreferenceController::class, 'findFacultyByCourseCode']);
 

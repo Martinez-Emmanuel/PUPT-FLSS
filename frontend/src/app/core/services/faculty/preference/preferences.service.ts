@@ -126,7 +126,7 @@ export class PreferencesService {
   }
 
   toggleFacultyPreferences(faculty_id: number, status: boolean): Observable<any> {
-    const url = `${this.baseUrl}/toggle-preferences`;
+    const url = `${this.baseUrl}/toggle-preferences-single`;
     return this.http.post(url, { faculty_id, status });
   }
 }
