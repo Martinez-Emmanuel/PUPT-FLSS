@@ -729,7 +729,8 @@ class ReportsController extends Controller
                 'academic_years.academic_year_id',
                 'academic_years.year_start',
                 'academic_years.year_end',
-                'semesters.semester'
+                'semesters.semester',
+                'active_semesters.active_semester_id'
             )
             ->first();
 
@@ -757,14 +758,25 @@ class ReportsController extends Controller
             ->select('curricula.curriculum_id', 'curricula.curriculum_year')
             ->get();
 
-        // Step 5: Calculate Preferences Submitted
-        // Preferences submitted are those with is_enabled set to 0
-        $preferencesSubmitted = DB::table('preferences_settings')
+        // Step 5: Calculate Preferences Progress
+        $preferencesWithEntries = DB::table('preferences_settings')
+            ->join('preferences', function ($join) use ($activeSemester) {
+                $join->on('preferences.faculty_id', '=', 'preferences_settings.faculty_id')
+                    ->where('preferences.active_semester_id', '=', $activeSemester->active_semester_id);
+            })
+            ->where('preferences_settings.is_enabled', 0)
+            ->distinct('preferences_settings.faculty_id')
+            ->count('preferences_settings.faculty_id');
+
+        $preferencesSubmittedCount = DB::table('preferences_settings')
             ->where('is_enabled', 0)
             ->count();
 
+        // Calculate preferences submitted properly
+        $submittedProperlyCount = $preferencesWithEntries;
+        $preferencesProgress = $activeFacultyCount > 0 ? ($submittedProperlyCount / $activeFacultyCount) * 100 : 0;
+
         // Step 6: Calculate Scheduling Progress
-        // Fetch all schedules for the active semester and academic year
         $schedules = DB::table('schedules')
             ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
             ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
@@ -776,8 +788,6 @@ class ReportsController extends Controller
             ->get();
 
         $totalSchedules = $schedules->count();
-
-        // Count total null fields across all schedules
         $totalNullFields = $schedules->reduce(function ($carry, $schedule) {
             return $carry +
                 (is_null($schedule->day) ? 1 : 0) +
@@ -788,13 +798,10 @@ class ReportsController extends Controller
         }, 0);
 
         $totalPossibleFields = $totalSchedules * 5;
-
-        // Calculate Scheduling Progress Percentage
         $schedulingProgress = $totalPossibleFields > 0 ? 100 - ($totalNullFields / $totalPossibleFields * 100) : 100;
 
         // Step 7: Calculate Room Utilization
         $totalRooms = DB::table('rooms')->count();
-
         $usedRooms = DB::table('schedules')
             ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
             ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
@@ -820,10 +827,6 @@ class ReportsController extends Controller
             ->distinct('faculty_schedule_publication.faculty_id')
             ->count('faculty_schedule_publication.faculty_id');
 
-        // Calculate Preferences Progress Percentage
-        $preferencesProgress = $activeFacultyCount > 0 ? ($preferencesSubmitted / $activeFacultyCount) * 100 : 0;
-
-        // Calculate Publish Progress Percentage
         $publishProgress = $activeFacultyCount > 0 ? ($publishedSchedules / $activeFacultyCount) * 100 : 0;
 
         // Step 9: Structure the response
