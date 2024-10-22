@@ -23,9 +23,10 @@ export class OverviewComponent implements OnInit, AfterViewInit {
   activeYear = '2024-2025';
   activeSemester = '1st Semester';
 
-  preferencesProgress = 75;
-  schedulingProgress = 60;
-  roomUtilizationProgress = 90;
+  preferencesProgress = 0;
+  schedulingProgress = 0;
+  roomUtilizationProgress = 0;
+  publishProgress = 0;
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -34,38 +35,21 @@ export class OverviewComponent implements OnInit, AfterViewInit {
     private overviewService: OverviewService
   ) {}
 
-  ngOnInit() {
-    this.updateProgressBars(0);
-  }
+  ngOnInit() {}
 
   ngAfterViewInit() {
     setTimeout(() => {
-      this.updateProgressBars();
+      this.preferencesProgress = 75;
+      this.schedulingProgress = 60;
+      this.roomUtilizationProgress = 90;
+      this.publishProgress = 80;
       this.cdr.detectChanges();
     }, 50);
   }
 
-  updateProgressBars(initialValue: number = -1) {
-    const value = initialValue >= 0 ? initialValue : -1;
-    this.updateProgressBar(
-      'preferences',
-      value >= 0 ? value : this.preferencesProgress
-    );
-    this.updateProgressBar(
-      'scheduling',
-      value >= 0 ? value : this.schedulingProgress
-    );
-    this.updateProgressBar(
-      'room-utilization',
-      value >= 0 ? value : this.roomUtilizationProgress
-    );
-  }
-
-  updateProgressBar(id: string, value: number) {
-    const progressElement = document.getElementById(`${id}-progress`);
-    if (progressElement) {
-      progressElement.style.width = `${value}%`;
-    }
+  getCircleOffset(percentage: number): number {
+    const circumference = 2 * Math.PI * 45; // 2πr where r = 45
+    return circumference - (percentage / 100) * circumference;
   }
 
   openSendEmailDialog(): void {

@@ -19,100 +19,206 @@
     <div class="main-cluster-one">
       <!--Quick Stats-->
       <div class="quick-stats">
-        <!-- Content for Preferences Submitted -->
-        <div class="stats preferences card">
+        <!-- Content for Active Faculty -->
+        <div class="stats active-faculty card">
           <img
             src="../../../../../assets/images/faculty.svg"
-            alt="Preferences Icon"
+            alt="Faculty Icon"
             class="stats-icon"
           />
           <div class="stats-info">
-            <h2 class="card-title">Preferences Submitted</h2>
-            <div class="progress-bar">
-              <div class="progress" id="preferences-progress"></div>
-            </div>
+            <h2 class="card-title">Active Faculty</h2>
+            <div class="card-content">50</div>
           </div>
         </div>
-        <!-- Content for Scheduling Progress -->
-        <div class="stats scheduling card">
+        <!-- Content for Active Programs -->
+        <div class="stats programs card">
           <img
             src="../../../../../assets/images/schedule.svg"
-            alt="Scheduling Icon"
+            alt="Programs Icon"
             class="stats-icon"
           />
           <div class="stats-info">
-            <h2 class="card-title">Scheduling Progress</h2>
-            <div class="progress-bar">
-              <div class="progress" id="scheduling-progress"></div>
-            </div>
+            <h2 class="card-title">Active Programs</h2>
+            <div class="card-content">11</div>
           </div>
         </div>
-        <!-- Content for Room Utilization -->
-        <div class="stats room-utilization card">
+        <!-- Content for Active Curricula -->
+        <div class="stats active-curricula card">
           <img
             src="../../../../../assets/images/rooms.svg"
-            alt="Room Utilization Icon"
+            alt="Curriculum Icon"
             class="stats-icon"
           />
           <div class="stats-info">
-            <h2 class="card-title">Room Utilization</h2>
-            <div class="progress-bar">
-              <div class="progress" id="room-utilization-progress"></div>
-            </div>
+            <h2 class="card-title">Active Curricula</h2>
+            <div class="card-content">2018, 2022</div>
           </div>
         </div>
       </div>
 
-      <!--Schedule Overview-->
-      <div class="schedule-overview card">
-        <!-- Content for Schedule Overview -->
-        <h2 class="card-title">
-          <span mat-symbol="date_range"></span>Schedule Overview
-        </h2>
+      <!--Academic and Action-->
+      <div class="academic-and-action">
+        <!--Academic Overview-->
+        <div class="academic-overview card">
+          <!-- Add SVG definitions for the gradient -->
+          <svg
+            style="width: 0; height: 0; position: absolute"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <defs>
+              <linearGradient id="gradient" gradientTransform="rotate(90)">
+                <stop offset="0%" stop-color="var(--gradient-light-start)" />
+                <stop offset="100%" stop-color="var(--gradient-light-end)" />
+              </linearGradient>
+            </defs>
+          </svg>
+
+          <!-- <h2 class="card-title">
+            <span mat-symbol="date_range"></span>Academic Year & Semester
+            Overview
+          </h2> -->
+
+          <!--Overview Group One-->
+          <div class="overview-group-one">
+            <!--Active Faculty-->
+            <div class="overview-item preferences-submitted">
+              <h3 class="item-title">Preferences Submitted</h3>
+              <div class="progress-container">
+                <svg class="circular-progress" viewBox="0 0 100 100">
+                  <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
+                  <circle
+                    class="progress-bar"
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    [style.strokeDashoffset]="
+                      getCircleOffset(preferencesProgress)
+                    "
+                  ></circle>
+                  <text x="50" y="50" class="progress-text">
+                    {{ preferencesProgress }}%
+                  </text>
+                </svg>
+              </div>
+            </div>
+            <!--Active Programs-->
+            <div class="overview-item scheduling-progress">
+              <h3 class="item-title">Scheduling Progress</h3>
+              <div class="progress-container">
+                <svg class="circular-progress" viewBox="0 0 100 100">
+                  <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
+                  <circle
+                    class="progress-bar"
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    [style.strokeDashoffset]="
+                      getCircleOffset(schedulingProgress)
+                    "
+                  ></circle>
+                  <text x="50" y="50" class="progress-text">
+                    {{ schedulingProgress }}%
+                  </text>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!--Overview Group Two-->
+          <div class="overview-group-two">
+            <!--Available Rooms-->
+            <div class="overview-item rooms-utilized">
+              <h3 class="item-title">Rooms Utilization</h3>
+              <div class="progress-container">
+                <svg class="circular-progress" viewBox="0 0 100 100">
+                  <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
+                  <circle
+                    class="progress-bar"
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    [style.strokeDashoffset]="
+                      getCircleOffset(roomUtilizationProgress)
+                    "
+                  ></circle>
+                  <text x="50" y="50" class="progress-text">
+                    {{ roomUtilizationProgress }}%
+                  </text>
+                </svg>
+              </div>
+            </div>
+            <!--Schedule Publish Progress-->
+            <div class="overview-item publish-progress">
+              <h3 class="item-title">Published Schedules</h3>
+              <div class="progress-container">
+                <svg class="circular-progress" viewBox="0 0 100 100">
+                  <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
+                  <circle
+                    class="progress-bar"
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    [style.strokeDashoffset]="getCircleOffset(publishProgress)"
+                  ></circle>
+                  <text x="50" y="50" class="progress-text">
+                    {{ publishProgress }}%
+                  </text>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!--Action Center -->
+        <div class="action-center card">
+          <!--Title-->
+          <h2 class="card-title">
+            <span mat-symbol="tune"></span>Action Center
+          </h2>
+          <!--Action Items-->
+          <div class="action-items">
+            <!--Item Group One-->
+            <div class="item-group one">
+              <!--Action: Email Faculty-->
+              <div class="item send-email" (click)="openSendEmailDialog()">
+                <span mat-symbol="email"></span>
+                <span class="desc">Send Email to Faculty Members</span>
+              </div>
+              <!--Action: Toggle Faculty Submission-->
+              <div class="item faculty-pref">
+                <span mat-symbol="toggle_on"></span>
+                <span class="desc">Toggle Faculty Preferences Submission</span>
+              </div>
+            </div>
+            <!--Item Group two-->
+            <div class="item-group two">
+              <!--Action: Publish Schedule-->
+              <div class="item publish-sched">
+                <span mat-symbol="schedule_send"></span>
+                <span class="desc">Publish Faculty Load and Schedule</span>
+              </div>
+              <!--Action: Open Generate Report-->
+              <div class="item generate-report">
+                <span mat-symbol="assessment"></span>
+                <span class="desc">Generate the Schedule Reports</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
     <!--Cluster Two-->
     <div class="main-cluster-two">
-      <!--Action Center -->
-      <div class="action-center card">
-        <!--Title-->
-        <h2 class="card-title"><span mat-symbol="tune"></span>Action Center</h2>
-        <!--Action Items-->
-        <div class="action-items">
-          <!--Item Group One-->
-          <div class="item-group one">
-            <!--Action: Email Faculty-->
-            <div class="item send-email" (click)="openSendEmailDialog()">
-              <span mat-symbol="email"></span>
-              <span class="desc">Send Email to Faculty</span>
-            </div>
-            <!--Action: Toggle Faculty Submission-->
-            <div class="item faculty-pref">
-              <span mat-symbol="toggle_on"></span>
-              <span class="desc">Toggle Faculty Submission</span>
-            </div>
-          </div>
-          <!--Item Group two-->
-          <div class="item-group two">
-            <!--Action: Publish Schedule-->
-            <div class="item publish-sched">
-              <span mat-symbol="schedule_send"></span>
-              <span class="desc">Publish Load and Schedule</span>
-            </div>
-            <!--Action: Open Generate Report-->
-            <div class="item generate-report">
-              <span mat-symbol="assessment"></span>
-              <span class="desc">Generate the Reports</span>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="recent-activities card">
+      <div class="notifications card">
         <h2 class="card-title">
-          <span mat-symbol="history"></span>Recent Activities
+          <span mat-symbol="notifications"></span>Notifications
         </h2>
-        <!-- Content for Recent Activities -->
+        <div class="notifications-content">
+          <span>No notifications yet.</span>
+        </div>
       </div>
     </div>
   </main>
