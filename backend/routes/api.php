@@ -41,7 +41,7 @@ Route::post('/pref-submitted-email', [FacultyController::class, 'sendPreferences
 Route::post('/subj-schedule-set', [FacultyController::class, 'sendSubjectsScheduleSetEmail']);
 Route::get('/get-assigned-courses', [AcademicYearController::class, 'getAssignedCourses']);
 Route::get('/get-assigned-courses-sem', [AcademicYearController::class, 'getAssignedCoursesBySem']);
-Route::get('/populate-schedules', [ScheduleController::class, 'autoAssignCoursesToSections']);
+Route::get('/populate-schedules', [ScheduleController::class, 'populateSchedules']);
 Route::post('/assign-schedule', [SchedulingController::class, 'assignSchedule']);
 Route::get('/get-faculty', [SchedulingController::class, 'getFacultyDetails']);
 Route::get('/get-rooms', [RoomController::class, 'getAllRooms']);
@@ -58,6 +58,7 @@ Route::get('/program-schedules-report', [ReportsController::class, 'getProgramSc
 Route::get('/single-faculty-schedule/{faculty_id}', [ReportsController::class, 'getSingleFacultySchedule']);
 Route::post('/toggle-all-schedule', [ReportsController::class, 'toggleAllSchedules']);
 Route::post('/toggle-single-schedule', [ReportsController::class, 'toggleSingleSchedule']);
+Route::get('/overview-details', [ReportsController::class, 'getOverviewDetails']);
 
 //Scheduling routes
 Route::post('/submit-preferences', [PreferenceController::class, 'submitPreferences']);

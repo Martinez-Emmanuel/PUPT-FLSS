@@ -1,4 +1,9 @@
-import { Component, OnInit, AfterViewInit, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  ChangeDetectorRef,
+} from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -7,7 +12,10 @@ import { MatSnackBar, MatSnackBarRef } from '@angular/material/snack-bar';
 import { DialogGenericComponent } from '../../../../shared/dialog-generic/dialog-generic.component';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
-import { OverviewService } from '../../../services/admin/overview/overview.service';
+import {
+  OverviewService,
+  OverviewDetails,
+} from '../../../services/admin/overview/overview.service';
 
 import { fadeAnimation } from '../../../animations/animations';
 
@@ -20,8 +28,13 @@ import { fadeAnimation } from '../../../animations/animations';
   animations: [fadeAnimation],
 })
 export class OverviewComponent implements OnInit, AfterViewInit {
-  activeYear = '2024-2025';
-  activeSemester = '1st Semester';
+  activeYear: string = '';
+  activeSemester: string = '';
+
+  activeFacultyCount: number = 0;
+  activeProgramsCount: number = 0;
+  activeCurricula: Array<{ curriculum_id: number; curriculum_year: string }> =
+    [];
 
   preferencesProgress = 0;
   schedulingProgress = 0;
@@ -35,7 +48,9 @@ export class OverviewComponent implements OnInit, AfterViewInit {
     private overviewService: OverviewService
   ) {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    this.fetchOverviewDetails();
+  }
 
   ngAfterViewInit() {
     setTimeout(() => {
@@ -45,6 +60,23 @@ export class OverviewComponent implements OnInit, AfterViewInit {
       this.publishProgress = 80;
       this.cdr.detectChanges();
     }, 50);
+  }
+    fetchOverviewDetails() {
+    this.overviewService.getOverviewDetails().subscribe({
+      next: (data: OverviewDetails) => {
+        this.activeYear = data.activeAcademicYear;
+        this.activeSemester = data.activeSemester;
+        this.activeFacultyCount = data.activeFacultyCount;
+        this.activeProgramsCount = data.activeProgramsCount;
+        this.activeCurricula = data.activeCurricula;
+      },
+      error: (error) => {
+        console.error('Error fetching overview details:', error);
+        this.snackBar.open('Failed to load overview details. Please try again later.', 'Close', {
+          duration: 3000,
+        });
+      },
+    });
   }
 
   getCircleOffset(percentage: number): number {

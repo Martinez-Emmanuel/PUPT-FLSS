@@ -718,4 +718,67 @@ class ReportsController extends Controller
             is_null($schedule->room_code)
         );
     }
+
+    public function getOverviewDetails()
+    {
+        // Step 1: Retrieve the current active semester with academic year details
+        $activeSemester = DB::table('active_semesters')
+            ->join('academic_years', 'active_semesters.academic_year_id', '=', 'academic_years.academic_year_id')
+            ->join('semesters', 'active_semesters.semester_id', '=', 'semesters.semester_id')
+            ->where('active_semesters.is_active', 1)
+            ->select(
+                'academic_years.academic_year_id',
+                'academic_years.year_start',
+                'academic_years.year_end',
+                'semesters.semester'
+            )
+            ->first();
+
+        if (!$activeSemester) {
+            return response()->json(['message' => 'No active semester found.'], 404);
+        }
+
+        // Step 2: Count the number of active faculty
+        $activeFacultyCount = DB::table('faculty')
+            ->join('users', 'faculty.user_id', '=', 'users.id')
+            ->where('users.status', 'Active')
+            ->count();
+
+        // Step 3: Count the number of active programs in the current academic year
+        $activeProgramsCount = DB::table('program_year_level_curricula')
+            ->where('academic_year_id', $activeSemester->academic_year_id)
+            ->distinct('program_id')
+            ->count('program_id');
+
+        // Step 4: Retrieve active curricula used in the current academic year
+        $activeCurricula = DB::table('program_year_level_curricula')
+            ->join('curricula', 'program_year_level_curricula.curriculum_id', '=', 'curricula.curriculum_id')
+            ->where('program_year_level_curricula.academic_year_id', $activeSemester->academic_year_id)
+            ->distinct()
+            ->select('curricula.curriculum_id', 'curricula.curriculum_year')
+            ->get();
+
+        // Step 5: Structure the response
+        return response()->json([
+            'activeAcademicYear' => "{$activeSemester->year_start}-{$activeSemester->year_end}",
+            'activeSemester' => $this->getSemesterLabel($activeSemester->semester),
+            'activeFacultyCount' => $activeFacultyCount,
+            'activeProgramsCount' => $activeProgramsCount,
+            'activeCurricula' => $activeCurricula
+        ]);
+    }
+
+    private function getSemesterLabel($semesterNumber)
+    {
+        switch ($semesterNumber) {
+            case 1:
+                return '1st Semester';
+            case 2:
+                return '2nd Semester';
+            case 3:
+                return 'Summer Semester';
+            default:
+                return 'Unknown Semester';
+        }
+    }
 }

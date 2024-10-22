@@ -28,7 +28,7 @@
           />
           <div class="stats-info">
             <h2 class="card-title">Active Faculty</h2>
-            <div class="card-content">50</div>
+            <div class="card-content">{{ activeFacultyCount }}</div>
           </div>
         </div>
         <!-- Content for Active Programs -->
@@ -40,19 +40,23 @@
           />
           <div class="stats-info">
             <h2 class="card-title">Active Programs</h2>
-            <div class="card-content">11</div>
+            <div class="card-content">{{ activeProgramsCount }}</div>
           </div>
         </div>
         <!-- Content for Active Curricula -->
         <div class="stats active-curricula card">
           <img
-            src="../../../../../assets/images/rooms.svg"
+            src="../../../../../assets/images/curriculum.svg"
             alt="Curriculum Icon"
             class="stats-icon"
           />
           <div class="stats-info">
             <h2 class="card-title">Active Curricula</h2>
-            <div class="card-content">2018, 2022</div>
+            <div class="card-content">
+              @for (curriculum of activeCurricula; track
+              curriculum.curriculum_year; let isLast = $last) {
+              {{ curriculum.curriculum_year }}@if (!isLast) {, } }
+            </div>
           </div>
         </div>
       </div>
