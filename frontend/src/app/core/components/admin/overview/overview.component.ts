@@ -3,6 +3,7 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarRef } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 import { DialogGenericComponent } from '../../../../shared/dialog-generic/dialog-generic.component';
@@ -15,9 +16,14 @@ import { fadeAnimation } from '../../../animations/animations';
 @Component({
   selector: 'app-overview',
   standalone: true,
-  imports: [MatSymbolDirective, MatDialogModule, LoadingComponent],
+  imports: [
+    MatSymbolDirective,
+    MatDialogModule,
+    MatTooltipModule,
+    LoadingComponent,
+  ],
   templateUrl: './overview.component.html',
-  styleUrl: './overview.component.scss',
+  styleUrls: ['./overview.component.scss'],
   animations: [fadeAnimation],
 })
 export class OverviewComponent implements OnInit {
@@ -33,6 +39,8 @@ export class OverviewComponent implements OnInit {
   schedulingProgress: number = 0;
   roomUtilization: number = 0;
   publishProgress: number = 0;
+
+  facultyWithSchedulesCount: number = 0;
 
   isLoading = true;
 
@@ -63,6 +71,8 @@ export class OverviewComponent implements OnInit {
         this.schedulingProgress = data.schedulingProgress;
         this.roomUtilization = data.roomUtilization;
         this.publishProgress = data.publishProgress;
+
+        this.facultyWithSchedulesCount = data.facultyWithSchedulesCount;
 
         this.preferencesEnabled = data.preferencesSubmissionEnabled;
         this.schedulesPublished = data.publishProgress > 0;
@@ -166,6 +176,13 @@ export class OverviewComponent implements OnInit {
   }
 
   togglePublishSchedules() {
+    if (this.facultyWithSchedulesCount === 0) {
+      this.snackBar.open('No faculty has been scheduled yet.', 'Close', {
+        duration: 3000,
+      });
+      return;
+    }
+
     const newStatus = !this.schedulesPublished;
 
     this.overviewService.toggleAllSchedules(newStatus).subscribe({

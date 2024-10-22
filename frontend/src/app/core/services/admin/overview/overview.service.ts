@@ -17,6 +17,7 @@ export interface OverviewDetails {
   roomUtilization: number;
   publishProgress: number;
   preferencesSubmissionEnabled: boolean;
+  facultyWithSchedulesCount: number;
 }
 
 @Injectable({

@@ -785,7 +785,7 @@ class ReportsController extends Controller
             ->join('semesters as ca_semesters', 'ca_semesters.semester_id', '=', 'course_assignments.semester_id')
             ->join('sections_per_program_year', 'sections_per_program_year.sections_per_program_year_id', '=', 'section_courses.sections_per_program_year_id')
             ->where('ca_semesters.semester', '=', $activeSemester->semester)
-            ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id) // Fixed: Removed quotes
+            ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id)
             ->select('schedules.day', 'schedules.start_time', 'schedules.end_time', 'schedules.faculty_id', 'schedules.room_id')
             ->get();
 
@@ -824,7 +824,7 @@ class ReportsController extends Controller
             ->join('semesters as ca_semesters', 'ca_semesters.semester_id', '=', 'course_assignments.semester_id')
             ->join('sections_per_program_year', 'sections_per_program_year.sections_per_program_year_id', '=', 'section_courses.sections_per_program_year_id')
             ->where('ca_semesters.semester', '=', $activeSemester->semester)
-            ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id) // Fixed: Removed quotes
+            ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id)
             ->where('faculty_schedule_publication.is_published', 1)
             ->distinct('faculty_schedule_publication.faculty_id')
             ->count('faculty_schedule_publication.faculty_id');
@@ -835,10 +835,21 @@ class ReportsController extends Controller
         if ($activeFacultyCount > 0) {
             $preferencesSubmissionEnabled = PreferencesSetting::where('is_enabled', 1)->count() === $activeFacultyCount;
         } else {
-            $preferencesSubmissionEnabled = true; // Default to true if no active faculty
+            $preferencesSubmissionEnabled = true;
         }
 
-        // Step 10: Structure the response
+        // Step 10: Count the number of faculty who have at least one schedule
+        $facultyWithSchedulesCount = DB::table('schedules')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->join('semesters as ca_semesters', 'ca_semesters.semester_id', '=', 'course_assignments.semester_id')
+            ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
+            ->where('ca_semesters.semester', '=', $activeSemester->semester)
+            ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id)
+            ->distinct('schedules.faculty_id')
+            ->count('schedules.faculty_id');
+
+        // Step 11: Structure the response with the new field
         return response()->json([
             'activeAcademicYear' => "{$activeSemester->year_start}-{$activeSemester->year_end}",
             'activeSemester' => $this->getSemesterLabel($activeSemester->semester),
@@ -850,6 +861,7 @@ class ReportsController extends Controller
             'roomUtilization' => round($roomUtilization, 0),
             'publishProgress' => round($publishProgress, 0),
             'preferencesSubmissionEnabled' => $preferencesSubmissionEnabled,
+            'facultyWithSchedulesCount' => $facultyWithSchedulesCount,
         ]);
     }
 
