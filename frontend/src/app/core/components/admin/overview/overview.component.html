@@ -73,11 +73,11 @@
         </div>
       </div>
 
-      <!--Academic and Action-->
+      <!-- Academic and Action -->
       <div class="academic-and-action">
-        <!--Academic Overview-->
+        <!-- Academic Overview -->
         <div class="academic-overview card">
-          <!-- Add SVG definitions for the gradient -->
+          <!-- SVG Definitions for Gradient -->
           <svg
             style="width: 0; height: 0; position: absolute"
             aria-hidden="true"
@@ -91,7 +91,7 @@
             </defs>
           </svg>
 
-          <!--Overview Group One-->
+          <!-- Overview Group One -->
           <div class="overview-group-one">
             <!-- Preferences Submitted Progress Bar -->
             <div class="overview-item preferences-submitted">
@@ -99,7 +99,6 @@
               <div class="progress-container">
                 <svg class="circular-progress" viewBox="0 0 100 100">
                   <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                  @if (preferencesProgress > 0) {
                   <circle
                     class="progress-bar"
                     cx="50"
@@ -108,8 +107,8 @@
                     [style.strokeDashoffset]="
                       getCircleOffset(preferencesProgress)
                     "
+                    [style.opacity]="preferencesProgress > 0 ? 1 : 0"
                   ></circle>
-                  }
                   <g transform="rotate(90 50 50)">
                     <text x="50" y="50" class="progress-text">
                       {{ preferencesProgress }}%
@@ -125,7 +124,6 @@
               <div class="progress-container">
                 <svg class="circular-progress" viewBox="0 0 100 100">
                   <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                  @if (schedulingProgress > 0) {
                   <circle
                     class="progress-bar"
                     cx="50"
@@ -134,8 +132,8 @@
                     [style.strokeDashoffset]="
                       getCircleOffset(schedulingProgress)
                     "
+                    [style.opacity]="schedulingProgress > 0 ? 1 : 0"
                   ></circle>
-                  }
                   <g transform="rotate(90 50 50)">
                     <text x="50" y="50" class="progress-text">
                       {{ schedulingProgress }}%
@@ -146,7 +144,7 @@
             </div>
           </div>
 
-          <!--Overview Group Two-->
+          <!-- Overview Group Two -->
           <div class="overview-group-two">
             <!-- Room Utilization Progress Bar -->
             <div class="overview-item rooms-utilized">
@@ -154,15 +152,14 @@
               <div class="progress-container">
                 <svg class="circular-progress" viewBox="0 0 100 100">
                   <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                  @if (roomUtilization > 0) {
                   <circle
                     class="progress-bar"
                     cx="50"
                     cy="50"
                     r="45"
                     [style.strokeDashoffset]="getCircleOffset(roomUtilization)"
+                    [style.opacity]="roomUtilization > 0 ? 1 : 0"
                   ></circle>
-                  }
                   <g transform="rotate(90 50 50)">
                     <text x="50" y="55" class="progress-text">
                       {{ roomUtilization }}%
@@ -171,21 +168,21 @@
                 </svg>
               </div>
             </div>
+
             <!-- Published Schedules Progress Bar -->
             <div class="overview-item publish-progress">
               <h3 class="item-title">Published Schedules</h3>
               <div class="progress-container">
                 <svg class="circular-progress" viewBox="0 0 100 100">
                   <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
-                  @if (publishProgress > 0) {
                   <circle
                     class="progress-bar"
                     cx="50"
                     cy="50"
                     r="45"
                     [style.strokeDashoffset]="getCircleOffset(publishProgress)"
+                    [style.opacity]="publishProgress > 0 ? 1 : 0"
                   ></circle>
-                  }
                   <g transform="rotate(90 50 50)">
                     <text x="50" y="55" class="progress-text">
                       {{ publishProgress }}%

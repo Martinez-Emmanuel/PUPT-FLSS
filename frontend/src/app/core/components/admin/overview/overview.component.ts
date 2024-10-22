@@ -59,8 +59,12 @@ export class OverviewComponent implements OnInit {
         this.activeProgramsCount = data.activeProgramsCount;
         this.activeCurricula = data.activeCurricula;
 
-        this.isLoading = false;
+        this.preferencesProgress = 0;
+        this.schedulingProgress = 0;
+        this.roomUtilization = 0;
+        this.publishProgress = 0;
 
+        this.isLoading = false;
         this.cdr.detectChanges();
 
         setTimeout(() => {
@@ -70,7 +74,7 @@ export class OverviewComponent implements OnInit {
           this.publishProgress = data.publishProgress;
 
           this.cdr.detectChanges();
-        }, 0);
+        }, 50);
       },
       error: (error) => {
         console.error('Error fetching overview details:', error);
