@@ -79,14 +79,9 @@
             </defs>
           </svg>
 
-          <!-- <h2 class="card-title">
-            <span mat-symbol="date_range"></span>Academic Year & Semester
-            Overview
-          </h2> -->
-
           <!--Overview Group One-->
           <div class="overview-group-one">
-            <!--Active Faculty-->
+            <!-- Preferences Submitted Progress Bar -->
             <div class="overview-item preferences-submitted">
               <h3 class="item-title">Preferences Submitted</h3>
               <div class="progress-container">
@@ -101,13 +96,16 @@
                       getCircleOffset(preferencesProgress)
                     "
                   ></circle>
-                  <text x="50" y="50" class="progress-text">
-                    {{ preferencesProgress }}%
-                  </text>
+                  <g transform="rotate(90 50 50)">
+                    <text x="50" y="50" class="progress-text">
+                      {{ preferencesProgress }}%
+                    </text>
+                  </g>
                 </svg>
               </div>
             </div>
-            <!--Active Programs-->
+
+            <!-- Scheduling Progress Progress Bar -->
             <div class="overview-item scheduling-progress">
               <h3 class="item-title">Scheduling Progress</h3>
               <div class="progress-container">
@@ -122,9 +120,11 @@
                       getCircleOffset(schedulingProgress)
                     "
                   ></circle>
-                  <text x="50" y="50" class="progress-text">
-                    {{ schedulingProgress }}%
-                  </text>
+                  <g transform="rotate(90 50 50)">
+                    <text x="50" y="50" class="progress-text">
+                      {{ schedulingProgress }}%
+                    </text>
+                  </g>
                 </svg>
               </div>
             </div>
@@ -132,7 +132,7 @@
 
           <!--Overview Group Two-->
           <div class="overview-group-two">
-            <!--Available Rooms-->
+            <!-- Room Utilization Progress Bar -->
             <div class="overview-item rooms-utilized">
               <h3 class="item-title">Rooms Utilization</h3>
               <div class="progress-container">
@@ -143,17 +143,17 @@
                     cx="50"
                     cy="50"
                     r="45"
-                    [style.strokeDashoffset]="
-                      getCircleOffset(roomUtilizationProgress)
-                    "
+                    [style.strokeDashoffset]="getCircleOffset(roomUtilization)"
                   ></circle>
-                  <text x="50" y="50" class="progress-text">
-                    {{ roomUtilizationProgress }}%
-                  </text>
+                  <g transform="rotate(90 50 50)">
+                    <text x="50" y="55" class="progress-text">
+                      {{ roomUtilization }}%
+                    </text>
+                  </g>
                 </svg>
               </div>
             </div>
-            <!--Schedule Publish Progress-->
+            <!-- Published Schedules Progress Bar -->
             <div class="overview-item publish-progress">
               <h3 class="item-title">Published Schedules</h3>
               <div class="progress-container">
@@ -166,9 +166,11 @@
                     r="45"
                     [style.strokeDashoffset]="getCircleOffset(publishProgress)"
                   ></circle>
-                  <text x="50" y="50" class="progress-text">
-                    {{ publishProgress }}%
-                  </text>
+                  <g transform="rotate(90 50 50)">
+                    <text x="50" y="55" class="progress-text">
+                      {{ publishProgress }}%
+                    </text>
+                  </g>
                 </svg>
               </div>
             </div>

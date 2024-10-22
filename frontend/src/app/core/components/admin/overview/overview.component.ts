@@ -1,9 +1,4 @@
-import {
-  Component,
-  OnInit,
-  AfterViewInit,
-  ChangeDetectorRef,
-} from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -27,7 +22,7 @@ import { fadeAnimation } from '../../../animations/animations';
   styleUrl: './overview.component.scss',
   animations: [fadeAnimation],
 })
-export class OverviewComponent implements OnInit, AfterViewInit {
+export class OverviewComponent implements OnInit {
   activeYear: string = '';
   activeSemester: string = '';
 
@@ -36,10 +31,10 @@ export class OverviewComponent implements OnInit, AfterViewInit {
   activeCurricula: Array<{ curriculum_id: number; curriculum_year: string }> =
     [];
 
-  preferencesProgress = 0;
-  schedulingProgress = 0;
-  roomUtilizationProgress = 0;
-  publishProgress = 0;
+  preferencesProgress: number = 0;
+  schedulingProgress: number = 0;
+  roomUtilization: number = 0;
+  publishProgress: number = 0;
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -52,16 +47,7 @@ export class OverviewComponent implements OnInit, AfterViewInit {
     this.fetchOverviewDetails();
   }
 
-  ngAfterViewInit() {
-    setTimeout(() => {
-      this.preferencesProgress = 75;
-      this.schedulingProgress = 60;
-      this.roomUtilizationProgress = 90;
-      this.publishProgress = 80;
-      this.cdr.detectChanges();
-    }, 50);
-  }
-    fetchOverviewDetails() {
+  fetchOverviewDetails() {
     this.overviewService.getOverviewDetails().subscribe({
       next: (data: OverviewDetails) => {
         this.activeYear = data.activeAcademicYear;
@@ -69,12 +55,20 @@ export class OverviewComponent implements OnInit, AfterViewInit {
         this.activeFacultyCount = data.activeFacultyCount;
         this.activeProgramsCount = data.activeProgramsCount;
         this.activeCurricula = data.activeCurricula;
+        this.preferencesProgress = data.preferencesProgress;
+        this.schedulingProgress = data.schedulingProgress;
+        this.roomUtilization = data.roomUtilization;
+        this.publishProgress = data.publishProgress;
       },
       error: (error) => {
         console.error('Error fetching overview details:', error);
-        this.snackBar.open('Failed to load overview details. Please try again later.', 'Close', {
-          duration: 3000,
-        });
+        this.snackBar.open(
+          'Failed to load overview details. Please try again later.',
+          'Close',
+          {
+            duration: 3000,
+          }
+        );
       },
     });
   }

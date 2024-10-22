@@ -12,6 +12,10 @@ export interface OverviewDetails {
     curriculum_id: number;
     curriculum_year: string;
   }>;
+  preferencesProgress: number;
+  schedulingProgress: number;
+  roomUtilization: number;
+  publishProgress: number;
 }
 
 @Injectable({
@@ -23,9 +27,7 @@ export class OverviewService {
   constructor(private http: HttpClient) {}
 
   getOverviewDetails(): Observable<OverviewDetails> {
-    return this.http.get<OverviewDetails>(
-      `${this.baseUrl}/overview-details`
-    );
+    return this.http.get<OverviewDetails>(`${this.baseUrl}/overview-details`);
   }
 
   sendEmails(): Observable<any> {
