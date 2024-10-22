@@ -3,9 +3,10 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar, MatSnackBarRef } from '@angular/material/snack-bar';
+import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 import { DialogGenericComponent } from '../../../../shared/dialog-generic/dialog-generic.component';
-import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
+import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import {
   OverviewService,
@@ -17,7 +18,7 @@ import { fadeAnimation } from '../../../animations/animations';
 @Component({
   selector: 'app-overview',
   standalone: true,
-  imports: [MatSymbolDirective, MatDialogModule],
+  imports: [MatSymbolDirective, MatDialogModule, LoadingComponent],
   templateUrl: './overview.component.html',
   styleUrl: './overview.component.scss',
   animations: [fadeAnimation],
@@ -35,6 +36,8 @@ export class OverviewComponent implements OnInit {
   schedulingProgress: number = 0;
   roomUtilization: number = 0;
   publishProgress: number = 0;
+
+  isLoading = true;
 
   constructor(
     private cdr: ChangeDetectorRef,
@@ -55,10 +58,19 @@ export class OverviewComponent implements OnInit {
         this.activeFacultyCount = data.activeFacultyCount;
         this.activeProgramsCount = data.activeProgramsCount;
         this.activeCurricula = data.activeCurricula;
-        this.preferencesProgress = data.preferencesProgress;
-        this.schedulingProgress = data.schedulingProgress;
-        this.roomUtilization = data.roomUtilization;
-        this.publishProgress = data.publishProgress;
+
+        this.isLoading = false;
+
+        this.cdr.detectChanges();
+
+        setTimeout(() => {
+          this.preferencesProgress = data.preferencesProgress;
+          this.schedulingProgress = data.schedulingProgress;
+          this.roomUtilization = data.roomUtilization;
+          this.publishProgress = data.publishProgress;
+
+          this.cdr.detectChanges();
+        }, 0);
       },
       error: (error) => {
         console.error('Error fetching overview details:', error);
@@ -69,6 +81,7 @@ export class OverviewComponent implements OnInit {
             duration: 3000,
           }
         );
+        this.isLoading = false;
       },
     });
   }

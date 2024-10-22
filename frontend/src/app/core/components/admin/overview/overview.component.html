@@ -1,6 +1,11 @@
-<div class="overview-container" [@fadeAnimation]>
+<div class="overview-container">
+  @if(isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
   <!--Overview Header-->
-  <header class="overview-header-container">
+  <header class="overview-header-container" [@fadeAnimation]>
     <div class="overview-greetings">
       <h1 id="admin_name">Hello, Admin Marissa!</h1>
       <p id="description">
@@ -14,7 +19,7 @@
   </header>
 
   <!--Overview Main-->
-  <main class="overview-main-container">
+  <main class="overview-main-container" [@fadeAnimation]>
     <!--Cluster One-->
     <div class="main-cluster-one">
       <!--Quick Stats-->
@@ -228,4 +233,5 @@
       </div>
     </div>
   </main>
+  }
 </div>

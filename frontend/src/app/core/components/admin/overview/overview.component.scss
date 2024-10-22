@@ -108,6 +108,7 @@
           @include reset-styles;
           width: var(--font-size-4xl);
           height: auto;
+          user-select: none;
         }
 
         .stats-info {
@@ -160,8 +161,8 @@
             }
 
             .progress-container {
-              width: 15vh;
-              height: 15vh;
+              width: 16vh;
+              height: 16vh;
               position: relative;
 
               .circular-progress {
@@ -169,13 +170,13 @@
                 height: 100%;
                 transform: rotate(
                   -90deg
-                ); // Rotates the entire progress circle to start from top
+                );
 
                 circle {
                   fill: none;
                   stroke-width: 10;
                   stroke-linecap: round;
-                  transition: stroke-dashoffset 0.75s ease-in-out;
+                  transition: stroke-dashoffset 1s ease-in-out;
                 }
 
                 .progress-bg {
