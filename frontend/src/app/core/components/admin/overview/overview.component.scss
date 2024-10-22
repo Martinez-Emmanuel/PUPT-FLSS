@@ -28,55 +28,6 @@
   }
 }
 
-/* Overview Header */
-.overview-header-container {
-  @include flex-layout($align: stretch, $justify: space-between);
-
-  .overview-greetings {
-    @include flex-layout(
-      $direction: column,
-      $align: flex-start,
-      $gap: var(--spacing-xxs)
-    );
-
-    #admin_name {
-      @include gradient-primary-text(315deg);
-      font-weight: 600;
-    }
-
-    #description {
-      font-size: var(--font-size-md);
-    }
-  }
-
-  .active-year-sem-container {
-    @include flex-layout(
-      $direction: column,
-      $align: flex-start,
-      $gap: var(--spacing-xxs)
-    );
-
-    @include gradient-primary(315deg);
-    padding: 0 var(--spacing-md);
-    border-radius: var(--border-radius-md);
-    color: white;
-    cursor: pointer;
-
-    .text,
-    .label {
-      @include reset-styles;
-    }
-
-    .text {
-      font-weight: 500;
-    }
-
-    .label {
-      opacity: var(--opacity-semi-opaque);
-    }
-  }
-}
-
 /* Overview Main */
 .overview-main-container {
   @include flex-layout($gap: var(--spacing-md));
@@ -92,6 +43,23 @@
     flex: 6;
     height: inherit;
     // border: 1px solid grey;
+
+    .overview-greetings {
+      @include flex-layout(
+        $direction: column,
+        $align: flex-start,
+        $gap: var(--spacing-xxs)
+      );
+
+      #admin_name {
+        @include gradient-primary-text(315deg);
+        font-weight: 600;
+      }
+
+      #description {
+        font-size: var(--font-size-md);
+      }
+    }
 
     /* Quick Stats */
     .quick-stats {
@@ -168,9 +136,7 @@
               .circular-progress {
                 width: 100%;
                 height: 100%;
-                transform: rotate(
-                  -90deg
-                );
+                transform: rotate(-90deg);
 
                 circle {
                   fill: none;
@@ -282,6 +248,33 @@
     );
     flex: 2;
     height: inherit;
+
+    .active-year-sem-container {
+      @include flex-layout(
+        $direction: column,
+        $align: flex-start,
+        $gap: var(--spacing-xxs)
+      );
+
+      @include gradient-primary(315deg);
+      padding: var(--spacing-xs) var(--spacing-md);
+      border-radius: var(--border-radius-md);
+      color: white;
+      cursor: pointer;
+
+      .text,
+      .label {
+        @include reset-styles;
+      }
+
+      .text {
+        font-weight: 500;
+      }
+
+      .label {
+        opacity: var(--opacity-semi-opaque);
+      }
+    }
 
     .notifications {
       flex: 1;
