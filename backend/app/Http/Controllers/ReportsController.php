@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PreferencesSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -591,7 +592,14 @@ class ReportsController extends Controller
 
     public function toggleAllSchedules(Request $request)
     {
-        // Step 1: Get the active semester and academic year
+        // Step 1: Validate the input
+        $validated = $request->validate([
+            'is_published' => 'required|boolean',
+        ]);
+
+        $isPublished = $validated['is_published'];
+
+        // Step 2: Get the active semester and academic year
         $activeSemester = DB::table('active_semesters')
             ->where('is_active', 1)
             ->first();
@@ -603,9 +611,6 @@ class ReportsController extends Controller
         $activeAcademicYearId = $activeSemester->academic_year_id;
         $activeSemesterId = $activeSemester->semester_id;
 
-        // Step 2: Define the new `is_published` value (toggle between 0 and 1)
-        $isPublished = $request->input('is_published');
-
         // Step 3: Fetch schedule IDs for the active semester and academic year
         $activeSchedules = DB::table('schedules')
             ->select('schedules.schedule_id')
@@ -613,9 +618,13 @@ class ReportsController extends Controller
             ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
             ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
             ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
-            ->where('sections_per_program_year.academic_year_id', $activeAcademicYearId)
-            ->where('semesters.semester', $activeSemesterId)
+            ->where('sections_per_program_year.academic_year_id', '=', $activeAcademicYearId)
+            ->where('semesters.semester', '=', $activeSemesterId)
             ->pluck('schedules.schedule_id');
+
+        if ($activeSchedules->isEmpty()) {
+            return response()->json(['message' => 'No schedules found for the active semester and academic year.'], 404);
+        }
 
         // Step 4: Update `is_published` for the fetched schedules in the `schedules` table
         $updatedCount = DB::table('schedules')
@@ -625,13 +634,11 @@ class ReportsController extends Controller
         // Step 5: Update `is_published` in the `faculty_schedule_publication` table based on the same schedule IDs
         DB::table('faculty_schedule_publication')
             ->whereIn('schedule_id', $activeSchedules)
-            ->update(['is_published' => $isPublished]);
+            ->update(['is_published' => $isPublished, 'updated_at' => now()]);
 
-        // Step 6: Disable preferences for all faculty by setting `is_enabled` to 0
-        DB::table('preferences_settings')
-            ->update(['is_enabled' => 0, 'updated_at' => now()]);
+        // Removed Step 6: Do not disable preferences
 
-        // Step 7: Return a response
+        // Step 6: Return a response
         return response()->json([
             'message' => 'Schedules and faculty schedule publications updated successfully',
             'updated_count' => $updatedCount,
@@ -768,11 +775,6 @@ class ReportsController extends Controller
             ->distinct('preferences_settings.faculty_id')
             ->count('preferences_settings.faculty_id');
 
-        $preferencesSubmittedCount = DB::table('preferences_settings')
-            ->where('is_enabled', 0)
-            ->count();
-
-        // Calculate preferences submitted properly
         $submittedProperlyCount = $preferencesWithEntries;
         $preferencesProgress = $activeFacultyCount > 0 ? ($submittedProperlyCount / $activeFacultyCount) * 100 : 0;
 
@@ -783,7 +785,7 @@ class ReportsController extends Controller
             ->join('semesters as ca_semesters', 'ca_semesters.semester_id', '=', 'course_assignments.semester_id')
             ->join('sections_per_program_year', 'sections_per_program_year.sections_per_program_year_id', '=', 'section_courses.sections_per_program_year_id')
             ->where('ca_semesters.semester', '=', $activeSemester->semester)
-            ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id)
+            ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id) // Fixed: Removed quotes
             ->select('schedules.day', 'schedules.start_time', 'schedules.end_time', 'schedules.faculty_id', 'schedules.room_id')
             ->get();
 
@@ -822,14 +824,21 @@ class ReportsController extends Controller
             ->join('semesters as ca_semesters', 'ca_semesters.semester_id', '=', 'course_assignments.semester_id')
             ->join('sections_per_program_year', 'sections_per_program_year.sections_per_program_year_id', '=', 'section_courses.sections_per_program_year_id')
             ->where('ca_semesters.semester', '=', $activeSemester->semester)
-            ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id)
+            ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id) // Fixed: Removed quotes
             ->where('faculty_schedule_publication.is_published', 1)
             ->distinct('faculty_schedule_publication.faculty_id')
             ->count('faculty_schedule_publication.faculty_id');
 
         $publishProgress = $activeFacultyCount > 0 ? ($publishedSchedules / $activeFacultyCount) * 100 : 0;
 
-        // Step 9: Structure the response
+        // Step 9: Calculate preferencesSubmissionEnabled
+        if ($activeFacultyCount > 0) {
+            $preferencesSubmissionEnabled = PreferencesSetting::where('is_enabled', 1)->count() === $activeFacultyCount;
+        } else {
+            $preferencesSubmissionEnabled = true; // Default to true if no active faculty
+        }
+
+        // Step 10: Structure the response
         return response()->json([
             'activeAcademicYear' => "{$activeSemester->year_start}-{$activeSemester->year_end}",
             'activeSemester' => $this->getSemesterLabel($activeSemester->semester),
@@ -840,6 +849,7 @@ class ReportsController extends Controller
             'schedulingProgress' => round($schedulingProgress, 0),
             'roomUtilization' => round($roomUtilization, 0),
             'publishProgress' => round($publishProgress, 0),
+            'preferencesSubmissionEnabled' => $preferencesSubmissionEnabled,
         ]);
     }
 
