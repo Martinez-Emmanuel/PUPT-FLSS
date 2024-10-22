@@ -184,7 +184,7 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
       width: '100%',
       data: {
         exportType: 'all',
-        entity: 'rooms',
+        entity: 'room',
         entityData: this.filteredData,
         customTitle: 'All Room Schedules',
         generatePdfFunction: generatePdfFunction,
