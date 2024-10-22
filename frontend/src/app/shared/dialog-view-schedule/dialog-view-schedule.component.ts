@@ -28,7 +28,7 @@ interface ViewScheduleDialogData {
   academicYear?: string;
   semester?: number;
   scheduleGroups?: ScheduleGroup[];
-  generatePdfFunction?: (preview: boolean) => Blob | void; // Add this line
+  generatePdfFunction?: (preview: boolean) => Blob | void; 
   showViewToggle?: boolean;
   exportType?: 'all' | 'single';
 }
@@ -69,25 +69,47 @@ export class DialogViewScheduleComponent implements OnInit {
 
   ngOnInit(): void {
     this.initializeScheduleTitle();
-
-    // Check if the dialog is opened for all schedules
-    if (this.data.exportType === 'all') {
-      this.scheduleData = this.data.entityData;
-      this.generateAndDisplayPdf();
-    } else {
-      // If it's a single schedule view, keep the current logic
-      if (Array.isArray(this.data.entityData) && this.data.entityData.length > 0) {
+  
+    if (this.data.entity === 'program') {
+      if (this.data.scheduleGroups && this.data.scheduleGroups.length > 0) {
+        this.scheduleGroups = this.data.scheduleGroups;
+        this.scheduleData = this.flattenScheduleGroups(this.data.scheduleGroups);
+        this.generateAndDisplayPdf();
+      } else {
+        console.warn('No schedule groups available for programs.');
+        this.scheduleData = [];
+      }
+    } else if (this.data.entity === 'faculty' || this.data.entity === 'room') { 
+      if (this.data.exportType === 'all') {
+        this.scheduleData = this.data.entityData;
+        this.generateAndDisplayPdf();
+      } else if (Array.isArray(this.data.entityData) && this.data.entityData.length > 0) {
         this.scheduleData = this.data.entityData;
       } else {
-        this.scheduleData = [this.data.entityData];
+        console.warn('No schedules found or invalid data structure:', this.data.entityData);
+        this.scheduleData = this.data.entityData || []; 
       }
-      // Generate PDF only for single view initially
-      this.generateAndDisplayPdf();
     }
-
     this.isLoading = false;
   }
   
+
+  private flattenScheduleGroups(groups: ScheduleGroup[]): any[] {
+    const flattenedData: any[] = [];
+
+    groups.forEach((group) => {
+        if (Array.isArray(group.scheduleData)) {
+            group.scheduleData.forEach((scheduleItem: any) => {
+                flattenedData.push({
+                    ...scheduleItem,
+                    groupTitle: group.title
+                });
+            });
+        }
+    });
+
+    return flattenedData;
+  }
 
   private initializeScheduleTitle(): void {
     this.setTitleAndSubtitle();
@@ -120,53 +142,50 @@ export class DialogViewScheduleComponent implements OnInit {
   
   generateAndDisplayPdf(): void {
     if (this.data.generatePdfFunction) {
-        // Pass 'true' to indicate this is for preview
-        const pdfBlob = this.data.generatePdfFunction(true);
-        if (pdfBlob instanceof Blob) {
-            const blobUrl = URL.createObjectURL(pdfBlob);
-            this.pdfBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl);
-        } else {
-            console.error('generatePdfFunction did not return a Blob.');
-            this.pdfBlobUrl = null; // Reset if invalid Blob
-        }
+      const pdfBlob = this.data.generatePdfFunction(true);
+      if (pdfBlob instanceof Blob) {
+        const blobUrl = URL.createObjectURL(pdfBlob);
+        this.pdfBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl);
+      } else {
+        console.error('generatePdfFunction did not return a Blob.');
+        this.pdfBlobUrl = null;
+      }
     } else {
-        console.error('No generatePdfFunction provided.');
-        this.pdfBlobUrl = null; // Reset if function not provided
+      console.error('No generatePdfFunction provided.');
+      this.pdfBlobUrl = null;
     }
-}
+  }
 
-
-downloadPdf(): void {
-  if (this.data.generatePdfFunction) {
-      const pdfBlob = this.data.generatePdfFunction(false); // Generate the PDF Blob for download
+  downloadPdf(): void {
+    if (this.data.generatePdfFunction) {
+      const pdfBlob = this.data.generatePdfFunction(false); 
 
       if (pdfBlob instanceof Blob) {
-          const blobUrl = URL.createObjectURL(pdfBlob);
-          const link = document.createElement('a');
-          link.href = blobUrl;
-          
-          // Use a fallback value if customTitle is undefined
-          const fileName = `${(this.data.customTitle ?? 'schedule').replace(/\s+/g, '_')}_schedule_report.pdf`;
-          link.download = fileName;
+        const blobUrl = URL.createObjectURL(pdfBlob);
+        const link = document.createElement('a');
+        link.href = blobUrl;
 
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
+        const academicYear = this.data.academicYear ? this.data.academicYear.replace(/\s+/g, '_') : '';
 
-          // Clean up the object URL
-          URL.revokeObjectURL(blobUrl);
+        const fileName = `${(this.data.customTitle ?? 'schedule').replace(/\s+/g, '_')}_${academicYear}_report.pdf`;
+        link.download = fileName;
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        URL.revokeObjectURL(blobUrl);
       } else {
-          console.error('Failed to generate a valid Blob for the PDF.');
+        console.error('Failed to generate a valid Blob for the PDF.');
       }
-  } else {
+    } else {
       console.error('No generatePdfFunction provided.');
+    }
   }
-}
 
-trackGroup(index: number, group: ScheduleGroup): any {
-  return group ? group.title : undefined;
-}
-
+  trackGroup(index: number, group: ScheduleGroup): any {
+    return group ? group.title : undefined;
+  }
   
 }
 

@@ -174,7 +174,6 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
     });
   }
 
-
   onExportAll() {
     const generatePdfFunction = (preview: boolean): Blob | void => {
       return this.generateAllRoomsPdfBlob();
@@ -196,9 +195,7 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
   }
 
   onExportSingle(element: Room): void {
-    // Generate the PDF Blob
     const pdfBlob = this.createPdfBlob(element);
-    // Create a download link and trigger the download
     const blobUrl = URL.createObjectURL(pdfBlob);
     const a = document.createElement('a');
     a.href = blobUrl;
@@ -206,12 +203,11 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(blobUrl); // Clean up the object URL
+    URL.revokeObjectURL(blobUrl); 
   }
   
   updateDisplayedData() {
     console.log('Paginator updated');
-    // Additional paginator-related logic can be added here
   }
 
   generateAllRoomsPdfBlob(): Blob {
@@ -253,9 +249,7 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
     return doc.output('blob');
   }
 
-
-   // PDF generation method similar to the report-faculty
-   createPdfBlob(room: Room): Blob {
+  createPdfBlob(room: Room): Blob {
     const doc = new jsPDF('landscape', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.width;
     const margin = 10;
@@ -350,25 +344,23 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
     ];
     const dayColumnWidth = (pageWidth - margin * 2) / days.length;
     const pageHeight = doc.internal.pageSize.height;
-    const maxContentHeight = pageHeight - margin; // Leave margin at bottom
+    const maxContentHeight = pageHeight - margin; 
     
     let currentY = startY;
     let maxYPosition = currentY;
   
-    // Function to start a new page and draw the header
     const startNewPage = () => {
         doc.addPage();
         currentY = this.drawHeader(
           doc,
-          15, // topMargin
+          15, 
           pageWidth,
           margin,
-          22, // logoSize
+          22, 
           doc.getNumberOfPages() > 1 ? 'Room Schedule (Continued)' : 'Room Schedule',
           this.getAcademicYearSubtitle(scheduleData[0])
         );
         
-        // Redraw day headers on new page
         days.forEach((day, index) => {
             const xPosition = margin + index * dayColumnWidth;
             doc.setFillColor(128, 0, 0);
@@ -384,11 +376,10 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
             );
         });
         
-        currentY += 12; // Space after headers
+        currentY += 12; 
         return currentY;
     };
   
-    // Draw initial day headers
     days.forEach((day, index) => {
         const xPosition = margin + index * dayColumnWidth;
         doc.setFillColor(128, 0, 0);
@@ -404,9 +395,8 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
         );
     });
   
-    currentY += 12; // Space after headers
+    currentY += 12; 
   
-    // Process each day's schedule
     days.forEach((day, dayIndex) => {
       const xPosition = margin + dayIndex * dayColumnWidth;
       let yPosition = currentY;
@@ -421,18 +411,19 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
         daySchedule.forEach((item: any) => {
           const boxHeight = 35;
                   
-          // Check if we need a new page
           if (yPosition + boxHeight > maxContentHeight) {
-            // Draw vertical lines for current page before starting a new page
             days.forEach((_, i) => {
               const lineX = margin + i * dayColumnWidth;
               doc.setDrawColor(200, 200, 200);
               doc.setLineWidth(0.5);
               doc.line(lineX, startY, lineX, maxYPosition);
             });
-            doc.line(pageWidth - margin, startY, pageWidth - margin, maxYPosition);
+            doc.line(
+              pageWidth - margin, 
+              startY, pageWidth - margin, 
+              maxYPosition
+            );
                       
-            // Start a new page
             yPosition = startNewPage();
             maxYPosition = yPosition;
           }
@@ -447,7 +438,6 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
             `${startTime} - ${endTime}`
           ];
     
-          // Draw course block
           doc.setFillColor(240, 240, 240);
           doc.rect(xPosition, yPosition, dayColumnWidth, boxHeight, 'F');
     
@@ -466,7 +456,6 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
               textYPosition += 5;
             });
     
-            // Underline the time
             if (index === courseContent.length - 1) {
               const timeTextWidth = doc.getTextWidth(line);
               doc.setDrawColor(0, 0, 0);
@@ -487,7 +476,6 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
         });
       }
     });
-    // Draw final vertical lines and bottom line on the last page
     days.forEach((_, i) => {
       const lineX = margin + i * dayColumnWidth;
         doc.setDrawColor(200, 200, 200);
@@ -498,7 +486,6 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
     doc.line(margin, maxYPosition, pageWidth - margin, maxYPosition);
   }
 
-  // Helper method to format time from "HH:mm:ss" to "HH:mm AM/PM"
   private formatTime(time: string): string {
     const [hours, minutes] = time.split(':').map(Number);
     const period = hours >= 12 ? 'PM' : 'AM';
