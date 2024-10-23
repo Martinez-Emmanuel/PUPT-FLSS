@@ -1,11 +1,11 @@
+@if(isLoading) {
+<div class="loading-wrapper">
+  <app-loading></app-loading>
+</div>
+} @else {
 <div class="overview-container">
-  @if(isLoading) {
-  <div class="loading-wrapper">
-    <app-loading></app-loading>
-  </div>
-  } @else {
   <!--Overview Header-->
-  <!-- <header class="overview-header-container" [@fadeAnimation]>
+  <header class="overview-header-container" [@fadeAnimation]>
     <div class="overview-greetings">
       <h1 id="admin_name">Hello, Admin Marissa!</h1>
       <p id="description">
@@ -16,19 +16,12 @@
       <p class="text">A.Y. {{ activeYear }}, {{ activeSemester }}</p>
       <p class="label">Active Year & Semester</p>
     </div>
-  </header> -->
+  </header>
 
   <!--Overview Main-->
   <main class="overview-main-container" [@fadeAnimation]>
     <!--Cluster One-->
     <div class="main-cluster-one">
-      <!--Greetings-->
-      <div class="overview-greetings">
-        <h1 id="admin_name">Hello, Admin Marissa!</h1>
-        <p id="description">
-          Here's the key overview of the loading and scheduling this semester.
-        </p>
-      </div>
       <!--Quick Stats-->
       <div class="quick-stats">
         <!-- Content for Active Faculty -->
@@ -253,10 +246,6 @@
 
     <!--Cluster Two-->
     <div class="main-cluster-two">
-      <div class="active-year-sem-container">
-        <p class="text">A.Y. {{ activeYear }}, {{ activeSemester }}</p>
-        <p class="label">Active Year & Semester</p>
-      </div>
       <div class="notifications card">
         <h2 class="card-title">
           <span mat-symbol="notifications"></span>Notifications
@@ -267,5 +256,5 @@
       </div>
     </div>
   </main>
-  }
 </div>
+}

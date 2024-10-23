@@ -5,7 +5,7 @@
 }
 
 .overview-container {
-  height: 100%;
+  height: auto;
   @include flex-layout(
     $direction: column,
     $align: stretch,
@@ -25,12 +25,66 @@
     @include flex-layout($justify: flex-start, $gap: var(--spacing-xs));
     font-size: var(--font-size-md);
     font-weight: 500;
+    @include ellipsis;
+  }
+}
+
+/* Overview Header */
+.overview-header-container {
+  @include flex-layout($align: stretch, $justify: space-between);
+
+  .overview-greetings {
+    @include flex-layout(
+      $direction: column,
+      $align: flex-start,
+      $gap: var(--spacing-xxs)
+    );
+
+    #admin_name {
+      @include gradient-primary-text(315deg);
+      font-weight: 600;
+    }
+
+    #description {
+      font-size: var(--font-size-md);
+    }
+  }
+
+  .active-year-sem-container {
+    @include flex-layout(
+      $direction: column,
+      $align: flex-start,
+      $gap: var(--spacing-xxs)
+    );
+
+    @include gradient-primary(315deg);
+    padding: var(--spacing-xs) var(--spacing-md);
+    border-radius: var(--border-radius-md);
+    color: white;
+
+    .text,
+    .label {
+      @include reset-styles;
+      @include ellipsis;
+    }
+
+    .text {
+      font-weight: 500;
+    }
+
+    .label {
+      opacity: var(--opacity-semi-opaque);
+    }
   }
 }
 
 /* Overview Main */
 .overview-main-container {
-  @include flex-layout($gap: var(--spacing-md));
+  @include flex-layout(
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-md)
+  );
   height: inherit;
 
   /* Cluster One */
@@ -43,6 +97,7 @@
     flex: 6;
     height: inherit;
     // border: 1px solid grey;
+    // overflow: auto;
 
     .overview-greetings {
       @include flex-layout(
@@ -111,13 +166,15 @@
 
           .overview-item {
             flex: 1;
+            @include flex-layout(
+              $direction: column,
+              $align: center,
+              $justify: center
+            );
             background-color: var(--main-bg);
             border-radius: var(--border-radius-sm);
             box-shadow: var(--shadow-level-0);
             padding: var(--spacing-sm);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
             gap: var(--spacing-md);
 
             .item-title {
@@ -125,12 +182,12 @@
               font-weight: 400;
               color: var(--text-primary);
               text-align: center;
+              @include ellipsis;
             }
 
             .progress-container {
               width: 16vh;
               height: 16vh;
-              position: relative;
 
               .circular-progress {
                 width: 100%;
@@ -251,32 +308,6 @@
     flex: 2;
     height: inherit;
 
-    .active-year-sem-container {
-      @include flex-layout(
-        $direction: column,
-        $align: flex-start,
-        $gap: var(--spacing-xxs)
-      );
-
-      @include gradient-primary(315deg);
-      padding: var(--spacing-xs) var(--spacing-md);
-      border-radius: var(--border-radius-md);
-      color: white;
-
-      .text,
-      .label {
-        @include reset-styles;
-      }
-
-      .text {
-        font-weight: 500;
-      }
-
-      .label {
-        opacity: var(--opacity-semi-opaque);
-      }
-    }
-
     .notifications {
       flex: 1;
       @include flex-layout(
@@ -289,6 +320,62 @@
         flex: 1;
         @include flex-layout;
       }
+    }
+  }
+}
+
+// ==============
+// MEDIA QUERIES
+// ==============
+
+@media screen and (max-width: 1230px) {
+  .overview-main-container {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $justify: flex-start,
+      $gap: var(--spacing-md)
+    );
+  }
+}
+
+@media screen and (max-width: 1110px) {
+  .overview-header-container {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $justify: space-between,
+      $gap: var(--spacing-md)
+    );
+  }
+}
+
+@media screen and (max-width: 800px) {
+  .overview-main-container .main-cluster-one {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $justify: flex-start,
+      $gap: var(--spacing-md)
+    );
+
+    height: auto;
+
+    &.main-cluster-one .quick-stats {
+      @include flex-layout(
+        $direction: column,
+        $align: stretch,
+        $justify: flex-start,
+        $gap: var(--spacing-md)
+      );
+    }
+
+    &.main-cluster-one .academic-and-action {
+      @include flex-layout(
+        $direction: column,
+        $align: stretch,
+        $gap: var(--spacing-md)
+      );
     }
   }
 }

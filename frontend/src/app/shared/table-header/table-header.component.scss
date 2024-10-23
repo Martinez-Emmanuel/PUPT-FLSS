@@ -10,19 +10,23 @@
     @include flex-layout($gap: var(--spacing-md));
 
     .search-field {
-      width: 20rem;
+      width: auto;
+      flex: 1;
     }
 
     .program-field {
-      width: 20rem;
+      width: auto;
+      flex: 2;
     }
 
     .year-level-field {
-      width: 10rem;
+      width: auto;
+      flex: 1;
     }
 
     .sections-field {
-      width: 10rem;
+      width: auto;
+      flex: 1;
 
       mat-icon {
         cursor: pointer;
@@ -30,7 +34,7 @@
     }
 
     .curriculum-field {
-      width: 10rem;
+      width: auto;
     }
   }
 
@@ -76,5 +80,33 @@
 
   .export-button {
     background-color: var(--neutral-button);
+  }
+}
+
+// ==============
+// MEDIA QUERIES
+// ==============
+
+@media screen and (max-width: 1275px) {
+  .header-container {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $justify: space-between,
+      $gap: var(--spacing-md)
+    );
+  }
+
+  .header-container .object-container {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $justify: space-between,
+      $gap: var(--spacing-md)
+    );
+
+    .active-year-sem-container {
+      padding: var(--spacing-sm) !important;
+    }
   }
 }
