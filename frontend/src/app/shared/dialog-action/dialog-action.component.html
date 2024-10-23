@@ -1,0 +1,38 @@
+<div class="dialog-action-container">
+  <!--Dialog Action Title-->
+  <h2 class="dialog-title">
+    {{ dialogTitle }}
+  </h2>
+
+  <!--Dialog Content-->
+  <div class="dialog-content">
+    <p class="main-action">
+      <strong>{{ actionText }}</strong> all active faculty members to submit
+      their
+      {{
+        data.type === "preferences"
+          ? "preferred load and schedule"
+          : "load and schedule"
+      }}
+      for the A.Y. <span>{{ data.academicYear }}, {{ data.semester }}</span
+      >.
+    </p>
+
+    <p class="secondary-action">
+      To <strong>{{ actionText }}</strong> submission for specific faculty
+      members only, go to the
+      <a [routerLink]="navigationLink" (click)="closeDialog()">
+        {{ linkText }}</a
+      >
+      page.
+    </p>
+  </div>
+
+  <!--Dialog Buttons-->
+  <div class="dialog-buttons">
+    <button mat-button class="cancel" (click)="closeDialog()">Cancel</button>
+    <button mat-flat-button color="primary" (click)="confirmAction()">
+      Confirm
+    </button>
+  </div>
+</div>

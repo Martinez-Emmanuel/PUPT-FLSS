@@ -1,0 +1,80 @@
+@import "../../../styles/mixins.scss";
+
+.dialog-action-container {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-lg)
+  );
+  padding: var(--spacing-lg);
+  max-width: var(--dialog-base);
+}
+
+.dialog-title {
+  margin: 0;
+  color: var(--primary-text);
+  font-size: var(--font-size-xl);
+  font-weight: 500;
+  // border: 1px solid red;
+}
+
+.dialog-content {
+  // border: 1px solid cyan;
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-md)
+  );
+
+  p {
+    margin: 0;
+    line-height: var(--line-height-md);
+    text-align: justify;
+  }
+  
+  a {
+    color: var(--primary-text);
+    text-decoration: none;
+    font-weight: 500;
+    position: relative;
+    display: inline-block;
+    outline: none;
+  }
+  
+  a::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 1.5px;
+    bottom: 0;
+    left: 0;
+    background-color: var(--primary-text);
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s ease;
+    backface-visibility: hidden;
+    -webkit-font-smoothing: antialiased;
+    will-change: transform;
+  }
+  
+  a:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+  }
+}
+
+.dialog-buttons {
+  // border: 1px solid yellow;
+  @include flex-layout(
+    $align: stretch,
+    $justify: flex-end,
+    $gap: var(--spacing-sm)
+  );
+  padding-top: var(--spacing-sm);
+
+  .cancel {
+    color: var(--primary-text);
+  }
+}
