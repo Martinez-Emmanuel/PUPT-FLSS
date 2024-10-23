@@ -14,7 +14,7 @@ class SendFacultyPreferenceEmailJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $faculty;
-    
+
     public $tries = 5; // Retry up to 5 times
     public $timeout = 120; // Timeout after 120 seconds
 
@@ -45,7 +45,7 @@ class SendFacultyPreferenceEmailJob implements ShouldQueue
         // Send the email
         Mail::send('emails.faculty_notification', $dataPreference, function ($message) use ($dataPreference) {
             $message->to($dataPreference['email'])
-                    ->subject('Set and Submit Your Subject Preference');
+                ->subject('Set and Submit Your Subject Preference');
         });
     }
 

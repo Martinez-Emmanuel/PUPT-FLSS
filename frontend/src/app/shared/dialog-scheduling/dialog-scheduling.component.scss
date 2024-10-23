@@ -1,5 +1,9 @@
 @import "../../../styles/mixins.scss";
 
+:host {
+  @include custom-spinner(var(--primary-text));
+}
+
 .scheduling-dialog-container {
   @include flex-layout($align: stretch);
 
