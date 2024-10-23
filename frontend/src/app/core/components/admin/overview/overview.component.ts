@@ -9,9 +9,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 import { DialogGenericComponent } from '../../../../shared/dialog-generic/dialog-generic.component';
+import { DialogActionComponent } from '../../../../shared/dialog-action/dialog-action.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
-import { OverviewService, OverviewDetails } from '../../../services/admin/overview/overview.service';
+import {
+  OverviewService,
+  OverviewDetails,
+} from '../../../services/admin/overview/overview.service';
 
 import { fadeAnimation } from '../../../animations/animations';
 
@@ -28,6 +32,7 @@ interface CurriculumInfo {
     MatDialogModule,
     MatTooltipModule,
     LoadingComponent,
+    DialogActionComponent,
   ],
   templateUrl: './overview.component.html',
   styleUrls: ['./overview.component.scss'],
@@ -43,7 +48,9 @@ export class OverviewComponent implements OnInit, OnDestroy {
   activeSemester = 'N/A';
   activeFacultyCount = 0;
   activeProgramsCount = 0;
-  activeCurricula: CurriculumInfo[] = [{ curriculum_id: 0, curriculum_year: '0' }];
+  activeCurricula: CurriculumInfo[] = [
+    { curriculum_id: 0, curriculum_year: '0' },
+  ];
 
   // Progress metrics
   preferencesProgress = 0;
@@ -189,25 +196,42 @@ export class OverviewComponent implements OnInit, OnDestroy {
   }
 
   togglePreferencesSubmission(): void {
-    const newStatus = !this.preferencesEnabled;
+    const dialogRef = this.dialog.open(DialogActionComponent, {
+      data: {
+        type: 'preferences',
+        academicYear: this.activeYear,
+        semester: this.activeSemester,
+        currentState: this.preferencesEnabled,
+      },
+      disableClose: true,
+    });
 
-    this.overviewService
-      .togglePreferencesSettings(newStatus)
+    dialogRef
+      .afterClosed()
       .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.showSuccessMessage(
-            `Faculty Preferences Submission ${
-              newStatus ? 'enabled' : 'disabled'
-            } successfully.`
-          );
-          this.fetchOverviewDetails();
-        },
-        error: this.handleError(
-          `Failed to ${
-            newStatus ? 'enable' : 'disable'
-          } Faculty Preferences Submission. Please try again.`
-        ),
+      .subscribe((result) => {
+        if (result) {
+          const newStatus = !this.preferencesEnabled;
+
+          this.overviewService
+            .togglePreferencesSettings(newStatus)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: () => {
+                this.showSuccessMessage(
+                  `Faculty Preferences Submission ${
+                    newStatus ? 'enabled' : 'disabled'
+                  } successfully.`
+                );
+                this.fetchOverviewDetails();
+              },
+              error: this.handleError(
+                `Failed to ${
+                  newStatus ? 'enable' : 'disable'
+                } Faculty Preferences Submission. Please try again.`
+              ),
+            });
+        }
       });
   }
 
@@ -217,25 +241,42 @@ export class OverviewComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const newStatus = !this.schedulesPublished;
+    const dialogRef = this.dialog.open(DialogActionComponent, {
+      data: {
+        type: 'publish',
+        academicYear: this.activeYear,
+        semester: this.activeSemester,
+        currentState: this.schedulesPublished,
+      },
+      disableClose: true,
+    });
 
-    this.overviewService
-      .toggleAllSchedules(newStatus)
+    dialogRef
+      .afterClosed()
       .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.showSuccessMessage(
-            `Faculty Load and Schedule ${
-              newStatus ? 'published' : 'unpublished'
-            } successfully.`
-          );
-          this.fetchOverviewDetails();
-        },
-        error: this.handleError(
-          `Failed to ${
-            newStatus ? 'publish' : 'unpublish'
-          } Faculty Load and Schedule. Please try again.`
-        ),
+      .subscribe((result) => {
+        if (result) {
+          const newStatus = !this.schedulesPublished;
+
+          this.overviewService
+            .toggleAllSchedules(newStatus)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: () => {
+                this.showSuccessMessage(
+                  `Faculty Load and Schedule ${
+                    newStatus ? 'published' : 'unpublished'
+                  } successfully.`
+                );
+                this.fetchOverviewDetails();
+              },
+              error: this.handleError(
+                `Failed to ${
+                  newStatus ? 'publish' : 'unpublish'
+                } Faculty Load and Schedule. Please try again.`
+              ),
+            });
+        }
       });
   }
 
