@@ -6,33 +6,62 @@
 
   <!--Dialog Content-->
   <div class="dialog-content">
-    <p class="main-action">
+    <!--Main Action-->
+    <div class="main-text">
       <strong>{{ actionText }}</strong> all active faculty members to submit
       their
       {{
         data.type === "preferences"
           ? "preferred load and schedule"
-          : "load and schedule"
+          : "official load and schedule"
       }}
-      for the A.Y. <span>{{ data.academicYear }}, {{ data.semester }}</span
-      >.
-    </p>
+      for this semester.
+    </div>
 
-    <p class="secondary-action">
-      To <strong>{{ actionText }}</strong> submission for specific faculty
-      members only, go to the
-      <a [routerLink]="navigationLink" (click)="closeDialog()">
+    <!--Secondary Text-->
+    <div class="secondary-text">
+      For specific faculty, go to
+      <a class="link" [routerLink]="navigationLink" (click)="closeDialog()">
         {{ linkText }}</a
       >
       page.
-    </p>
+    </div>
+
+    <!-- Email Notification Option -->
+    @if (showEmailOption) {
+    <div class="email-option">
+      <mat-checkbox [(ngModel)]="sendEmail" class="email-checkbox">
+        <span class="checkbox-content">
+          <!-- <mat-icon>email</mat-icon> -->
+           <span mat-symbol="email"></span>
+          <span>Send email to all faculty members</span>
+        </span>
+      </mat-checkbox>
+    </div>
+    }
   </div>
 
   <!--Dialog Buttons-->
   <div class="dialog-buttons">
-    <button mat-button class="cancel" (click)="closeDialog()">Cancel</button>
-    <button mat-flat-button color="primary" (click)="confirmAction()">
-      Confirm
+    <button
+      mat-button
+      class="cancel"
+      (click)="closeDialog()"
+      [disabled]="isProcessing"
+    >
+      Cancel
+    </button>
+    <button
+      mat-flat-button
+      color="primary"
+      (click)="confirmAction()"
+      [disabled]="isProcessing"
+    >
+      @if (!isProcessing) {
+      <span>Confirm</span>
+      } @if (isProcessing) {
+      <mat-spinner class="custom-spinner" diameter="25"></mat-spinner>
+      }
     </button>
   </div>
 </div>

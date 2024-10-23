@@ -1,5 +1,16 @@
 @import "../../../styles/mixins.scss";
 
+:host ::ng-deep {
+  .mat-mdc-checkbox .mat-internal-form-field {
+    display: flex;
+    flex-direction: row-reverse;
+  }
+}
+
+:host {
+  @include custom-spinner;
+}
+
 .dialog-action-container {
   @include flex-layout(
     $direction: column,
@@ -11,16 +22,16 @@
   max-width: var(--dialog-base);
 }
 
+/* Dialog Title */
 .dialog-title {
   margin: 0;
   color: var(--primary-text);
   font-size: var(--font-size-xl);
   font-weight: 500;
-  // border: 1px solid red;
 }
 
+/* Dialog Content */
 .dialog-content {
-  // border: 1px solid cyan;
   @include flex-layout(
     $direction: column,
     $align: stretch,
@@ -28,45 +39,68 @@
     $gap: var(--spacing-md)
   );
 
-  p {
+  .main-text {
     margin: 0;
     line-height: var(--line-height-md);
     text-align: justify;
   }
-  
-  a {
-    color: var(--primary-text);
-    text-decoration: none;
-    font-weight: 500;
-    position: relative;
-    display: inline-block;
-    outline: none;
+
+  .secondary-text {
+    .link {
+      color: var(--primary-text);
+      text-decoration: none;
+      font-weight: 500;
+      position: relative;
+      display: inline-block;
+      outline: none;
+    }
+
+    .link::after {
+      content: "";
+      position: absolute;
+      width: 100%;
+      height: 1.5px;
+      bottom: 0;
+      left: 0;
+      background-color: var(--primary-text);
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform 0.3s ease;
+      backface-visibility: hidden;
+      -webkit-font-smoothing: antialiased;
+      will-change: transform;
+    }
+
+    .link:hover::after {
+      transform: scaleX(1);
+      transform-origin: left;
+    }
   }
-  
-  a::after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 1.5px;
-    bottom: 0;
-    left: 0;
-    background-color: var(--primary-text);
-    transform: scaleX(0);
-    transform-origin: right;
-    transition: transform 0.3s ease;
-    backface-visibility: hidden;
-    -webkit-font-smoothing: antialiased;
-    will-change: transform;
-  }
-  
-  a:hover::after {
-    transform: scaleX(1);
-    transform-origin: left;
+
+  .email-option {
+    margin: var(--spacing-sm) 0;
+    background-color: var(--neutral-option);
+    border-radius: var(--spacing-xs);
+
+    .email-checkbox {
+      width: 100%;
+
+      .checkbox-content {
+        @include flex-layout($gap: var(--spacing-xs));
+        font-size: var(--font-size-md);
+
+        span[mat-symbol] {
+          @include flex-layout;
+          font-size: var(--font-size-lg);
+          padding-left: var(--spacing-xxs);
+        }
+      }
+    }
   }
 }
 
+/* Dialog Buttons */
 .dialog-buttons {
-  // border: 1px solid yellow;
   @include flex-layout(
     $align: stretch,
     $justify: flex-end,

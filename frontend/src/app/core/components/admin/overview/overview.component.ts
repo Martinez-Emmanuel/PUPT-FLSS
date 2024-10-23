@@ -4,18 +4,15 @@ import { Subject, takeUntil } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarRef } from '@angular/material/snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 import { DialogGenericComponent } from '../../../../shared/dialog-generic/dialog-generic.component';
-import { DialogActionComponent } from '../../../../shared/dialog-action/dialog-action.component';
+import { DialogActionComponent, DialogActionData } from '../../../../shared/dialog-action/dialog-action.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
-import {
-  OverviewService,
-  OverviewDetails,
-} from '../../../services/admin/overview/overview.service';
+import { OverviewService, OverviewDetails } from '../../../services/admin/overview/overview.service';
 
 import { fadeAnimation } from '../../../animations/animations';
 
@@ -184,7 +181,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
     );
 
     this.overviewService
-      .sendEmails()
+      .sendPrefEmail()
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: () => {
@@ -195,44 +192,28 @@ export class OverviewComponent implements OnInit, OnDestroy {
       });
   }
 
+  // ================
+  // Toggle Methods
+  // ================
+
   togglePreferencesSubmission(): void {
+    const dialogData: DialogActionData = {
+      type: 'preferences',
+      academicYear: this.activeYear,
+      semester: this.activeSemester,
+      currentState: this.preferencesEnabled,
+    };
+
     const dialogRef = this.dialog.open(DialogActionComponent, {
-      data: {
-        type: 'preferences',
-        academicYear: this.activeYear,
-        semester: this.activeSemester,
-        currentState: this.preferencesEnabled,
-      },
+      data: dialogData,
       disableClose: true,
     });
 
-    dialogRef
-      .afterClosed()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((result) => {
-        if (result) {
-          const newStatus = !this.preferencesEnabled;
-
-          this.overviewService
-            .togglePreferencesSettings(newStatus)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-              next: () => {
-                this.showSuccessMessage(
-                  `Faculty Preferences Submission ${
-                    newStatus ? 'enabled' : 'disabled'
-                  } successfully.`
-                );
-                this.fetchOverviewDetails();
-              },
-              error: this.handleError(
-                `Failed to ${
-                  newStatus ? 'enable' : 'disable'
-                } Faculty Preferences Submission. Please try again.`
-              ),
-            });
-        }
-      });
+    dialogRef.afterClosed().subscribe((result: boolean) => {
+      if (result) {
+        this.fetchOverviewDetails();
+      }
+    });
   }
 
   togglePublishSchedules(): void {
@@ -241,44 +222,28 @@ export class OverviewComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const dialogData: DialogActionData = {
+      type: 'publish',
+      academicYear: this.activeYear,
+      semester: this.activeSemester,
+      currentState: this.schedulesPublished,
+    };
+
     const dialogRef = this.dialog.open(DialogActionComponent, {
-      data: {
-        type: 'publish',
-        academicYear: this.activeYear,
-        semester: this.activeSemester,
-        currentState: this.schedulesPublished,
-      },
+      data: dialogData,
       disableClose: true,
     });
 
-    dialogRef
-      .afterClosed()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((result) => {
-        if (result) {
-          const newStatus = !this.schedulesPublished;
-
-          this.overviewService
-            .toggleAllSchedules(newStatus)
-            .pipe(takeUntil(this.destroy$))
-            .subscribe({
-              next: () => {
-                this.showSuccessMessage(
-                  `Faculty Load and Schedule ${
-                    newStatus ? 'published' : 'unpublished'
-                  } successfully.`
-                );
-                this.fetchOverviewDetails();
-              },
-              error: this.handleError(
-                `Failed to ${
-                  newStatus ? 'publish' : 'unpublish'
-                } Faculty Load and Schedule. Please try again.`
-              ),
-            });
-        }
-      });
+    dialogRef.afterClosed().subscribe((result: boolean) => {
+      if (result) {
+        this.fetchOverviewDetails();
+      }
+    });
   }
+
+  // ================
+  // Utility Methods
+  // ================
 
   private showSuccessMessage(message: string): void {
     this.snackBar.open(message, 'Close', { duration: this.SNACKBAR_DURATION });
