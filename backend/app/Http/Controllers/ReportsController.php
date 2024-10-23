@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\PreferencesSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\ActiveSemester;
 use Illuminate\Support\Facades\Validator;
 
 class ReportsController extends Controller
@@ -62,7 +62,7 @@ class ReportsController extends Controller
             ->leftJoin('rooms', 'rooms.room_id', '=', 'current_schedules.room_id')
             ->leftJoin('faculty_schedule_publication', function ($join) {
                 $join->on('faculty_schedule_publication.schedule_id', '=', 'current_schedules.schedule_id')
-                     ->on('faculty_schedule_publication.faculty_id', '=', 'faculty.id');
+                    ->on('faculty_schedule_publication.faculty_id', '=', 'faculty.id');
             })
             ->select(
                 'faculty.id as faculty_id',
@@ -101,7 +101,7 @@ class ReportsController extends Controller
                     'faculty_type' => $schedule->faculty_type,
                     'assigned_units' => 0,
                     'is_published' => 0,
-                    'schedules' => []
+                    'schedules' => [],
                 ];
             }
 
@@ -125,8 +125,8 @@ class ReportsController extends Controller
                         'lec' => $schedule->lec_hours,
                         'lab' => $schedule->lab_hours,
                         'units' => $schedule->units,
-                        'tuition_hours' => $schedule->tuition_hours
-                    ]
+                        'tuition_hours' => $schedule->tuition_hours,
+                    ],
                 ];
             }
         }
@@ -139,8 +139,8 @@ class ReportsController extends Controller
                 'year_end' => $activeSemester->year_end,
                 'active_semester_id' => $activeSemester->active_semester_id,
                 'semester' => $activeSemester->semester,
-                'faculties' => array_values($faculties)
-            ]
+                'faculties' => array_values($faculties),
+            ],
         ]);
     }
 
@@ -232,7 +232,7 @@ class ReportsController extends Controller
                     'location' => $schedule->location,
                     'floor_level' => $schedule->floor_level,
                     'capacity' => $schedule->capacity,
-                    'schedules' => []
+                    'schedules' => [],
                 ];
             }
 
@@ -255,8 +255,8 @@ class ReportsController extends Controller
                         'lec' => $schedule->lec,
                         'lab' => $schedule->lab,
                         'units' => $schedule->units,
-                        'tuition_hours' => $schedule->tuition_hours
-                    ]
+                        'tuition_hours' => $schedule->tuition_hours,
+                    ],
                 ];
             }
         }
@@ -269,8 +269,8 @@ class ReportsController extends Controller
                 'year_end' => $activeSemester->year_end,
                 'active_semester_id' => $activeSemester->active_semester_id,
                 'semester' => $activeSemester->semester,
-                'rooms' => array_values($rooms)
-            ]
+                'rooms' => array_values($rooms),
+            ],
         ]);
     }
 
@@ -363,7 +363,7 @@ class ReportsController extends Controller
                     'program_id' => $schedule->program_id,
                     'program_code' => $schedule->program_code,
                     'program_title' => $schedule->program_title,
-                    'year_levels' => []
+                    'year_levels' => [],
                 ];
             }
 
@@ -371,7 +371,7 @@ class ReportsController extends Controller
             if (!isset($programs[$schedule->program_id]['year_levels'][$schedule->year_level])) {
                 $programs[$schedule->program_id]['year_levels'][$schedule->year_level] = [
                     'year_level' => $schedule->year_level,
-                    'sections' => []
+                    'sections' => [],
                 ];
             }
 
@@ -379,7 +379,7 @@ class ReportsController extends Controller
             if (!isset($programs[$schedule->program_id]['year_levels'][$schedule->year_level]['sections'][$schedule->section_name])) {
                 $programs[$schedule->program_id]['year_levels'][$schedule->year_level]['sections'][$schedule->section_name] = [
                     'section_name' => $schedule->section_name,
-                    'schedules' => []
+                    'schedules' => [],
                 ];
             }
 
@@ -400,8 +400,8 @@ class ReportsController extends Controller
                         'lec' => $schedule->lec,
                         'lab' => $schedule->lab,
                         'units' => $schedule->units,
-                        'tuition_hours' => $schedule->tuition_hours
-                    ]
+                        'tuition_hours' => $schedule->tuition_hours,
+                    ],
                 ];
             }
         }
@@ -422,8 +422,8 @@ class ReportsController extends Controller
                 'year_end' => $activeSemester->year_end,
                 'active_semester_id' => $activeSemester->active_semester_id,
                 'semester' => $activeSemester->semester,
-                'programs' => array_values($programs)
-            ]
+                'programs' => array_values($programs),
+            ],
         ]);
     }
 
@@ -510,7 +510,7 @@ class ReportsController extends Controller
             ->leftJoin('rooms', 'rooms.room_id', '=', 'current_schedules.room_id')
             ->leftJoin('faculty_schedule_publication', function ($join) {
                 $join->on('faculty_schedule_publication.schedule_id', '=', 'current_schedules.schedule_id')
-                     ->on('faculty_schedule_publication.faculty_id', '=', 'faculty.id');
+                    ->on('faculty_schedule_publication.faculty_id', '=', 'faculty.id');
             })
             ->select(
                 'faculty.id as faculty_id',
@@ -553,7 +553,7 @@ class ReportsController extends Controller
             'assigned_units' => 0,
             'total_hours' => 0,
             'is_published' => 0,
-            'schedules' => []
+            'schedules' => [],
         ];
 
         foreach ($facultySchedules as $schedule) {
@@ -578,35 +578,39 @@ class ReportsController extends Controller
                         'lec' => $schedule->lec_hours,
                         'lab' => $schedule->lab_hours,
                         'units' => $schedule->units,
-                        'tuition_hours' => $schedule->tuition_hours
-                    ]
+                        'tuition_hours' => $schedule->tuition_hours,
+                    ],
                 ];
             }
         }
 
         // Step 7: Structure the response with the new JSON format
         return response()->json([
-            'faculty_schedule' => $facultyData
+            'faculty_schedule' => $facultyData,
         ]);
     }
 
     public function toggleAllSchedules(Request $request)
     {
-        // Step 1: Get the active semester and academic year
+        // Step 1: Validate the input
+        $validated = $request->validate([
+            'is_published' => 'required|boolean',
+        ]);
+
+        $isPublished = $validated['is_published'];
+
+        // Step 2: Get the active semester and academic year
         $activeSemester = DB::table('active_semesters')
             ->where('is_active', 1)
             ->first();
-    
+
         if (!$activeSemester) {
             return response()->json(['message' => 'No active semester found'], 404);
         }
-    
+
         $activeAcademicYearId = $activeSemester->academic_year_id;
         $activeSemesterId = $activeSemester->semester_id;
-    
-        // Step 2: Define the new `is_published` value (toggle between 0 and 1)
-        $isPublished = $request->input('is_published'); 
-    
+
         // Step 3: Fetch schedule IDs for the active semester and academic year
         $activeSchedules = DB::table('schedules')
             ->select('schedules.schedule_id')
@@ -614,58 +618,60 @@ class ReportsController extends Controller
             ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
             ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
             ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
-            ->where('sections_per_program_year.academic_year_id', $activeAcademicYearId)
-            ->where('semesters.semester', $activeSemesterId)
-            ->pluck('schedules.schedule_id'); 
-    
+            ->where('sections_per_program_year.academic_year_id', '=', $activeAcademicYearId)
+            ->where('semesters.semester', '=', $activeSemesterId)
+            ->pluck('schedules.schedule_id');
+
+        if ($activeSchedules->isEmpty()) {
+            return response()->json(['message' => 'No schedules found for the active semester and academic year.'], 404);
+        }
+
         // Step 4: Update `is_published` for the fetched schedules in the `schedules` table
         $updatedCount = DB::table('schedules')
             ->whereIn('schedule_id', $activeSchedules)
             ->update(['is_published' => $isPublished]);
-    
+
         // Step 5: Update `is_published` in the `faculty_schedule_publication` table based on the same schedule IDs
         DB::table('faculty_schedule_publication')
             ->whereIn('schedule_id', $activeSchedules)
-            ->update(['is_published' => $isPublished]);
-    
-        // Step 6: Disable preferences for all faculty by setting `is_enabled` to 0
-        DB::table('preferences_settings')
-            ->update(['is_enabled' => 0, 'updated_at' => now()]);
-    
-        // Step 7: Return a response
+            ->update(['is_published' => $isPublished, 'updated_at' => now()]);
+
+        // Removed Step 6: Do not disable preferences
+
+        // Step 6: Return a response
         return response()->json([
             'message' => 'Schedules and faculty schedule publications updated successfully',
             'updated_count' => $updatedCount,
             'is_published' => $isPublished,
             'active_semester_id' => $activeSemester->active_semester_id,
             'academic_year_id' => $activeAcademicYearId,
-            'semester_id' => $activeSemesterId
+            'semester_id' => $activeSemesterId,
         ]);
     }
-    
+
     public function toggleSingleSchedule(Request $request)
     {
         // Step 1: Validate the input
         $request->validate([
             'faculty_id' => 'required|integer|exists:faculty_schedule_publication,faculty_id',
-            'is_published' => 'required|boolean'
+            'is_published' => 'required|boolean',
         ]);
-    
+
         $facultyId = $request->input('faculty_id');
         $isPublished = $request->input('is_published');
-    
+
         // Step 2: Get the active semester and academic year
         $activeSemester = DB::table('active_semesters')
             ->where('is_active', 1)
             ->first();
-    
+
         if (!$activeSemester) {
             return response()->json(['message' => 'No active semester found'], 404);
         }
-    
+
         $activeAcademicYearId = $activeSemester->academic_year_id;
         $activeSemesterId = $activeSemester->semester_id;
-    
+
         // Step 3: Fetch all related schedule_ids from the faculty_schedule_publication table
         // Only for schedules that match the active academic year and semester
         $facultySchedules = DB::table('faculty_schedule_publication')
@@ -678,35 +684,35 @@ class ReportsController extends Controller
             ->where('sections_per_program_year.academic_year_id', $activeAcademicYearId)
             ->where('semesters.semester', $activeSemesterId)
             ->pluck('schedules.schedule_id', 'faculty_schedule_publication.faculty_schedule_publication_id');
-    
+
         if ($facultySchedules->isEmpty()) {
             return response()->json(['message' => 'No schedules found for the given faculty in the active semester and academic year'], 404);
         }
-    
+
         // Step 4: Update the is_published value in the faculty_schedule_publication table for active schedules
         DB::table('faculty_schedule_publication')
             ->whereIn('faculty_schedule_publication_id', $facultySchedules->keys())
             ->update(['is_published' => $isPublished, 'updated_at' => now()]);
-    
+
         // Step 5: Update the corresponding is_published value in the schedules table for active schedules
         DB::table('schedules')
             ->whereIn('schedule_id', $facultySchedules->values())
             ->update(['is_published' => $isPublished, 'updated_at' => now()]);
-    
+
         // Step 6: Disable preferences for the individual faculty** by setting `is_enabled` to 0
         DB::table('preferences_settings')
             ->where('faculty_id', $facultyId)
             ->update(['is_enabled' => 0, 'updated_at' => now()]);
-    
+
         // Step 7: Return a success response
         return response()->json([
             'message' => 'Publication status updated successfully for the faculty',
             'faculty_id' => $facultyId,
             'is_published' => $isPublished,
-            'updated_schedule_ids' => $facultySchedules->values()
+            'updated_schedule_ids' => $facultySchedules->values(),
         ]);
     }
-    
+
     private function isScheduleValid($schedule)
     {
         return !(
@@ -717,5 +723,159 @@ class ReportsController extends Controller
             is_null($schedule->faculty_code) &&
             is_null($schedule->room_code)
         );
+    }
+
+    public function getOverviewDetails()
+    {
+        // Step 1: Retrieve the current active semester with academic year details
+        $activeSemester = DB::table('active_semesters')
+            ->join('academic_years', 'active_semesters.academic_year_id', '=', 'academic_years.academic_year_id')
+            ->join('semesters', 'active_semesters.semester_id', '=', 'semesters.semester_id')
+            ->where('active_semesters.is_active', 1)
+            ->select(
+                'academic_years.academic_year_id',
+                'academic_years.year_start',
+                'academic_years.year_end',
+                'semesters.semester',
+                'active_semesters.active_semester_id'
+            )
+            ->first();
+
+        if (!$activeSemester) {
+            return response()->json(['message' => 'No active semester found.'], 404);
+        }
+
+        // Step 2: Count the number of active faculty
+        $activeFacultyCount = DB::table('faculty')
+            ->join('users', 'faculty.user_id', '=', 'users.id')
+            ->where('users.status', 'Active')
+            ->count();
+
+        // Step 3: Count the number of active programs in the current academic year
+        $activeProgramsCount = DB::table('program_year_level_curricula')
+            ->where('academic_year_id', $activeSemester->academic_year_id)
+            ->distinct('program_id')
+            ->count('program_id');
+
+        // Step 4: Retrieve active curricula used in the current academic year
+        $activeCurricula = DB::table('program_year_level_curricula')
+            ->join('curricula', 'program_year_level_curricula.curriculum_id', '=', 'curricula.curriculum_id')
+            ->where('program_year_level_curricula.academic_year_id', $activeSemester->academic_year_id)
+            ->distinct()
+            ->select('curricula.curriculum_id', 'curricula.curriculum_year')
+            ->get();
+
+        // Step 5: Calculate Preferences Progress
+        $preferencesWithEntries = DB::table('preferences_settings')
+            ->join('preferences', function ($join) use ($activeSemester) {
+                $join->on('preferences.faculty_id', '=', 'preferences_settings.faculty_id')
+                    ->where('preferences.active_semester_id', '=', $activeSemester->active_semester_id);
+            })
+            ->where('preferences_settings.is_enabled', 0)
+            ->distinct('preferences_settings.faculty_id')
+            ->count('preferences_settings.faculty_id');
+
+        $submittedProperlyCount = $preferencesWithEntries;
+        $preferencesProgress = $activeFacultyCount > 0 ? ($submittedProperlyCount / $activeFacultyCount) * 100 : 0;
+
+        // Step 6: Calculate Scheduling Progress
+        $schedules = DB::table('schedules')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->join('semesters as ca_semesters', 'ca_semesters.semester_id', '=', 'course_assignments.semester_id')
+            ->join('sections_per_program_year', 'sections_per_program_year.sections_per_program_year_id', '=', 'section_courses.sections_per_program_year_id')
+            ->where('ca_semesters.semester', '=', $activeSemester->semester)
+            ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id)
+            ->select('schedules.day', 'schedules.start_time', 'schedules.end_time', 'schedules.faculty_id', 'schedules.room_id')
+            ->get();
+
+        $totalSchedules = $schedules->count();
+        $totalNullFields = $schedules->reduce(function ($carry, $schedule) {
+            return $carry +
+                (is_null($schedule->day) ? 1 : 0) +
+                (is_null($schedule->start_time) ? 1 : 0) +
+                (is_null($schedule->end_time) ? 1 : 0) +
+                (is_null($schedule->faculty_id) ? 1 : 0) +
+                (is_null($schedule->room_id) ? 1 : 0);
+        }, 0);
+
+        $totalPossibleFields = $totalSchedules * 5;
+        $schedulingProgress = $totalPossibleFields > 0 ? 100 - ($totalNullFields / $totalPossibleFields * 100) : 100;
+
+        // Step 7: Calculate Room Utilization
+        $totalRooms = DB::table('rooms')->count();
+        $usedRooms = DB::table('schedules')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->join('semesters as ca_semesters', 'ca_semesters.semester_id', '=', 'course_assignments.semester_id')
+            ->join('sections_per_program_year', 'sections_per_program_year.sections_per_program_year_id', '=', 'section_courses.sections_per_program_year_id')
+            ->where('ca_semesters.semester', '=', $activeSemester->semester)
+            ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id)
+            ->distinct('schedules.room_id')
+            ->count('schedules.room_id');
+
+        $roomUtilization = $totalRooms > 0 ? ($usedRooms / $totalRooms) * 100 : 0;
+
+        // Step 8: Calculate Published Schedules
+        $publishedSchedules = DB::table('faculty_schedule_publication')
+            ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->join('semesters as ca_semesters', 'ca_semesters.semester_id', '=', 'course_assignments.semester_id')
+            ->join('sections_per_program_year', 'sections_per_program_year.sections_per_program_year_id', '=', 'section_courses.sections_per_program_year_id')
+            ->where('ca_semesters.semester', '=', $activeSemester->semester)
+            ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id)
+            ->where('faculty_schedule_publication.is_published', 1)
+            ->distinct('faculty_schedule_publication.faculty_id')
+            ->count('faculty_schedule_publication.faculty_id');
+
+        $publishProgress = $activeFacultyCount > 0 ? ($publishedSchedules / $activeFacultyCount) * 100 : 0;
+
+        // Step 9: Calculate preferencesSubmissionEnabled
+        if ($activeFacultyCount > 0) {
+            $preferencesSubmissionEnabled = PreferencesSetting::where('is_enabled', 1)->count() === $activeFacultyCount;
+        } else {
+            $preferencesSubmissionEnabled = true;
+        }
+
+        // Step 10: Count the number of faculty who have at least one schedule
+        $facultyWithSchedulesCount = DB::table('schedules')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->join('semesters as ca_semesters', 'ca_semesters.semester_id', '=', 'course_assignments.semester_id')
+            ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
+            ->where('ca_semesters.semester', '=', $activeSemester->semester)
+            ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id)
+            ->distinct('schedules.faculty_id')
+            ->count('schedules.faculty_id');
+
+        // Step 11: Structure the response with the new field
+        return response()->json([
+            'activeAcademicYear' => "{$activeSemester->year_start}-{$activeSemester->year_end}",
+            'activeSemester' => $this->getSemesterLabel($activeSemester->semester),
+            'activeFacultyCount' => $activeFacultyCount,
+            'activeProgramsCount' => $activeProgramsCount,
+            'activeCurricula' => $activeCurricula,
+            'preferencesProgress' => round($preferencesProgress, 0),
+            'schedulingProgress' => round($schedulingProgress, 0),
+            'roomUtilization' => round($roomUtilization, 0),
+            'publishProgress' => round($publishProgress, 0),
+            'preferencesSubmissionEnabled' => $preferencesSubmissionEnabled,
+            'facultyWithSchedulesCount' => $facultyWithSchedulesCount,
+        ]);
+    }
+
+    private function getSemesterLabel($semesterNumber)
+    {
+        switch ($semesterNumber) {
+            case 1:
+                return '1st Semester';
+            case 2:
+                return '2nd Semester';
+            case 3:
+                return 'Summer Semester';
+            default:
+                return 'Unknown Semester';
+        }
     }
 }

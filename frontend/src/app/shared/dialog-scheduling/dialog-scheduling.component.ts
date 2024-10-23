@@ -308,12 +308,6 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     const formattedStartTime = this.formatTimeToBackend(startTime);
     const formattedEndTime = this.formatTimeToBackend(endTime);
 
-    // Debug log
-    console.log('Formatted times:', {
-      formattedStartTime,
-      formattedEndTime,
-    });
-
     const selectedFaculty = this.data.facultyOptions.find(
       (f) => f.name === professor
     );
@@ -321,23 +315,16 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
       (r) => r.room_code === room
     );
 
-    if (!selectedFaculty || !selectedRoom) {
-      this.snackBar.open('Please select a valid faculty and room.', 'Close', {
-        duration: 3000,
-      });
-      return;
-    }
-
     // Proceed with assigning schedule after conflict check
     this.isLoading = true;
     this.schedulingService
       .assignSchedule(
         this.data.schedule_id,
-        selectedFaculty.faculty_id,
-        selectedRoom.room_id,
-        day,
-        formattedStartTime,
-        formattedEndTime,
+        selectedFaculty?.faculty_id ?? null,
+        selectedRoom?.room_id ?? null,
+        day ?? null,
+        formattedStartTime ?? null,
+        formattedEndTime ?? null,
         this.data.selectedProgramId,
         this.data.year_level,
         this.data.section_id
@@ -453,15 +440,21 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
 
   /*** Utility Methods ***/
 
-  private formatTimeToBackend(time: string): string {
+  private formatTimeToBackend(time: string | null): string | null {
+    if (!time) {
+      return null;
+    }
+  
     const [timePart, period] = time.split(' ');
     let [hours, minutes] = timePart.split(':').map(Number);
+
     if (period === 'PM' && hours !== 12) {
       hours += 12;
     }
     if (period === 'AM' && hours === 12) {
       hours = 0;
     }
+
     const formattedHours = hours.toString().padStart(2, '0');
     const formattedMinutes = minutes.toString().padStart(2, '0');
     return `${formattedHours}:${formattedMinutes}:00`;

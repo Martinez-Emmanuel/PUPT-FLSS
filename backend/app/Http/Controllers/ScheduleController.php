@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 
 class ScheduleController extends Controller
 {
-    public function autoAssignCoursesToSections()
+    public function populateSchedules()
     {
         // Step 1: Get the active semester and academic year
         $activeSemester = DB::table('active_semesters')

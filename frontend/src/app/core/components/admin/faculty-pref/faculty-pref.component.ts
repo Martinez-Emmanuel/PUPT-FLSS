@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -59,7 +59,6 @@ interface Faculty {
   templateUrl: './faculty-pref.component.html',
   styleUrls: ['./faculty-pref.component.scss'],
   animations: [fadeAnimation],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FacultyPrefComponent implements OnInit, AfterViewInit {
   inputFields: InputField[] = [
@@ -93,6 +92,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     private preferencesService: PreferencesService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -124,9 +124,9 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
           is_enabled: faculty.is_enabled === 1,
           active_semesters: faculty.active_semesters,
         }));
-  
+
         console.log('Processed Faculty Data:', faculties);
-  
+
         this.allData = faculties;
         this.filteredData = faculties;
         this.applyFilter(this.currentFilter);
@@ -186,7 +186,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     this.isToggleAllChecked = allEnabled;
   }
 
-  onToggleChange(faculty: Faculty): void {
+  onToggleSingleChange(faculty: Faculty): void {
     const status = faculty.is_enabled;
 
     this.preferencesService
@@ -201,6 +201,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
             { duration: 3000 }
           );
           this.checkToggleAllState();
+          this.cdr.markForCheck();
         },
         (error) => {
           this.snackBar.open(
@@ -239,6 +240,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
         );
 
         this.isToggleAllChecked = status;
+        this.cdr.markForCheck();
       },
       (error) => {
         loadingSnackBarRef.dismiss();
