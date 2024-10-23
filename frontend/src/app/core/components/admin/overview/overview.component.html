@@ -191,17 +191,12 @@
         <div class="action-center card">
           <!--Title-->
           <h2 class="card-title">
-            <span mat-symbol="tune"></span>Action Center
+            <span mat-symbol="page_info"></span>Action Center
           </h2>
           <!--Action Items-->
           <div class="action-items">
             <!--Item Group One-->
             <div class="item-group one">
-              <!--Action: Email Faculty-->
-              <div class="item send-email" (click)="openSendEmailDialog()">
-                <span mat-symbol="email"></span>
-                <span class="desc">Send Email to Faculty Members</span>
-              </div>
               <!--Action: Toggle Faculty Preferences Submission-->
               <div
                 class="item faculty-pref"
@@ -211,14 +206,11 @@
                 <span class="desc">
                   {{
                     preferencesEnabled
-                      ? "Turn Off Faculty Preferences Submission"
-                      : "Turn On Faculty Preferences Submission"
+                      ? "Enable Faculty Preferences Submission"
+                      : "Disable Faculty Preferences Submission"
                   }}
                 </span>
               </div>
-            </div>
-            <!--Item Group two-->
-            <div class="item-group two">
               <!--Action: Publish Schedule-->
               <div
                 class="item publish-sched"
@@ -233,6 +225,14 @@
                   }}
                 </span>
               </div>
+            </div>
+            <!--Item Group two-->
+            <div class="item-group two">
+              <!--Action: Email Faculty (Currently disabled)-->
+              <!-- <div class="item send-email" (click)="openSendEmailDialog()">
+                <span mat-symbol="email"></span>
+                <span class="desc">Send Email to Faculty Members</span>
+              </div> -->
               <!--Action: Open Generate Report-->
               <div class="item generate-report">
                 <span mat-symbol="assessment"></span>
