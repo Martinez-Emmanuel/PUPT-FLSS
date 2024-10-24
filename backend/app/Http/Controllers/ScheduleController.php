@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ScheduleController extends Controller
@@ -62,6 +61,7 @@ class ScheduleController extends Controller
             ->orderBy('p.program_id')
             ->orderBy('yl.year')
             ->orderBy('s.semester')
+            ->orderBy('co.course_code')
             ->get();
 
         $response = [];
@@ -89,7 +89,7 @@ class ScheduleController extends Controller
             'active_semester_id' => $activeSemester->active_semester_id,
             'academic_year_id' => $activeAcademicYearId,
             'semester_id' => $activeSemester->semester_id,
-            'programs' => $response
+            'programs' => $response,
         ]);
     }
 
@@ -115,7 +115,7 @@ class ScheduleController extends Controller
                 'sections_per_program_year_id' => $section->sections_per_program_year_id,
                 'course_assignment_id' => $row->course_assignment_id,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
         } else {
             // Use existing section_course_id
@@ -154,7 +154,7 @@ class ScheduleController extends Controller
                 'faculty_id' => null,
                 'room_id' => null,
                 'created_at' => now(),
-                'updated_at' => now()
+                'updated_at' => now(),
             ]);
         }
 
@@ -183,7 +183,7 @@ class ScheduleController extends Controller
                 'schedule_id' => $scheduleId,
                 'day' => $schedule->day,
                 'start_time' => $schedule->start_time,
-                'end_time' => $schedule->end_time
+                'end_time' => $schedule->end_time,
             ],
 
             // Adding professor and faculty details
@@ -194,11 +194,10 @@ class ScheduleController extends Controller
             // Encapsulating room details in a "room" object
             'room' => [
                 'room_id' => $room ? $room->room_id : null,
-                'room_code' => $room ? $room->room_code : 'Not set'
-            ]
+                'room_code' => $room ? $room->room_code : 'Not set',
+            ],
         ];
     }
-
 
     private function findOrCreateProgram(&$response, $row)
     {
@@ -209,7 +208,7 @@ class ScheduleController extends Controller
                 'program_id' => $row->program_id,
                 'program_code' => $row->program_code,
                 'program_title' => $row->program_title,
-                'year_levels' => []
+                'year_levels' => [],
             ];
             return count($response) - 1;
         }
@@ -229,7 +228,7 @@ class ScheduleController extends Controller
             'year_level' => $row->year_level,
             'curriculum_id' => $row->curriculum_id,
             'curriculum_year' => $row->curriculum_year,
-            'semesters' => []
+            'semesters' => [],
         ];
         return count($yearLevels) - 1;
     }
@@ -244,7 +243,7 @@ class ScheduleController extends Controller
 
         $semesters[] = [
             'semester' => $row->semester,
-            'sections' => []
+            'sections' => [],
         ];
         return count($semesters) - 1;
     }
@@ -260,7 +259,7 @@ class ScheduleController extends Controller
         $sections[] = [
             'section_per_program_year_id' => $section->sections_per_program_year_id,
             'section_name' => $section->section_name,
-            'courses' => []
+            'courses' => [],
         ];
 
         return count($sections) - 1;
