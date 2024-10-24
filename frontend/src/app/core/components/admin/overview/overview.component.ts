@@ -1,4 +1,5 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { Subject, takeUntil } from 'rxjs';
 
@@ -64,7 +65,8 @@ export class OverviewComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private overviewService: OverviewService
+    private overviewService: OverviewService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -175,7 +177,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
 
   togglePublishSchedules(): void {
     if (this.facultyWithSchedulesCount === 0) {
-      this.showErrorMessage('No faculty has been scheduled yet.');
+      this.showSchedulingRedirectMessage();
       return;
     }
 
@@ -199,21 +201,43 @@ export class OverviewComponent implements OnInit, OnDestroy {
   }
 
   generateReports(): void {
+    if (this.facultyWithSchedulesCount === 0) {
+      this.showSchedulingRedirectMessage();
+      return;
+    }
+  
     const dialogRef = this.dialog.open(DialogActionComponent, {
       data: {
         type: 'reports',
         academicYear: this.activeYear,
         semester: this.activeSemester,
-        currentState: false
+        currentState: false,
       },
       disableClose: true,
     });
   
     dialogRef.afterClosed().subscribe((result: boolean) => {
       if (result) {
-        // TODO: To be implemented later
       }
     });
+  }
+
+  private showSchedulingRedirectMessage(): void {
+    const snackBarRef = this.snackBar.open(
+      'No schedule has been made yet.',
+      'Go to Scheduling',
+      {
+        duration: this.SNACKBAR_DURATION,
+      }
+    );
+  
+    snackBarRef.onAction().subscribe(() => {
+      this.navigateToScheduling();
+    });
+  }
+  
+  private navigateToScheduling(): void {
+    this.router.navigate(['/admin/scheduling']);
   }
 
   // ================
