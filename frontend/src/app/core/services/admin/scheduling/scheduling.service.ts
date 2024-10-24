@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, forkJoin, of } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap, shareReplay, tap } from 'rxjs/operators';
 import { environment } from '../../../../../environments/environment.dev';
 
 export interface Program {
@@ -208,6 +208,10 @@ interface ConflictingScheduleDetail {
 export class SchedulingService {
   private baseUrl = environment.apiUrl;
 
+  private roomsCache$?: Observable<{ rooms: Room[] }>;
+  private facultyCache$?: Observable<{ faculty: Faculty[] }>;
+  private schedulesCache$?: Observable<PopulateSchedulesResponse>;
+
   constructor(private http: HttpClient) {}
 
   private handleError(error: HttpErrorResponse): Observable<never> {
@@ -399,23 +403,41 @@ export class SchedulingService {
 
   // Populate schedules
   populateSchedules(): Observable<PopulateSchedulesResponse> {
-    return this.http
-      .get<PopulateSchedulesResponse>(`${this.baseUrl}/populate-schedules`)
-      .pipe(catchError(this.handleError));
+    if (!this.schedulesCache$) {
+      this.schedulesCache$ = this.http
+        .get<PopulateSchedulesResponse>(`${this.baseUrl}/populate-schedules`)
+        .pipe(
+          shareReplay(1),
+          catchError(this.handleError)
+        );
+    }
+    return this.schedulesCache$;
   }
 
   // Get all available rooms
   getAllRooms(): Observable<{ rooms: Room[] }> {
-    return this.http
-      .get<{ rooms: Room[] }>(`${this.baseUrl}/get-rooms`)
-      .pipe(catchError(this.handleError));
+    if (!this.roomsCache$) {
+      this.roomsCache$ = this.http
+        .get<{ rooms: Room[] }>(`${this.baseUrl}/get-rooms`)
+        .pipe(
+          shareReplay(1),
+          catchError(this.handleError)
+        );
+    }
+    return this.roomsCache$;
   }
 
   // Get faculty details
   getFacultyDetails(): Observable<{ faculty: Faculty[] }> {
-    return this.http
-      .get<{ faculty: Faculty[] }>(`${this.baseUrl}/get-faculty`)
-      .pipe(catchError(this.handleError));
+    if (!this.facultyCache$) {
+      this.facultyCache$ = this.http
+        .get<{ faculty: Faculty[] }>(`${this.baseUrl}/get-faculty`)
+        .pipe(
+          shareReplay(1),
+          catchError(this.handleError)
+        );
+    }
+    return this.facultyCache$;
   }
 
   getSubmittedPreferencesForActiveSemester(): Observable<SubmittedPrefResponse> {
@@ -457,9 +479,10 @@ export class SchedulingService {
             start_time,
             end_time,
           };
-          return this.http.post<any>(
-            `${this.baseUrl}/assign-schedule`,
-            payload
+          return this.http.post<any>(`${this.baseUrl}/assign-schedule`, payload).pipe(
+            tap(() => {
+              this.resetCaches();
+            })
           );
         } else {
           return throwError(() => new Error(validationResult.message));
@@ -467,6 +490,12 @@ export class SchedulingService {
       }),
       catchError(this.handleError)
     );
+  }
+
+  public resetCaches(): void {
+    this.roomsCache$ = undefined;
+    this.facultyCache$ = undefined;
+    this.schedulesCache$ = undefined;
   }
 
   // ===================================

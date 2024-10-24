@@ -304,7 +304,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     }
 
     this.selectedCurriculumId = selectedYearLevelObj.curriculum_id;
-    this.sectionOptions = selectedYearLevelObj.sections;
+    this.sectionOptions = selectedYearLevelObj.sections.sort((a, b) =>
+      a.section_name.localeCompare(b.section_name)
+    );
 
     this.headerInputFields.find((field) => field.key === 'section')!.options =
       this.sectionOptions.map((section) => section.section_name);
@@ -726,6 +728,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                 duration: 3000,
               }
             );
+            this.schedulingService.resetCaches();
             this.onInputChange({
               program: this.selectedProgram,
               yearLevel: this.selectedYear,
