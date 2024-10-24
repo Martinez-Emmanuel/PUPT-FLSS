@@ -74,7 +74,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     'facultyName',
     'facultyCode',
     'facultyType',
-    'facultyUnits',
+    // 'facultyUnits',
     'action',
     'toggle',
   ];
@@ -542,5 +542,17 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     const period = hours >= 12 ? 'PM' : 'AM';
     const formattedHour = hours % 12 || 12;
     return `${formattedHour}:${minutesFormatted} ${period}`;
+  }
+
+  getSingleToggleTooltip(faculty: Faculty): string {
+    return `${
+      faculty.is_enabled ? 'Disable' : 'Enable'
+    } preferences submission for ${faculty.facultyName}`;
+  }
+
+  getAllToggleTooltip(isEnabled: boolean): string {
+    return `${
+      isEnabled ? 'Disable' : 'Enable'
+    } preferences submission for all faculty`;
   }
 }

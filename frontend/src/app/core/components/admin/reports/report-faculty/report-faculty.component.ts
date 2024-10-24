@@ -648,4 +648,18 @@ export class ReportFacultyComponent
   private getAcademicYearSubtitle(faculty: Faculty): string {
     return `For Academic Year ${faculty.academicYear}, ${faculty.semester}`;
   }
+
+  getSingleToggleTooltip(faculty: Faculty): string {
+    if (!faculty.schedules || faculty.schedules.length === 0) {
+      return `Cannot publish/unpublish empty schedule for ${faculty.facultyName}`;
+    }
+    return `${faculty.isEnabled ? 'Unpublish' : 'Publish'} schedule for ${faculty.facultyName}`;
+  }
+
+  getAllToggleTooltip(isEnabled: boolean): string {
+    if (!this.hasSchedulesForToggleAll) {
+      return 'Cannot publish/unpublish empty schedules';
+    }
+    return `${isEnabled ? 'Unpublish' : 'Publish'} schedules for all applicable faculty`;
+  }
 }
