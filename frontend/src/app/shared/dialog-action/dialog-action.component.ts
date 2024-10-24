@@ -3,8 +3,8 @@ import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { of, Observable, delay } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { of, Observable } from 'rxjs';
+import { switchMap, finalize } from 'rxjs/operators';
 
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,6 +13,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
+import { ReportGenerationService } from '../../core/services/admin/report-generation/report-generation.service';
 import { OverviewService } from '../../core/services/admin/overview/overview.service';
 
 export interface DialogActionData {
@@ -59,7 +60,8 @@ export class DialogActionComponent {
     @Inject(MAT_DIALOG_DATA) public data: DialogActionData,
     private dialogRef: MatDialogRef<DialogActionComponent>,
     private overviewService: OverviewService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private reportGenerationService: ReportGenerationService
   ) {
     this.initializeDialogContent();
   }
@@ -118,16 +120,12 @@ export class DialogActionComponent {
    * Handles the confirmation action based on dialog type
    */
   confirmAction(): void {
-    // For reports, validate selection before proceeding
-    if (this.data.type === 'reports' && !this.isReportSelectionValid()) {
-      this.snackBar.open(
-        'Please select at least one report to generate.',
-        'Close',
-        { duration: 3000 }
-      );
+    if (this.data.type === 'reports') {
+      this.handleReportsGeneration();
       return;
     }
 
+    // Handle other types
     this.isProcessing = true;
     let operation$: Observable<any>;
 
@@ -138,27 +136,105 @@ export class DialogActionComponent {
       case 'publish':
         operation$ = this.handlePublishOperation();
         break;
-      case 'reports':
-        operation$ = this.handleReportsOperation();
-        break;
       default:
         operation$ = of(null);
     }
 
-    operation$.subscribe({
-      next: () => {
-        this.isProcessing = false;
-        const successMessage = this.getSuccessMessage();
-        this.snackBar.open(successMessage, 'Close', { duration: 3000 });
-        this.dialogRef.close(true);
-      },
-      error: (error) => {
-        console.error('Operation failed:', error);
-        const errorMessage = this.getErrorMessage();
-        this.snackBar.open(errorMessage, 'Close', { duration: 3000 });
-        this.isProcessing = false;
-      },
-    });
+    operation$
+      .pipe(
+        finalize(() => {
+          this.isProcessing = false;
+        })
+      )
+      .subscribe({
+        next: () => {
+          const successMessage = this.getSuccessMessage();
+          this.snackBar.open(successMessage, 'Close', { duration: 3000 });
+          this.dialogRef.close(true);
+        },
+        error: (error) => {
+          console.error('Operation failed:', error);
+          const errorMessage = this.getErrorMessage();
+          this.snackBar.open(errorMessage, 'Close', { duration: 3000 });
+        },
+      });
+  }
+
+  /**
+   * Handles report generation
+   */
+  private handleReportsGeneration(): void {
+    if (!this.isReportSelectionValid()) {
+      this.snackBar.open(
+        'Please select at least one report to generate.',
+        'Close',
+        { duration: 3000 }
+      );
+      return;
+    }
+
+    this.isProcessing = true;
+
+    const selections = {
+      faculty: this.reportOptions.faculty,
+      programs: this.reportOptions.programs,
+      rooms: this.reportOptions.rooms,
+    };
+
+    this.reportGenerationService
+      .generateSelectedReports(selections)
+      .pipe(
+        finalize(() => {
+          this.isProcessing = false;
+        })
+      )
+      .subscribe({
+        next: (reports) => {
+          if (reports.length === 0) {
+            this.snackBar.open('No reports selected.', 'Close', {
+              duration: 3000,
+            });
+            return;
+          }
+
+          reports.forEach((report) => {
+            const fileNameMap: { [key: string]: string } = {
+              faculty: 'Faculty_Schedule_Report.pdf',
+              programs: 'Programs_Schedule_Report.pdf',
+              rooms: 'Rooms_Schedule_Report.pdf',
+            };
+
+            const fileName =
+              fileNameMap[report.type as keyof typeof fileNameMap] ||
+              'Schedule_Report.pdf';
+
+            const blobUrl = URL.createObjectURL(report.blob);
+            const a = document.createElement('a');
+            a.href = blobUrl;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(blobUrl);
+          });
+
+          this.snackBar.open(
+            'Selected reports have been generated and downloaded successfully.',
+            'Close',
+            { duration: 3000 }
+          );
+
+          this.dialogRef.close(true);
+        },
+        error: (error) => {
+          console.error('Error generating reports:', error);
+          this.snackBar.open(
+            'Failed to generate reports. Please try again later.',
+            'Close',
+            { duration: 3000 }
+          );
+        },
+      });
   }
 
   /**
@@ -188,17 +264,6 @@ export class DialogActionComponent {
         }
         return of(null);
       })
-    );
-  }
-
-  /**
-   * Handles report generation operation
-   * Currently mocked - to be implemented with actual report generation logic
-   */
-  private handleReportsOperation(): Observable<any> {
-    // This is where you'll implement the actual report generation logic later
-    return of(null).pipe(
-      delay(1000) // Simulate processing time
     );
   }
 
