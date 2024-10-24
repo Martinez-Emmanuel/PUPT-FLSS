@@ -68,8 +68,9 @@
                 'full-time':
                   element.facultyType.toLowerCase().includes('full-time') ||
                   element.facultyType.toLowerCase().includes('temporary'),
-                  'full-time-designee':
-                  element.facultyType.toLowerCase().includes('designee'),
+                'full-time-designee': element.facultyType
+                  .toLowerCase()
+                  .includes('designee'),
                 'part-time': element.facultyType
                   .toLowerCase()
                   .includes('part-time')
@@ -107,8 +108,8 @@
               class="sec-ripple export-button"
               (click)="onExportSingle(element)"
             >
-              <mat-icon>print</mat-icon>
-              <span>Export</span>
+              <mat-icon>download</mat-icon>
+              <span>Download</span>
             </button>
           </td>
         </ng-container>
