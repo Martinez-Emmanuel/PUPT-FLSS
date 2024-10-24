@@ -12,6 +12,7 @@ import { TableGenericComponent } from '../../../../../../shared/table-generic/ta
 import { TableHeaderComponent, InputField } from '../../../../../../shared/table-header/table-header.component';
 import { TableDialogComponent, DialogConfig } from '../../../../../../shared/table-dialog/table-dialog.component';
 import { DialogGenericComponent } from '../../../../../../shared/dialog-generic/dialog-generic.component';
+import { DialogExportComponent } from '../../../../../../shared/dialog-export/dialog-export.component';
 import { LoadingComponent } from '../../../../../../shared/loading/loading.component';
 
 import { fadeAnimation, pageFloatUpAnimation } from '../../../../../animations/animations';
@@ -685,7 +686,7 @@ export class CurriculumDetailComponent implements OnInit {
                 label: 'Course Code',
                 formControlName: 'course_code',
                 type: 'text',
-                maxLength: 10,
+                maxLength: 50,
                 required: true,
             },
             {
@@ -706,7 +707,7 @@ export class CurriculumDetailComponent implements OnInit {
                 label: 'Course Title',
                 formControlName: 'course_title',
                 type: 'text',
-                maxLength: 80,
+                maxLength: 100,
                 required: true,
             },
             {
@@ -790,12 +791,28 @@ export class CurriculumDetailComponent implements OnInit {
   onExport(option: string | undefined) : void {
     if (option === 'all') {
       // Export all programs
-      this.generatePDF(true, true);  // `exportAll` set to true
+      this.openPdfPreviewDialog(true); // Export all programs
     } else if (option === 'current') {
       // Export the selected program
-      this.generatePDF(true, false);  // `exportAll` set to false
+      this.openPdfPreviewDialog(false); // Export selected program only
     }
   }
+
+  openPdfPreviewDialog(exportAll: boolean): void {
+    const dialogRef = this.dialog.open(DialogExportComponent, {
+      data: {
+        exportType: exportAll ? 'all' : 'single',
+        generatePdfFunction: (showPreview: boolean) => this.generatePDF(showPreview, exportAll),
+      },
+      maxWidth: '70rem',
+      width: '100%',
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('Dialog closed', result);
+    });
+  }
+
   generatePDF(showPreview: boolean = false, exportAll: boolean = false): void {
     const doc = new jsPDF('p', 'mm', 'letter') as any;
     const pageWidth = doc.internal.pageSize.width;
@@ -848,20 +865,11 @@ export class CurriculumDetailComponent implements OnInit {
     }
 
     const pdfBlob = doc.output('blob');
-    const blobUrl = URL.createObjectURL(pdfBlob);
-
+    
     if (showPreview) {
-        this.showPreview = true;
-        setTimeout(() => {
-          const iframe = document.getElementById('pdfPreview') as HTMLIFrameElement;
-            if (iframe) {
-                iframe.src = blobUrl;
-            } else {
-                console.error('PDF preview iframe not found');
-            }
-        },0);
+      return pdfBlob;
     } else {
-        doc.save('curriculum_report.pdf');
+      doc.save('curriclum_report.pdf');
     }
   }
 
@@ -869,71 +877,74 @@ export class CurriculumDetailComponent implements OnInit {
     let currentY = startY;
     const pageWidth = doc.internal.pageSize.width; 
     const margin = 10; 
-
+  
     if (!program || !program.year_levels || program.year_levels.length === 0) {
       console.warn('No valid program or year levels found');
       return;
     }
-
+  
     const sortedYearLevels = program.year_levels.sort((a, b) => a.year - b.year);
-
+  
     for (const yearLevel of sortedYearLevels) {
       let yearLevelHasCourses = false;
-
+  
       for (const semester of yearLevel.semesters) {
-        const tableData = semester.courses.map((course) => [
-          course.course_code || 'N/A',
-          course.pre_req || 'None',
-          course.co_req || 'None',
-          course.course_title || 'N/A',
-          course.lec_hours?.toString() || '0',
-          course.lab_hours?.toString() || '0',
-          course.units?.toString() || '0',
-          course.tuition_hours?.toString() || '0',
-        ]);
-
+        const tableData = semester.courses.map((course) => {
+          const processedCourse = this.populateCourseRequisites(course);
+          return [
+            processedCourse.course_code || 'N/A',
+            processedCourse.pre_req || 'None',
+            processedCourse.co_req || 'None',
+            processedCourse.course_title || 'N/A',
+            processedCourse.lec_hours?.toString() || '0',
+            processedCourse.lab_hours?.toString() || '0',
+            processedCourse.units?.toString() || '0',
+            processedCourse.tuition_hours?.toString() || '0',
+          ];
+        });
+  
         if (tableData.length > 0) {
           yearLevelHasCourses = true;
           break;
         }
       }
-
+  
       if (yearLevelHasCourses) {
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(15);
-        doc.text(`${program.name} - ${yearLevel.year}`, 10, currentY);
+        doc.text(`${program.name} - Year ${yearLevel.year}`, margin, currentY);
         currentY += 7;
-
+  
         const sortedSemesters = yearLevel.semesters.sort((a, b) => a.semester - b.semester);
-
+  
         for (const semester of sortedSemesters) {
-          const tableData = semester.courses.map((course) => [
-            course.course_code || 'N/A',
-            course.pre_req || 'None',
-            course.co_req || 'None',
-            course.course_title || 'N/A',
-            course.lec_hours?.toString() || '0',
-            course.lab_hours?.toString() || '0',
-            course.units?.toString() || '0',
-            course.tuition_hours?.toString() || '0',
-          ]);
-
+          const tableData = semester.courses.map((course) => {
+            const processedCourse = this.populateCourseRequisites(course);
+            return [
+              processedCourse.course_code || 'N/A',
+              processedCourse.pre_req || 'None',
+              processedCourse.co_req || 'None',
+              processedCourse.course_title || 'N/A',
+              processedCourse.lec_hours?.toString() || '0',
+              processedCourse.lab_hours?.toString() || '0',
+              processedCourse.units?.toString() || '0',
+              processedCourse.tuition_hours?.toString() || '0',
+            ];
+          });
+  
           if (tableData.length > 0) {
             doc.setFont('helvetica', 'bold');
             doc.setFontSize(13);
-            const semesterText = this.getSemesterDisplay(semester.semester);
+            const semesterText = `Semester ${semester.semester}`;
             doc.text(semesterText, margin, currentY);
             currentY += 7;
-
-            const availableWidth = doc.internal.pageSize.width - 20;
-            const columnWidths = this.calculateColumnWidths(availableWidth);
-
+  
+            const availableWidth = pageWidth - 20;
+            const columnWidths = [30, 20, 20, 70, 15, 15, 15, 20]; // Adjust these as needed
+  
             doc.autoTable({
               startY: currentY,
-              head: [['Code', 'Pre-req', 
-                'Co-req', 'Title', 
-                'Lec', 'Lab', 'Units', 'Tuition'
-              ]],
+              head: [['Code', 'Pre-req', 'Co-req', 'Title', 'Lec', 'Lab', 'Units', 'Tuition']],
               body: tableData,
               theme: 'grid',
               headStyles: {
@@ -951,12 +962,21 @@ export class CurriculumDetailComponent implements OnInit {
                 overflow: 'linebreak',
                 cellPadding: 1,
               },
-              columnStyles: columnWidths,
+              columnStyles: {
+                0: { cellWidth: 20 },
+                1: { cellWidth: 40 },
+                2: { cellWidth: 20 },
+                3: { cellWidth: 50 },
+                4: { cellWidth: 15 },
+                5: { cellWidth: 15 },
+                6: { cellWidth: 15 },
+                7: { cellWidth: 20 },
+              },
               margin: { left: 10, right: 10 },
             });
-
+  
             currentY = (doc as any).lastAutoTable.finalY + 10;
-
+  
             if (currentY > doc.internal.pageSize.height - 40) {
               doc.addPage();
               currentY = startY;
@@ -965,20 +985,6 @@ export class CurriculumDetailComponent implements OnInit {
         }
       }
     }
-  }
-
-  private calculateColumnWidths(availableWidth: number): { [key: number]:
-    { cellWidth: number } } {
-    return {
-      0: { cellWidth: 15 }, //code
-      1: { cellWidth: 40 }, //pre
-      2: { cellWidth: 40 }, //co
-      3: { cellWidth: 50 }, //title
-      4: { cellWidth: 15 }, //lec
-      5: { cellWidth: 15 }, //lab
-      6: { cellWidth: 10 }, //units
-      7: { cellWidth: 15 }, //tuition 
-    };
   }
   
   cancelPreview(): void {
