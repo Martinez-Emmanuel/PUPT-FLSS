@@ -77,13 +77,15 @@
     }
   }
 
-  .email-option {
+  .checkbox-container {
     margin: var(--spacing-sm) 0;
-    background-color: var(--neutral-option);
-    border-radius: var(--spacing-xs);
 
-    .email-checkbox {
+    .email-checkbox,
+    .report-checkbox {
       width: 100%;
+      background-color: var(--neutral-option);
+      border-radius: var(--spacing-xs);
+      padding: var(--spacing-xxxs);
 
       .checkbox-content {
         @include flex-layout($gap: var(--spacing-xs));
@@ -95,6 +97,14 @@
           padding-left: var(--spacing-xxs);
         }
       }
+    }
+
+    &.reports {
+      @include flex-layout($direction: column, $gap: var(--spacing-sm));
+    }
+
+    &.email {
+      @include flex-layout($gap: var(--spacing-xs));
     }
   }
 }
