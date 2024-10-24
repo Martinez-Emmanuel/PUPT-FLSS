@@ -150,48 +150,6 @@ export class OverviewComponent implements OnInit, OnDestroy {
     return circumference - (percentage / 100) * circumference;
   }
 
-  openSendEmailDialog(): void {
-    const dialogRef = this.dialog.open(DialogGenericComponent, {
-      data: {
-        title: 'Send Email to All Faculty',
-        content:
-          'Send an email to all the faculty members to submit their load and schedule preference for the current semester. Click "Send Email" below to proceed.',
-        actionText: 'Send Email',
-        cancelText: 'Cancel',
-        action: 'send-email',
-      },
-      disableClose: true,
-    });
-
-    dialogRef
-      .afterClosed()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((result) => {
-        if (result === 'send-email') {
-          this.sendEmailToFaculty();
-        }
-      });
-  }
-
-  private sendEmailToFaculty(): void {
-    const sendingSnackBarRef = this.snackBar.open(
-      'Sending emails. Please wait...',
-      'Close',
-      { duration: undefined }
-    );
-
-    this.overviewService
-      .sendPrefEmail()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          sendingSnackBarRef.dismiss();
-          this.showSuccessMessage('Emails sent successfully!');
-        },
-        error: this.handleError('Failed to send emails. Please try again.'),
-      });
-  }
-
   // ================
   // Toggle Methods
   // ================
@@ -237,6 +195,24 @@ export class OverviewComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result: boolean) => {
       if (result) {
         this.fetchOverviewDetails();
+      }
+    });
+  }
+
+  generateReports(): void {
+    const dialogRef = this.dialog.open(DialogActionComponent, {
+      data: {
+        type: 'reports',
+        academicYear: this.activeYear,
+        semester: this.activeSemester,
+        currentState: false
+      },
+      disableClose: true,
+    });
+  
+    dialogRef.afterClosed().subscribe((result: boolean) => {
+      if (result) {
+        // TODO: To be implemented later
       }
     });
   }
