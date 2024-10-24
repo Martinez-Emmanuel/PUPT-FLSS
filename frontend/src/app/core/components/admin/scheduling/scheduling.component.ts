@@ -616,6 +616,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                         this.activeYear = result.academicYear;
                         this.activeSemester = selectedSemesterObj.semester_id;
 
+                        this.schedulingService.resetCaches();
+
                         this.loadPrograms()
                           .pipe(switchMap(() => this.setDefaultSelections()))
                           .subscribe({
