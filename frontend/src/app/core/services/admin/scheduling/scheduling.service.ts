@@ -4,6 +4,13 @@ import { Observable, throwError, forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap, shareReplay, tap } from 'rxjs/operators';
 import { environment } from '../../../../../environments/environment.dev';
 
+export enum CacheType {
+  Rooms = 'rooms',
+  Faculty = 'faculty',
+  Schedules = 'schedules',
+  Preferences = 'preferences',
+}
+
 export interface Program {
   program_id: number;
   program_code: string;
@@ -407,10 +414,7 @@ export class SchedulingService {
     if (!this.schedulesCache$) {
       this.schedulesCache$ = this.http
         .get<PopulateSchedulesResponse>(`${this.baseUrl}/populate-schedules`)
-        .pipe(
-          shareReplay(1),
-          catchError(this.handleError)
-        );
+        .pipe(shareReplay(1), catchError(this.handleError));
     }
     return this.schedulesCache$;
   }
@@ -420,10 +424,7 @@ export class SchedulingService {
     if (!this.roomsCache$) {
       this.roomsCache$ = this.http
         .get<{ rooms: Room[] }>(`${this.baseUrl}/get-rooms`)
-        .pipe(
-          shareReplay(1),
-          catchError(this.handleError)
-        );
+        .pipe(shareReplay(1), catchError(this.handleError));
     }
     return this.roomsCache$;
   }
@@ -433,10 +434,7 @@ export class SchedulingService {
     if (!this.facultyCache$) {
       this.facultyCache$ = this.http
         .get<{ faculty: Faculty[] }>(`${this.baseUrl}/get-faculty`)
-        .pipe(
-          shareReplay(1),
-          catchError(this.handleError)
-        );
+        .pipe(shareReplay(1), catchError(this.handleError));
     }
     return this.facultyCache$;
   }
@@ -489,11 +487,13 @@ export class SchedulingService {
             start_time,
             end_time,
           };
-          return this.http.post<any>(`${this.baseUrl}/assign-schedule`, payload).pipe(
-            tap(() => {
-              this.resetCaches();
-            })
-          );
+          return this.http
+            .post<any>(`${this.baseUrl}/assign-schedule`, payload)
+            .pipe(
+              tap(() => {
+                this.resetCaches([CacheType.Schedules]);
+              })
+            );
         } else {
           return throwError(() => new Error(validationResult.message));
         }
@@ -502,13 +502,30 @@ export class SchedulingService {
     );
   }
 
-  public resetCaches(excludeRoomsFacultyAndPreferences: boolean = true): void {
-    if (!excludeRoomsFacultyAndPreferences) {
-      this.roomsCache$ = undefined;
-      this.facultyCache$ = undefined;
-      this.submittedPreferences$ = undefined;
-    }
-    this.schedulesCache$ = undefined;
+  /**
+   * Reset specific caches based on the provided CacheType array.
+   * @param cacheTypes Array of CacheType enums indicating which caches to reset.
+   */
+  public resetCaches(cacheTypes: CacheType[] = []): void {
+    cacheTypes.forEach((type) => {
+      switch (type) {
+        case CacheType.Rooms:
+          this.roomsCache$ = undefined;
+          break;
+        case CacheType.Faculty:
+          this.facultyCache$ = undefined;
+          break;
+        case CacheType.Schedules:
+          this.schedulesCache$ = undefined;
+          break;
+        case CacheType.Preferences:
+          this.submittedPreferences$ = undefined;
+          break;
+        default:
+          console.warn(`Unknown CacheType: ${type}`);
+          break;
+      }
+    });
   }
 
   // ===================================
@@ -752,7 +769,6 @@ export class SchedulingService {
    * Validates whether a room is available for the given day and time.
    * It checks if the room is already booked by another course.
    */
-
   private checkRoomAvailability(
     room_id: number | null,
     day: string | null,

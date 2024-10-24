@@ -26,6 +26,7 @@ import {
   PopulateSchedulesResponse,
   CourseResponse,
   SubmittedPrefResponse,
+  CacheType,
 } from '../../../services/admin/scheduling/scheduling.service';
 
 import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
@@ -331,8 +332,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       a.section_name.localeCompare(b.section_name)
     );
 
-    this.headerInputFields.find((field) => field.key === 'section')!.options =
-      this.sectionOptions.map((section) => section.section_name);
+    this.headerInputFields.find(
+      (field) => field.key === 'section'
+    )!.options = this.sectionOptions.map((section) => section.section_name);
 
     if (programChanged || yearLevelChanged) {
       if (this.sectionOptions.length > 0) {
@@ -607,7 +609,14 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                     )
                     .pipe(
                       switchMap(() => {
-                        return this.loadActiveYearAndSemester();
+                        // Reset all caches when setting new active year and semester
+                        this.schedulingService.resetCaches([
+                          CacheType.Rooms,
+                          CacheType.Faculty,
+                          CacheType.Schedules,
+                          CacheType.Preferences,
+                        ]);
+                        return this.schedulingService.getActiveYearAndSemester();
                       }),
                       takeUntil(this.destroy$)
                     )
@@ -616,10 +625,18 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                         this.activeYear = result.academicYear;
                         this.activeSemester = selectedSemesterObj.semester_id;
 
-                        this.schedulingService.resetCaches();
+                        this.schedulingService.resetCaches([
+                          CacheType.Rooms,
+                          CacheType.Faculty,
+                          CacheType.Schedules,
+                          CacheType.Preferences,
+                        ]);
 
-                        this.loadPrograms()
-                          .pipe(switchMap(() => this.setDefaultSelections()))
+                        this.schedulingService
+                          .getActiveYearLevelsCurricula()
+                          .pipe(
+                            switchMap(() => this.setDefaultSelections())
+                          )
                           .subscribe({
                             next: () => {
                               dialogRef.close();
@@ -652,7 +669,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       });
   }
 
-  openEditDialog(schedule: Schedule) {
+  openEditScheduleDialog(schedule: Schedule) {
     if (!schedule.schedule_id) {
       this.snackBar.open('Schedule ID is missing.', 'Close', {
         duration: 3000,
@@ -753,7 +770,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                 duration: 3000,
               }
             );
-            this.schedulingService.resetCaches();
+            this.schedulingService.resetCaches([CacheType.Schedules]);
             this.onInputChange({
               program: this.selectedProgram,
               yearLevel: this.selectedYear,
