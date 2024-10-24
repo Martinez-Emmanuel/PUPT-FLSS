@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -47,19 +48,6 @@ class SendFacultyScheduleEmailJob implements ShouldQueue
             $message->to($dataSchedule['email'])
                 ->subject('Your Subjects, Load, and Schedule Have Been Set');
         });
-
-        // Prepare data for the "Set and Submit Your Subject Preference" email
-        $dataPreference = [
-            'faculty_name' => $this->faculty->user->name,
-            'email' => $this->faculty->faculty_email,
-            'faculty_units' => $this->faculty->faculty_units,
-        ];
-
-        // Send the "Set and Submit Your Subject Preference" email
-        Mail::send('emails.faculty_notification', $dataPreference, function ($message) use ($dataPreference) {
-            $message->to($dataPreference['email'])
-                ->subject('Set and Submit Your Subject Preference');
-        });
     }
 
     /**
@@ -70,6 +58,6 @@ class SendFacultyScheduleEmailJob implements ShouldQueue
     public function failed(Exception $exception)
     {
         // Log the failure
-        \Log::error('Failed to send email to faculty: ' . $this->faculty->faculty_email . ' Error: ' . $exception->getMessage());
+        \Log::error('Failed to send schedule email to faculty: ' . $this->faculty->faculty_email . ' Error: ' . $exception->getMessage());
     }
 }

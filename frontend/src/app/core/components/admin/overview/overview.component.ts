@@ -8,7 +8,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
-import { DialogGenericComponent } from '../../../../shared/dialog-generic/dialog-generic.component';
 import { DialogActionComponent, DialogActionData } from '../../../../shared/dialog-action/dialog-action.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
