@@ -25,6 +25,7 @@ import {
   YearLevel,
   PopulateSchedulesResponse,
   CourseResponse,
+  SubmittedPrefResponse,
 } from '../../../services/admin/scheduling/scheduling.service';
 
 import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
@@ -118,6 +119,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     forkJoin({
       activeYearSemester: this.loadActiveYearAndSemester(),
       programs: this.loadPrograms(),
+      viewPreferences: this.loadViewPreferences(),
     })
       .pipe(
         takeUntil(this.destroy$),
@@ -208,6 +210,27 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         return of([]);
       })
     );
+  }
+
+  private loadViewPreferences(): Observable<SubmittedPrefResponse> {
+    return this.schedulingService
+      .getSubmittedPreferencesForActiveSemester()
+      .pipe(
+        tap((preferences) => {
+          console.log('Loaded view preferences:', preferences);
+        }),
+        catchError((error) => {
+          console.error('Failed to load view preferences:', error);
+          this.snackBar.open(
+            'Failed to load view preferences. Please try again.',
+            'Close',
+            {
+              duration: 3000,
+            }
+          );
+          return of({} as SubmittedPrefResponse);
+        })
+      );
   }
 
   // ===========================

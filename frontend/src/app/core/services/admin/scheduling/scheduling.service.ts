@@ -211,6 +211,7 @@ export class SchedulingService {
   private roomsCache$?: Observable<{ rooms: Room[] }>;
   private facultyCache$?: Observable<{ faculty: Faculty[] }>;
   private schedulesCache$?: Observable<PopulateSchedulesResponse>;
+  private submittedPreferences$?: Observable<SubmittedPrefResponse>;
 
   constructor(private http: HttpClient) {}
 
@@ -441,9 +442,18 @@ export class SchedulingService {
   }
 
   getSubmittedPreferencesForActiveSemester(): Observable<SubmittedPrefResponse> {
-    return this.http
-      .get<SubmittedPrefResponse>(`${this.baseUrl}/view-preferences`)
-      .pipe(catchError(this.handleError));
+    if (!this.submittedPreferences$) {
+      this.submittedPreferences$ = this.http
+        .get<SubmittedPrefResponse>(`${this.baseUrl}/view-preferences`)
+        .pipe(
+          shareReplay(1),
+          catchError((error) => {
+            this.submittedPreferences$ = undefined;
+            return this.handleError(error);
+          })
+        );
+    }
+    return this.submittedPreferences$;
   }
 
   // Assign schedule to faculty, room, and time
@@ -492,9 +502,12 @@ export class SchedulingService {
     );
   }
 
-  public resetCaches(): void {
-    this.roomsCache$ = undefined;
-    this.facultyCache$ = undefined;
+  public resetCaches(excludeRoomsFacultyAndPreferences: boolean = true): void {
+    if (!excludeRoomsFacultyAndPreferences) {
+      this.roomsCache$ = undefined;
+      this.facultyCache$ = undefined;
+      this.submittedPreferences$ = undefined;
+    }
     this.schedulesCache$ = undefined;
   }
 
