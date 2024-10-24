@@ -33,11 +33,12 @@ class CourseController extends Controller
                 'semester_id' => 'nullable|integer|exists:semesters,semester_id',
                 'year_level_id' => 'nullable|integer|exists:year_levels,year_level_id',
                 'curricula_program_id' => 'nullable|integer|exists:curricula_program,curricula_program_id',
-                'requirements' => 'array',
-                'requirements.*.requirement_type' => 'nullable|in:pre,co',
+                'requirements' => 'array', // Expect an array of requirements
+                'requirements.*.requirement_type' => 'nullable|in:pre,co', // Pre or co-requisites
                 'requirements.*.required_course_id' => 'nullable|integer|exists:courses,course_id',
             ]);
 
+            // Create the new course
             $course = Course::create([
                 'course_code' => $validatedData['course_code'],
                 'course_title' => $validatedData['course_title'],
@@ -47,6 +48,7 @@ class CourseController extends Controller
                 'tuition_hours' => $validatedData['tuition_hours'],
             ]);
 
+            // Assign the course to a curricula program and semester if provided
             if (!empty($validatedData['semester_id']) && !empty($validatedData['curricula_program_id'])) {
                 CourseAssignment::create([
                     'curricula_program_id' => $validatedData['curricula_program_id'],
@@ -55,12 +57,13 @@ class CourseController extends Controller
                 ]);
             }
 
-            if (isset($validatedData['requirements'])) {
+            // Handle multiple requirements (pre-requisites and co-requisites)
+            if (isset($validatedData['requirements']) && is_array($validatedData['requirements'])) {
                 foreach ($validatedData['requirements'] as $requirement) {
                     if (!empty($requirement['requirement_type']) && !empty($requirement['required_course_id'])) {
                         CourseRequirement::create([
                             'course_id' => $course->course_id,
-                            'requirement_type' => $requirement['requirement_type'],
+                            'requirement_type' => $requirement['requirement_type'], // 'pre' or 'co'
                             'required_course_id' => $requirement['required_course_id'],
                         ]);
                     }
