@@ -11,6 +11,10 @@
       [inputFields]="inputFields"
       [showExportButton]="true"
       [showAddButton]="false"
+      [buttonDisabled]="!hasAnySchedules"
+      [tooltipMessage]="
+        !hasAnySchedules ? 'No room schedules available for export' : ''
+      "
       (export)="onExportAll()"
       (inputChange)="onInputChange($event)"
     >
@@ -80,7 +84,7 @@
             <span
               [matTooltip]="
                 !hasSchedules(element)
-                  ? element.roomCode + ' has no schedules available.'
+                  ? element.roomCode + ' has no schedules available'
                   : ''
               "
               matTooltipDisabled="false"
@@ -99,7 +103,7 @@
             <span
               [matTooltip]="
                 !hasSchedules(element)
-                  ? element.roomCode + ' has no schedules available.'
+                  ? element.roomCode + ' has no schedules available'
                   : ''
               "
               matTooltipDisabled="false"

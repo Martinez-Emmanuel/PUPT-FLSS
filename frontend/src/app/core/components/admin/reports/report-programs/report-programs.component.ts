@@ -109,6 +109,7 @@ export class ReportProgramsComponent implements OnInit {
   academicYear: string = '';
   semester: string = '';
   isLoading = true;
+  hasAnySchedules = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -130,31 +131,35 @@ export class ReportProgramsComponent implements OnInit {
     this.isLoading = true;
     this.reportsService.getProgramSchedulesReport().subscribe({
       next: (response) => {
-        const programData: Program[] =
-          response.programs_schedule_reports.programs.map((program: any) => ({
-            program_id: program.program_id,
-            program_code: program.program_code,
-            program_title: program.program_title,
-            year_levels: program.year_levels.map((yl: any) => ({
-              year_level: yl.year_level,
-              sections: yl.sections.map((sec: any) => ({
-                section_name: sec.section_name,
-                schedules: sec.schedules,
-              })),
+        const programData: Program[] = response.programs_schedule_reports.programs.map((program: any) => ({
+          program_id: program.program_id,
+          program_code: program.program_code,
+          program_title: program.program_title,
+          year_levels: program.year_levels.map((yl: any) => ({
+            year_level: yl.year_level,
+            sections: yl.sections.map((sec: any) => ({
+              section_name: sec.section_name,
+              schedules: sec.schedules,
             })),
-            year_levels_selected: 'All',
-            section_selected: 'All',
-          }));
+          })),
+          year_levels_selected: 'All',
+          section_selected: 'All',
+        }));
 
         this.academicYear = `${response.programs_schedule_reports.year_start}-${response.programs_schedule_reports.year_end}`;
-        this.semester = this.getSemesterDisplay(
-          response.programs_schedule_reports.semester
-        );
+        this.semester = this.getSemesterDisplay(response.programs_schedule_reports.semester);
 
         this.isLoading = false;
         this.dataSource.data = programData;
         this.filteredData = [...programData];
         this.dataSource.paginator = this.paginator;
+
+        // Check if there are any schedules available
+        this.hasAnySchedules = this.filteredData.some((program) =>
+          program.year_levels.some((yearLevel) =>
+            yearLevel.sections.some((section) => section.schedules.length > 0)
+          )
+        );
       },
       error: (error) => {
         this.isLoading = false;

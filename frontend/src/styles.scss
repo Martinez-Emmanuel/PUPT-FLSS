@@ -129,6 +129,7 @@ body {
 
 .disabled-button {
   opacity: var(--opacity-half);
+  cursor: not-allowed !important;
 }
 
 .no-data-text {

@@ -84,6 +84,7 @@ export class ReportFacultyComponent
   hasSchedulesForToggleAll = false;
   isToggleAllChecked = false;
   isLoading = true;
+  hasAnySchedules = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -134,8 +135,11 @@ export class ReportFacultyComponent
         this.dataSource.paginator = this.paginator;
 
         this.hasSchedulesForToggleAll = facultyData.some(
-          (faculty: { schedules: string | any[] }) =>
-            faculty.schedules && faculty.schedules.length > 0
+          (faculty: { schedules: string | any[]; }) => faculty.schedules && faculty.schedules.length > 0
+        );
+
+        this.hasAnySchedules = facultyData.some(
+          (faculty: { schedules: string | any[]; }) => faculty.schedules && faculty.schedules.length > 0
         );
 
         this.isToggleAllChecked =

@@ -13,6 +13,10 @@
       [showAddButton]="false"
       (export)="onExportAll()"
       (inputChange)="onInputChange($event)"
+      [buttonDisabled]="!hasAnySchedules"
+      [tooltipMessage]="
+        !hasAnySchedules ? 'No schedules available for export' : ''
+      "
     >
     </app-table-header>
   </div>
@@ -98,7 +102,7 @@
             <span
               [matTooltip]="
                 !hasSchedules(element)
-                  ? element.facultyName + ' has no schedules available.'
+                  ? element.facultyName + ' has no schedules available'
                   : ''
               "
               matTooltipDisabled="false"
@@ -117,7 +121,7 @@
             <span
               [matTooltip]="
                 !hasSchedules(element)
-                  ? element.facultyName + ' has no schedules available.'
+                  ? element.facultyName + ' has no schedules available'
                   : ''
               "
               matTooltipDisabled="false"

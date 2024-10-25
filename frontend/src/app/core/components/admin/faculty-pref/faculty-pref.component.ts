@@ -85,6 +85,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   isToggleAllChecked = false;
   isLoading = new BehaviorSubject<boolean>(true);
   currentFilter = '';
+  hasAnyPreferences = false;
 
   @ViewChild(MatPaginator) paginator?: MatPaginator;
 
@@ -125,12 +126,11 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
           active_semesters: faculty.active_semesters,
         }));
 
-        console.log('Processed Faculty Data:', faculties);
-
         this.allData = faculties;
         this.filteredData = faculties;
         this.applyFilter(this.currentFilter);
         this.checkToggleAllState();
+        this.updateHasAnyPreferences(); // Update the hasAnyPreferences value
         this.isLoading.next(false);
       },
       (error) => {
@@ -184,6 +184,12 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   checkToggleAllState(): void {
     const allEnabled = this.filteredData.every((faculty) => faculty.is_enabled);
     this.isToggleAllChecked = allEnabled;
+  }
+
+  updateHasAnyPreferences(): void {
+    this.hasAnyPreferences = this.allData.some((faculty) =>
+      this.hasSubmittedPreferences(faculty)
+    );
   }
 
   onToggleSingleChange(faculty: Faculty): void {

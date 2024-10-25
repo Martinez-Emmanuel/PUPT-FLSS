@@ -10,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDialog } from '@angular/material/dialog';
 import { MatRippleModule } from '@angular/material/core';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { TableDialogComponent } from '../../shared/table-dialog/table-dialog.component';
 
@@ -33,6 +34,7 @@ export interface InputField {
     MatRippleModule,
     ReactiveFormsModule,
     MatSelectModule,
+    MatTooltipModule
   ],
   templateUrl: './table-header.component.html',
   styleUrls: ['./table-header.component.scss'],
@@ -52,6 +54,7 @@ export class TableHeaderComponent implements OnInit, OnChanges {
   @Input() searchLabel = 'Search';
   @Input() activeYear = '';
   @Input() activeSemester = '';
+  @Input() tooltipMessage = '';
 
   @Output() add = new EventEmitter<void>();
   @Output() inputChange = new EventEmitter<{ [key: string]: any }>();

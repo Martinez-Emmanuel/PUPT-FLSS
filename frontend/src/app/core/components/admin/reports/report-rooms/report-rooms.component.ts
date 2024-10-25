@@ -73,6 +73,7 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
   dataSource = new MatTableDataSource<Room>();
   filteredData: Room[] = [];
   isLoading = true;
+  hasAnySchedules = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -114,6 +115,8 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
         this.dataSource.data = rooms;
         this.filteredData = [...rooms];
         this.dataSource.paginator = this.paginator;
+
+        this.hasAnySchedules = this.filteredData.some(room => this.hasSchedules(room));
       },
       error: (error) => {
         this.isLoading = false;
