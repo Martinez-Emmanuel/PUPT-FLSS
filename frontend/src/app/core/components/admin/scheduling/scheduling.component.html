@@ -98,9 +98,9 @@
         <ng-container matColumnDef="day">
           <th mat-header-cell *matHeaderCellDef class="custom-header">Day</th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
-            <span [class.not-set-badge]="element.day === 'Not set'">{{
-              element.day
-            }}</span>
+            <span [class.not-set-badge]="element.day === 'Not set'">
+              {{ element.day }}
+            </span>
           </td>
         </ng-container>
 
@@ -108,9 +108,9 @@
         <ng-container matColumnDef="time">
           <th mat-header-cell *matHeaderCellDef class="custom-header">Time</th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
-            <span [class.not-set-badge]="element.time === 'Not set'">{{
-              element.time
-            }}</span>
+            <span [class.not-set-badge]="element.time === 'Not set'">
+              {{ element.time }}
+            </span>
           </td>
         </ng-container>
 
@@ -120,9 +120,9 @@
             Professor
           </th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
-            <span [class.not-set-badge]="element.professor === 'Not set'">{{
-              element.professor
-            }}</span>
+            <span [class.not-set-badge]="element.professor === 'Not set'">
+              {{ element.professor }}
+            </span>
           </td>
         </ng-container>
 
@@ -130,9 +130,9 @@
         <ng-container matColumnDef="room">
           <th mat-header-cell *matHeaderCellDef class="custom-header">Room</th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
-            <span [class.not-set-badge]="element.room === 'Not set'">{{
-              element.room
-            }}</span>
+            <span [class.not-set-badge]="element.room === 'Not set'">
+              {{ element.room }}
+            </span>
           </td>
         </ng-container>
 
@@ -150,15 +150,13 @@
                 [disabled]="loadingScheduleId === element.schedule_id"
               >
                 <div class="button-content">
-                  @if (loadingScheduleId === element.schedule_id) {
-                  <mat-spinner
-                    class="custom-spinner"
-                    diameter="25"
-                  ></mat-spinner>
-                  } @else {
-                  <mat-icon>edit</mat-icon>
-                  <span>Edit</span>
-                  }
+                  <ng-container *ngIf="loadingScheduleId === element.schedule_id; else editIcon">
+                    <mat-spinner class="custom-spinner" diameter="25"></mat-spinner>
+                  </ng-container>
+                  <ng-template #editIcon>
+                    <mat-icon>edit</mat-icon>
+                    <span>Edit</span>
+                  </ng-template>
                 </div>
               </button>
             </div>

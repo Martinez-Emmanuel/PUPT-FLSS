@@ -25,16 +25,6 @@ export interface ActiveSemester {
   courses: Course[];
 }
 
-// interface Faculty {
-//   faculty_id: number;
-//   facultyName: string;
-//   facultyCode: string;
-//   facultyType: string;
-//   facultyUnits: number;
-//   is_enabled: boolean;
-//   active_semesters?: ActiveSemester[]; 
-// }
-
 export interface SemesterDetails {
   semester: number;
   courses: Course[];

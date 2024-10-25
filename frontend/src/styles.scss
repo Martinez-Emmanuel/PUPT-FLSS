@@ -127,6 +127,10 @@ body {
 
 /* Custom Styling applied globally */
 
+.disabled-button {
+  opacity: var(--opacity-half);
+}
+
 .no-data-text {
   @include flex-layout($gap: var(--spacing-xs));
   width: 100%;
@@ -270,7 +274,8 @@ span[mat-symbol] {
     var(--mat-standard-button-toggle-divider-color, var(--mat-app-outline)) !important;
 }
 
-.mat-mdc-snack-bar-container .mat-mdc-button.mat-mdc-snack-bar-action:not(:disabled) {
+.mat-mdc-snack-bar-container
+  .mat-mdc-button.mat-mdc-snack-bar-action:not(:disabled) {
   color: var(--primary-text-reverse) !important;
 }
 

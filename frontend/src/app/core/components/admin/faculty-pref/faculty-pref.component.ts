@@ -555,4 +555,14 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
       isEnabled ? 'Disable' : 'Enable'
     } preferences submission for all faculty`;
   }
+
+  hasSubmittedPreferences(faculty: Faculty): boolean {
+    return !!(
+      faculty.active_semesters &&
+      faculty.active_semesters.length > 0 &&
+      faculty.active_semesters.some(
+        (semester) => semester.courses && semester.courses.length > 0
+      )
+    );
+  }
 }
