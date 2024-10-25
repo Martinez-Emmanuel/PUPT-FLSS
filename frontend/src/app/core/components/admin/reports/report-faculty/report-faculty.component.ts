@@ -662,4 +662,8 @@ export class ReportFacultyComponent
     }
     return `${isEnabled ? 'Unpublish' : 'Publish'} schedules for all applicable faculty`;
   }
+
+  hasSchedules(faculty: Faculty): boolean {
+    return (faculty.schedules ?? []).length > 0;
+  }
 }
