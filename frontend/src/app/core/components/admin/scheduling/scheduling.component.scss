@@ -57,6 +57,10 @@
       position: sticky;
       top: 0;
       z-index: 2;
+
+      &.min {
+        min-width: var(--spacing-md);
+      }
     }
 
     .custom-cell {
