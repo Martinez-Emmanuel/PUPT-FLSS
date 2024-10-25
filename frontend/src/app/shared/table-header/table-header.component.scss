@@ -100,7 +100,7 @@
   .header-container .object-container {
     @include flex-layout(
       $direction: column,
-      $align: stretch,
+      $align: flex-end,
       $justify: space-between,
       $gap: var(--spacing-md)
     );
@@ -108,5 +108,13 @@
     .active-year-sem-container {
       padding: var(--spacing-sm) !important;
     }
+  }
+
+  .header-container .button-container {
+    @include flex-layout(
+      $align: stretch,
+      $justify: flex-end,
+      $gap: var(--spacing-md)
+    );
   }
 }
