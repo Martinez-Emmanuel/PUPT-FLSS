@@ -11,6 +11,7 @@
 
     .search-field {
       width: auto;
+      min-width: 20rem;
       flex: 1;
     }
 
@@ -35,6 +36,11 @@
 
     .curriculum-field {
       width: auto;
+    }
+
+    .academic-year-field {
+      min-width: 20rem;
+      flex: 1;
     }
   }
 
