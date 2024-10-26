@@ -85,34 +85,34 @@
       padding: var(--spacing-xs);
       text-align: center;
 
-      .course-code-cell {
+      &.course-code-cell {
         position: relative;
-      }
 
-      .course-code-wrapper {
-        @include flex-layout;
-      }
+        .course-code-wrapper {
+          @include flex-layout;
+        }
 
-      .copy-icon,
-      .remove-icon {
-        background: var(--neutral-option);
-        border-radius: var(--border-radius-base);
-        padding: var(--spacing-xxs);
-        font-size: var(--font-size-sm);
-        margin-left: var(--spacing-xs);
-        visibility: hidden;
-        opacity: var(--opacity-semi-opaque);
-        cursor: pointer;
-      }
+        .copy-icon,
+        .remove-icon {
+          background: var(--neutral-option);
+          border-radius: var(--border-radius-base);
+          padding: var(--spacing-xxs);
+          font-size: var(--font-size-sm);
+          margin-left: var(--spacing-xs);
+          visibility: hidden;
+          opacity: var(--opacity-semi-opaque);
+          cursor: pointer;
+        }
 
-      .remove-icon {
-        background: var(--primary-fade);
-        color: var(--primary-text-lighter);
-      }
+        .remove-icon {
+          background: var(--primary-fade);
+          color: var(--primary-text-lighter);
+        }
 
-      .course-code-cell:hover .copy-icon,
-      .course-code-cell:hover .remove-icon {
-        visibility: visible;
+        &:hover .copy-icon,
+        &:hover .remove-icon {
+          visibility: visible;
+        }
       }
 
       .not-set-badge {
