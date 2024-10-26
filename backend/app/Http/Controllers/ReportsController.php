@@ -102,11 +102,17 @@ class ReportsController extends Controller
                     'assigned_units' => 0,
                     'is_published' => 0,
                     'schedules' => [],
+                    'tracked_courses' => [],
                 ];
             }
 
             if ($schedule->schedule_id) {
-                $faculties[$schedule->faculty_id]['assigned_units'] += $schedule->units;
+                // Only add units if we haven't counted this course assignment before
+                if (!in_array($schedule->course_assignment_id, $faculties[$schedule->faculty_id]['tracked_courses'])) {
+                    $faculties[$schedule->faculty_id]['assigned_units'] += $schedule->units;
+                    $faculties[$schedule->faculty_id]['tracked_courses'][] = $schedule->course_assignment_id;
+                }
+
                 $faculties[$schedule->faculty_id]['is_published'] = $schedule->is_published;
                 $faculties[$schedule->faculty_id]['schedules'][] = [
                     'schedule_id' => $schedule->schedule_id,
@@ -131,7 +137,12 @@ class ReportsController extends Controller
             }
         }
 
-        // Step 5: Structure the response
+        // Remove the tracking array before sending response
+        foreach ($faculties as &$faculty) {
+            unset($faculty['tracked_courses']);
+        }
+
+        // Step 5: Structure the response (remains the same)
         return response()->json([
             'faculty_schedule_reports' => [
                 'academic_year_id' => $activeSemester->academic_year_id,
@@ -554,12 +565,18 @@ class ReportsController extends Controller
             'total_hours' => 0,
             'is_published' => 0,
             'schedules' => [],
+            'tracked_courses' => [],
         ];
 
         foreach ($facultySchedules as $schedule) {
             if ($schedule->schedule_id) {
-                $facultyData['assigned_units'] += $schedule->units;
-                $facultyData['total_hours'] += $schedule->tuition_hours;
+                // Only add units and hours if we haven't counted this course assignment before
+                if (!in_array($schedule->course_assignment_id, $facultyData['tracked_courses'])) {
+                    $facultyData['assigned_units'] += $schedule->units;
+                    $facultyData['total_hours'] += $schedule->tuition_hours;
+                    $facultyData['tracked_courses'][] = $schedule->course_assignment_id;
+                }
+
                 $facultyData['is_published'] = $schedule->is_published;
                 $facultyData['schedules'][] = [
                     'schedule_id' => $schedule->schedule_id,
@@ -583,6 +600,9 @@ class ReportsController extends Controller
                 ];
             }
         }
+
+        // Remove the tracking array before sending response
+        unset($facultyData['tracked_courses']);
 
         // Step 7: Structure the response with the new JSON format
         return response()->json([
