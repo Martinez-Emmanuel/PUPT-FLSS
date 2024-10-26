@@ -415,11 +415,11 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       Year Level: ${yearLevel},
       Section ID: ${sectionId}`
     );
-  
+
     return this.schedulingService.populateSchedules().pipe(
       tap((response: PopulateSchedulesResponse) => {
         console.log('Response', response);
-  
+
         const program = response.programs.find(
           (p) => p.program_id === programId
         );
@@ -428,7 +428,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           this.schedules = [];
           return;
         }
-  
+
         const yearLevelData = program.year_levels.find(
           (yl) => yl.year_level === yearLevel
         );
@@ -437,7 +437,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           this.schedules = [];
           return;
         }
-  
+
         const semesterData = yearLevelData.semesters.find(
           (s) => s.semester === response.semester_id
         );
@@ -446,7 +446,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           this.schedules = [];
           return;
         }
-  
+
         const sectionData = semesterData.sections.find(
           (s) => s.section_per_program_year_id === sectionId
         );
@@ -455,41 +455,41 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           this.schedules = [];
           return;
         }
-  
-        // Map the courses to the Schedule interface, and determine `isLastInGroup`
-        this.schedules = sectionData.courses.map((course: CourseResponse, index, array) => {
-          // Determine if this is the last course in the group of similar courses
-          const isLastInGroup = 
-            index === array.length - 1 || 
-            course.course_code !== array[index + 1].course_code;
-  
-          return {
-            schedule_id: course.schedule?.schedule_id,
-            section_course_id: course.section_course_id,
-            course_id: course.course_id,
-            course_code: course.course_code,
-            course_title: course.course_title,
-            lec_hours: course.lec_hours,
-            lab_hours: course.lab_hours,
-            units: course.units,
-            tuition_hours: course.tuition_hours,
-            day: course.schedule?.day || 'Not set',
-            time: this.getFormattedTime(
-              course.schedule?.start_time,
-              course.schedule?.end_time
-            ),
-            professor: course.professor || 'Not set',
-            room: course.room?.room_code || 'Not set',
-            program: program.program_title,
-            program_code: program.program_code,
-            year: yearLevelData.year_level,
-            curriculum: yearLevelData.curriculum_year,
-            section: sectionData.section_name,
-            is_copy: course.is_copy || 0,
-            isLastInGroup // New property for styling purposes
-          };
-        });
-  
+
+        this.schedules = sectionData.courses.map(
+          (course: CourseResponse, index, array) => {
+            const isLastInGroup =
+              index === array.length - 1 ||
+              course.course_code !== array[index + 1].course_code;
+
+            return {
+              schedule_id: course.schedule?.schedule_id,
+              section_course_id: course.section_course_id,
+              course_id: course.course_id,
+              course_code: course.course_code,
+              course_title: course.course_title,
+              lec_hours: course.lec_hours,
+              lab_hours: course.lab_hours,
+              units: course.units,
+              tuition_hours: course.tuition_hours,
+              day: course.schedule?.day || 'Not set',
+              time: this.getFormattedTime(
+                course.schedule?.start_time,
+                course.schedule?.end_time
+              ),
+              professor: course.professor || 'Not set',
+              room: course.room?.room_code || 'Not set',
+              program: program.program_title,
+              program_code: program.program_code,
+              year: yearLevelData.year_level,
+              curriculum: yearLevelData.curriculum_year,
+              section: sectionData.section_name,
+              is_copy: course.is_copy || 0,
+              isLastInGroup,
+            };
+          }
+        );
+
         // Sort schedules for a consistent display order
         this.schedules.sort((a, b) => {
           if (a.course_code === b.course_code) {
@@ -497,7 +497,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           }
           return a.course_code.localeCompare(b.course_code);
         });
-  
+
         this.cdr.detectChanges();
         console.log('Final Schedules:', this.schedules);
       }),
@@ -508,7 +508,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       })
     );
   }
-  
 
   // ====================
   // Dialog Methods
@@ -876,7 +875,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       .duplicateCourse(element)
       .pipe(
         switchMap(() => {
-          // Reset schedules cache and re-fetch updated schedules
           this.schedulingService.resetCaches([CacheType.Schedules]);
           return this.fetchCourses(
             this.programOptions.find((p) => p.display === this.selectedProgram)
@@ -890,7 +888,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (updatedSchedules) => {
-          // Update schedules with the newly fetched list
           this.schedules = updatedSchedules;
           this.cdr.detectChanges();
 
@@ -898,7 +895,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           const scheduleCount = this.getScheduleCount(element);
           const scheduleIndex = this.getOrdinalSuffix(scheduleCount);
 
-          // Show the updated snackbar message with schedule details
           this.snackBar.open(
             `${scheduleIndex} schedule successfully added for ${element.course_code} - ${element.course_title}`,
             'Close',
@@ -1081,14 +1077,12 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   }
 
   protected getScheduleCount(element: Schedule): number {
-    // Get how many schedules exist for the given course code
     return this.schedules.filter(
       (schedule) => schedule.course_code === element.course_code
     ).length;
   }
 
   protected getScheduleIndex(element: Schedule): number {
-    // Get the index of the current schedule within all schedules of the same course
     return (
       this.schedules
         .filter((schedule) => schedule.course_code === element.course_code)
@@ -1098,14 +1092,12 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   }
 
   protected isLastCopy(element: Schedule, currentIndex: number): boolean {
-    // If this is the last row, it's automatically the last copy
     if (currentIndex === this.schedules.length - 1) return true;
-    
-    // Get the next schedule
     const nextSchedule = this.schedules[currentIndex + 1];
-    
-    // If this row has copies and the next row has a different course code,
-    // then this is the last copy of the current course
-    return this.hasCopies(element) && element.course_code !== nextSchedule.course_code;
+
+    return (
+      this.hasCopies(element) &&
+      element.course_code !== nextSchedule.course_code
+    );
   }
 }
