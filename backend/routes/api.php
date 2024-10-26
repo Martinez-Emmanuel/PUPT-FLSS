@@ -37,8 +37,13 @@ Route::get('/active-year-semester', [AcademicYearController::class, 'getActiveYe
 //Admin side routes
 Route::get('/get-assigned-courses', [AcademicYearController::class, 'getAssignedCourses']);
 Route::get('/get-assigned-courses-sem', [AcademicYearController::class, 'getAssignedCoursesBySem']);
+
 Route::get('/populate-schedules', [ScheduleController::class, 'populateSchedules']);
 Route::post('/assign-schedule', [ScheduleController::class, 'assignSchedule']);
+
+Route::post('/duplicate-course', [ScheduleController::class, 'duplicateCourse']);
+Route::delete('/remove-duplicate-course', [ScheduleController::class, 'removeDuplicateCourse']);
+
 Route::get('/get-faculty', [FacultyController::class, 'getFacultyDetails']);
 Route::get('/get-rooms', [RoomController::class, 'getAllRooms']);
 

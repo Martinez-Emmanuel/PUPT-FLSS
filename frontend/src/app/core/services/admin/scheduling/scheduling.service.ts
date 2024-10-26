@@ -59,6 +59,8 @@ export interface Schedule {
   faculty_id?: number;
   faculty_email?: string;
   room_id?: number;
+  section_course_id: number;
+  is_copy: number;
 }
 
 export interface Semester {
@@ -140,6 +142,8 @@ export interface CourseResponse {
     room_id: number;
     room_code: string;
   };
+  section_course_id: number;
+  is_copy?: number;
 }
 
 export interface Room {
@@ -392,23 +396,6 @@ export class SchedulingService {
   // Scheduling-related methods
   // =============================
 
-  // Get assigned courses by program, year level, and section
-  getAssignedCoursesByProgramYearAndSection(
-    programId: number,
-    yearLevel: number,
-    sectionId: number
-  ): Observable<any> {
-    return this.http
-      .get<any>(`${this.baseUrl}/get-assigned-courses-sem`, {
-        params: {
-          programId: programId.toString(),
-          yearLevel: yearLevel.toString(),
-          sectionId: sectionId.toString(),
-        },
-      })
-      .pipe(catchError(this.handleError));
-  }
-
   // Populate schedules
   populateSchedules(): Observable<PopulateSchedulesResponse> {
     if (!this.schedulesCache$) {
@@ -500,6 +487,35 @@ export class SchedulingService {
       }),
       catchError(this.handleError)
     );
+  }
+
+  /**
+   * Duplicate a course by calling the backend API.
+   * @param element The schedule element to duplicate.
+   */
+  duplicateCourse(element: Schedule): Observable<{ course: Schedule }> {
+    return this.http
+      .post<{ course: Schedule }>(`${this.baseUrl}/duplicate-course`, {
+        section_course_id: element.section_course_id,
+      })
+      .pipe(
+        tap(() => {
+          this.resetCaches([CacheType.Schedules]);
+        }),
+        catchError(this.handleError)
+      );
+  }
+
+  /**
+   * Remove a duplicated course copy by calling the backend API.
+   * @param section_course_id The ID of the section_course to remove.
+   */
+  removeDuplicateCourse(section_course_id: number): Observable<any> {
+    return this.http
+      .delete(`${this.baseUrl}/remove-duplicate-course`, {
+        body: { section_course_id },
+      })
+      .pipe(catchError(this.handleError));
   }
 
   /**
