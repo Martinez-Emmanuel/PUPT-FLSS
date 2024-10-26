@@ -15,6 +15,26 @@ class FacultyController extends Controller
         return response()->json(Faculty::all(), 200);
     }
 
+    public function getFacultyDetails()
+    {
+        $facultyDetails = Faculty::whereHas('user', function ($query) {
+            $query->where('status', 'Active');
+        })->with('user')->get();
+
+        $response = $facultyDetails->map(function ($faculty) {
+            return [
+                'faculty_id' => $faculty->id,
+                'name' => $faculty->user->name ?? 'N/A',
+                'code' => $faculty->user->code ?? 'N/A',
+                'faculty_email' => $faculty->faculty_email ?? 'N/A',
+                'faculty_type' => $faculty->faculty_type ?? 'N/A',
+                'faculty_units' => $faculty->faculty_units ?? 'N/A',
+            ];
+        });
+
+        return response()->json(['faculty' => $response], 200);
+    }
+
     public function emailPrefEnable()
     {
         // Retrieve all faculties from the database

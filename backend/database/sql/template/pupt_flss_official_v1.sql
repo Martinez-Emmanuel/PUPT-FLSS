@@ -274,6 +274,7 @@ CREATE TABLE `schedules` (
   `faculty_id` bigint(20) UNSIGNED DEFAULT NULL,
   `room_id` bigint(20) UNSIGNED DEFAULT NULL,
   `is_published` tinyint(1) NOT NULL DEFAULT '0',
+  `is_copy` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`schedule_id`),

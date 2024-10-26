@@ -38,8 +38,8 @@ Route::get('/active-year-semester', [AcademicYearController::class, 'getActiveYe
 Route::get('/get-assigned-courses', [AcademicYearController::class, 'getAssignedCourses']);
 Route::get('/get-assigned-courses-sem', [AcademicYearController::class, 'getAssignedCoursesBySem']);
 Route::get('/populate-schedules', [ScheduleController::class, 'populateSchedules']);
-Route::post('/assign-schedule', [SchedulingController::class, 'assignSchedule']);
-Route::get('/get-faculty', [SchedulingController::class, 'getFacultyDetails']);
+Route::post('/assign-schedule', [ScheduleController::class, 'assignSchedule']);
+Route::get('/get-faculty', [FacultyController::class, 'getFacultyDetails']);
 Route::get('/get-rooms', [RoomController::class, 'getAllRooms']);
 
 //Email routes for scheduling
