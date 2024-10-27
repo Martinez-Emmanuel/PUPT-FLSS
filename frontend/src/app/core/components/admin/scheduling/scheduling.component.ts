@@ -842,11 +842,10 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         dialogRef.afterClosed().subscribe((result) => {
           if (result) {
             this.snackBar.open(
-              'Schedule has been successfully updated.',
+              `Schedule for ${schedule.course_code} - ${schedule.course_title} 
+                has been successfully updated.`,
               'Close',
-              {
-                duration: 3000,
-              }
+              { duration: 3000 }
             );
             this.schedulingService.resetCaches([CacheType.Schedules]);
             this.onInputChange({
