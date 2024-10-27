@@ -10,7 +10,7 @@
 
 .login-container {
   display: flex;
-  height: 100vh;
+  height: 100%;
   background-size: cover;
   background-position: center;
   position: relative;
@@ -54,7 +54,7 @@
 /* ------- LOGIN FORM SECTION STYLING ------- */
 
 .login-form-section {
-  padding: var(--spacing-3xl);
+  padding: var(--spacing-2xl);
   flex: 40%;
   width: 100%;
   display: flex;
@@ -70,11 +70,9 @@
   }
 
   #login_header {
+    @include flex-layout($gap: var(--spacing-lg));
     width: inherit;
-    display: flex;
-    align-items: center;
     text-align: left;
-    gap: var(--spacing-lg);
 
     .university-logo {
       width: 4.5rem;
@@ -248,9 +246,8 @@
   }
 
   .error-message {
+    @include flex-layout;
     position: absolute;
-    display: flex;
-    align-items: center;
     min-height: var(--spacing-lg);
     margin-top: var(--spacing-xxs);
     margin-left: var(--spacing-sm);
@@ -298,8 +295,24 @@
   }
 }
 
-// Media queries for different screen sizes
-@media (max-width: 768px) {
+// =============
+// Media Queries
+// =============
+
+@media screen and (max-width: 1500px) {
+  .login-form-section {
+    #login_header {
+      @include flex-layout($direction: column, $gap: var(--spacing-sm));
+
+      .university-name,
+      .system-name {
+        text-align: center;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
   #login-container {
     padding: var(--spacing-md);
   }
@@ -394,7 +407,7 @@
   }
 }
 
-@media (max-width: 480px) {
+@media screen and (max-width: 480px) {
   #login-container {
     padding: var(--spacing-sm);
   }
@@ -480,7 +493,7 @@
   }
 }
 
-@media (max-width: 320px) {
+@media screen and (max-width: 320px) {
   #login-container {
     padding: var(--spacing-xs);
   }

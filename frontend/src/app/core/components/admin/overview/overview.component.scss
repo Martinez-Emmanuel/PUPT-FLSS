@@ -29,6 +29,16 @@
   }
 }
 
+.overview-loading-container {
+  height: 100%;
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-md)
+  );
+}
+
 /* Overview Header */
 .overview-header-container {
   @include flex-layout($align: stretch, $justify: space-between);
