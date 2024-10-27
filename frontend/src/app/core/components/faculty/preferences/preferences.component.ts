@@ -68,7 +68,6 @@ interface TableData extends Course {
   templateUrl: './preferences.component.html',
   styleUrls: ['./preferences.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [PreferencesService],
   animations: [fadeAnimation, cardEntranceAnimation, rowAdditionAnimation],
 })
 export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
