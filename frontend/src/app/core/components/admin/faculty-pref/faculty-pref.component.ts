@@ -97,6 +97,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   ) {}
 
   ngOnInit(): void {
+    this.preferencesService.clearPreferencesCache();
     this.loadFacultyPreferences();
     this.dataSource.filterPredicate = (data: Faculty, filter: string) => {
       return (
@@ -280,10 +281,6 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
         generatePdfFunction: generatePdfFunction,
       },
       disableClose: true,
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      console.log('Dialog closed', result);
     });
   }
 

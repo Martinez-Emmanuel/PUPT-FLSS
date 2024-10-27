@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { map } from 'rxjs/operators';
+import { map, shareReplay } from 'rxjs/operators';
 import { environment } from '../../../../../environments/environment.dev';
 
 export interface Course {
@@ -57,6 +57,8 @@ export interface AssignedCoursesResponse {
 export class PreferencesService {
   private baseUrl = environment.apiUrl;
 
+  private preferencesCache$: Observable<any> | null = null;
+
   constructor(private http: HttpClient) {}
 
   getPrograms(): Observable<{
@@ -79,8 +81,17 @@ export class PreferencesService {
   }
 
   getPreferences(): Observable<any> {
-    const url = `${this.baseUrl}/view-preferences`;
-    return this.http.get(url);
+    if (!this.preferencesCache$) {
+      const url = `${this.baseUrl}/view-preferences`;
+      this.preferencesCache$ = this.http.get(url).pipe(
+        shareReplay(1)
+      );
+    }
+    return this.preferencesCache$;
+  }
+
+  clearPreferencesCache(): void {
+    this.preferencesCache$ = null;
   }
 
   deletePreference(
@@ -115,7 +126,10 @@ export class PreferencesService {
     return this.http.post(url, { status });
   }
 
-  toggleFacultyPreferences(faculty_id: number, status: boolean): Observable<any> {
+  toggleFacultyPreferences(
+    faculty_id: number,
+    status: boolean
+  ): Observable<any> {
     const url = `${this.baseUrl}/toggle-preferences-single`;
     return this.http.post(url, { faculty_id, status });
   }
