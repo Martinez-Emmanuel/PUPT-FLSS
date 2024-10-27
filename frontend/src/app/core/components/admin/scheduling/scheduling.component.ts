@@ -929,28 +929,40 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       if (result === 'remove') {
         this.schedulingService
           .removeDuplicateCourse(element.section_course_id)
-          .subscribe({
-            next: () => {
-              this.schedules = this.schedules.filter(
-                (schedule) => schedule.schedule_id !== element.schedule_id
+          .pipe(
+            tap(() => {
+              this.schedulingService.resetCaches([CacheType.Schedules]);
+            }),
+            switchMap(() => {
+              const program = this.programOptions.find(
+                (p) => p.display === this.selectedProgram
               );
+              const section = this.sectionOptions.find(
+                (s) => s.section_name === this.selectedSection
+              );
+              return program && section
+                ? this.fetchCourses(
+                    program.id,
+                    this.selectedYear,
+                    section.section_id
+                  )
+                : of([]);
+            })
+          )
+          .subscribe({
+            next: (updatedSchedules) => {
+              this.schedules = updatedSchedules;
               this.cdr.detectChanges();
 
               this.snackBar.open(
                 `${this.getOrdinalSuffix(
                   scheduleIndex
-                )} schedule for ${courseCode} - ${
-                  element.course_title
-                } removed successfully.`,
+                )} schedule for ${courseCode} - ${courseTitle} removed successfully.`,
                 'Close',
-                {
-                  duration: 3000,
-                }
+                { duration: 3000 }
               );
             },
-            error: (error) => {
-              this.handleError('Failed to remove course copy')(error);
-            },
+            error: this.handleError('Failed to remove course copy'),
           });
       }
     });
