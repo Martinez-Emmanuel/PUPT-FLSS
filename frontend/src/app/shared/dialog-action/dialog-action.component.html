@@ -16,14 +16,12 @@
           ? "preferred load and schedule"
           : "official load and schedule"
       }}
-      for this semester.
+      for A.Y. {{ data.academicYear }}, {{ data.semester }}.
     </div>
-    }
-
-    @if (showReportOptions) {
+    } @if (showReportOptions) {
     <div class="main-text">
-      This will <strong>print and download</strong> an official copy of the schedule reports for this semester. 
-      Check all that you want to download:
+      This will <strong>print and download</strong> an official copy of the
+      schedule reports for this semester. Check all that you want to download:
     </div>
 
     <div class="checkbox-container reports">
@@ -34,7 +32,10 @@
         </span>
       </mat-checkbox>
 
-      <mat-checkbox [(ngModel)]="reportOptions.programs" class="report-checkbox">
+      <mat-checkbox
+        [(ngModel)]="reportOptions.programs"
+        class="report-checkbox"
+      >
         <span class="checkbox-content">
           <span mat-symbol="school"></span>
           <span>Programs Schedule Report</span>
@@ -51,23 +52,17 @@
     }
 
     <!--Secondary Text-->
+    @if(!data.hasSecondaryText){
     <div class="secondary-text">
-      @if (!showReportOptions) {
-        For specific faculty, go to
-      }
-      @if (showReportOptions) {
-        For a more specific view and download of reports, go to the
-      }
+      @if (!showReportOptions) { For specific faculty, go to } @if
+      (showReportOptions) { For a more specific view and download of reports, go
+      to the }
       <a class="link" [routerLink]="navigationLink" (click)="closeDialog()">
         {{ linkText }}</a
       >
-      @if (!showReportOptions) {
-        page.
-      }
-      @if (showReportOptions) {
-        page.
-      }
+      @if (!showReportOptions) { page. } @if (showReportOptions) { page. }
     </div>
+    }
 
     <!-- Email Notification Option -->
     @if (showEmailOption) {
@@ -96,7 +91,9 @@
       mat-flat-button
       color="primary"
       (click)="confirmAction()"
-      [disabled]="isProcessing || (showReportOptions && !isReportSelectionValid())"
+      [disabled]="
+        isProcessing || (showReportOptions && !isReportSelectionValid())
+      "
     >
       @if (!isProcessing) {
       <span>Confirm</span>

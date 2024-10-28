@@ -18,9 +18,10 @@ import { OverviewService } from '../../core/services/admin/overview/overview.ser
 
 export interface DialogActionData {
   type: 'preferences' | 'publish' | 'reports';
+  currentState: boolean;
   academicYear: string;
   semester: string;
-  currentState: boolean;
+  hasSecondaryText?: boolean;
 }
 
 @Component({
