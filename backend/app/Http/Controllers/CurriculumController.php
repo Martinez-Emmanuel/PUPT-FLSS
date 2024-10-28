@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Curriculum;
-use App\Models\CurriculaProgram;
-use App\Models\CourseAssignment;
-use Illuminate\Support\Facades\DB;
-use App\Models\YearLevel;
-use App\Models\Semester;
-use App\Models\CourseRequirement;
 use App\Models\Course;
+use App\Models\CourseAssignment;
+use App\Models\CourseRequirement;
+use App\Models\CurriculaProgram;
+use App\Models\Curriculum;
 use App\Models\Program;
+use App\Models\Semester;
+use App\Models\YearLevel;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class CurriculumController extends Controller
 {
@@ -27,11 +27,11 @@ class CurriculumController extends Controller
 
         // Check if there are any active programs
         $activeProgramsCount = DB::table('programs')->where('status', 'Active')->count();
-    
+
         if ($activeProgramsCount === 0) {
             return response()->json([
                 'status' => 'success',
-                'message' => 'No programs found. The curriculum cannot be created without active programs.'
+                'message' => 'No programs found. The curriculum cannot be created without active programs.',
             ]);
         }
 
@@ -72,10 +72,9 @@ class CurriculumController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'message' => 'Curriculum and associated programs, year levels, and semesters created successfully.'
+            'message' => 'Curriculum and associated programs, year levels, and semesters created successfully.',
         ]);
     }
-
 
     public function deleteCurriculum(Request $request)
     {
@@ -84,30 +83,29 @@ class CurriculumController extends Controller
         ], [
             'curriculum_year.exists' => 'No curriculum found for the given year.',
         ]);
-    
+
         $curriculum = Curriculum::where('curriculum_year', $request->curriculum_year)->firstOrFail();
         $isUsedInAcademicYear = DB::table('academic_year_curricula')
             ->where('curriculum_id', $curriculum->curriculum_id)
             ->exists();
-    
+
         if ($isUsedInAcademicYear) {
             return response()->json([
                 'status' => 'fail',
-                'message' => "Curriculum {$request->curriculum_year} is currently used in an academic year and cannot be deleted."
+                'message' => "Curriculum {$request->curriculum_year} is currently used in an academic year and cannot be deleted.",
             ]); // Note: We're returning a 200 OK status here
         }
-    
+
         DB::transaction(function () use ($request, $curriculum) {
             // Delete related records...
             $curriculum->delete();
         });
-    
+
         return response()->json([
             'status' => 'success',
-            'message' => 'Curriculum and all associated programs, year levels, and semesters deleted successfully.'
+            'message' => 'Curriculum and all associated programs, year levels, and semesters deleted successfully.',
         ]);
     }
-    
 
     public function copyCurriculum(Request $request)
     {
@@ -164,11 +162,22 @@ class CurriculumController extends Controller
                             ]);
 
                             // Create a new course assignment with the new course_id
-                            CourseAssignment::create([
+                            $newCourseAssignment = CourseAssignment::create([
                                 'curricula_program_id' => $newCurriculaProgram->curricula_program_id,
                                 'semester_id' => $newSemester->semester_id,
                                 'course_id' => $newCourse->course_id,
                             ]);
+
+                            // Step 7: Copy the course requirements (pre-requisites and co-requisites)
+                            $originalCourseRequirements = CourseRequirement::where('course_id', $originalCourseAssignment->course_id)->get();
+                            foreach ($originalCourseRequirements as $originalRequirement) {
+                                // Create new course requirement for the new course
+                                CourseRequirement::create([
+                                    'course_id' => $newCourse->course_id,
+                                    'requirement_type' => $originalRequirement->requirement_type, // pre or co
+                                    'required_course_id' => $originalRequirement->required_course_id,
+                                ]);
+                            }
                         }
                     }
                 }
@@ -176,18 +185,7 @@ class CurriculumController extends Controller
 
             return $newCurriculum;
         });
-
-        // Reload the new curriculum with all its related data to return
-        $newCurriculumWithData = Curriculum::with('curriculaPrograms.yearLevels.semesters.courseAssignments.course')
-            ->findOrFail($newCurriculum->curriculum_id);
-
-        return response()->json([
-            'status' => 'success',
-            'message' => 'Curriculum and associated programs, year levels, and semesters created successfully.'
-        ]);
     }
-
-
 
     // List all curricula
     public function index()
@@ -208,7 +206,7 @@ class CurriculumController extends Controller
         if ($existingCurriculum) {
             return response()->json([
                 'message' => 'Curriculum for this year already exists',
-                'curriculum' => $existingCurriculum
+                'curriculum' => $existingCurriculum,
             ], 409);
         }
 
@@ -217,7 +215,7 @@ class CurriculumController extends Controller
 
         return response()->json([
             'message' => 'Curriculum created successfully',
-            'curriculum' => $curriculum
+            'curriculum' => $curriculum,
         ], 201);
     }
 
@@ -242,7 +240,7 @@ class CurriculumController extends Controller
 
         return response()->json([
             'message' => 'Curriculum updated successfully',
-            'curriculum' => $curriculum
+            'curriculum' => $curriculum,
         ], 200);
     }
 
@@ -253,7 +251,7 @@ class CurriculumController extends Controller
         $curriculum->delete();
 
         return response()->json([
-            'message' => 'Curriculum deleted successfully'
+            'message' => 'Curriculum deleted successfully',
         ], 200);
     }
 
@@ -345,13 +343,13 @@ class CurriculumController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Program added to curriculum successfully.',
-                'data' => $curriculaProgramWithDetails
+                'data' => $curriculaProgramWithDetails,
             ]);
         }
 
         return response()->json([
             'status' => 'error',
-            'message' => 'Program is already associated with this curriculum year.'
+            'message' => 'Program is already associated with this curriculum year.',
         ], 400);
     }
 

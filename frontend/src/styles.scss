@@ -34,6 +34,7 @@
   --font-size-3xl: 3rem;
   --font-size-3xxl: 3.5rem;
   --font-size-4xl: 4rem;
+  --font-size-5xl: 5rem;
 
   // Line heights
   --line-height-sm: 1.25;
@@ -126,6 +127,11 @@ body {
 
 /* Custom Styling applied globally */
 
+.disabled-button {
+  opacity: var(--opacity-half);
+  cursor: not-allowed !important;
+}
+
 .no-data-text {
   @include flex-layout($gap: var(--spacing-xs));
   width: 100%;
@@ -180,10 +186,6 @@ body {
   background-color: rgba(84, 84, 84, 0.3) !important;
 }
 
-.sec-spinner .mat-spinner circle {
-  stroke: var(--secondary-text) !important;
-}
-
 span[mat-symbol] {
   font-family: "Material Symbols Rounded" !important;
   user-select: none;
@@ -191,7 +193,8 @@ span[mat-symbol] {
 
 .loading-wrapper {
   height: 100%;
-  width: 100%;
+  width: 50%;
+  align-self: center;
 }
 
 .dialog-base {
@@ -220,6 +223,10 @@ span[mat-symbol] {
   .mdc-switch--selected .mdc-switch__icon {
     fill: white !important;
   }
+}
+
+.mdc-text-field--filled:not(.mdc-text-field--disabled) {
+  @include default-transition;
 }
 
 .mdc-checkbox__checkmark {
@@ -267,6 +274,11 @@ span[mat-symbol] {
 .mat-button-toggle-group-appearance-standard {
   border: 1px solid
     var(--mat-standard-button-toggle-divider-color, var(--mat-app-outline)) !important;
+}
+
+.mat-mdc-snack-bar-container
+  .mat-mdc-button.mat-mdc-snack-bar-action:not(:disabled) {
+  color: var(--primary-text-reverse) !important;
 }
 
 [mat-flat-button] {

@@ -5,7 +5,7 @@
 }
 
 .overview-container {
-  height: 100%;
+  height: auto;
   @include flex-layout(
     $direction: column,
     $align: stretch,
@@ -25,7 +25,18 @@
     @include flex-layout($justify: flex-start, $gap: var(--spacing-xs));
     font-size: var(--font-size-md);
     font-weight: 500;
+    @include ellipsis;
   }
+}
+
+.overview-loading-container {
+  height: 100%;
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-md)
+  );
 }
 
 /* Overview Header */
@@ -57,14 +68,14 @@
     );
 
     @include gradient-primary(315deg);
-    padding: 0 var(--spacing-md);
+    padding: var(--spacing-xs) var(--spacing-md);
     border-radius: var(--border-radius-md);
     color: white;
-    cursor: pointer;
 
     .text,
     .label {
       @include reset-styles;
+      @include ellipsis;
     }
 
     .text {
@@ -79,7 +90,11 @@
 
 /* Overview Main */
 .overview-main-container {
-  @include flex-layout($gap: var(--spacing-md));
+  @include flex-layout(
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-md)
+  );
   height: inherit;
 
   /* Cluster One */
@@ -92,12 +107,30 @@
     flex: 6;
     height: inherit;
     // border: 1px solid grey;
+    // overflow: auto;
+
+    .overview-greetings {
+      @include flex-layout(
+        $direction: column,
+        $align: flex-start,
+        $gap: var(--spacing-xxs)
+      );
+
+      #admin_name {
+        @include gradient-primary-text(315deg);
+        font-weight: 600;
+      }
+
+      #description {
+        font-size: var(--font-size-md);
+      }
+    }
 
     /* Quick Stats */
     .quick-stats {
       @include flex-layout($gap: var(--spacing-md));
       flex: 0;
-      //   border: 1px solid blue;
+      // border: 1px solid blue;
 
       & .stats {
         @include flex-layout($align: stretch);
@@ -108,6 +141,7 @@
           @include reset-styles;
           width: var(--font-size-4xl);
           height: auto;
+          user-select: none;
         }
 
         .stats-info {
@@ -115,39 +149,162 @@
           padding: var(--spacing-sm);
         }
       }
-
-      /* Progress Bar Styles */
-      .progress-bar {
-        width: 100%;
-        height: 20px;
-        background-color: var(--neutral-option);
-        border-radius: 10px;
-        overflow: hidden;
-        margin-top: 10px;
-      }
-
-      /* Progress Bar Styles */
-      .progress-bar {
-        width: 100%;
-        height: var(--font-size-xs);
-        background-color: var(--neutral-option);
-        border-radius: 10px;
-        overflow: hidden;
-        margin-top: 10px;
-      }
-
-      .progress {
-        height: 100%;
-        @include gradient-primary;
-        width: 0;
-        transition: width 0.5s ease-in-out;
-      }
     }
 
-    /* Schedule Overview */
-    .schedule-overview {
+    .academic-and-action {
       flex: 1;
-      //   border: 1px solid salmon;
+      @include flex-layout(
+        $align: stretch,
+        $justify: center,
+        $gap: var(--spacing-md)
+      );
+      // border: 1px solid salmon;
+
+      /* Academic Overview */
+      .academic-overview {
+        flex: 1;
+        @include flex-layout(
+          $direction: column,
+          $align: stretch,
+          $gap: var(--spacing-sm)
+        );
+
+        .overview-group-one,
+        .overview-group-two {
+          @include flex-layout($align: stretch, $gap: var(--spacing-sm));
+          flex: 1;
+
+          .overview-item {
+            flex: 1;
+            @include flex-layout(
+              $direction: column,
+              $align: center,
+              $justify: center
+            );
+            background-color: var(--main-bg);
+            border-radius: var(--border-radius-sm);
+            box-shadow: var(--shadow-level-0);
+            padding: var(--spacing-sm);
+            gap: var(--spacing-md);
+
+            .item-title {
+              font-size: var(--font-size-sm);
+              font-weight: 400;
+              color: var(--text-primary);
+              text-align: center;
+              @include ellipsis;
+            }
+
+            .progress-container {
+              width: 15vh;
+              height: 15vh;
+
+              .circular-progress {
+                width: 100%;
+                height: 100%;
+                transform: rotate(-90deg);
+
+                circle {
+                  fill: none;
+                  stroke-width: 10;
+                  stroke-linecap: round;
+                  transition: stroke-dashoffset 1s ease-in-out,
+                    opacity 0.5s ease-in-out;
+                }
+
+                .progress-bg {
+                  stroke: var(--neutral-option);
+                }
+
+                .progress-bar {
+                  stroke: url(#gradient);
+                  stroke-dasharray: 283; // 2 * π * radius (45)
+                  stroke-dashoffset: 283;
+                  opacity: 0;
+                }
+
+                .progress-text {
+                  fill: var(--neutral-base);
+                  font-size: var(--font-size-lg);
+                  font-weight: 500;
+                  text-anchor: middle;
+                  dominant-baseline: middle;
+                }
+              }
+            }
+          }
+        }
+      }
+
+      /* Action Center */
+      .action-center {
+        @include flex-layout(
+          $align: stretch,
+          $direction: column,
+          $gap: var(--spacing-sm)
+        );
+        flex: 1;
+
+        .action-items {
+          @include flex-layout(
+            $direction: column,
+            $align: stretch,
+            $gap: var(--spacing-md)
+          );
+          flex: 1;
+          user-select: none;
+
+          .item-group {
+            @include flex-layout($align: stretch);
+            flex: 1;
+
+            &.one,
+            &.two {
+              @include flex-layout($align: stretch, $gap: var(--spacing-sm));
+            }
+
+            .item {
+              @include flex-layout($direction: column, $gap: var(--spacing-xs));
+              flex: 1;
+              padding: var(--spacing-sm);
+              border-radius: var(--border-radius-sm);
+              background-color: var(--main-bg);
+              text-align: center;
+              cursor: pointer;
+              box-shadow: var(--shadow-level-0);
+              transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+              span[mat-symbol] {
+                @include gradient-primary-text;
+                font-family: "Material Symbols Rounded";
+                font-size: var(--font-size-3xl);
+              }
+
+              .desc {
+                font-size: var(--font-size-sm);
+              }
+
+              /* Action Items Hover */
+              &:hover {
+                @include gradient-primary;
+
+                span[mat-symbol] {
+                  background: none;
+                  -webkit-text-fill-color: white;
+                }
+
+                .desc {
+                  color: white;
+                }
+              }
+
+              // &:active {
+              //   transform: scale(0.96);
+              // }
+            }
+          }
+        }
+      }
     }
   }
 
@@ -161,74 +318,74 @@
     flex: 2;
     height: inherit;
 
-    /* Action Center */
-    .action-center {
+    .notifications {
+      flex: 1;
       @include flex-layout(
-        $align: stretch,
         $direction: column,
+        $align: stretch,
         $gap: var(--spacing-sm)
       );
-      flex: 2;
 
-      .action-items {
-        @include flex-layout($direction: column, $gap: var(--spacing-md));
+      .notifications-content {
         flex: 1;
-        user-select: none;
-
-        .item-group {
-          @include flex-layout($align: stretch);
-          flex: 1;
-
-          &.one,
-          &.two {
-            @include flex-layout($align: stretch, $gap: var(--spacing-sm));
-          }
-
-          .item {
-            @include flex-layout($direction: column, $gap: var(--spacing-xs));
-            flex: 1;
-            padding: var(--spacing-sm);
-            border-radius: var(--border-radius-sm);
-            background-color: var(--main-bg);
-            text-align: center;
-            cursor: pointer;
-            box-shadow: var(--shadow-level-0);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-            span[mat-symbol] {
-              @include gradient-primary-text;
-              font-family: "Material Symbols Rounded";
-              font-size: var(--font-size-2xxl);
-            }
-
-            .desc {
-              font-size: var(--font-size-xsx);
-            }
-
-            /* Action Items Hover */
-            &:hover {
-              @include gradient-primary;
-
-              span[mat-symbol] {
-                background: none;
-                -webkit-text-fill-color: white;
-              }
-
-              .desc {
-                color: white;
-              }
-            }
-
-            &:active {
-              transform: scale(0.96);
-            }
-          }
-        }
+        @include flex-layout;
       }
     }
+  }
+}
 
-    .recent-activities {
-      flex: 1;
+// ==============
+// MEDIA QUERIES
+// ==============
+
+@media screen and (max-width: 1230px) {
+  .overview-main-container {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $justify: flex-start,
+      $gap: var(--spacing-md)
+    );
+  }
+}
+
+@media screen and (max-width: 1110px) {
+  .overview-header-container {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $justify: space-between,
+      $gap: var(--spacing-md)
+    );
+  }
+}
+
+@media screen and (max-width: 800px) {
+  .overview-main-container .main-cluster-one {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $justify: flex-start,
+      $gap: var(--spacing-md)
+    );
+
+    height: auto;
+
+    &.main-cluster-one .quick-stats {
+      @include flex-layout(
+        $direction: column,
+        $align: stretch,
+        $justify: flex-start,
+        $gap: var(--spacing-md)
+      );
+    }
+
+    &.main-cluster-one .academic-and-action {
+      @include flex-layout(
+        $direction: column,
+        $align: stretch,
+        $gap: var(--spacing-md)
+      );
     }
   }
 }

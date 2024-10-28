@@ -29,13 +29,20 @@
     background-color: var(--neutral-light);
     max-height: 50rem;
 
-
     .custom-table {
       @include default-transition;
       background-color: var(--neutral-light);
 
       .table-button {
         color: var(--primary-text);
+      }
+
+      td {
+        border-bottom: 1px solid var(--mat-table-row-item-outline-color);
+      }
+
+      tr:last-child td {
+        border-bottom: none;
       }
     }
 
@@ -66,6 +73,8 @@
         border-radius: var(--border-radius-xs);
         font-size: var(--font-size-xsx);
         font-weight: 500;
+        margin: 0 auto;
+        display: inline-block;
 
         &.full-time {
           background-color: var(--blue-fade-lighter);

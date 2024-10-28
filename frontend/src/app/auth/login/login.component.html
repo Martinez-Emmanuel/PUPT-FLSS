@@ -40,7 +40,11 @@
       >
         <div class="input-group">
           <div class="input-container">
-            <span mat-symbol="person" class="input-icon"></span>
+            <span
+              mat-symbol="person"
+              class="input-icon"
+              [matTooltip]="'Account Code'"
+            ></span>
             <input
               type="text"
               placeholder="Account Code"
@@ -69,7 +73,11 @@
 
         <div class="input-group">
           <div class="input-container">
-            <span mat-symbol="lock" class="input-icon"></span>
+            <span
+              mat-symbol="lock"
+              class="input-icon"
+              [matTooltip]="'Account Password'"
+            ></span>
             <input
               [type]="showPassword ? 'text' : 'password'"
               placeholder="Password"

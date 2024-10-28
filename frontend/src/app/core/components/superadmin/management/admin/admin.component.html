@@ -1,10 +1,12 @@
-@if (isLoading) {
-<app-loading></app-loading>
-} @else {
+<div class="admin-management-container">
+  @if (isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
 
-<div class="admin-management-container" [@fadeAnimation]>
   <!-- Table Header -->
-  <div class="admin-header-container">
+  <div class="admin-header-container" [@fadeAnimation]>
     <app-table-header
       [searchLabel]="'Search Admins'"
       [addButtonLabel]="'Add Admin'"
@@ -15,7 +17,7 @@
   </div>
 
   <!-- Admin Management Table -->
-  <div class="admin-table-container">
+  <div class="admin-table-container" [@fadeAnimation]>
     <app-table-generic
       [columns]="columns"
       [data]="admins"
@@ -25,5 +27,6 @@
       (delete)="deleteAdmin($event)"
     ></app-table-generic>
   </div>
+
+  }
 </div>
-}

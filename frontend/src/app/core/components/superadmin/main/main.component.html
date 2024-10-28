@@ -135,14 +135,14 @@
         <div class="header-account">
           <div class="account-text">
             <div class="account-name">{{ accountName }}</div>
-            <div class="account-role">PUPT-FLSS {{ accountRole }}</div>
+            <div class="account-role">Super Administrator</div>
           </div>
           <div class="profile-dropdown">
             <img
               src="assets/images/default_superadmin_icon.png"
               alt="Profile Icon"
               class="profile-icon"
-              (click)="toggleDropdown()"
+              (click)="toggleDropdown($event)"
               matTooltip="Click to open settings"
               matTooltipPosition="below"
             />

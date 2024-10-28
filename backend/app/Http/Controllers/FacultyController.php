@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendFacultyPreferenceEmailJob;
+use App\Jobs\SendFacultyScheduleEmailJob;
 use App\Models\Faculty;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-use App\Mail\PreferencesSubmitted;
-use App\Jobs\SendFacultyEmailJob;
-use App\Jobs\SendFacultyPreferenceEmailJob;
+
 class FacultyController extends Controller
 {
     public function getFaculty()
@@ -15,17 +15,37 @@ class FacultyController extends Controller
         return response()->json(Faculty::all(), 200);
     }
 
-    public function sendEmails()
+    public function getFacultyDetails()
+    {
+        $facultyDetails = Faculty::whereHas('user', function ($query) {
+            $query->where('status', 'Active');
+        })->with('user')->get();
+
+        $response = $facultyDetails->map(function ($faculty) {
+            return [
+                'faculty_id' => $faculty->id,
+                'name' => $faculty->user->name ?? 'N/A',
+                'code' => $faculty->user->code ?? 'N/A',
+                'faculty_email' => $faculty->faculty_email ?? 'N/A',
+                'faculty_type' => $faculty->faculty_type ?? 'N/A',
+                'faculty_units' => $faculty->faculty_units ?? 'N/A',
+            ];
+        });
+
+        return response()->json(['faculty' => $response], 200);
+    }
+
+    public function emailPrefEnable()
     {
         // Retrieve all faculties from the database
         $faculties = Faculty::all();
-    
+
         // Loop through each faculty and dispatch the email job asynchronously
         foreach ($faculties as $faculty) {
             // Dispatch the new preference email job for each faculty
             SendFacultyPreferenceEmailJob::dispatch($faculty);
         }
-    
+
         // Return a response after the jobs are dispatched
         return response()->json(['message' => 'Preference emails are being sent asynchronously'], 200);
     }
@@ -33,18 +53,18 @@ class FacultyController extends Controller
     {
         $data = [
             'faculty_name' => 'Juan Dela Cruz',
-            'faculty_units' => '30', 
+            'faculty_units' => '30',
         ];
 
         return view('emails.faculty_notification', $data);
     }
 
-    public function sendPreferencesSubmittedEmail(Request $request)
+    public function emailPrefSubmitted(Request $request)
     {
         $facultyId = $request->input('faculty_id');
-    
+
         $faculty = Faculty::find($facultyId);
-    
+
         if ($faculty) {
             $this->sendPreferencesSubmittedNotification($faculty);
             return response()->json(['message' => 'Preferences submission notification sent successfully'], 200);
@@ -52,7 +72,6 @@ class FacultyController extends Controller
             return response()->json(['message' => 'Faculty not found'], 404);
         }
     }
-    
 
     protected function sendPreferencesSubmittedNotification($faculty)
     {
@@ -63,10 +82,10 @@ class FacultyController extends Controller
 
         Mail::send('emails.preferences_submitted', $data, function ($message) use ($data) {
             $message->to($data['email'])
-                    ->subject('Your Preferences Have Been Submitted and Are Under Review');
+                ->subject('Your Preferences Have Been Submitted and Are Under Review');
         });
     }
-    public function sendSubjectsScheduleSetEmail(Request $request)
+    public function emailSingleSchedule(Request $request)
     {
         $facultyId = $request->input('faculty_id');
 
@@ -89,23 +108,23 @@ class FacultyController extends Controller
 
         Mail::send('emails.subjects_schedule_set', $data, function ($message) use ($data) {
             $message->to($data['email'])
-                    ->subject('Your Subjects, Load, and Schedule Have Been Set');
+                ->subject('Your Subjects, Load, and Schedule Have Been Set');
         });
     }
 
-    public function sendEmailsToAllFaculties()
+    public function emailAllSchedule()
     {
         // Retrieve all faculties from the database
         $faculties = Faculty::all();
-        
+
         // Loop through each faculty and dispatch the job to send the emails
         foreach ($faculties as $faculty) {
             // Dispatch the email sending job to the queue
-            SendFacultyEmailJob::dispatch($faculty);
+            SendFacultyScheduleEmailJob::dispatch($faculty);
         }
-    
+
         // Return a response after the jobs are dispatched
         return response()->json(['message' => 'Emails are being sent asynchronously'], 200);
     }
-    
+
 }

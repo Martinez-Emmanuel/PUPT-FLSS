@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -59,7 +59,6 @@ interface Faculty {
   templateUrl: './faculty-pref.component.html',
   styleUrls: ['./faculty-pref.component.scss'],
   animations: [fadeAnimation],
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FacultyPrefComponent implements OnInit, AfterViewInit {
   inputFields: InputField[] = [
@@ -75,7 +74,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     'facultyName',
     'facultyCode',
     'facultyType',
-    'facultyUnits',
+    // 'facultyUnits',
     'action',
     'toggle',
   ];
@@ -86,6 +85,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   isToggleAllChecked = false;
   isLoading = new BehaviorSubject<boolean>(true);
   currentFilter = '';
+  hasAnyPreferences = false;
 
   @ViewChild(MatPaginator) paginator?: MatPaginator;
 
@@ -93,9 +93,11 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     private preferencesService: PreferencesService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
+    this.preferencesService.clearPreferencesCache();
     this.loadFacultyPreferences();
     this.dataSource.filterPredicate = (data: Faculty, filter: string) => {
       return (
@@ -124,13 +126,12 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
           is_enabled: faculty.is_enabled === 1,
           active_semesters: faculty.active_semesters,
         }));
-  
-        console.log('Processed Faculty Data:', faculties);
-  
+
         this.allData = faculties;
         this.filteredData = faculties;
         this.applyFilter(this.currentFilter);
         this.checkToggleAllState();
+        this.updateHasAnyPreferences(); // Update the hasAnyPreferences value
         this.isLoading.next(false);
       },
       (error) => {
@@ -186,7 +187,13 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     this.isToggleAllChecked = allEnabled;
   }
 
-  onToggleChange(faculty: Faculty): void {
+  updateHasAnyPreferences(): void {
+    this.hasAnyPreferences = this.allData.some((faculty) =>
+      this.hasSubmittedPreferences(faculty)
+    );
+  }
+
+  onToggleSingleChange(faculty: Faculty): void {
     const status = faculty.is_enabled;
 
     this.preferencesService
@@ -201,6 +208,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
             { duration: 3000 }
           );
           this.checkToggleAllState();
+          this.cdr.markForCheck();
         },
         (error) => {
           this.snackBar.open(
@@ -239,6 +247,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
         );
 
         this.isToggleAllChecked = status;
+        this.cdr.markForCheck();
       },
       (error) => {
         loadingSnackBarRef.dismiss();
@@ -272,10 +281,6 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
         generatePdfFunction: generatePdfFunction,
       },
       disableClose: true,
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      console.log('Dialog closed', result);
     });
   }
 
@@ -540,5 +545,27 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     const period = hours >= 12 ? 'PM' : 'AM';
     const formattedHour = hours % 12 || 12;
     return `${formattedHour}:${minutesFormatted} ${period}`;
+  }
+
+  getSingleToggleTooltip(faculty: Faculty): string {
+    return `${
+      faculty.is_enabled ? 'Disable' : 'Enable'
+    } preferences submission for ${faculty.facultyName}`;
+  }
+
+  getAllToggleTooltip(isEnabled: boolean): string {
+    return `${
+      isEnabled ? 'Disable' : 'Enable'
+    } preferences submission for all faculty`;
+  }
+
+  hasSubmittedPreferences(faculty: Faculty): boolean {
+    return !!(
+      faculty.active_semesters &&
+      faculty.active_semesters.length > 0 &&
+      faculty.active_semesters.some(
+        (semester) => semester.courses && semester.courses.length > 0
+      )
+    );
   }
 }

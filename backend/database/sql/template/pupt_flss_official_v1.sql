@@ -257,6 +257,7 @@ CREATE TABLE `section_courses` (
   `section_course_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `sections_per_program_year_id` bigint(20) UNSIGNED NOT NULL,
   `course_assignment_id` int(10) UNSIGNED NOT NULL,
+  `is_copy` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`section_course_id`),

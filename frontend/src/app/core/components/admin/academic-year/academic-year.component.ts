@@ -12,11 +12,12 @@ import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { TableHeaderComponent, InputField } from '../../../../shared/table-header/table-header.component';
 import { TableDialogComponent, DialogConfig, DialogFieldConfig } from '../../../../shared/table-dialog/table-dialog.component';
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
+import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
-import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
 import { CurriculumService } from '../../../services/superadmin/curriculum/curriculum.service';
 import { YearLevel, Program, SchedulingService } from '../../../services/admin/scheduling/scheduling.service';
-import { LoadingComponent } from '../../../../shared/loading/loading.component';
+
+import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
 
 @Component({
   selector: 'app-academic-year',
@@ -28,7 +29,7 @@ import { LoadingComponent } from '../../../../shared/loading/loading.component';
     MatButtonModule,
     MatIconModule,
     LoadingComponent,
-    MatSymbolDirective
+    MatSymbolDirective,
   ],
   templateUrl: './academic-year.component.html',
   styleUrls: ['./academic-year.component.scss'],
@@ -484,6 +485,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(DialogGenericComponent, {
       data: dialogData,
       disableClose: true,
+      panelClass: 'dialog-base',
     });
 
     dialogRef.afterClosed().subscribe((result) => {
@@ -496,25 +498,40 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
             )
             .subscribe(
               (response) => {
-                this.programs = this.programs.filter(
-                  (p) => p.program_id !== program.program_id
-                );
+                if (response.status === 'success') {
+                  this.programs = this.programs.filter(
+                    (p) => p.program_id !== program.program_id
+                  );
 
-                this.snackBar.open('Program deleted successfully.', 'Close', {
-                  duration: 3000,
-                });
+                  this.snackBar.open(response.message, 'Close', {
+                    duration: 3000,
+                  });
 
-                this.fetchProgramsForAcademicYear(this.selectedAcademicYear);
+                  this.fetchProgramsForAcademicYear(this.selectedAcademicYear);
+                } else if (response.status === 'error' && response.message) {
+                  this.snackBar.open(response.message, 'Close', {
+                    duration: 5000,
+                  });
+                }
               },
               (error) => {
-                console.error('Error deleting the program:', error);
-                this.snackBar.open('Failed to delete the program.', 'Close', {
-                  duration: 3000,
+                let errorMessage =
+                  'Failed to delete the program. Please try again.';
+                if (error.error && error.error.message) {
+                  errorMessage = error.error.message;
+                } else if (error.message) {
+                  errorMessage = error.message;
+                }
+                this.snackBar.open(errorMessage, 'Close', {
+                  duration: 5000,
                 });
               }
             );
         } else {
           console.error('selectedAcademicYearId is null or undefined.');
+          this.snackBar.open('Invalid academic year selection.', 'Close', {
+            duration: 3000,
+          });
         }
       }
     });
@@ -569,8 +586,11 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
                 this.loadAcademicYears();
               },
               (error) => {
-                this.snackBar.open('Failed to add academic year.', 'Close', {
-                  duration: 3000,
+                const errorMessage =
+                  error.message ||
+                  'Failed to add academic year. Please try again.';
+                this.snackBar.open(errorMessage, 'Close', {
+                  duration: 5000,
                 });
               }
             );

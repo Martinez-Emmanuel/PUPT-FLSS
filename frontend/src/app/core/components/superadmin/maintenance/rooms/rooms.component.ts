@@ -155,14 +155,14 @@ export class RoomsComponent implements OnInit, OnDestroy {
           label: 'Room Code',
           formControlName: 'room_code',
           type: 'text',
-          maxLength: 15,
+          maxLength: 50,
           required: true,
         },
         {
           label: 'Location',
           formControlName: 'location',
           type: 'text',
-          maxLength: 25,
+          maxLength: 50,
           required: true,
         },
         {

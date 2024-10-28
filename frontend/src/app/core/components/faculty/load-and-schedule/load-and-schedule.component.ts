@@ -14,7 +14,12 @@ import { fadeAnimation } from '../../../animations/animations';
 @Component({
   selector: 'app-load-and-schedule',
   standalone: true,
-  imports: [CommonModule, FacultyScheduleTimetableComponent, LoadingComponent, MatSymbolDirective],
+  imports: [
+    CommonModule,
+    FacultyScheduleTimetableComponent,
+    LoadingComponent,
+    MatSymbolDirective,
+  ],
   templateUrl: './load-and-schedule.component.html',
   styleUrl: './load-and-schedule.component.scss',
   animations: [fadeAnimation],
@@ -52,7 +57,7 @@ export class LoadAndScheduleComponent implements OnInit {
       this.isLoading = false;
     }
   }
-  
+
   get academicYear(): string {
     if (this.facultySchedule) {
       return `${this.facultySchedule.year_start}-${this.facultySchedule.year_end}`;

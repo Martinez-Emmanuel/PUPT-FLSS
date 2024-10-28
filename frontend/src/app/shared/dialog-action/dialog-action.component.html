@@ -1,0 +1,108 @@
+<div class="dialog-action-container">
+  <!--Dialog Action Title-->
+  <h2 class="dialog-title">
+    {{ dialogTitle }}
+  </h2>
+
+  <!--Dialog Content-->
+  <div class="dialog-content">
+    <!--Main Action-->
+    @if (!showReportOptions) {
+    <div class="main-text">
+      <strong>{{ actionText }}</strong> all active faculty members to submit
+      their
+      {{
+        data.type === "preferences"
+          ? "preferred load and schedule"
+          : "official load and schedule"
+      }}
+      for this semester.
+    </div>
+    }
+
+    @if (showReportOptions) {
+    <div class="main-text">
+      This will <strong>print and download</strong> an official copy of the schedule reports for this semester. 
+      Check all that you want to download:
+    </div>
+
+    <div class="checkbox-container reports">
+      <mat-checkbox [(ngModel)]="reportOptions.faculty" class="report-checkbox">
+        <span class="checkbox-content">
+          <span mat-symbol="groups"></span>
+          <span>Faculty Schedule Report</span>
+        </span>
+      </mat-checkbox>
+
+      <mat-checkbox [(ngModel)]="reportOptions.programs" class="report-checkbox">
+        <span class="checkbox-content">
+          <span mat-symbol="school"></span>
+          <span>Programs Schedule Report</span>
+        </span>
+      </mat-checkbox>
+
+      <mat-checkbox [(ngModel)]="reportOptions.rooms" class="report-checkbox">
+        <span class="checkbox-content">
+          <span mat-symbol="meeting_room"></span>
+          <span>Rooms Schedule Report</span>
+        </span>
+      </mat-checkbox>
+    </div>
+    }
+
+    <!--Secondary Text-->
+    <div class="secondary-text">
+      @if (!showReportOptions) {
+        For specific faculty, go to
+      }
+      @if (showReportOptions) {
+        For a more specific view and download of reports, go to the
+      }
+      <a class="link" [routerLink]="navigationLink" (click)="closeDialog()">
+        {{ linkText }}</a
+      >
+      @if (!showReportOptions) {
+        page.
+      }
+      @if (showReportOptions) {
+        page.
+      }
+    </div>
+
+    <!-- Email Notification Option -->
+    @if (showEmailOption) {
+    <div class="checkbox-container email">
+      <mat-checkbox [(ngModel)]="sendEmail" class="email-checkbox">
+        <span class="checkbox-content">
+          <span mat-symbol="email"></span>
+          <span>Send email to all faculty members</span>
+        </span>
+      </mat-checkbox>
+    </div>
+    }
+  </div>
+
+  <!--Dialog Buttons-->
+  <div class="dialog-buttons">
+    <button
+      mat-button
+      class="cancel"
+      (click)="closeDialog()"
+      [disabled]="isProcessing"
+    >
+      Cancel
+    </button>
+    <button
+      mat-flat-button
+      color="primary"
+      (click)="confirmAction()"
+      [disabled]="isProcessing || (showReportOptions && !isReportSelectionValid())"
+    >
+      @if (!isProcessing) {
+      <span>Confirm</span>
+      } @if (isProcessing) {
+      <mat-spinner class="custom-spinner" diameter="25"></mat-spinner>
+      }
+    </button>
+  </div>
+</div>

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MatProgressBar } from '@angular/material/progress-bar';
 
 @Component({
@@ -9,5 +9,5 @@ import { MatProgressBar } from '@angular/material/progress-bar';
   styleUrl: './loading.component.scss'
 })
 export class LoadingComponent {
-
+  @Input() showLoadingText = true;
 }

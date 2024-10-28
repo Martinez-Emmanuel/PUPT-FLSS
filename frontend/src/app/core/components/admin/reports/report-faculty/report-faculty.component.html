@@ -13,6 +13,10 @@
       [showAddButton]="false"
       (export)="onExportAll()"
       (inputChange)="onInputChange($event)"
+      [buttonDisabled]="!hasAnySchedules"
+      [tooltipMessage]="
+        !hasAnySchedules ? 'No schedules available for export' : ''
+      "
     >
     </app-table-header>
   </div>
@@ -59,7 +63,7 @@
             Faculty Type
           </th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
-            <span
+            <div
               class="faculty-type"
               [ngClass]="{
                 'full-time':
@@ -74,7 +78,7 @@
               }"
             >
               {{ element.facultyType }}
-            </span>
+            </div>
           </td>
         </ng-container>
 
@@ -95,22 +99,44 @@
             Action
           </th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
-            <button
-              mat-button
-              class="sec-ripple view-button"
-              (click)="onView(element)"
+            <span
+              [matTooltip]="
+                !hasSchedules(element)
+                  ? element.facultyName + ' has no schedules available'
+                  : ''
+              "
+              matTooltipDisabled="false"
             >
-              <mat-icon>visibility</mat-icon>
-              <span>View Schedule</span>
-            </button>
-            <button
-              mat-button
-              class="sec-ripple export-button"
-              (click)="onExportSingle(element)"
+              <button
+                mat-button
+                class="sec-ripple view-button"
+                (click)="onView(element)"
+                [disabled]="!hasSchedules(element)"
+                [ngClass]="{ 'disabled-button': !hasSchedules(element) }"
+              >
+                <mat-icon>visibility</mat-icon>
+                <span>View Schedule</span>
+              </button>
+            </span>
+            <span
+              [matTooltip]="
+                !hasSchedules(element)
+                  ? element.facultyName + ' has no schedules available'
+                  : ''
+              "
+              matTooltipDisabled="false"
             >
-              <mat-icon>print</mat-icon>
-              <span>Export</span>
-            </button>
+              <button
+                mat-button
+                class="sec-ripple export-button"
+                (click)="onExportSingle(element)"
+                [disabled]="!hasSchedules(element)"
+                [ngClass]="{ 'disabled-button': !hasSchedules(element) }"
+              >
+                <mat-icon>download</mat-icon>
+                <span>Download</span>
+              </button>
+            </span>
           </td>
         </ng-container>
 
@@ -119,11 +145,7 @@
           <th mat-header-cell *matHeaderCellDef class="custom-header">
             <mat-slide-toggle
               class="header-toggle"
-              [matTooltip]="
-                hasSchedulesForToggleAll
-                  ? 'Publish/unpublish schedule for all applicable faculty'
-                  : 'Cannot publish/unpublish empty schedules'
-              "
+              [matTooltip]="getAllToggleTooltip(isToggleAllChecked)"
               [checked]="isToggleAllChecked"
               [disabled]="!hasSchedulesForToggleAll"
               (change)="onToggleAllChange($event)"
@@ -133,11 +155,7 @@
             <mat-slide-toggle
               [(ngModel)]="element.isEnabled"
               [disabled]="!element.schedules || element.schedules.length === 0"
-              [matTooltip]="
-                element.schedules && element.schedules.length > 0
-                  ? 'Publish/unpublish schedule for this faculty only'
-                  : 'Cannot publish/unpublish empty schedules'
-              "
+              [matTooltip]="getSingleToggleTooltip(element)"
               (change)="onToggleChange(element)"
             ></mat-slide-toggle>
           </td>

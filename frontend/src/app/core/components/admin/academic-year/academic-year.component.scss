@@ -36,8 +36,16 @@
       .table-button {
         color: var(--primary-text);
       }
+
+      td {
+        border-bottom: 1px solid var(--mat-table-row-item-outline-color);
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
     }
-       
+
     .index {
       padding: 0 var(--spacing-md);
     }
@@ -52,7 +60,6 @@
       position: sticky;
       top: 0;
       z-index: 2;
-
     }
 
     .custom-cell {

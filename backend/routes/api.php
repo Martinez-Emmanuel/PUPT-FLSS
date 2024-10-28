@@ -1,24 +1,23 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AcademicYearController;
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CourseController;
-use App\Http\Controllers\PreferenceController;
-use App\Http\Controllers\FacultyController;
-use App\Http\Controllers\RoomController;
-use Illuminate\Http\Request;
 use App\Http\Controllers\CurriculumController;
+use App\Http\Controllers\CurriculumDetailsController;
+use App\Http\Controllers\FacultyController;
+use App\Http\Controllers\PreferenceController;
 use App\Http\Controllers\ProgramController;
+use App\Http\Controllers\ProgramFetchController;
+use App\Http\Controllers\ReportsController;
+use App\Http\Controllers\RoomController;
+use App\Http\Controllers\ScheduleController;
+use App\Http\Controllers\SchedulingController;
 use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\YearLevelController;
-use App\Http\Controllers\CurriculumDetailsController;
-use App\Http\Controllers\ProgramFetchController;
-use App\Http\Controllers\AccountController;
-use App\Http\Controllers\AcademicYearController;
-use App\Http\Controllers\SchedulingController;
-use App\Http\Controllers\ScheduleController;
-use App\Http\Controllers\ReportsController;
-
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::post('login', [AuthController::class, 'login'])->name('login');
@@ -36,20 +35,23 @@ Route::delete('/delete-ay', [AcademicYearController::class, 'deleteAcademicYear'
 Route::get('/active-year-semester', [AcademicYearController::class, 'getActiveYearAndSemester']);
 
 //Admin side routes
-Route::post('faculties/send-emails', [FacultyController::class, 'sendEmails']);
-Route::post('/pref-submitted-email', [FacultyController::class, 'sendPreferencesSubmittedEmail']);
-Route::post('/subj-schedule-set', [FacultyController::class, 'sendSubjectsScheduleSetEmail']);
 Route::get('/get-assigned-courses', [AcademicYearController::class, 'getAssignedCourses']);
-Route::get('/get-assigned-courses-sem', [AcademicYearController::class, 'getAssignedCoursesBySem']);
-Route::get('/populate-schedules', [ScheduleController::class, 'autoAssignCoursesToSections']);
-Route::post('/assign-schedule', [SchedulingController::class, 'assignSchedule']);
-Route::get('/get-faculty', [SchedulingController::class, 'getFacultyDetails']);
+Route::get('/offered-courses-sem', [AcademicYearController::class, 'getAssignedCoursesBySem']);
+
+Route::get('/populate-schedules', [ScheduleController::class, 'populateSchedules']);
+Route::post('/assign-schedule', [ScheduleController::class, 'assignSchedule']);
+
+Route::post('/duplicate-course', [ScheduleController::class, 'duplicateCourse']);
+Route::delete('/remove-duplicate-course', [ScheduleController::class, 'removeDuplicateCourse']);
+
+Route::get('/get-faculty', [FacultyController::class, 'getFacultyDetails']);
 Route::get('/get-rooms', [RoomController::class, 'getAllRooms']);
 
 //Email routes for scheduling
-Route::post('/preferences-submitted-email', [FacultyController::class, 'sendPreferencesSubmittedEmail']); //send email to faculty that their preferences are submitted
-Route::post('/schedule-set-email', [FacultyController::class, 'sendSubjectsScheduleSetEmail']); // Schedule Set 1 by 1
-Route::post('/schedule-set-email-all', [FacultyController::class, 'sendEmailsToAllFaculties']); //Schedule Set to all faculties
+Route::post('/email-pref-enable', [FacultyController::class, 'emailPrefEnable']); // Send preferences-enabled email
+Route::post('/email-pref-submitted', [FacultyController::class, 'emailPrefSubmitted']); // Send preferences submitted email
+Route::post('/email-single-schedule', [FacultyController::class, 'emailSingleSchedule']); // Send schedule for individual faculty
+Route::post('/email-all-schedule', [FacultyController::class, 'emailAllSchedule']); // Send schedule to all faculty
 
 // Scheduling Reports Routes
 Route::get('/faculty-schedules-report', [ReportsController::class, 'getFacultySchedulesReport']);
@@ -58,6 +60,7 @@ Route::get('/program-schedules-report', [ReportsController::class, 'getProgramSc
 Route::get('/single-faculty-schedule/{faculty_id}', [ReportsController::class, 'getSingleFacultySchedule']);
 Route::post('/toggle-all-schedule', [ReportsController::class, 'toggleAllSchedules']);
 Route::post('/toggle-single-schedule', [ReportsController::class, 'toggleSingleSchedule']);
+Route::get('/overview-details', [ReportsController::class, 'getOverviewDetails']);
 
 //Scheduling routes
 Route::post('/submit-preferences', [PreferenceController::class, 'submitPreferences']);
@@ -68,7 +71,7 @@ Route::delete('/preferences', [PreferenceController::class, 'deleteAllPreference
 //Scheduling toggle preferences
 Route::get('/setting-preferences', [PreferenceController::class, 'getPreferencesSetting']);
 Route::post('/toggle-preferences-all', [PreferenceController::class, 'togglePreferencesSettings']);
-Route::post('/toggle-preferences', [PreferenceController::class, 'toggleSpecificFacultyPreferences']);
+Route::post('/toggle-preferences-single', [PreferenceController::class, 'toggleSpecificFacultyPreferences']);
 // Route::get('/submitted-pref', [PreferenceController::class, 'getPreferences']);
 // Route::post('/pref-courses-sem', [PreferenceController::class, 'findFacultyByCourseCode']);
 
@@ -128,7 +131,6 @@ Route::post('/addRoom', [RoomController::class, 'addRoom']);
 Route::put('/rooms/{room_id}', [RoomController::class, 'updateRoom']);
 Route::delete('/rooms/{room_id}', [RoomController::class, 'deleteRoom']);
 
-
 Route::middleware(['auth:sanctum', 'super_admin'])->group(function () {
     Route::get('/showAccounts', [AccountController::class, 'index']);
     Route::post('/addAccount', [AccountController::class, 'store']);
@@ -157,10 +159,6 @@ Route::middleware('auth:sanctum')->group(function () {
         return response()->json(['message' => 'You are authenticated']);
     });
 });
-
-
-
-
 
 // Route::middleware(['auth:sanctum', 'super_admin'])->group(function () {
 //     Route::get('/showAccounts', [AccountController::class, 'index']);
