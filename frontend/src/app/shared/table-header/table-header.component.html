@@ -57,6 +57,7 @@
     <div
       class="active-year-sem-container pop"
       (click)="onActiveYearSemClick()"
+      [matTooltip]="'View and set active academic year and semester'"
       matRipple
     >
       <p class="text">A.Y. {{ activeYear }}, {{ activeSemester }}</p>
