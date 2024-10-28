@@ -19,6 +19,7 @@ import { TableHeaderComponent, InputField } from '../../../../shared/table-heade
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 import { DialogPrefComponent } from '../../../../shared/dialog-pref/dialog-pref.component';
 import { DialogExportComponent } from '../../../../shared/dialog-export/dialog-export.component';
+import { DialogActionComponent, DialogActionData } from '../../../../shared/dialog-action/dialog-action.component';
 
 import { PreferencesService, ActiveSemester } from '../../../services/faculty/preference/preferences.service';
 
@@ -46,6 +47,7 @@ interface Faculty {
     LoadingComponent,
     DialogPrefComponent,
     DialogExportComponent,
+    DialogActionComponent,
     FormsModule,
     MatTableModule,
     MatButtonModule,
@@ -222,44 +224,32 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   }
 
   onToggleAllChange(event: MatSlideToggleChange): void {
-    const status = event.checked;
+    event.source.checked = this.isToggleAllChecked;
 
-    const loadingSnackBarRef = this.snackBar.open(
-      'Loading, please wait...',
-      'Close',
-      {
-        duration: undefined,
-      }
-    );
+    const dialogData: DialogActionData = {
+      type: 'preferences',
+      academicYear: this.allData[0]?.active_semesters?.[0]?.academic_year || '',
+      semester: this.allData[0]?.active_semesters?.[0]?.semester_label || '',
+      currentState: this.isToggleAllChecked,
+      hasSecondaryText: true,
+    };
 
-    this.preferencesService.toggleAllFacultyPreferences(status).subscribe(
-      (response) => {
-        this.filteredData.forEach((faculty) => (faculty.is_enabled = status));
+    const dialogRef = this.dialog.open(DialogActionComponent, {
+      data: dialogData,
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        const newStatus = !this.isToggleAllChecked;
+        this.filteredData.forEach(
+          (faculty) => (faculty.is_enabled = newStatus)
+        );
+        this.isToggleAllChecked = newStatus;
         this.updateDisplayedData();
-        loadingSnackBarRef.dismiss();
-
-        this.snackBar.open(
-          `Preferences submission for all faculty is ${
-            status ? 'enabled' : 'disabled'
-          }.`,
-          'Close',
-          { duration: 3000 }
-        );
-
-        this.isToggleAllChecked = status;
         this.cdr.markForCheck();
-      },
-      (error) => {
-        loadingSnackBarRef.dismiss();
-
-        this.snackBar.open(
-          'Failed to update preferences for all faculty',
-          'Close',
-          { duration: 3000 }
-        );
-        console.error('Error updating all preferences:', error);
       }
-    );
+    });
   }
 
   onInputChange(inputValues: { [key: string]: any }): void {
