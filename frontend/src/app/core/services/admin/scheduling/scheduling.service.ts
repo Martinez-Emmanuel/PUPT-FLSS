@@ -426,8 +426,11 @@ export class SchedulingService {
     return this.facultyCache$;
   }
 
-  getSubmittedPreferencesForActiveSemester(): Observable<SubmittedPrefResponse> {
-    if (!this.submittedPreferences$) {
+  // Get submitted preferences by faculty
+  getSubmittedPreferencesForActiveSemester(
+    forceRefresh: boolean = false
+  ): Observable<SubmittedPrefResponse> {
+    if (forceRefresh || !this.submittedPreferences$) {
       this.submittedPreferences$ = this.http
         .get<SubmittedPrefResponse>(`${this.baseUrl}/view-preferences`)
         .pipe(

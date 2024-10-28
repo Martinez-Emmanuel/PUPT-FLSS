@@ -124,7 +124,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     forkJoin({
       activeYearSemester: this.loadActiveYearAndSemester(),
       programs: this.loadPrograms(),
-      viewPreferences: this.loadViewPreferences(),
     })
       .pipe(
         takeUntil(this.destroy$),
@@ -139,6 +138,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.schedulingService.resetCaches([CacheType.Preferences]);
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -219,7 +219,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
   private loadViewPreferences(): Observable<SubmittedPrefResponse> {
     return this.schedulingService
-      .getSubmittedPreferencesForActiveSemester()
+      .getSubmittedPreferencesForActiveSemester(true)
       .pipe(
         tap((preferences) => {
           console.log('Loaded view preferences:', preferences);
@@ -229,9 +229,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           this.snackBar.open(
             'Failed to load view preferences. Please try again.',
             'Close',
-            {
-              duration: 3000,
-            }
+            { duration: 3000 }
           );
           return of({} as SubmittedPrefResponse);
         })
