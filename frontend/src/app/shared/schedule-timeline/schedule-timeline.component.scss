@@ -98,24 +98,48 @@ $day-colors: (
           }
 
           .schedule-content {
+            @include hide-scrollbar;
+            @include flex-layout(
+              $direction: column,
+              $align: center,
+              $justify: flex-start,
+              $gap: var(--spacing-xs)
+            );
+
             position: absolute;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1;
-            @include flex-layout(
-              $direction: column,
-              $align: center,
-              $justify: center,
-              $gap: var(--spacing-md)
-            );
+            height: 100%;
+            overflow-y: auto;
+
             white-space: pre-wrap;
             word-break: break-word;
             font-size: var(--font-size-sm);
-            padding: 0 var(--spacing-xs);
+            padding: var(--spacing-xs);
+
+            padding-bottom: var(--spacing-sm);
+
+            // Make content container take full width
+            > div {
+              width: 100%;
+              text-align: center;
+              min-height: fit-content;
+            }
 
             .course-text {
               font-weight: 600;
+            }
+
+            .time {
+              position: sticky;
+              bottom: 0;
+              margin-top: auto;
+              width: fit-content;
+              margin-left: auto;
+              margin-right: auto;
+              z-index: 2;
             }
           }
         }
