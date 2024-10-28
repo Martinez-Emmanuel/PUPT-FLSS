@@ -649,7 +649,9 @@ class ReportsController extends Controller
             ->whereIn('schedule_id', $activeSchedules)
             ->update(['is_published' => $isPublished, 'updated_at' => now()]);
 
-        // Removed Step 6: Do not disable preferences
+        // Step 6: Disable preferences for all faculty by setting `is_enabled` to 0
+        DB::table('preferences_settings')
+            ->update(['is_enabled' => 0, 'updated_at' => now()]);
 
         // Step 6: Return a response
         return response()->json([
