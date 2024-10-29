@@ -62,16 +62,15 @@ Route::post('/toggle-all-schedule', [ReportsController::class, 'toggleAllSchedul
 Route::post('/toggle-single-schedule', [ReportsController::class, 'toggleSingleSchedule']);
 Route::get('/overview-details', [ReportsController::class, 'getOverviewDetails']);
 
-//Scheduling routes
+// Preferences routes
 Route::post('/submit-preferences', [PreferenceController::class, 'submitPreferences']);
 Route::get('/view-preferences', [PreferenceController::class, 'getPreferencesForActiveSemester']);
 Route::delete('/preferences/{preference_id}', [PreferenceController::class, 'deletePreference']);
 Route::delete('/preferences', [PreferenceController::class, 'deleteAllPreferences']);
 
-//Scheduling toggle preferences
 Route::get('/setting-preferences', [PreferenceController::class, 'getPreferencesSetting']);
-Route::post('/toggle-preferences-all', [PreferenceController::class, 'togglePreferencesSettings']);
-Route::post('/toggle-preferences-single', [PreferenceController::class, 'toggleSpecificFacultyPreferences']);
+Route::post('/toggle-preferences-all', [PreferenceController::class, 'toggleAllPreferences']);
+Route::post('/toggle-preferences-single', [PreferenceController::class, 'toggleSinglePreferences']);
 // Route::get('/submitted-pref', [PreferenceController::class, 'getPreferences']);
 // Route::post('/pref-courses-sem', [PreferenceController::class, 'findFacultyByCourseCode']);
 

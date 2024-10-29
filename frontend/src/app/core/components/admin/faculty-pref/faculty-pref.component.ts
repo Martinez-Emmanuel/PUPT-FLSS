@@ -199,7 +199,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     const status = faculty.is_enabled;
 
     this.preferencesService
-      .toggleFacultyPreferences(faculty.faculty_id, status)
+      .toggleSingleFacultyPreferences(faculty.faculty_id, status)
       .subscribe(
         (response) => {
           this.snackBar.open(

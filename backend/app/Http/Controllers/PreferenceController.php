@@ -465,7 +465,7 @@ class PreferenceController extends Controller
         ], 200, [], JSON_PRETTY_PRINT);
     }
 
-    public function togglePreferencesSettings(Request $request)
+    public function toggleAllPreferences(Request $request)
     {
         $validated = $request->validate([
             'status' => 'required|boolean',
@@ -494,7 +494,7 @@ class PreferenceController extends Controller
         ], 200);
     }
 
-    public function toggleSpecificFacultyPreferences(Request $request)
+    public function toggleSinglePreferences(Request $request)
     {
         $validated = $request->validate([
             'faculty_id' => 'required|integer|exists:faculty,id',

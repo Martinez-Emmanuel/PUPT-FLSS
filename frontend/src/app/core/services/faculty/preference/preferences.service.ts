@@ -133,7 +133,7 @@ export class PreferencesService {
     return this.http.post(url, { status }).pipe(tap(() => this.clearCaches()));
   }
 
-  toggleFacultyPreferences(
+  toggleSingleFacultyPreferences(
     faculty_id: number,
     status: boolean
   ): Observable<any> {
