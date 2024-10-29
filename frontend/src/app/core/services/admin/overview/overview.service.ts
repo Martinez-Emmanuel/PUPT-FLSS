@@ -42,7 +42,7 @@ export class OverviewService {
     return this.http.post(url, {});
   }
 
-  togglePreferencesSettings(status: boolean): Observable<any> {
+  toggleAllPreferences(status: boolean): Observable<any> {
     return this.http.post(`${this.baseUrl}/toggle-preferences-all`, { status });
   }
 

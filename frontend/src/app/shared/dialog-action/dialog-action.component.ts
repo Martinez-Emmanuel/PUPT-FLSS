@@ -243,7 +243,7 @@ export class DialogActionComponent {
    */
   private handlePreferencesOperation(): Observable<any> {
     const newStatus = !this.data.currentState;
-    return this.overviewService.togglePreferencesSettings(newStatus).pipe(
+    return this.overviewService.toggleAllPreferences(newStatus).pipe(
       switchMap(() => {
         if (this.sendEmail && newStatus) {
           return this.overviewService.sendPrefEmail();
