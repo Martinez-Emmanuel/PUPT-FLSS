@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../../../../environments/environment.dev';
-import { CookieService } from 'ngx-cookie-service';
+import { AuthService } from '../../../../services/auth/auth.service';
 
 export interface Faculty {
   id: number;
@@ -18,10 +18,10 @@ export interface User {
   id: string;
   name: string;
   password?: string;
-  email: string;  // This is likely coming from 'faculty_email'
+  email: string;
   role: string;
   status: string;
-  faculty?: Faculty;  // Add this line to include the faculty object in the User interface
+  faculty?: Faculty;
   passwordDisplay?: string;
 }
 
@@ -31,10 +31,11 @@ export interface User {
 export class AdminService {
   private baseUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient, private cookieService: CookieService) {}
+  constructor(private http: HttpClient, private authService: AuthService) {}
 
   private getHeaders(): HttpHeaders {
-    const token = this.cookieService.get('token');
+    const token = this.authService.getToken(); // Retrieve token directly from AuthService
+
     return new HttpHeaders({
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -72,25 +73,25 @@ export class AdminService {
   // Generate next admin code
   getNextAdminCode(role: string): Observable<string> {
     return this.getAdmins().pipe(
-      map(admins => {
+      map((admins) => {
         const prefix = role.toLowerCase() === 'superadmin' ? 'SDM' : 'ADM';
         const year = new Date().getFullYear();
         const suffix = 'TG' + year;
 
         // Filter codes by role prefix and current year
         const existingCodes = admins
-          .filter(admin =>
-            admin.code.startsWith(prefix) &&
-            admin.code.endsWith(year.toString())
+          .filter(
+            (admin) =>
+              admin.code.startsWith(prefix) && admin.code.endsWith(year.toString())
           )
-          .map(admin => admin.code);
+          .map((admin) => admin.code);
 
         if (existingCodes.length === 0) {
           return `${prefix}001${suffix}`;
         }
 
         // Extract the numeric portions and find the highest number
-        const numbers = existingCodes.map(code => {
+        const numbers = existingCodes.map((code) => {
           const match = code.match(/\d{3}/);
           return match ? parseInt(match[0], 10) : 0;
         });
