@@ -1,7 +1,9 @@
+// login.component.ts
+
 import { Component, OnInit, OnDestroy, Renderer2, ElementRef } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Router, UrlTree } from '@angular/router'; // Ensure UrlTree is imported
 
 import { Subject, Observable, takeUntil } from 'rxjs';
 
@@ -16,8 +18,8 @@ import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 import { SlideshowComponent } from '../../shared/slideshow/slideshow.component';
 
 import { ThemeService } from '../../core/services/theme/theme.service';
-import { AuthService } from '../../core/services/auth/auth.service';
-import { RoleService } from '../../core/services/role/role.service';
+import { AuthService, LoginResponse, UserInfo, UserRole } from '../../core/services/auth/auth.service'; // Adjust the path
+import { RoleService } from '../../core/services/role/role.service';; // Adjust the path
 
 @Component({
   selector: 'app-login',
@@ -35,7 +37,7 @@ import { RoleService } from '../../core/services/role/role.service';
     MatRippleModule,
     MatTooltipModule,
   ],
-  providers: [AuthService],
+  // Removed AuthService from providers as it's provided in root
 })
 export class LoginComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -162,24 +164,44 @@ export class LoginComponent implements OnInit, OnDestroy {
       this.isLoading = true;
       const { code, password } = this.loginForm.value;
       this.authService.login(code, password).subscribe({
-        next: (response) => this.handleLoginSuccess(response),
+        next: (response: LoginResponse) => this.handleLoginSuccess(response),
         error: (error) => this.handleLoginError(error),
         complete: () => (this.isLoading = false),
       });
     }
   }
 
-  private handleLoginSuccess(response: any): void {
+  private handleLoginSuccess(response: LoginResponse): void {
     console.log('Login successful', response);
+  
+    // Store the token and encrypted user info in cookies
     this.authService.setToken(response.token, response.expires_at);
     this.authService.setUserInfo(response.user, response.expires_at);
-
+  
+    // Calculate expiration time for auto-logout
     const expirationTime = new Date(response.expires_at).getTime() - Date.now();
     setTimeout(() => this.onAutoLogout(), expirationTime);
-
-    const redirectUrl = this.roleService.getHomeUrlForRole(response.user.role);
-    this.router.navigateByUrl(redirectUrl, { replaceUrl: true });
+  
+    // Delay to ensure cookies are set before retrieval
+    setTimeout(() => {
+      const userInfo = this.authService.getUserInfo();
+  
+      // If userInfo is null, handle as an error case
+      if (!userInfo) {
+        console.error('Failed to retrieve user info after login');
+        this.showErrorSnackbar('Failed to retrieve user information. Please try again.');
+        return;
+      }
+  
+      // Determine the user's home URL based on their role
+      const urlTree = this.roleService.getHomeUrlForRole(userInfo.role);
+  
+      // Navigate to the user's home URL
+      this.router.navigateByUrl(urlTree, { replaceUrl: true });
+    }, 200); // Small delay to ensure cookie setting completes
   }
+  
+  
 
   private handleLoginError(error: any): void {
     console.error('Login failed', error);
@@ -235,7 +257,11 @@ export class LoginComponent implements OnInit, OnDestroy {
   private handleLogoutSuccess(message?: string): void {
     this.authService.clearCookies();
     if (message) {
-      alert(message);
+      this.snackBar.open(message, 'Close', {
+        duration: 3000,
+        horizontalPosition: 'center',
+        verticalPosition: 'bottom',
+      });
     }
     this.router.navigate(['/login']);
   }

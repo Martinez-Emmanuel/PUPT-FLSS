@@ -5,8 +5,7 @@ import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
-import { AuthService } from '../../../services/auth/auth.service';
-import { CookieService } from 'ngx-cookie-service';
+import { AuthService, UserInfo } from '../../../services/auth/auth.service';
 import { ReportsService } from '../../../services/admin/reports/reports.service';
 
 import { fadeAnimation } from '../../../animations/animations';
@@ -37,17 +36,17 @@ export class HomeComponent implements OnInit, AfterViewInit {
   calendarOptions: CalendarOptions = {};
   events: EventInput[] = [];
 
-  facultyId: string | null = '';
-  facultyCode: string | null = '';
-  facultyName: string | null = '';
-  facultyType: string | null = '';
-  facultyEmail: string | null = '';
+  // Faculty info properties
+  facultyId: number | null = null;
+  facultyCode: string | null = null;
+  facultyName: string | null = null;
+  facultyType: string | null = null;
+  facultyEmail: string | null = null;
 
   constructor(
     private authService: AuthService,
     private reportsService: ReportsService,
     private router: Router,
-    private cookieService: CookieService,
     private changeDetectorRef: ChangeDetectorRef
   ) {}
 
@@ -62,11 +61,18 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   private loadFacultyInfo(): void {
-    this.facultyCode = this.cookieService.get('user_code');
-    this.facultyName = this.cookieService.get('user_name');
-    this.facultyId = this.cookieService.get('faculty_id');
-    this.facultyType = this.cookieService.get('faculty_type');
-    this.facultyEmail = this.cookieService.get('faculty_email');
+    const userInfo = this.authService.getUserInfo();
+
+    if (userInfo && userInfo.faculty) {
+      this.facultyId = userInfo.faculty.faculty_id;
+      this.facultyCode = userInfo.code;
+      this.facultyName = userInfo.name;
+      this.facultyType = userInfo.faculty.faculty_type;
+      this.facultyEmail = userInfo.faculty.faculty_email;
+    } else {
+      console.error('No faculty information available. Redirecting to login.');
+      this.router.navigate(['/login']);
+    }
   }
 
   private initializeCalendar(): void {
@@ -96,7 +102,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   private fetchFacultySchedule(): void {
     if (this.facultyId) {
       this.reportsService
-        .getSingleFacultySchedule(Number(this.facultyId))
+        .getSingleFacultySchedule(this.facultyId)
         .subscribe({
           next: (response) => {
             this.processScheduleResponse(response);
@@ -183,12 +189,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
         if (currentDate.getDay() === dayIndex) {
           events.push({
             title: `${schedule.course_details.course_code}`,
-            start: `${currentDate.toISOString().split('T')[0]}T${
-              schedule.start_time
-            }`,
-            end: `${currentDate.toISOString().split('T')[0]}T${
-              schedule.end_time
-            }`,
+            start: `${currentDate.toISOString().split('T')[0]}T${schedule.start_time}`,
+            end: `${currentDate.toISOString().split('T')[0]}T${schedule.end_time}`,
           });
         }
         currentDate.setDate(currentDate.getDate() + 1);
@@ -199,7 +201,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   private clearAllCookies(): void {
-    this.cookieService.deleteAll('/', '.yourdomain.com');
+    this.authService.clearCookies();
   }
 
   public logout(): void {

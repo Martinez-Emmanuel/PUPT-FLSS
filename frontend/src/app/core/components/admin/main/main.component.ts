@@ -19,9 +19,8 @@ import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
 import { slideInAnimation, fadeAnimation } from '../../../animations/animations';
 
-import { AuthService } from '../../../services/auth/auth.service';
+import { AuthService, UserInfo } from '../../../services/auth/auth.service';
 import { ThemeService } from '../../../services/theme/theme.service';
-import { CookieService } from 'ngx-cookie-service';
 
 @Component({
   selector: 'app-main',
@@ -50,8 +49,8 @@ export class MainComponent implements OnInit, AfterViewInit {
   private breakpointObserver = inject(BreakpointObserver);
   public showSidenav = false;
   public pageTitle = '';
-  public accountName: string;
-  public accountRole: string;
+  public accountName: string = '';
+  public accountRole: string = '';
 
   isHandset$: Observable<boolean> = this.breakpointObserver
     .observe(Breakpoints.Handset)
@@ -65,11 +64,15 @@ export class MainComponent implements OnInit, AfterViewInit {
     private router: Router,
     private route: ActivatedRoute,
     private authService: AuthService,
-    private dialog: MatDialog,
-    private cookieService: CookieService
+    private dialog: MatDialog
   ) {
-    this.accountName = this.cookieService.get('user_name');
-    this.accountRole = this.toTitleCase(this.cookieService.get('user_role'));
+    // Retrieve account information from AuthService
+    const userInfo = this.authService.getUserInfo();
+    if (userInfo) {
+      this.accountName = userInfo.name;
+      this.accountRole = this.toTitleCase(userInfo.role);
+    }
+
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
@@ -144,7 +147,7 @@ export class MainComponent implements OnInit, AfterViewInit {
 
     this.authService.logout().subscribe({
       next: () => {
-        this.cookieService.deleteAll('/');
+        this.authService.clearCookies(); // Clear all cookies via AuthService
         loadingDialogRef.close();
         this.router.navigate(['/login']);
       },
