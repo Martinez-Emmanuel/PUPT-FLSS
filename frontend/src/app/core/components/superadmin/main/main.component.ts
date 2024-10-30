@@ -41,6 +41,7 @@ import {
 import { AuthService } from '../../../services/auth/auth.service';
 import { ThemeService } from '../../../services/theme/theme.service';
 import { CookieService } from 'ngx-cookie-service';
+
 @Component({
   selector: 'app-main',
   templateUrl: './main.component.html',
@@ -67,8 +68,8 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
   public showSidenav = false;
   public isDropdownOpen = false;
   public pageTitle = 'Dashboard';
-  public accountName: string;
-  public accountRole: string;
+  public accountName: string = '';
+  public accountRole: string = '';
 
   private routeTitleMap: Record<string, string> = {
     dashboard: 'Dashboard',
@@ -97,12 +98,10 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
     private el: ElementRef,
     private renderer: Renderer2,
     private ngZone: NgZone
-  ) {
-    this.accountName = this.cookieService.get('user_name');
-    this.accountRole = this.toTitleCase(this.cookieService.get('user_role'));
-  }
+  ) {}
 
   ngOnInit(): void {
+    this.setAccountInfo(); // Set account information from AuthService
     this.router.events
       .pipe(
         filter(
@@ -121,6 +120,17 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     this.removeDocumentClickListener();
+  }
+
+  private setAccountInfo(): void {
+    const userInfo = this.authService.getUserInfo();
+    if (userInfo) {
+      this.accountName = userInfo.name;
+      this.accountRole = this.toTitleCase(userInfo.role); // Convert role to title case
+    } else {
+      console.warn('User information not found. Redirecting to login.');
+      this.router.navigate(['/login']);
+    }
   }
 
   toggleTheme() {
@@ -165,7 +175,7 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private toTitleCase(str: string): string {
-    return str.charAt(0).toUpperCase() + str.slice(1);
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
   }
 
   private setPageTitle(): void {
@@ -204,14 +214,14 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
       disableClose: true,
       panelClass: 'dialog-base',
     });
-
+  
     confirmDialogRef.afterClosed().subscribe((result) => {
       if (result === 'Log Out') {
         this.showLoadingAndLogout();
       }
     });
   }
-
+  
   private showLoadingAndLogout() {
     const loadingDialogRef = this.dialog.open(DialogGenericComponent, {
       data: {
@@ -221,10 +231,11 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       disableClose: true,
     });
+  
 
     this.authService.logout().subscribe({
       next: () => {
-        this.cookieService.deleteAll('/');
+        this.authService.clearCookies(); 
         loadingDialogRef.close();
         this.router.navigate(['/login']);
       },
@@ -234,4 +245,5 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
       },
     });
   }
+  
 }

@@ -30,7 +30,7 @@ import { LoadingComponent } from '../../../../shared/loading/loading.component';
 import { ThemeService } from '../../../services/theme/theme.service';
 import { PreferencesService, Program, Course, YearLevel } from '../../../services/faculty/preference/preferences.service';
 import { CookieService } from 'ngx-cookie-service';
-
+import { AuthService, UserInfo } from '../../../services/auth/auth.service';
 import { fadeAnimation, cardEntranceAnimation, rowAdditionAnimation } from '../../../animations/animations';
 
 interface TableData extends Course {
@@ -117,6 +117,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
 
   isPreferencesEnabled: boolean = true;
   activeSemesterId: number | null = null;
+  facultyId: number | null = null;
 
   constructor(
     private readonly themeService: ThemeService,
@@ -124,23 +125,12 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     private readonly dialog: MatDialog,
     private readonly preferencesService: PreferencesService,
     private readonly snackBar: MatSnackBar,
-    private readonly cookieService: CookieService
+    private readonly authService: AuthService // Inject AuthService
   ) {}
 
   ngOnInit() {
     this.subscribeToThemeChanges();
-
-    const facultyUnits = parseInt(
-      this.cookieService.get('faculty_units') || '',
-      10
-    );
-
-    if (!isNaN(facultyUnits)) {
-      this.maxUnits = facultyUnits;
-    } else {
-      console.warn('No valid faculty units found in cookies.');
-    }
-
+    this.initializeFacultyInfo(); // Retrieve faculty info from AuthService
     this.loadAllData();
   }
 
@@ -159,6 +149,18 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   // Initialization Methods
   // ======================
 
+  private initializeFacultyInfo(): void {
+    const userInfo = this.authService.getUserInfo();
+
+    if (userInfo && userInfo.faculty) {
+      this.facultyId = userInfo.faculty.faculty_id;
+      this.maxUnits = parseInt(userInfo.faculty.faculty_units, 10) || 0;
+    } else {
+      console.warn('No valid faculty info found.');
+      this.maxUnits = 0;
+    }
+  }
+
   private loadAllData() {
     this.isLoading = true;
 
@@ -173,9 +175,8 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
           this.activeSemesterId = programsResponse.active_semester_id;
 
           // Process Preferences
-          const facultyId = this.cookieService.get('faculty_id');
           const facultyPreference = preferencesResponse.preferences.find(
-            (pref: any) => pref.faculty_id == facultyId
+            (pref: any) => pref.faculty_id == this.facultyId
           );
 
           if (facultyPreference) {
@@ -228,6 +229,8 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       })
     );
   }
+
+
 
   private subscribeToThemeChanges() {
     this.subscriptions.add(
@@ -370,24 +373,30 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       this.showSnackBar('You have already submitted your preferences.');
       return;
     }
-
+  
+    // Check if the course is already submitted
     if (course.isSubmitted) {
-      const facultyId = this.cookieService.get('faculty_id');
+      // Retrieve facultyId from AuthService
+      const userInfo = this.authService.getUserInfo();
+      const facultyId = userInfo && userInfo.faculty ? userInfo.faculty.faculty_id : null;
       const activeSemesterId = this.activeSemesterId;
-
+  
+      // Ensure facultyId and activeSemesterId are available
       if (!facultyId || !activeSemesterId) {
         this.showSnackBar('Error: Missing faculty or semester information.');
         return;
       }
-
+  
+      // Call preferencesService to delete the preference
       this.preferencesService
         .deletePreference(
           course.course_assignment_id,
-          facultyId,
+          facultyId.toString(), // Convert facultyId to string
           activeSemesterId
         )
         .subscribe({
           next: () => {
+            // Remove the course from the list and update the table
             this.allSelectedCourses = this.allSelectedCourses.filter(
               (c) => c.course_code !== course.course_code
             );
@@ -401,6 +410,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
           },
         });
     } else {
+      // If the course is not submitted, simply remove it from the list
       this.allSelectedCourses = this.allSelectedCourses.filter(
         (c) => c.course_code !== course.course_code
       );
@@ -408,13 +418,15 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       this.updateTotalUnits();
     }
   }
+  
+  
 
   removeAllCourses(): void {
     if (!this.isPreferencesEnabled) {
       this.showSnackBar('You have already submitted your preferences.');
       return;
     }
-
+  
     const dialogData: DialogData = {
       title: 'Remove All Courses',
       content: 'Are you sure you want to remove all your selected courses?',
@@ -422,7 +434,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       cancelText: 'Cancel',
       action: 'remove',
     };
-
+  
     this.dialog
       .open(DialogGenericComponent, {
         data: dialogData,
@@ -432,34 +444,36 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       .afterClosed()
       .subscribe((result) => {
         if (result === 'remove') {
-          const facultyId = this.cookieService.get('faculty_id');
+          // Retrieve facultyId from AuthService
+          const userInfo = this.authService.getUserInfo();
+          const facultyId = userInfo && userInfo.faculty ? userInfo.faculty.faculty_id : null;
           const activeSemesterId = this.activeSemesterId;
-
+  
+          // Ensure facultyId and activeSemesterId are available
           if (!facultyId || !activeSemesterId) {
-            this.showSnackBar(
-              'Error: Missing faculty or semester information.'
-            );
+            this.showSnackBar('Error: Missing faculty or semester information.');
             return;
           }
-
+  
+          // Separate submitted and non-submitted courses
           const submittedCourses = this.allSelectedCourses.filter(
             (c) => c.isSubmitted
           );
           const nonSubmittedCourses = this.allSelectedCourses.filter(
             (c) => !c.isSubmitted
           );
-
+  
+          // If there are submitted courses, call the deleteAllPreferences service
           if (submittedCourses.length > 0) {
             this.preferencesService
-              .deleteAllPreferences(facultyId, activeSemesterId)
+              .deleteAllPreferences(facultyId.toString(), activeSemesterId)
               .subscribe({
                 next: () => {
+                  // Keep only the non-submitted courses
                   this.allSelectedCourses = nonSubmittedCourses;
                   this.updateDataSource();
                   this.updateTotalUnits();
-                  this.showSnackBar(
-                    'All submitted course preferences removed successfully.'
-                  );
+                  this.showSnackBar('All submitted course preferences removed successfully.');
                 },
                 error: (error) => {
                   console.error('Error deleting preferences:', error);
@@ -467,6 +481,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
                 },
               });
           } else {
+            // If no submitted courses, just clear all selected courses
             this.allSelectedCourses = [];
             this.updateDataSource();
             this.updateTotalUnits();
@@ -475,7 +490,8 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
         }
       });
   }
-
+  
+  
   // ====================
   // Preference Submission Methods
   // ====================
@@ -485,51 +501,55 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       this.showSnackBar('You have already submitted your preferences.');
       return;
     }
-
-    const facultyId = this.cookieService.get('faculty_id');
-    if (!facultyId) {
+  
+    // Get user information from AuthService
+    const userInfo = this.authService.getUserInfo();
+  
+    // Check if user information and faculty ID are available
+    if (!userInfo || !userInfo.faculty || !userInfo.faculty.faculty_id) {
       this.showSnackBar('Error: Faculty ID not found.');
       return;
     }
-
+  
+    // Convert facultyId to string if necessary
+    const facultyId = userInfo.faculty.faculty_id.toString();
+  
     if (!this.activeSemesterId) {
       this.showSnackBar('Error: Active semester not found.');
       return;
     }
-
+  
+    // Ensure all courses have preferred day and time selected
     for (const course of this.dataSource.data) {
       if (!course.preferredDay || !course.preferredTime) {
-        this.showSnackBar(
-          'Please select preferred day and time for all courses.'
-        );
+        this.showSnackBar('Please select preferred day and time for all courses.');
         return;
       }
     }
-
+  
+    // Open confirmation dialog
     const dialogRef = this.dialog.open(DialogConfirmPrefComponent, {
       disableClose: true,
     });
-
+  
     const dialogInstance = dialogRef.componentInstance;
     dialogInstance.confirmSubmission.subscribe(() => {
       this.performSubmission(facultyId, this.activeSemesterId!, dialogInstance);
     });
-
+  
     dialogRef.afterClosed().subscribe(() => {
-      // Dialog closed
+      // Handle dialog close event if needed
     });
   }
-
+  
+  
   private performSubmission(
     facultyId: string,
     activeSemesterId: number,
     dialogInstance: DialogConfirmPrefComponent
   ): void {
-    const submittedData = this.prepareSubmissionData(
-      facultyId,
-      activeSemesterId
-    );
-
+    const submittedData = this.prepareSubmissionData(facultyId, activeSemesterId);
+  
     this.preferencesService.submitPreferences(submittedData).subscribe({
       next: () => {
         this.allSelectedCourses = this.allSelectedCourses.map((course) => ({
@@ -548,6 +568,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       },
     });
   }
+  
   private prepareSubmissionData(facultyId: string, activeSemesterId: number) {
     return {
       faculty_id: parseInt(facultyId),

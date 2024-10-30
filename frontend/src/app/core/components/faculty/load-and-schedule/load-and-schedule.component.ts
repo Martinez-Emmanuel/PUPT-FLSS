@@ -2,12 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
-
 import { FacultyScheduleTimetableComponent } from '../../../../shared/faculty-schedule-timetable/faculty-schedule-timetable.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { ReportsService } from '../../../services/admin/reports/reports.service';
-import { CookieService } from 'ngx-cookie-service';
+import { AuthService } from '../../../services/auth/auth.service';
 
 import { fadeAnimation } from '../../../animations/animations';
 
@@ -31,7 +30,7 @@ export class LoadAndScheduleComponent implements OnInit {
 
   constructor(
     private reportsService: ReportsService,
-    private cookieService: CookieService
+    private authService: AuthService
   ) {}
 
   ngOnInit() {
@@ -39,9 +38,11 @@ export class LoadAndScheduleComponent implements OnInit {
   }
 
   loadFacultySchedule() {
-    const facultyId = this.cookieService.get('faculty_id');
+    const userInfo = this.authService.getUserInfo();
+    const facultyId = userInfo?.faculty?.faculty_id;
+    
     if (facultyId) {
-      this.reportsService.getSingleFacultySchedule(+facultyId).subscribe(
+      this.reportsService.getSingleFacultySchedule(facultyId).subscribe(
         (data) => {
           this.facultySchedule = data.faculty_schedule;
           this.isPublished = data.faculty_schedule.is_published === 1;
@@ -53,7 +54,7 @@ export class LoadAndScheduleComponent implements OnInit {
         }
       );
     } else {
-      console.error('Faculty ID not found in cookies');
+      console.error('Faculty ID not found');
       this.isLoading = false;
     }
   }
