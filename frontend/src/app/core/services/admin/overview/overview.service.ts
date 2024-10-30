@@ -32,8 +32,13 @@ export class OverviewService {
     return this.http.get<OverviewDetails>(`${this.baseUrl}/overview-details`);
   }
 
-  sendEmails(): Observable<any> {
-    const url = `${this.baseUrl}/faculties/send-emails`;
+  sendPrefEmail(): Observable<any> {
+    const url = `${this.baseUrl}/email-pref-enable`;
+    return this.http.post(url, {});
+  }
+
+  sendScheduleEmail(): Observable<any> {
+    const url = `${this.baseUrl}/email-all-schedule`;
     return this.http.post(url, {});
   }
 

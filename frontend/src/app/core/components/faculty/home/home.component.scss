@@ -8,7 +8,7 @@
 .faculty-home-container {
   @include flex-layout(
     $align: stretch,
-    $justify: flex-start,
+    $justify: center,
     $gap: var(--spacing-lg)
   );
   height: 100%;

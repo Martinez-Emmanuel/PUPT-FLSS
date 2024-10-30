@@ -1,10 +1,12 @@
-@if (isLoading) {
-<app-loading></app-loading>
-} @else {
+<div class="faculty-management-container">
+  @if (isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
 
-<div class="faculty-management-container" [@fadeAnimation]>
   <!-- Table Header -->
-  <div class="faculty-header-container">
+  <div class="faculty-header-container" [@fadeAnimation]>
     <app-table-header
       [searchLabel]="'Search Faculty'"
       [addButtonLabel]="'Add Faculty'"
@@ -15,7 +17,7 @@
   </div>
 
   <!-- Faculty Management Table -->
-  <div class="faculty-table-container">
+  <div class="faculty-table-container" [@fadeAnimation]>
     <app-table-generic
       [columns]="columns"
       [data]="faculty"
@@ -26,5 +28,6 @@
       (delete)="deleteFaculty($event)"
     ></app-table-generic>
   </div>
+
+  }
 </div>
-}

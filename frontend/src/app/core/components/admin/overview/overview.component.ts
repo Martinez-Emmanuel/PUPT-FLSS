@@ -1,14 +1,15 @@
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { Subject, takeUntil } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatDialogModule } from '@angular/material/dialog';
-import { MatSnackBar, MatSnackBarRef } from '@angular/material/snack-bar';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
-import { DialogGenericComponent } from '../../../../shared/dialog-generic/dialog-generic.component';
+import { DialogActionComponent, DialogActionData } from '../../../../shared/dialog-action/dialog-action.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { OverviewService, OverviewDetails } from '../../../services/admin/overview/overview.service';
@@ -28,6 +29,7 @@ interface CurriculumInfo {
     MatDialogModule,
     MatTooltipModule,
     LoadingComponent,
+    DialogActionComponent,
   ],
   templateUrl: './overview.component.html',
   styleUrls: ['./overview.component.scss'],
@@ -43,7 +45,9 @@ export class OverviewComponent implements OnInit, OnDestroy {
   activeSemester = 'N/A';
   activeFacultyCount = 0;
   activeProgramsCount = 0;
-  activeCurricula: CurriculumInfo[] = [{ curriculum_id: 0, curriculum_year: '0' }];
+  activeCurricula: CurriculumInfo[] = [
+    { curriculum_id: 0, curriculum_year: '0' },
+  ];
 
   // Progress metrics
   preferencesProgress = 0;
@@ -61,7 +65,8 @@ export class OverviewComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private overviewService: OverviewService
+    private overviewService: OverviewService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
@@ -146,98 +151,98 @@ export class OverviewComponent implements OnInit, OnDestroy {
     return circumference - (percentage / 100) * circumference;
   }
 
-  openSendEmailDialog(): void {
-    const dialogRef = this.dialog.open(DialogGenericComponent, {
-      data: {
-        title: 'Send Email to All Faculty',
-        content:
-          'Send an email to all the faculty members to submit their load and schedule preference for the current semester. Click "Send Email" below to proceed.',
-        actionText: 'Send Email',
-        cancelText: 'Cancel',
-        action: 'send-email',
-      },
+  // ================
+  // Toggle Methods
+  // ================
+
+  togglePreferencesSubmission(): void {
+    const dialogData: DialogActionData = {
+      type: 'preferences',
+      academicYear: this.activeYear,
+      semester: this.activeSemester,
+      currentState: this.preferencesEnabled,
+    };
+
+    const dialogRef = this.dialog.open(DialogActionComponent, {
+      data: dialogData,
       disableClose: true,
     });
 
-    dialogRef
-      .afterClosed()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((result) => {
-        if (result === 'send-email') {
-          this.sendEmailToFaculty();
-        }
-      });
-  }
-
-  private sendEmailToFaculty(): void {
-    const sendingSnackBarRef = this.snackBar.open(
-      'Sending emails. Please wait...',
-      'Close',
-      { duration: undefined }
-    );
-
-    this.overviewService
-      .sendEmails()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          sendingSnackBarRef.dismiss();
-          this.showSuccessMessage('Emails sent successfully!');
-        },
-        error: this.handleError('Failed to send emails. Please try again.'),
-      });
-  }
-
-  togglePreferencesSubmission(): void {
-    const newStatus = !this.preferencesEnabled;
-
-    this.overviewService
-      .togglePreferencesSettings(newStatus)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.showSuccessMessage(
-            `Faculty Preferences Submission ${
-              newStatus ? 'enabled' : 'disabled'
-            } successfully.`
-          );
-          this.fetchOverviewDetails();
-        },
-        error: this.handleError(
-          `Failed to ${
-            newStatus ? 'enable' : 'disable'
-          } Faculty Preferences Submission. Please try again.`
-        ),
-      });
+    dialogRef.afterClosed().subscribe((result: boolean) => {
+      if (result) {
+        this.fetchOverviewDetails();
+      }
+    });
   }
 
   togglePublishSchedules(): void {
     if (this.facultyWithSchedulesCount === 0) {
-      this.showErrorMessage('No faculty has been scheduled yet.');
+      this.showSchedulingRedirectMessage();
       return;
     }
 
-    const newStatus = !this.schedulesPublished;
+    const dialogData: DialogActionData = {
+      type: 'publish',
+      academicYear: this.activeYear,
+      semester: this.activeSemester,
+      currentState: this.schedulesPublished,
+    };
 
-    this.overviewService
-      .toggleAllSchedules(newStatus)
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: () => {
-          this.showSuccessMessage(
-            `Faculty Load and Schedule ${
-              newStatus ? 'published' : 'unpublished'
-            } successfully.`
-          );
-          this.fetchOverviewDetails();
-        },
-        error: this.handleError(
-          `Failed to ${
-            newStatus ? 'publish' : 'unpublish'
-          } Faculty Load and Schedule. Please try again.`
-        ),
-      });
+    const dialogRef = this.dialog.open(DialogActionComponent, {
+      data: dialogData,
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((result: boolean) => {
+      if (result) {
+        this.fetchOverviewDetails();
+      }
+    });
   }
+
+  generateReports(): void {
+    if (this.facultyWithSchedulesCount === 0) {
+      this.showSchedulingRedirectMessage();
+      return;
+    }
+  
+    const dialogRef = this.dialog.open(DialogActionComponent, {
+      data: {
+        type: 'reports',
+        academicYear: this.activeYear,
+        semester: this.activeSemester,
+        currentState: false,
+      },
+      disableClose: true,
+    });
+  
+    dialogRef.afterClosed().subscribe((result: boolean) => {
+      if (result) {
+      }
+    });
+  }
+
+  private showSchedulingRedirectMessage(): void {
+    const snackBarRef = this.snackBar.open(
+      'No schedule has been made yet.',
+      'Go to Scheduling',
+      {
+        duration: this.SNACKBAR_DURATION,
+      }
+    );
+  
+    snackBarRef.onAction().subscribe(() => {
+      this.navigateToScheduling();
+    });
+  }
+  
+  private navigateToScheduling(): void {
+    this.router.navigate(['/admin/scheduling']);
+  }
+
+  // ================
+  // Utility Methods
+  // ================
 
   private showSuccessMessage(message: string): void {
     this.snackBar.open(message, 'Close', { duration: this.SNACKBAR_DURATION });

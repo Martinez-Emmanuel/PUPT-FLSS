@@ -1,8 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError, forkJoin, of } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap, shareReplay, tap } from 'rxjs/operators';
 import { environment } from '../../../../../environments/environment.dev';
+
+export enum CacheType {
+  Rooms = 'rooms',
+  Faculty = 'faculty',
+  Schedules = 'schedules',
+  Preferences = 'preferences',
+}
 
 export interface Program {
   program_id: number;
@@ -52,6 +59,8 @@ export interface Schedule {
   faculty_id?: number;
   faculty_email?: string;
   room_id?: number;
+  section_course_id: number;
+  is_copy: number;
 }
 
 export interface Semester {
@@ -133,6 +142,8 @@ export interface CourseResponse {
     room_id: number;
     room_code: string;
   };
+  section_course_id: number;
+  is_copy?: number;
 }
 
 export interface Room {
@@ -207,6 +218,11 @@ interface ConflictingScheduleDetail {
 })
 export class SchedulingService {
   private baseUrl = environment.apiUrl;
+
+  private roomsCache$?: Observable<{ rooms: Room[] }>;
+  private facultyCache$?: Observable<{ faculty: Faculty[] }>;
+  private schedulesCache$?: Observable<PopulateSchedulesResponse>;
+  private submittedPreferences$?: Observable<SubmittedPrefResponse>;
 
   constructor(private http: HttpClient) {}
 
@@ -380,48 +396,52 @@ export class SchedulingService {
   // Scheduling-related methods
   // =============================
 
-  // Get assigned courses by program, year level, and section
-  getAssignedCoursesByProgramYearAndSection(
-    programId: number,
-    yearLevel: number,
-    sectionId: number
-  ): Observable<any> {
-    return this.http
-      .get<any>(`${this.baseUrl}/get-assigned-courses-sem`, {
-        params: {
-          programId: programId.toString(),
-          yearLevel: yearLevel.toString(),
-          sectionId: sectionId.toString(),
-        },
-      })
-      .pipe(catchError(this.handleError));
-  }
-
   // Populate schedules
   populateSchedules(): Observable<PopulateSchedulesResponse> {
-    return this.http
-      .get<PopulateSchedulesResponse>(`${this.baseUrl}/populate-schedules`)
-      .pipe(catchError(this.handleError));
+    if (!this.schedulesCache$) {
+      this.schedulesCache$ = this.http
+        .get<PopulateSchedulesResponse>(`${this.baseUrl}/populate-schedules`)
+        .pipe(shareReplay(1), catchError(this.handleError));
+    }
+    return this.schedulesCache$;
   }
 
   // Get all available rooms
   getAllRooms(): Observable<{ rooms: Room[] }> {
-    return this.http
-      .get<{ rooms: Room[] }>(`${this.baseUrl}/get-rooms`)
-      .pipe(catchError(this.handleError));
+    if (!this.roomsCache$) {
+      this.roomsCache$ = this.http
+        .get<{ rooms: Room[] }>(`${this.baseUrl}/get-rooms`)
+        .pipe(shareReplay(1), catchError(this.handleError));
+    }
+    return this.roomsCache$;
   }
 
   // Get faculty details
   getFacultyDetails(): Observable<{ faculty: Faculty[] }> {
-    return this.http
-      .get<{ faculty: Faculty[] }>(`${this.baseUrl}/get-faculty`)
-      .pipe(catchError(this.handleError));
+    if (!this.facultyCache$) {
+      this.facultyCache$ = this.http
+        .get<{ faculty: Faculty[] }>(`${this.baseUrl}/get-faculty`)
+        .pipe(shareReplay(1), catchError(this.handleError));
+    }
+    return this.facultyCache$;
   }
 
-  getSubmittedPreferencesForActiveSemester(): Observable<SubmittedPrefResponse> {
-    return this.http
-      .get<SubmittedPrefResponse>(`${this.baseUrl}/view-preferences`)
-      .pipe(catchError(this.handleError));
+  // Get submitted preferences by faculty
+  getSubmittedPreferencesForActiveSemester(
+    forceRefresh: boolean = false
+  ): Observable<SubmittedPrefResponse> {
+    if (forceRefresh || !this.submittedPreferences$) {
+      this.submittedPreferences$ = this.http
+        .get<SubmittedPrefResponse>(`${this.baseUrl}/view-preferences`)
+        .pipe(
+          shareReplay(1),
+          catchError((error) => {
+            this.submittedPreferences$ = undefined;
+            return this.handleError(error);
+          })
+        );
+    }
+    return this.submittedPreferences$;
   }
 
   // Assign schedule to faculty, room, and time
@@ -457,16 +477,74 @@ export class SchedulingService {
             start_time,
             end_time,
           };
-          return this.http.post<any>(
-            `${this.baseUrl}/assign-schedule`,
-            payload
-          );
+          return this.http
+            .post<any>(`${this.baseUrl}/assign-schedule`, payload)
+            .pipe(
+              tap(() => {
+                this.resetCaches([CacheType.Schedules]);
+              })
+            );
         } else {
           return throwError(() => new Error(validationResult.message));
         }
       }),
       catchError(this.handleError)
     );
+  }
+
+  /**
+   * Duplicate a course by calling the backend API.
+   * @param element The schedule element to duplicate.
+   */
+  duplicateCourse(element: Schedule): Observable<{ course: Schedule }> {
+    return this.http
+      .post<{ course: Schedule }>(`${this.baseUrl}/duplicate-course`, {
+        section_course_id: element.section_course_id,
+      })
+      .pipe(
+        tap(() => {
+          this.resetCaches([CacheType.Schedules]);
+        }),
+        catchError(this.handleError)
+      );
+  }
+
+  /**
+   * Remove a duplicated course copy by calling the backend API.
+   * @param section_course_id The ID of the section_course to remove.
+   */
+  removeDuplicateCourse(section_course_id: number): Observable<any> {
+    return this.http
+      .delete(`${this.baseUrl}/remove-duplicate-course`, {
+        body: { section_course_id },
+      })
+      .pipe(catchError(this.handleError));
+  }
+
+  /**
+   * Reset specific caches based on the provided CacheType array.
+   * @param cacheTypes Array of CacheType enums indicating which caches to reset.
+   */
+  public resetCaches(cacheTypes: CacheType[] = []): void {
+    cacheTypes.forEach((type) => {
+      switch (type) {
+        case CacheType.Rooms:
+          this.roomsCache$ = undefined;
+          break;
+        case CacheType.Faculty:
+          this.facultyCache$ = undefined;
+          break;
+        case CacheType.Schedules:
+          this.schedulesCache$ = undefined;
+          break;
+        case CacheType.Preferences:
+          this.submittedPreferences$ = undefined;
+          break;
+        default:
+          console.warn(`Unknown CacheType: ${type}`);
+          break;
+      }
+    });
   }
 
   // ===================================
@@ -710,7 +788,6 @@ export class SchedulingService {
    * Validates whether a room is available for the given day and time.
    * It checks if the room is already booked by another course.
    */
-
   private checkRoomAvailability(
     room_id: number | null,
     day: string | null,

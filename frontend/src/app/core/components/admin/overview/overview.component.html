@@ -1,6 +1,8 @@
 @if(isLoading) {
-<div class="loading-wrapper">
-  <app-loading></app-loading>
+<div class="overview-loading-container">
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
 </div>
 } @else {
 <div class="overview-container">
@@ -206,8 +208,8 @@
                 <span class="desc">
                   {{
                     preferencesEnabled
-                      ? "Enable Faculty Preferences Submission"
-                      : "Disable Faculty Preferences Submission"
+                      ? "Disable Faculty Preferences Submission"
+                      : "Enable Faculty Preferences Submission"
                   }}
                 </span>
               </div>
@@ -234,7 +236,7 @@
                 <span class="desc">Send Email to Faculty Members</span>
               </div> -->
               <!--Action: Open Generate Report-->
-              <div class="item generate-report">
+              <div class="item generate-report" (click)="generateReports()">
                 <span mat-symbol="assessment"></span>
                 <span class="desc">Generate the Schedule Reports</span>
               </div>

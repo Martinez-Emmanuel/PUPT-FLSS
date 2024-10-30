@@ -73,6 +73,7 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
   dataSource = new MatTableDataSource<Room>();
   filteredData: Room[] = [];
   isLoading = true;
+  hasAnySchedules = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -114,6 +115,8 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
         this.dataSource.data = rooms;
         this.filteredData = [...rooms];
         this.dataSource.paginator = this.paginator;
+
+        this.hasAnySchedules = this.filteredData.some(room => this.hasSchedules(room));
       },
       error: (error) => {
         this.isLoading = false;
@@ -502,5 +505,9 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
 
   getAcademicYearSubtitle(room: Room): string {
     return `For Academic Year ${room.academicYear}, ${room.semester}`;
+  }
+  
+  hasSchedules(room: Room): boolean {
+    return room.schedules && room.schedules.length > 0;
   }
 }

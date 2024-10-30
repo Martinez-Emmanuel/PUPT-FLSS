@@ -686,7 +686,7 @@ export class CurriculumDetailComponent implements OnInit {
                 label: 'Course Code',
                 formControlName: 'course_code',
                 type: 'text',
-                maxLength: 10,
+                maxLength: 50,
                 required: true,
             },
             {
@@ -707,7 +707,7 @@ export class CurriculumDetailComponent implements OnInit {
                 label: 'Course Title',
                 formControlName: 'course_title',
                 type: 'text',
-                maxLength: 80,
+                maxLength: 100,
                 required: true,
             },
             {

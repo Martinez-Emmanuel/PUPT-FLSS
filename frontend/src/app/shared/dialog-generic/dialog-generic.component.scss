@@ -16,6 +16,8 @@
 .custom-dialog-content {
   font-size: var(--font-size-md);
   margin: var(--spacing-md) 0;
+  line-height: var(--line-height-md);
+  text-align: justify;
 }
 
 .custom-dialog-buttons {

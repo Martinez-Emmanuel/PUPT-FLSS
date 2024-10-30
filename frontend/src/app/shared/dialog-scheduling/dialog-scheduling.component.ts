@@ -108,7 +108,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   private setupConflictDetection(): void {
     this.scheduleForm.valueChanges
       .pipe(
-        debounceTime(300),
+        debounceTime(0),
         distinctUntilChanged(
           (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
         ),

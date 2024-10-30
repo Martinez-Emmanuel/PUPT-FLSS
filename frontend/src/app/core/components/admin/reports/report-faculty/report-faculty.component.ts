@@ -84,6 +84,7 @@ export class ReportFacultyComponent
   hasSchedulesForToggleAll = false;
   isToggleAllChecked = false;
   isLoading = true;
+  hasAnySchedules = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -134,8 +135,11 @@ export class ReportFacultyComponent
         this.dataSource.paginator = this.paginator;
 
         this.hasSchedulesForToggleAll = facultyData.some(
-          (faculty: { schedules: string | any[] }) =>
-            faculty.schedules && faculty.schedules.length > 0
+          (faculty: { schedules: string | any[]; }) => faculty.schedules && faculty.schedules.length > 0
+        );
+
+        this.hasAnySchedules = facultyData.some(
+          (faculty: { schedules: string | any[]; }) => faculty.schedules && faculty.schedules.length > 0
         );
 
         this.isToggleAllChecked =
@@ -647,5 +651,23 @@ export class ReportFacultyComponent
   
   private getAcademicYearSubtitle(faculty: Faculty): string {
     return `For Academic Year ${faculty.academicYear}, ${faculty.semester}`;
+  }
+
+  getSingleToggleTooltip(faculty: Faculty): string {
+    if (!faculty.schedules || faculty.schedules.length === 0) {
+      return `Cannot publish/unpublish empty schedule for ${faculty.facultyName}`;
+    }
+    return `${faculty.isEnabled ? 'Unpublish' : 'Publish'} schedule for ${faculty.facultyName}`;
+  }
+
+  getAllToggleTooltip(isEnabled: boolean): string {
+    if (!this.hasSchedulesForToggleAll) {
+      return 'Cannot publish/unpublish empty schedules';
+    }
+    return `${isEnabled ? 'Unpublish' : 'Publish'} schedules for all applicable faculty`;
+  }
+
+  hasSchedules(faculty: Faculty): boolean {
+    return (faculty.schedules ?? []).length > 0;
   }
 }

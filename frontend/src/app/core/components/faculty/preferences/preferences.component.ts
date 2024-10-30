@@ -68,7 +68,6 @@ interface TableData extends Course {
   templateUrl: './preferences.component.html',
   styleUrls: ['./preferences.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [PreferencesService],
   animations: [fadeAnimation, cardEntranceAnimation, rowAdditionAnimation],
 })
 export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -351,9 +350,9 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    if (this.isCourseAlreadyAdded(course) || this.isMaxUnitsExceeded(course)) {
-      return;
-    }
+    // if (this.isCourseAlreadyAdded(course) || this.isMaxUnitsExceeded(course)) {
+    //   return;
+    // }
 
     const newCourse: TableData = {
       ...course,
@@ -716,13 +715,13 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     return false;
   }
 
-  private isMaxUnitsExceeded(course: Course): boolean {
-    if (this.units + course.units > this.maxUnits) {
-      this.showSnackBar('Maximum units have been reached.');
-      return true;
-    }
-    return false;
-  }
+  // private isMaxUnitsExceeded(course: Course): boolean {
+  //   if (this.units + course.units > this.maxUnits) {
+  //     this.showSnackBar('Maximum units have been reached.');
+  //     return true;
+  //   }
+  //   return false;
+  // }
 
   private updateDataSource(): void {
     this.dataSource.data = [...this.allSelectedCourses];

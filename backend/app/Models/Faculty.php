@@ -22,7 +22,7 @@ class Faculty extends Authenticatable
         'faculty_password',
     ];
 
-    public $timestamps = false;
+    public $timestamps = true;
 
     public function user()
     {

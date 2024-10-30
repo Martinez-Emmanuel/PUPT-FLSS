@@ -7,7 +7,7 @@ $day-colors: (
   thursday: (var(--aqua-primary), var(--aqua-text)),
   friday: (var(--purple-primary), var(--purple-text)),
   saturday: (var(--green-primary), var(--green-text)),
-  sunday: (var(--primary-text), var(--primary-text))
+  sunday: (var(--primary-text), var(--primary-text-two))
 );
 
 @each $day, $colors in $day-colors {

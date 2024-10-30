@@ -8,12 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class SectionCourse extends Model
 {
     use HasFactory;
-    protected $table = 'section_courses'; 
+    protected $table = 'section_courses';
     protected $primaryKey = 'section_course_id';
 
     protected $fillable = [
         'sections_per_program_year_id',
         'course_id',
+        'is_copy',
     ];
 
     public function section()
