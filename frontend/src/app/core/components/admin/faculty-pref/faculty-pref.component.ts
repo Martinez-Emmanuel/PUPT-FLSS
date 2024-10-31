@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { BehaviorSubject } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -117,35 +118,38 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
 
   loadFacultyPreferences(): void {
     this.isLoading.next(true);
-    this.preferencesService.getPreferences().subscribe(
-      (response) => {
-        const faculties = response.preferences.map((faculty: any) => ({
-          faculty_id: faculty.faculty_id,
-          facultyName: faculty.faculty_name,
-          facultyCode: faculty.faculty_code,
-          facultyType: faculty.faculty_type,
-          facultyUnits: faculty.faculty_units,
-          is_enabled: faculty.is_enabled === 1,
-          active_semesters: faculty.active_semesters,
-        }));
+    this.preferencesService
+      .getPreferences()
+      .pipe(filter((response) => !!response))
+      .subscribe(
+        (response) => {
+          const faculties = response.preferences.map((faculty: any) => ({
+            faculty_id: faculty.faculty_id,
+            facultyName: faculty.faculty_name,
+            facultyCode: faculty.faculty_code,
+            facultyType: faculty.faculty_type,
+            facultyUnits: faculty.faculty_units,
+            is_enabled: faculty.is_enabled === 1,
+            active_semesters: faculty.active_semesters,
+          }));
 
-        this.allData = faculties;
-        this.filteredData = faculties;
-        this.applyFilter(this.currentFilter);
-        this.checkToggleAllState();
-        this.updateHasAnyPreferences(); // Update the hasAnyPreferences value
-        this.isLoading.next(false);
-      },
-      (error) => {
-        console.error('Error loading faculty preferences:', error);
-        this.snackBar.open(
-          'Error loading faculty preferences. Please try again.',
-          'Close',
-          { duration: 3000 }
-        );
-        this.isLoading.next(false);
-      }
-    );
+          this.allData = faculties;
+          this.filteredData = faculties;
+          this.applyFilter(this.currentFilter);
+          this.checkToggleAllState();
+          this.updateHasAnyPreferences();
+          this.isLoading.next(false);
+        },
+        (error) => {
+          console.error('Error loading faculty preferences:', error);
+          this.snackBar.open(
+            'Error loading faculty preferences. Please try again.',
+            'Close',
+            { duration: 3000 }
+          );
+          this.isLoading.next(false);
+        }
+      );
   }
 
   applyFilter(filterValue: string): void {
@@ -226,12 +230,17 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   onToggleAllChange(event: MatSlideToggleChange): void {
     event.source.checked = this.isToggleAllChecked;
 
+    const existingDeadline = this.allData[0]?.active_semesters?.[0]?.end_date
+      ? new Date(this.allData[0].active_semesters[0].end_date)
+      : null;
+
     const dialogData: DialogActionData = {
       type: 'preferences',
       academicYear: this.allData[0]?.active_semesters?.[0]?.academic_year || '',
       semester: this.allData[0]?.active_semesters?.[0]?.semester_label || '',
       currentState: this.isToggleAllChecked,
       hasSecondaryText: true,
+      submissionDeadline: existingDeadline,
     };
 
     const dialogRef = this.dialog.open(DialogActionComponent, {
@@ -504,13 +513,13 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     if (showPreview) {
       return pdfBlob;
     } else {
-      let fileName = 'faculty_preferences_report.pdf'; // Default name
+      let fileName = 'faculty_preferences_report.pdf';
 
       if (isAll) {
         const firstFaculty = faculties[0];
         const activeSemester = firstFaculty.active_semesters?.[0];
         if (activeSemester) {
-          const academicYear = activeSemester.academic_year.replace('/', '_'); // Replace '/' to avoid file name issues
+          const academicYear = activeSemester.academic_year.replace('/', '_');
           const semester = activeSemester.semester_label.toLowerCase();
           fileName = `${academicYear}_${semester}_faculty_preferences.pdf`;
         }

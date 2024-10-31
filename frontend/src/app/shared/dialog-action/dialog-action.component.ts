@@ -1,6 +1,6 @@
 import { Component, Inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { CommonModule } from '@angular/common';
+import { CommonModule, formatDate } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { of, Observable } from 'rxjs';
@@ -12,8 +12,14 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE, NativeDateAdapter } from '@angular/material/core';
+
 
 import { ReportGenerationService } from '../../core/services/admin/report-generation/report-generation.service';
+import { PreferencesService } from '../../core/services/faculty/preference/preferences.service';
 import { OverviewService } from '../../core/services/admin/overview/overview.service';
 
 export interface DialogActionData {
@@ -22,7 +28,20 @@ export interface DialogActionData {
   academicYear: string;
   semester: string;
   hasSecondaryText?: boolean;
+  submissionDeadline?: Date | null;
 }
+
+export const MY_DATE_FORMATS = {
+  parse: {
+    dateInput: 'MM/DD/YYYY',
+  },
+  display: {
+    dateInput: 'MM/DD/YYYY',
+    monthYearLabel: 'MMM YYYY',
+    dateA11yLabel: 'LL',
+    monthYearA11yLabel: 'MMMM YYYY',
+  },
+};
 
 @Component({
   selector: 'app-dialog-action',
@@ -35,7 +54,17 @@ export interface DialogActionData {
     MatProgressSpinnerModule,
     FormsModule,
     CommonModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatFormFieldModule,
+    MatInputModule,
     MatSymbolDirective,
+  ],
+  providers: [
+    MatDatepickerModule,
+    { provide: DateAdapter, useClass: NativeDateAdapter },
+    { provide: MAT_DATE_LOCALE, useValue: 'en-US' },
+    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
   ],
   templateUrl: './dialog-action.component.html',
   styleUrls: ['./dialog-action.component.scss'],
@@ -49,7 +78,10 @@ export class DialogActionComponent {
   isProcessing = false;
   showEmailOption = false;
 
-  // Report-specific properties
+  submissionDeadline: Date | null = null;
+  remainingDays: number = 0;
+  minDate: Date = new Date();
+
   showReportOptions = false;
   reportOptions = {
     faculty: false,
@@ -60,11 +92,16 @@ export class DialogActionComponent {
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: DialogActionData,
     private dialogRef: MatDialogRef<DialogActionComponent>,
-    private overviewService: OverviewService,
     private snackBar: MatSnackBar,
+    private overviewService: OverviewService,
+    private preferencesService: PreferencesService,
     private reportGenerationService: ReportGenerationService
   ) {
     this.initializeDialogContent();
+    this.submissionDeadline = this.data.submissionDeadline || null;
+    if (this.submissionDeadline) {
+      this.calculateRemainingDays();
+    }
   }
 
   /**
@@ -92,29 +129,13 @@ export class DialogActionComponent {
 
       case 'reports':
         this.dialogTitle = 'Generate Schedule Reports';
-        this.actionText = ''; // Not needed for reports
+        this.actionText = '';
         this.navigationLink = '/admin/reports';
         this.linkText = 'Official Reports';
         this.showEmailOption = false;
         this.showReportOptions = true;
         break;
     }
-  }
-
-  /**
-   * Closes the dialog if not processing
-   */
-  closeDialog(): void {
-    if (!this.isProcessing) {
-      this.dialogRef.close(false);
-    }
-  }
-
-  /**
-   * Checks if at least one report option is selected
-   */
-  isReportSelectionValid(): boolean {
-    return Object.values(this.reportOptions).some((value) => value);
   }
 
   /**
@@ -126,7 +147,6 @@ export class DialogActionComponent {
       return;
     }
 
-    // Handle other types
     this.isProcessing = true;
     let operation$: Observable<any>;
 
@@ -159,6 +179,84 @@ export class DialogActionComponent {
           this.snackBar.open(errorMessage, 'Close', { duration: 3000 });
         },
       });
+  }
+
+  /**
+   * Closes the dialog if not processing
+   */
+  closeDialog(): void {
+    if (!this.isProcessing) {
+      this.dialogRef.close(false);
+    }
+  }
+
+  /**
+   * Calculates remaining days between today and submission deadline
+   */
+  public calculateRemainingDays(): void {
+    if (this.submissionDeadline) {
+      const today = new Date();
+      const deadline = new Date(this.submissionDeadline);
+      const diffTime = deadline.getTime() - today.getTime();
+      this.remainingDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    }
+  }
+
+  /**
+   * Handles deadline date change
+   */
+  public onDeadlineChange(event: any): void {
+    this.submissionDeadline = event.value;
+    this.calculateRemainingDays();
+  }
+
+  /**
+   * Handles preferences toggle operation with proper date handling
+   */
+  private handlePreferencesOperation(): Observable<any> {
+    const newStatus = !this.data.currentState;
+
+    let formattedDate: string | null = null;
+    if (this.submissionDeadline) {
+      const date = new Date(this.submissionDeadline);
+      date.setHours(23, 59, 59, 999);
+      formattedDate = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
+      console.log('Sending date to backend:', formattedDate);
+    }
+
+    return this.preferencesService
+      .toggleAllPreferences(newStatus, formattedDate)
+      .pipe(
+        switchMap(() => {
+          if (this.sendEmail && newStatus) {
+            return this.preferencesService.sendPrefEmail();
+          }
+          return of(null);
+        })
+      );
+  }
+
+  /**
+   * Handles publish/unpublish operation
+   */
+  private handlePublishOperation(): Observable<any> {
+    const newStatus = !this.data.currentState;
+    // Assuming toggleAllSchedules remains in OverviewService
+    return this.overviewService.toggleAllSchedules(newStatus).pipe(
+      switchMap(() => {
+        if (this.sendEmail && newStatus) {
+          return this.overviewService.sendScheduleEmail();
+        }
+        return of(null);
+      })
+    );
+  }
+
+  /**
+   * Checks if at least one report option is selected
+   */
+  public isReportSelectionValid(): boolean {
+    return Object.values(this.reportOptions).some((value) => value);
   }
 
   /**
@@ -236,36 +334,6 @@ export class DialogActionComponent {
           );
         },
       });
-  }
-
-  /**
-   * Handles preferences toggle operation
-   */
-  private handlePreferencesOperation(): Observable<any> {
-    const newStatus = !this.data.currentState;
-    return this.overviewService.toggleAllPreferences(newStatus).pipe(
-      switchMap(() => {
-        if (this.sendEmail && newStatus) {
-          return this.overviewService.sendPrefEmail();
-        }
-        return of(null);
-      })
-    );
-  }
-
-  /**
-   * Handles publish/unpublish operation
-   */
-  private handlePublishOperation(): Observable<any> {
-    const newStatus = !this.data.currentState;
-    return this.overviewService.toggleAllSchedules(newStatus).pipe(
-      switchMap(() => {
-        if (this.sendEmail && newStatus) {
-          return this.overviewService.sendScheduleEmail();
-        }
-        return of(null);
-      })
-    );
   }
 
   /**

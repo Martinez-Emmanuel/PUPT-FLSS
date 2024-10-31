@@ -32,18 +32,9 @@ export class OverviewService {
     return this.http.get<OverviewDetails>(`${this.baseUrl}/overview-details`);
   }
 
-  sendPrefEmail(): Observable<any> {
-    const url = `${this.baseUrl}/email-pref-enable`;
-    return this.http.post(url, {});
-  }
-
   sendScheduleEmail(): Observable<any> {
     const url = `${this.baseUrl}/email-all-schedule`;
     return this.http.post(url, {});
-  }
-
-  toggleAllPreferences(status: boolean): Observable<any> {
-    return this.http.post(`${this.baseUrl}/toggle-preferences-all`, { status });
   }
 
   toggleAllSchedules(is_published: boolean): Observable<any> {

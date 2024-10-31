@@ -51,16 +51,47 @@
     </div>
     }
 
-    <!--Secondary Text-->
-    @if(!data.hasSecondaryText){
+    <!--Unified Deadline Picker -->
+    @if (data.type === 'preferences') {
+    <div class="deadline-picker">
+      <mat-form-field appearance="fill">
+        <mat-label>Submission Deadline</mat-label>
+        <input
+          matInput
+          [matDatepicker]="picker"
+          [min]="minDate"
+          [(ngModel)]="submissionDeadline"
+          (dateChange)="onDeadlineChange($event)"
+          [disabled]="data.currentState"
+          required
+        />
+        <mat-datepicker-toggle
+          matIconSuffix
+          [for]="picker"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+        <mat-hint>
+          {{
+            data.currentState
+              ? "Current Submission Deadline: " + (submissionDeadline | date)
+              : "The preferences submission will close after "
+          }}
+          <strong>{{ remainingDays }} days</strong>
+        </mat-hint>
+      </mat-form-field>
+    </div>
+    }
+
+    <!-- Secondary Text -->
+    @if (!data.hasSecondaryText) {
     <div class="secondary-text">
       @if (!showReportOptions) { For specific faculty, go to } @if
       (showReportOptions) { For a more specific view and download of reports, go
       to the }
       <a class="link" [routerLink]="navigationLink" (click)="closeDialog()">
-        {{ linkText }}</a
-      >
-      @if (!showReportOptions) { page. } @if (showReportOptions) { page. }
+        {{ linkText }}
+      </a>
+      <span> page.</span>
     </div>
     }
 
@@ -92,12 +123,18 @@
       color="primary"
       (click)="confirmAction()"
       [disabled]="
-        isProcessing || (showReportOptions && !isReportSelectionValid())
+        isProcessing ||
+        (showReportOptions && !isReportSelectionValid()) ||
+        (data.type === 'preferences' && !submissionDeadline)
       "
+      [ngClass]="{
+        'disabled-button':
+          isProcessing ||
+          (showReportOptions && !isReportSelectionValid()) ||
+          !submissionDeadline
+      }"
     >
-      @if (!isProcessing) {
-      <span>Confirm</span>
-      } @if (isProcessing) {
+      @if (!isProcessing) { Confirm } @else {
       <mat-spinner class="custom-spinner" diameter="25"></mat-spinner>
       }
     </button>

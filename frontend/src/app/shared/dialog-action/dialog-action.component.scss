@@ -122,3 +122,15 @@
     color: var(--primary-text);
   }
 }
+
+.deadline-picker, .deadline-info {
+  width: 100%;
+  
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.disabled-button {
+  opacity: var(--opacity-semi-opaque);
+}

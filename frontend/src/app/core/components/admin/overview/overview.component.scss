@@ -5,7 +5,7 @@
 }
 
 .overview-container {
-  height: auto;
+  height: 100%;
   @include flex-layout(
     $direction: column,
     $align: stretch,

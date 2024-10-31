@@ -216,9 +216,8 @@ export class OverviewComponent implements OnInit, OnDestroy {
       disableClose: true,
     });
   
-    dialogRef.afterClosed().subscribe((result: boolean) => {
-      if (result) {
-      }
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log('Export All dialog closed', result);
     });
   }
 
@@ -230,7 +229,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
         duration: this.SNACKBAR_DURATION,
       }
     );
-  
+
     snackBarRef.onAction().subscribe(() => {
       this.navigateToScheduling();
     });

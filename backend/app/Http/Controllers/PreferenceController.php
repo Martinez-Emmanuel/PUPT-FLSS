@@ -184,6 +184,7 @@ class PreferenceController extends Controller
                         'semester_id' => $activeSemester->semester_id,
                         'semester_label' => $this->getSemesterLabel($activeSemester->semester_id),
                         'courses' => $courses->toArray(),
+                        'end_date' => $preferenceSetting->end_date ? Carbon\Carbon::parse($preferenceSetting->end_date)->toDateString() : null,
                     ],
                 ],
             ];
@@ -469,7 +470,11 @@ class PreferenceController extends Controller
     {
         $validated = $request->validate([
             'status' => 'required|boolean',
+            'end_date' => 'nullable|date|after:today',
         ]);
+
+        // Clear end_date if preferences are being disabled
+        $endDate = $validated['status'] ? $validated['end_date'] : null;
 
         $facultyList = Faculty::with('user')
             ->whereHas('user', function ($query) {
@@ -480,16 +485,25 @@ class PreferenceController extends Controller
         foreach ($facultyList as $faculty) {
             PreferencesSetting::firstOrCreate(
                 ['faculty_id' => $faculty->id],
-                ['is_enabled' => $validated['status']]
+                [
+                    'is_enabled' => $validated['status'],
+                    'end_date' => $endDate,
+                ]
             );
         }
-        PreferencesSetting::query()->update(['is_enabled' => $validated['status']]);
+
+        // Update all preference settings with the new status and end date
+        PreferencesSetting::query()->update([
+            'is_enabled' => $validated['status'],
+            'end_date' => $endDate,
+        ]);
 
         $updatedPreferencesSettings = PreferencesSetting::all();
 
         return response()->json([
             'message' => 'All preferences settings updated successfully',
             'status' => $validated['status'],
+            'end_date' => $endDate,
             'updated_preferences' => $updatedPreferencesSettings,
         ], 200);
     }
