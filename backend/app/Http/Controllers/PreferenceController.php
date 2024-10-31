@@ -175,7 +175,7 @@ class PreferenceController extends Controller
                 'faculty_code' => $facultyUser->code ?? 'N/A',
                 'faculty_type' => $faculty->faculty_type ?? 'N/A',
                 'faculty_units' => $faculty->faculty_units,
-                'is_enabled' => (int) ($preferenceSetting->is_enabled ?? 1),
+                'is_enabled' => (int) ($preferenceSetting->is_enabled ?? 0),
                 'active_semesters' => [
                     [
                         'active_semester_id' => $activeSemester->active_semester_id,
@@ -184,7 +184,7 @@ class PreferenceController extends Controller
                         'semester_id' => $activeSemester->semester_id,
                         'semester_label' => $this->getSemesterLabel($activeSemester->semester_id),
                         'courses' => $courses->toArray(),
-                        'end_date' => $preferenceSetting->end_date ? Carbon\Carbon::parse($preferenceSetting->end_date)->toDateString() : null,
+                        'end_date' => $preferenceSetting && $preferenceSetting->end_date ? Carbon\Carbon::parse($preferenceSetting->end_date)->toDateString() : null,
                     ],
                 ],
             ];
