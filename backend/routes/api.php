@@ -67,12 +67,8 @@ Route::post('/submit-preferences', [PreferenceController::class, 'submitPreferen
 Route::get('/view-preferences', [PreferenceController::class, 'getPreferencesForActiveSemester']);
 Route::delete('/preferences/{preference_id}', [PreferenceController::class, 'deletePreference']);
 Route::delete('/preferences', [PreferenceController::class, 'deleteAllPreferences']);
-
-Route::get('/setting-preferences', [PreferenceController::class, 'getPreferencesSetting']);
 Route::post('/toggle-preferences-all', [PreferenceController::class, 'toggleAllPreferences']);
 Route::post('/toggle-preferences-single', [PreferenceController::class, 'toggleSinglePreferences']);
-// Route::get('/submitted-pref', [PreferenceController::class, 'getPreferences']);
-// Route::post('/pref-courses-sem', [PreferenceController::class, 'findFacultyByCourseCode']);
 
 //Get all Program and Year Level and Semester with year for superadmin
 Route::get('/curricula-details/{curriculumYear}/', [CurriculumDetailsController::class, 'getCurriculumDetails']);

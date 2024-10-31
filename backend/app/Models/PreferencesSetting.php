@@ -25,7 +25,7 @@ class PreferencesSetting extends Model
     protected $fillable = [
         'faculty_id',
         'is_enabled',
-        'end_date',
+        'global_deadline',
     ];
 
     /**
@@ -35,7 +35,7 @@ class PreferencesSetting extends Model
      */
     protected $casts = [
         'is_enabled' => 'boolean',
-        'end_date' => 'date',
+        'global_deadline' => 'date',
     ];
 
     /**

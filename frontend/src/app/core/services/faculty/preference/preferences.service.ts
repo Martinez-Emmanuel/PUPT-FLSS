@@ -26,7 +26,7 @@ export interface ActiveSemester {
   semester_id: number;
   semester_label: string;
   courses: Course[];
-  end_date?: string;
+  global_deadline?: Date | null;
 }
 
 export interface SemesterDetails {
@@ -166,7 +166,7 @@ export class PreferencesService {
     return this.http
       .post(`${this.baseUrl}/toggle-preferences-all`, {
         status,
-        end_date: deadline,
+        global_deadline: deadline,
       })
       .pipe(tap(() => this.updatePreferencesCache()));
   }

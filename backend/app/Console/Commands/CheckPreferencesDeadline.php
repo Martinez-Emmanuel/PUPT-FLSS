@@ -17,10 +17,10 @@ class CheckPreferencesDeadline extends Command
 
         PreferencesSetting::query()
             ->where('is_enabled', true)
-            ->where('end_date', '<', $today)
+            ->where('global_deadline', '<', $today)
             ->update([
                 'is_enabled' => false,
-                'end_date' => null,
+                'global_deadline' => null,
             ]);
 
         $this->info('Preferences deadline check completed successfully.');

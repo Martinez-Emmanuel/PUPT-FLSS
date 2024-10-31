@@ -6,7 +6,7 @@ use App\Models\ActiveSemester;
 use App\Models\Faculty;
 use App\Models\Preference;
 use App\Models\PreferencesSetting;
-use Carbon;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -120,81 +120,6 @@ class PreferenceController extends Controller
         return response()->json(['message' => 'All preferences deleted successfully.'], 200);
     }
 
-    public function getPreferencesForActiveSemester()
-    {
-        $activeSemester = ActiveSemester::with(['academicYear', 'semester'])
-            ->where('is_active', 1)
-            ->first();
-
-        if (!$activeSemester) {
-            return response()->json(['error' => 'No active semester found'], 404);
-        }
-
-        // Fetch all faculty and their preferences (if any)
-        $faculty = Faculty::with(['user', 'preferenceSetting'])
-            ->leftJoin('preferences', function ($join) use ($activeSemester) {
-                $join->on('faculty.id', '=', 'preferences.faculty_id')
-                    ->where('preferences.active_semester_id', $activeSemester->active_semester_id);
-            })
-            ->leftJoin('course_assignments', 'preferences.course_assignment_id', '=', 'course_assignments.course_assignment_id')
-            ->leftJoin('courses', 'course_assignments.course_id', '=', 'courses.course_id')
-            ->select('faculty.*', 'preferences.*', 'course_assignments.*', 'courses.*')
-            ->get();
-
-        $facultyPreferences = $faculty->groupBy('id')->map(function ($facultyGroup) use ($activeSemester) {
-            $faculty = $facultyGroup->first();
-            $facultyUser = $faculty->user;
-            $preferenceSetting = $faculty->preferenceSetting;
-
-            $courses = $facultyGroup->map(function ($preference) {
-                if ($preference->course_assignment_id) {
-                    return [
-                        'course_assignment_id' => $preference->course_assignment_id ?? 'N/A',
-                        'course_details' => [
-                            'course_id' => $preference->course_id ?? 'N/A',
-                            'course_code' => $preference->course_code ?? null,
-                            'course_title' => $preference->course_title ?? null,
-                        ],
-                        'lec_hours' => $preference->lec_hours ?? 'N/A',
-                        'lab_hours' => $preference->lab_hours ?? 'N/A',
-                        'units' => $preference->units ?? 'N/A',
-                        'preferred_day' => $preference->preferred_day,
-                        'preferred_start_time' => $preference->preferred_start_time,
-                        'preferred_end_time' => $preference->preferred_end_time,
-                        // Ensure created_at and updated_at are formatted safely
-                        'created_at' => $preference->created_at ? Carbon\Carbon::parse($preference->created_at)->toDateTimeString() : 'N/A',
-                        'updated_at' => $preference->updated_at ? Carbon\Carbon::parse($preference->updated_at)->toDateTimeString() : 'N/A',
-                    ];
-                }
-                return [];
-            })->filter();
-
-            return [
-                'faculty_id' => $faculty->id,
-                'faculty_name' => $facultyUser->name ?? 'N/A',
-                'faculty_code' => $facultyUser->code ?? 'N/A',
-                'faculty_type' => $faculty->faculty_type ?? 'N/A',
-                'faculty_units' => $faculty->faculty_units,
-                'is_enabled' => (int) ($preferenceSetting->is_enabled ?? 0),
-                'active_semesters' => [
-                    [
-                        'active_semester_id' => $activeSemester->active_semester_id,
-                        'academic_year_id' => $activeSemester->academic_year_id,
-                        'academic_year' => $activeSemester->academicYear->year_start . '-' . $activeSemester->academicYear->year_end,
-                        'semester_id' => $activeSemester->semester_id,
-                        'semester_label' => $this->getSemesterLabel($activeSemester->semester_id),
-                        'courses' => $courses->toArray(),
-                        'end_date' => $preferenceSetting && $preferenceSetting->end_date ? Carbon\Carbon::parse($preferenceSetting->end_date)->toDateString() : null,
-                    ],
-                ],
-            ];
-        })->values();
-
-        return response()->json([
-            'preferences' => $facultyPreferences,
-        ], 200, [], JSON_PRETTY_PRINT);
-    }
-
     public function getPreferences()
     {
         $preferences = Preference::with([
@@ -268,6 +193,7 @@ class PreferenceController extends Controller
                 return 'Unknown Semester';
         }
     }
+
     public function findFacultyByCourseCode(Request $request)
     {
 
@@ -466,15 +392,90 @@ class PreferenceController extends Controller
         ], 200, [], JSON_PRETTY_PRINT);
     }
 
+    public function getPreferencesForActiveSemester()
+    {
+        $activeSemester = ActiveSemester::with(['academicYear', 'semester'])
+            ->where('is_active', 1)
+            ->first();
+
+        if (!$activeSemester) {
+            return response()->json(['error' => 'No active semester found'], 404);
+        }
+
+        // Fetch all faculty and their preferences (if any)
+        $faculty = Faculty::with(['user', 'preferenceSetting'])
+            ->leftJoin('preferences', function ($join) use ($activeSemester) {
+                $join->on('faculty.id', '=', 'preferences.faculty_id')
+                    ->where('preferences.active_semester_id', $activeSemester->active_semester_id);
+            })
+            ->leftJoin('course_assignments', 'preferences.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->leftJoin('courses', 'course_assignments.course_id', '=', 'courses.course_id')
+            ->select('faculty.*', 'preferences.*', 'course_assignments.*', 'courses.*')
+            ->get();
+
+        $facultyPreferences = $faculty->groupBy('id')->map(function ($facultyGroup) use ($activeSemester) {
+            $faculty = $facultyGroup->first();
+            $facultyUser = $faculty->user;
+            $preferenceSetting = $faculty->preferenceSetting;
+
+            $courses = $facultyGroup->map(function ($preference) {
+                if ($preference->course_assignment_id) {
+                    return [
+                        'course_assignment_id' => $preference->course_assignment_id ?? 'N/A',
+                        'course_details' => [
+                            'course_id' => $preference->course_id ?? 'N/A',
+                            'course_code' => $preference->course_code ?? null,
+                            'course_title' => $preference->course_title ?? null,
+                        ],
+                        'lec_hours' => $preference->lec_hours ?? 'N/A',
+                        'lab_hours' => $preference->lab_hours ?? 'N/A',
+                        'units' => $preference->units ?? 'N/A',
+                        'preferred_day' => $preference->preferred_day,
+                        'preferred_start_time' => $preference->preferred_start_time,
+                        'preferred_end_time' => $preference->preferred_end_time,
+                        // Updated to use global_deadline
+                        'created_at' => $preference->created_at ? Carbon::parse($preference->created_at)->toDateTimeString() : 'N/A',
+                        'updated_at' => $preference->updated_at ? Carbon::parse($preference->updated_at)->toDateTimeString() : 'N/A',
+                    ];
+                }
+                return [];
+            })->filter();
+
+            return [
+                'faculty_id' => $faculty->id,
+                'faculty_name' => $facultyUser->name ?? 'N/A',
+                'faculty_code' => $facultyUser->code ?? 'N/A',
+                'faculty_type' => $faculty->faculty_type ?? 'N/A',
+                'faculty_units' => $faculty->faculty_units,
+                'is_enabled' => (int) ($preferenceSetting->is_enabled ?? 0),
+                'active_semesters' => [
+                    [
+                        'active_semester_id' => $activeSemester->active_semester_id,
+                        'academic_year_id' => $activeSemester->academic_year_id,
+                        'academic_year' => $activeSemester->academicYear->year_start . '-' . $activeSemester->academicYear->year_end,
+                        'semester_id' => $activeSemester->semester_id,
+                        'semester_label' => $this->getSemesterLabel($activeSemester->semester_id),
+                        'courses' => $courses->toArray(),
+                        'global_deadline' => $preferenceSetting && $preferenceSetting->global_deadline ? Carbon::parse($preferenceSetting->global_deadline)->toDateString() : null,
+                    ],
+                ],
+            ];
+        })->values();
+
+        return response()->json([
+            'preferences' => $facultyPreferences,
+        ], 200, [], JSON_PRETTY_PRINT);
+    }
+
     public function toggleAllPreferences(Request $request)
     {
         $validated = $request->validate([
             'status' => 'required|boolean',
-            'end_date' => 'nullable|date|after:today',
+            'global_deadline' => 'nullable|date|after:today',
         ]);
 
-        // Clear end_date if preferences are being disabled
-        $endDate = $validated['status'] ? $validated['end_date'] : null;
+        // Clear global_deadline if preferences are being disabled
+        $global_deadline = $validated['status'] ? $validated['global_deadline'] : null;
 
         $facultyList = Faculty::with('user')
             ->whereHas('user', function ($query) {
@@ -487,15 +488,14 @@ class PreferenceController extends Controller
                 ['faculty_id' => $faculty->id],
                 [
                     'is_enabled' => $validated['status'],
-                    'end_date' => $endDate,
+                    'global_deadline' => $global_deadline,
                 ]
             );
         }
 
-        // Update all preference settings with the new status and end date
         PreferencesSetting::query()->update([
             'is_enabled' => $validated['status'],
-            'end_date' => $endDate,
+            'global_deadline' => $global_deadline,
         ]);
 
         $updatedPreferencesSettings = PreferencesSetting::all();
@@ -503,7 +503,7 @@ class PreferenceController extends Controller
         return response()->json([
             'message' => 'All preferences settings updated successfully',
             'status' => $validated['status'],
-            'end_date' => $endDate,
+            'global_deadline' => $global_deadline,
             'updated_preferences' => $updatedPreferencesSettings,
         ], 200);
     }

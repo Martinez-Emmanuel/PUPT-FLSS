@@ -17,7 +17,6 @@ import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE, NativeDateAdapter } from '@angular/material/core';
 
-
 import { ReportGenerationService } from '../../core/services/admin/report-generation/report-generation.service';
 import { PreferencesService } from '../../core/services/faculty/preference/preferences.service';
 import { OverviewService } from '../../core/services/admin/overview/overview.service';
@@ -28,7 +27,7 @@ export interface DialogActionData {
   academicYear: string;
   semester: string;
   hasSecondaryText?: boolean;
-  submissionDeadline?: Date | null;
+  global_deadline?: Date | null;
 }
 
 export const MY_DATE_FORMATS = {
@@ -98,7 +97,7 @@ export class DialogActionComponent {
     private reportGenerationService: ReportGenerationService
   ) {
     this.initializeDialogContent();
-    this.submissionDeadline = this.data.submissionDeadline || null;
+    this.submissionDeadline = this.data.global_deadline || null;
     if (this.submissionDeadline) {
       this.calculateRemainingDays();
     }

@@ -230,8 +230,8 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   onToggleAllChange(event: MatSlideToggleChange): void {
     event.source.checked = this.isToggleAllChecked;
 
-    const existingDeadline = this.allData[0]?.active_semesters?.[0]?.end_date
-      ? new Date(this.allData[0].active_semesters[0].end_date)
+    const existingDeadline = this.allData[0]?.active_semesters?.[0]?.global_deadline
+      ? new Date(this.allData[0].active_semesters[0].global_deadline)
       : null;
 
     const dialogData: DialogActionData = {
@@ -240,7 +240,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
       semester: this.allData[0]?.active_semesters?.[0]?.semester_label || '',
       currentState: this.isToggleAllChecked,
       hasSecondaryText: true,
-      submissionDeadline: existingDeadline,
+      global_deadline: existingDeadline,
     };
 
     const dialogRef = this.dialog.open(DialogActionComponent, {
