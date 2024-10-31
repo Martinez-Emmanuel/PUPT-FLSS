@@ -12,7 +12,7 @@
       <strong>{{ actionText }}</strong> all active faculty members to submit
       their
       {{
-        data.type === "preferences"
+        data.type === "all_preferences"
           ? "preferred load and schedule"
           : "official load and schedule"
       }}
@@ -52,7 +52,7 @@
     }
 
     <!--Unified Deadline Picker -->
-    @if (data.type === 'preferences') {
+    @if (data.type === 'all_preferences') {
     <div class="deadline-picker">
       <mat-form-field appearance="fill">
         <mat-label>Submission Deadline</mat-label>
@@ -130,7 +130,7 @@
       [disabled]="
         isProcessing ||
         (showReportOptions && !isReportSelectionValid()) ||
-        (data.type === 'preferences' && !submissionDeadline)
+        (data.type === 'all_preferences' && !submissionDeadline)
       "
       [ngClass]="{
         'disabled-button':

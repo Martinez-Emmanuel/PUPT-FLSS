@@ -235,7 +235,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
       : null;
 
     const dialogData: DialogActionData = {
-      type: 'preferences',
+      type: 'all_preferences',
       academicYear: this.allData[0]?.active_semesters?.[0]?.academic_year || '',
       semester: this.allData[0]?.active_semesters?.[0]?.semester_label || '',
       currentState: this.isToggleAllChecked,

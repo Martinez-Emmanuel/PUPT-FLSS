@@ -22,7 +22,7 @@ import { PreferencesService } from '../../core/services/faculty/preference/prefe
 import { OverviewService } from '../../core/services/admin/overview/overview.service';
 
 export interface DialogActionData {
-  type: 'preferences' | 'publish' | 'reports';
+  type: 'all_preferences' | 'publish' | 'reports';
   currentState: boolean;
   academicYear: string;
   semester: string;
@@ -108,7 +108,7 @@ export class DialogActionComponent {
    */
   private initializeDialogContent(): void {
     switch (this.data.type) {
-      case 'preferences':
+      case 'all_preferences':
         this.dialogTitle = 'Faculty Preferences Submission';
         this.actionText = this.data.currentState ? 'Disable' : 'Enable';
         this.navigationLink = '/admin/faculty-preferences';
@@ -150,8 +150,8 @@ export class DialogActionComponent {
     let operation$: Observable<any>;
 
     switch (this.data.type) {
-      case 'preferences':
-        operation$ = this.handlePreferencesOperation();
+      case 'all_preferences':
+        operation$ = this.handleAllPreferencesOperation();
         break;
       case 'publish':
         operation$ = this.handlePublishOperation();
@@ -212,7 +212,7 @@ export class DialogActionComponent {
   /**
    * Handles preferences toggle operation with proper date handling
    */
-  private handlePreferencesOperation(): Observable<any> {
+  private handleAllPreferencesOperation(): Observable<any> {
     const newStatus = !this.data.currentState;
 
     let formattedDate: string | null = null;
@@ -342,7 +342,7 @@ export class DialogActionComponent {
     switch (this.data.type) {
       case 'reports':
         return 'Reports generated successfully.';
-      case 'preferences':
+      case 'all_preferences':
         return `Faculty Preferences Submission ${
           !this.data.currentState ? 'enabled' : 'disabled'
         } successfully.${this.sendEmail ? ' Email notifications sent.' : ''}`;
@@ -362,7 +362,7 @@ export class DialogActionComponent {
     switch (this.data.type) {
       case 'reports':
         return 'Failed to generate reports. Please try again.';
-      case 'preferences':
+      case 'all_preferences':
         return `Failed to ${
           !this.data.currentState ? 'enable' : 'disable'
         } Faculty Preferences Submission. Please try again.`;

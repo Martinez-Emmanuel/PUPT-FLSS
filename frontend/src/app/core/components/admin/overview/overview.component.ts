@@ -157,7 +157,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
 
   togglePreferencesSubmission(): void {
     const dialogData: DialogActionData = {
-      type: 'preferences',
+      type: 'all_preferences',
       academicYear: this.activeYear,
       semester: this.activeSemester,
       currentState: this.preferencesEnabled,
