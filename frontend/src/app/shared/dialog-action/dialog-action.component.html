@@ -70,14 +70,19 @@
           [for]="picker"
         ></mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
-        <mat-hint>
-          {{
+        <mat-hint
+          [innerHTML]="
             data.currentState
-              ? "Current Submission Deadline: " + (submissionDeadline | date)
-              : "The preferences submission will close after "
-          }}
-          <strong>{{ remainingDays }} days</strong>
-        </mat-hint>
+              ? 'Current Submission Deadline: ' +
+                (submissionDeadline | date) +
+                ' <strong>(' +
+                remainingDays +
+                ' days left)</strong>'
+              : 'The preferences submission will close after <strong>' +
+                remainingDays +
+                ' days</strong>'
+          "
+        ></mat-hint>
       </mat-form-field>
     </div>
     }
