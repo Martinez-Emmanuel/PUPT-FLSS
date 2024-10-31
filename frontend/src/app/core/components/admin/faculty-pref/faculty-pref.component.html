@@ -160,9 +160,9 @@
           </th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
             <mat-slide-toggle
-              [(ngModel)]="element.is_enabled"
+              [checked]="element.is_enabled"
               [matTooltip]="getSingleToggleTooltip(element)"
-              (change)="onToggleSingleChange(element)"
+              (change)="onToggleSingleChange(element, $event)"
             >
             </mat-slide-toggle>
           </td>

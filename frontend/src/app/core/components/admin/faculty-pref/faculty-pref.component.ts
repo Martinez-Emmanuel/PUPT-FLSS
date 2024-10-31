@@ -199,8 +199,9 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     );
   }
 
-  onToggleSingleChange(faculty: Faculty): void {
-    const status = faculty.is_enabled;
+  onToggleSingleChange(faculty: Faculty, event: MatSlideToggleChange): void {
+    const status = event.checked;
+    faculty.is_enabled = status;
 
     this.preferencesService
       .toggleSingleFacultyPreferences(faculty.faculty_id, status)
@@ -217,6 +218,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
           this.cdr.markForCheck();
         },
         (error) => {
+          faculty.is_enabled = !status;
           this.snackBar.open(
             `Failed to update preference for ${faculty.facultyName}`,
             'Close',
@@ -230,7 +232,8 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   onToggleAllChange(event: MatSlideToggleChange): void {
     event.source.checked = this.isToggleAllChecked;
 
-    const existingDeadline = this.allData[0]?.active_semesters?.[0]?.global_deadline
+    const existingDeadline = this.allData[0]?.active_semesters?.[0]
+      ?.global_deadline
       ? new Date(this.allData[0].active_semesters[0].global_deadline)
       : null;
 
