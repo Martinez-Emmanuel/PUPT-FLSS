@@ -1,4 +1,5 @@
 @import "../../../styles/mixins";
+
 *,
 *::before {
   @include default-transition;
@@ -132,13 +133,9 @@
     }
 
     .custom-mat-button {
-      display: flex;
-      flex-direction: row-reverse;
-      align-items: center;
-      justify-content: center;
-      gap: var(--spacing-sm);
+      @include flex-layout($direction: row-reverse, $gap: var(--spacing-sm));
+      @include gradient-primary(315deg);
       font-weight: 600;
-      background-color: var(--primary-one);
 
       span {
         color: white;
@@ -156,6 +153,14 @@
       display: flex;
       flex-direction: column;
       gap: var(--spacing-xl);
+
+      .input-group {
+        position: relative;
+
+        &.has-error .input-container .login-input {
+          border-color: var(--primary-one);
+        }
+      }
 
       .input-container {
         position: relative;
@@ -200,7 +205,11 @@
 
           &:focus {
             outline: none;
-            border: 2px solid var(--primary-one);
+            border-color: var(--primary-one);
+          }
+
+          &.ng-invalid.ng-touched {
+            border-color: var(--primary-one);
           }
         }
       }
@@ -245,16 +254,12 @@
     }
   }
 
-  .error-message-container {
-    border: 1px solid yellow;
-  }
-
   .error-message {
     @include flex-layout;
     position: absolute;
     min-height: var(--spacing-lg);
     margin-top: var(--spacing-xxs);
-    margin-left: var(--spacing-sm);
+    left: var(--spacing-sm);
     visibility: hidden;
     overflow: hidden;
     gap: var(--spacing-xxs);

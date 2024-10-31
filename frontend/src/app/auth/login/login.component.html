@@ -65,7 +65,7 @@
             @if (code.errors?.['required']) {
             <span>Account Code is required.</span>
             } @if (code.errors?.['minlength'] || code.errors?.['maxlength']) {
-            <span>Account Code must be exactly 12 characters.</span>
+            <span>Account Code is invalid.</span>
             }
           </div>
           }
@@ -107,7 +107,7 @@
           >
             <span mat-symbol="error"></span>
             @if (password.errors?.['required']) {
-            <span>Password is required.</span>
+            <span>Account Password is required.</span>
             } @if (password.errors?.['minlength']) {
             <span>Password must be at least 8 characters.</span>
             } @if (password.errors?.['maxlength']) {
