@@ -33,7 +33,7 @@ export class OverviewService {
   }
 
   sendScheduleEmail(): Observable<any> {
-    const url = `${this.baseUrl}/email-all-schedule`;
+    const url = `${this.baseUrl}/email-all-faculty-schedule`;
     return this.http.post(url, {});
   }
 

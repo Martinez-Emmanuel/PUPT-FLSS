@@ -13,7 +13,6 @@ use App\Http\Controllers\ProgramFetchController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ScheduleController;
-use App\Http\Controllers\SchedulingController;
 use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\YearLevelController;
 use Illuminate\Http\Request;
@@ -47,12 +46,12 @@ Route::delete('/remove-duplicate-course', [ScheduleController::class, 'removeDup
 Route::get('/get-faculty', [FacultyController::class, 'getFacultyDetails']);
 Route::get('/get-rooms', [RoomController::class, 'getAllRooms']);
 
-//Email routes for scheduling
-Route::post('/email-pref-enable', [FacultyController::class, 'emailAllPrefEnable']); // Send preferences-enabled email
-Route::post('/email-pref-submitted', [FacultyController::class, 'emailPrefSubmitted']); // Send preferences submitted email
-Route::post('/email-single-schedule', [FacultyController::class, 'emailSingleSchedule']); // Send schedule for individual faculty
-Route::post('/email-all-schedule', [FacultyController::class, 'emailAllSchedule']); // Send schedule to all faculty
-Route::post('/email-single-pref-toggle', [FacultyController::class, 'emailSinglePrefToggle']);
+// Email routes
+Route::post('/email-all-faculty-preferences', [FacultyController::class, 'emailAllFacultyPreferences']);
+Route::post('/email-single-faculty-preferences', [FacultyController::class, 'emailSingleFacultyPreferences']);
+Route::post('/email-all-faculty-pref-submitted', [FacultyController::class, 'emailPrefSubmitted']);
+Route::post('/email-all-faculty-schedule', [FacultyController::class, 'emailAllFacultySchedule']);
+Route::post('/email-single-faculty-schedule', [FacultyController::class, 'emailSingleFacultySchedule']);
 
 // Scheduling Reports Routes
 Route::get('/faculty-schedules-report', [ReportsController::class, 'getFacultySchedulesReport']);

@@ -15,8 +15,8 @@ class SendFacultyPreferenceEmailJob implements ShouldQueue
 
     protected $faculty;
 
-    public $tries = 5; // Retry up to 5 times
-    public $timeout = 120; // Timeout after 120 seconds
+    public $tries = 5;
+    public $timeout = 120;
 
     /**
      * Create a new job instance.
@@ -35,17 +35,15 @@ class SendFacultyPreferenceEmailJob implements ShouldQueue
      */
     public function handle()
     {
-        // Prepare the data for the "Set and Submit Your Subject Preference" email
         $dataPreference = [
             'faculty_name' => $this->faculty->user->name,
             'email' => $this->faculty->faculty_email,
             'faculty_units' => $this->faculty->faculty_units,
         ];
 
-        // Send the email
-        Mail::send('emails.faculty_notification', $dataPreference, function ($message) use ($dataPreference) {
+        Mail::send('emails.preferences_all_open', $dataPreference, function ($message) use ($dataPreference) {
             $message->to($dataPreference['email'])
-                ->subject('Set and Submit Your Subject Preference');
+                ->subject('Faculty Load & Schedule Preferences Submission is now open');
         });
     }
 
@@ -56,7 +54,6 @@ class SendFacultyPreferenceEmailJob implements ShouldQueue
      */
     public function failed(Exception $exception)
     {
-        // Log the failure or notify the admin
         \Log::error('Failed to send preference email to faculty: ' . $this->faculty->faculty_email . ' Error: ' . $exception->getMessage());
     }
 }

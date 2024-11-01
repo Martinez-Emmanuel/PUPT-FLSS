@@ -176,7 +176,7 @@ export class PreferencesService {
    * Sends email to all faculty members to submit their preferences.
    */
   sendPreferencesEmailToAll(): Observable<any> {
-    const url = `${this.baseUrl}/email-pref-enable`;
+    const url = `${this.baseUrl}/email-all-faculty-preferences`;
     return this.http.post(url, {}).pipe(
       tap(() => {
         console.log('Preference-related email sent.');
@@ -206,7 +206,7 @@ export class PreferencesService {
    * Sends email to a specific faculty to submit their preferences.
    */
   sendPreferencesEmailToFaculty(faculty_id: number): Observable<any> {
-    const url = `${this.baseUrl}/email-single-pref-toggle`;
+    const url = `${this.baseUrl}/email-single-faculty-preferences`;
     return this.http.post(url, { faculty_id });
   }
 
