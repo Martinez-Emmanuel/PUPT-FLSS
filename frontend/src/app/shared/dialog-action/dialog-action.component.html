@@ -7,14 +7,18 @@
     <!-- Main Action Text -->
     <div class="main-text">
       <strong>{{ actionText }}</strong>
-      @if (data.type === 'all_preferences') {
+      @if (data.type === 'all_preferences' || data.type === 'publish' ) {
       <span>
-        load and schedule preferences submission for all active faculty members
-        this A.Y. {{ data.academicYear }}, {{ data.semester }}.
+        {{
+          data.type === "all_preferences"
+            ? "load and schedule preferences submission for all active faculty members this"
+            : "official load and schedule for all active faculty members this"
+        }}
+        A.Y. {{ data.academicYear }}, {{ data.semester }}.
       </span>
       } @else if (data.type === 'single_preferences') {
       <span>
-        preferences submission for {{ facultyName }} this A.Y.
+        load and schedule preferences submission for {{ facultyName }} this A.Y.
         {{ data.academicYear }}, {{ data.semester }}.
       </span>
       }
@@ -109,7 +113,7 @@
           <span>
             Send email to @if (data.type === 'single_preferences') {
             {{ facultyName }}
-            } @else if (data.type === 'all_preferences') { all faculty members }
+            } @else { all faculty members }
           </span>
         </span>
       </mat-checkbox>
@@ -134,14 +138,14 @@
       (click)="confirmAction()"
       [disabled]="
         isProcessing ||
-        (showReportOptions && !isReportSelectionValid()) ||
-        submissionDeadline === null
+        (data.type === 'reports' && !isReportSelectionValid()) ||
+        (showDeadlinePicker && submissionDeadline === null)
       "
       [ngClass]="{
         'disabled-button':
           isProcessing ||
-          (showReportOptions && !isReportSelectionValid()) ||
-          !submissionDeadline
+          (data.type === 'reports' && !isReportSelectionValid()) ||
+          (showDeadlinePicker && submissionDeadline === null)
       }"
     >
       @if (!isProcessing) { Confirm } @else {
