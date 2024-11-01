@@ -1,24 +1,27 @@
 <div class="dialog-action-container">
-  <!--Dialog Action Title-->
-  <h2 class="dialog-title">
-    {{ dialogTitle }}
-  </h2>
+  <!-- Dialog Action Title -->
+  <h2 class="dialog-title">{{ dialogTitle }}</h2>
 
-  <!--Dialog Content-->
+  <!-- Dialog Content -->
   <div class="dialog-content">
-    <!--Main Action-->
-    @if (!showReportOptions) {
+    <!-- Main Action Text -->
     <div class="main-text">
-      <strong>{{ actionText }}</strong> all active faculty members to submit
-      their
-      {{
-        data.type === "all_preferences"
-          ? "preferred load and schedule"
-          : "official load and schedule"
-      }}
-      for A.Y. {{ data.academicYear }}, {{ data.semester }}.
+      <strong>{{ actionText }}</strong>
+      @if (data.type === 'all_preferences') {
+      <span>
+        load and schedule preferences submission for all active faculty members
+        this A.Y. {{ data.academicYear }}, {{ data.semester }}.
+      </span>
+      } @else if (data.type === 'single_preferences') {
+      <span>
+        preferences submission for {{ facultyName }} this A.Y.
+        {{ data.academicYear }}, {{ data.semester }}.
+      </span>
+      }
     </div>
-    } @if (showReportOptions) {
+
+    <!-- Report Options Section -->
+    @if (showReportOptions) {
     <div class="main-text">
       This will <strong>print and download</strong> an official copy of the
       schedule reports for this semester. Check all that you want to download:
@@ -51,8 +54,8 @@
     </div>
     }
 
-    <!--Unified Deadline Picker -->
-    @if (data.type === 'all_preferences') {
+    <!-- Submission Deadline Date Picker Section -->
+    @if (showDeadlinePicker) {
     <div class="deadline-picker">
       <mat-form-field appearance="fill">
         <mat-label>Submission Deadline</mat-label>
@@ -65,34 +68,30 @@
           [disabled]="data.currentState"
           required
         />
-        <mat-datepicker-toggle
-          matIconSuffix
-          [for]="picker"
-        ></mat-datepicker-toggle>
+        <mat-datepicker-toggle matIconSuffix [for]="picker">
+        </mat-datepicker-toggle>
         <mat-datepicker #picker></mat-datepicker>
-        <mat-hint
-          [innerHTML]="
-            data.currentState
-              ? 'Current Submission Deadline: ' +
-                (submissionDeadline | date) +
-                ' <strong>(' +
-                remainingDays +
-                ' days left)</strong>'
-              : 'The preferences submission will close after <strong>' +
-                remainingDays +
-                ' days</strong>'
-          "
-        ></mat-hint>
+
+        @if (data.type === 'all_preferences' || data.type ===
+        'single_preferences') {
+        <mat-hint>
+          @if (data.currentState) { Current Submission Deadline:
+          {{ submissionDeadline | date }}
+          <strong>({{ remainingDays }} days left)</strong>
+          } @else { The preferences submission will close after
+          <strong>{{ remainingDays }} days</strong>
+          }
+        </mat-hint>
+        }
       </mat-form-field>
     </div>
     }
 
-    <!-- Secondary Text -->
-    @if (!data.hasSecondaryText) {
+    <!-- Navigation Link Section -->
+    @if (data.hasSecondaryText) {
     <div class="secondary-text">
-      @if (!showReportOptions) { For specific faculty, go to } @if
-      (showReportOptions) { For a more specific view and download of reports, go
-      to the }
+      @if (!showReportOptions) { For specific faculty, go to } @else { For a
+      more specific view and download of reports, go to the }
       <a class="link" [routerLink]="navigationLink" (click)="closeDialog()">
         {{ linkText }}
       </a>
@@ -100,20 +99,24 @@
     </div>
     }
 
-    <!-- Email Notification Option -->
+    <!-- Email Notification Section -->
     @if (showEmailOption) {
     <div class="checkbox-container email">
       <mat-checkbox [(ngModel)]="sendEmail" class="email-checkbox">
         <span class="checkbox-content">
           <span mat-symbol="email"></span>
-          <span>Send email to all faculty members</span>
+          <span>
+            Send email to @if (data.type === 'single_preferences') {
+            {{ facultyName }}
+            } @else if (data.type === 'all_preferences') { all faculty members }
+          </span>
         </span>
       </mat-checkbox>
     </div>
     }
   </div>
 
-  <!--Dialog Buttons-->
+  <!-- Dialog Buttons -->
   <div class="dialog-buttons">
     <button
       mat-button
@@ -123,6 +126,7 @@
     >
       Cancel
     </button>
+
     <button
       mat-flat-button
       color="primary"
@@ -130,7 +134,7 @@
       [disabled]="
         isProcessing ||
         (showReportOptions && !isReportSelectionValid()) ||
-        (data.type === 'all_preferences' && !submissionDeadline)
+        submissionDeadline === null
       "
       [ngClass]="{
         'disabled-button':

@@ -200,33 +200,43 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   }
 
   onToggleSingleChange(faculty: Faculty, event: MatSlideToggleChange): void {
-    const status = event.checked;
-    faculty.is_enabled = status;
+    event.source.checked = faculty.is_enabled;
 
-    this.preferencesService
-      .toggleSingleFacultyPreferences(faculty.faculty_id, status)
-      .subscribe(
-        (response) => {
-          this.snackBar.open(
-            `Preferences submission ${status ? 'enabled' : 'disabled'} for ${
-              faculty.facultyName
-            }.`,
-            'Close',
-            { duration: 3000 }
+    const dialogData: DialogActionData = {
+      type: 'single_preferences',
+      academicYear: faculty.active_semesters?.[0]?.academic_year || '',
+      semester: faculty.active_semesters?.[0]?.semester_label || '',
+      currentState: faculty.is_enabled,
+      hasSecondaryText: false,
+      facultyName: faculty.facultyName,
+      faculty_id: faculty.faculty_id,
+      individual_deadline:
+        faculty.active_semesters?.[0]?.individual_deadline || null,
+    };
+
+    const dialogRef = this.dialog.open(DialogActionComponent, {
+      data: dialogData,
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        faculty.is_enabled = !faculty.is_enabled;
+
+        this.preferencesService.getPreferences().subscribe((response) => {
+          const updatedFaculty = response.preferences.find(
+            (item: any) => item.faculty_id === faculty.faculty_id
           );
+          if (updatedFaculty) {
+            faculty.active_semesters = updatedFaculty.active_semesters;
+          }
+
+          this.updateDisplayedData();
           this.checkToggleAllState();
           this.cdr.markForCheck();
-        },
-        (error) => {
-          faculty.is_enabled = !status;
-          this.snackBar.open(
-            `Failed to update preference for ${faculty.facultyName}`,
-            'Close',
-            { duration: 3000 }
-          );
-          console.error('Error updating faculty preference:', error);
-        }
-      );
+        });
+      }
+    });
   }
 
   onToggleAllChange(event: MatSlideToggleChange): void {
@@ -242,7 +252,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
       academicYear: this.allData[0]?.active_semesters?.[0]?.academic_year || '',
       semester: this.allData[0]?.active_semesters?.[0]?.semester_label || '',
       currentState: this.isToggleAllChecked,
-      hasSecondaryText: true,
+      hasSecondaryText: false,
       global_deadline: existingDeadline,
     };
 

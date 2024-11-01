@@ -27,6 +27,7 @@ export interface ActiveSemester {
   semester_label: string;
   courses: Course[];
   global_deadline?: Date | null;
+  individual_deadline?: Date | null;
 }
 
 export interface SemesterDetails {
@@ -185,13 +186,19 @@ export class PreferencesService {
 
   /**
    * Toggles the preference status for a specific faculty member.
+   * Now accepts an optional individual_deadline parameter.
    */
   toggleSingleFacultyPreferences(
     faculty_id: number,
-    status: boolean
+    status: boolean,
+    individual_deadline?: string | null // Added individual_deadline
   ): Observable<any> {
     return this.http
-      .post(`${this.baseUrl}/toggle-preferences-single`, { faculty_id, status })
+      .post(`${this.baseUrl}/toggle-preferences-single`, {
+        faculty_id,
+        status,
+        individual_deadline, // Send individual_deadline to backend
+      })
       .pipe(tap(() => this.clearCaches()));
   }
 

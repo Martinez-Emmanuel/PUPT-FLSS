@@ -22,12 +22,15 @@ import { PreferencesService } from '../../core/services/faculty/preference/prefe
 import { OverviewService } from '../../core/services/admin/overview/overview.service';
 
 export interface DialogActionData {
-  type: 'all_preferences' | 'publish' | 'reports';
+  type: 'all_preferences' | 'single_preferences' | 'publish' | 'reports';
   currentState: boolean;
-  academicYear: string;
-  semester: string;
+  academicYear?: string;
+  semester?: string;
   hasSecondaryText?: boolean;
   global_deadline?: Date | null;
+  individual_deadline?: Date | null;
+  facultyName?: string;
+  faculty_id?: number;
 }
 
 export const MY_DATE_FORMATS = {
@@ -88,6 +91,9 @@ export class DialogActionComponent {
     rooms: false,
   };
 
+  showDeadlinePicker = false;
+  facultyName: string = '';
+
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: DialogActionData,
     private dialogRef: MatDialogRef<DialogActionComponent>,
@@ -97,7 +103,16 @@ export class DialogActionComponent {
     private reportGenerationService: ReportGenerationService
   ) {
     this.initializeDialogContent();
-    this.submissionDeadline = this.data.global_deadline || null;
+
+    if (this.data.type === 'all_preferences') {
+      this.submissionDeadline = this.data.global_deadline || null;
+      this.showDeadlinePicker = true;
+    } else if (this.data.type === 'single_preferences') {
+      this.submissionDeadline = this.data.individual_deadline || null;
+      this.facultyName = this.data.facultyName || '';
+      this.showDeadlinePicker = true;
+    }
+
     if (this.submissionDeadline) {
       this.calculateRemainingDays();
     }
@@ -134,6 +149,16 @@ export class DialogActionComponent {
         this.showEmailOption = false;
         this.showReportOptions = true;
         break;
+
+      case 'single_preferences':
+        this.dialogTitle = `Faculty Preferences Submission`;
+        this.actionText = this.data.currentState ? 'Disable' : 'Enable';
+        this.navigationLink = '/admin/faculty-preferences';
+        this.linkText = 'Faculty Preferences';
+        this.showEmailOption = !this.data.currentState;
+        this.showReportOptions = false;
+        this.showDeadlinePicker = true;
+        break;
     }
   }
 
@@ -155,6 +180,9 @@ export class DialogActionComponent {
         break;
       case 'publish':
         operation$ = this.handlePublishOperation();
+        break;
+      case 'single_preferences':
+        operation$ = this.handleSinglePreferenceOperation();
         break;
       default:
         operation$ = of(null);
@@ -207,6 +235,33 @@ export class DialogActionComponent {
   public onDeadlineChange(event: any): void {
     this.submissionDeadline = event.value;
     this.calculateRemainingDays();
+  }
+  /**
+   * Handles the single preference toggle operation
+   */
+  private handleSinglePreferenceOperation(): Observable<any> {
+    const newStatus = !this.data.currentState;
+
+    let formattedDate: string | null = null;
+    if (newStatus && this.submissionDeadline) {
+      const date = new Date(this.submissionDeadline);
+      date.setHours(23, 59, 59, 999);
+      formattedDate = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
+      console.log('Sending individual deadline to backend:', formattedDate);
+    }
+
+    return this.preferencesService
+      .toggleSingleFacultyPreferences(
+        this.data.faculty_id!,
+        newStatus,
+        formattedDate
+      )
+      .pipe(
+        switchMap(() => {
+          // Implement email sending for single faculty here
+          return of(null);
+        })
+      );
   }
 
   /**
@@ -350,6 +405,12 @@ export class DialogActionComponent {
         return `Faculty Load and Schedule ${
           !this.data.currentState ? 'published' : 'unpublished'
         } successfully.${this.sendEmail ? ' Email notifications sent.' : ''}`;
+      case 'single_preferences':
+        return `Faculty Preferences Submission for ${this.facultyName} ${
+          !this.data.currentState ? 'enabled' : 'disabled'
+        } successfully.${
+          this.sendEmail ? ` Email sent to ${this.facultyName}.` : ''
+        }`;
       default:
         return 'Operation completed successfully.';
     }
@@ -370,6 +431,12 @@ export class DialogActionComponent {
         return `Failed to ${
           !this.data.currentState ? 'publish' : 'unpublish'
         } Faculty Load and Schedule. Please try again.`;
+      case 'single_preferences':
+        return `Failed to ${
+          !this.data.currentState ? 'enable' : 'disable'
+        } Faculty Preferences Submission for ${
+          this.facultyName
+        }. Please try again.`;
       default:
         return 'Operation failed. Please try again.';
     }

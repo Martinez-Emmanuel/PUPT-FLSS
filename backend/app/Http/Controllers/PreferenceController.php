@@ -433,7 +433,6 @@ class PreferenceController extends Controller
                         'preferred_day' => $preference->preferred_day,
                         'preferred_start_time' => $preference->preferred_start_time,
                         'preferred_end_time' => $preference->preferred_end_time,
-                        // Updated to use global_deadline
                         'created_at' => $preference->created_at ? Carbon::parse($preference->created_at)->toDateTimeString() : 'N/A',
                         'updated_at' => $preference->updated_at ? Carbon::parse($preference->updated_at)->toDateTimeString() : 'N/A',
                     ];
@@ -455,8 +454,9 @@ class PreferenceController extends Controller
                         'academic_year' => $activeSemester->academicYear->year_start . '-' . $activeSemester->academicYear->year_end,
                         'semester_id' => $activeSemester->semester_id,
                         'semester_label' => $this->getSemesterLabel($activeSemester->semester_id),
-                        'courses' => $courses->toArray(),
                         'global_deadline' => $preferenceSetting && $preferenceSetting->global_deadline ? Carbon::parse($preferenceSetting->global_deadline)->toDateString() : null,
+                        'individual_deadline' => $preferenceSetting && $preferenceSetting->individual_deadline ? Carbon::parse($preferenceSetting->individual_deadline)->toDateString() : null,
+                        'courses' => $courses->toArray(),
                     ],
                 ],
             ];
@@ -513,15 +513,16 @@ class PreferenceController extends Controller
         $validated = $request->validate([
             'faculty_id' => 'required|integer|exists:faculty,id',
             'status' => 'required|boolean',
+            'individual_deadline' => 'nullable|date|after:today',
         ]);
 
-        $preferenceSetting = PreferencesSetting::firstOrCreate(
+        $preferenceSetting = PreferencesSetting::updateOrCreate(
             ['faculty_id' => $validated['faculty_id']],
-            ['is_enabled' => $validated['status']]
+            [
+                'is_enabled' => $validated['status'],
+                'individual_deadline' => $validated['individual_deadline'] ?? null,
+            ]
         );
-
-        $preferenceSetting->is_enabled = $validated['status'];
-        $preferenceSetting->save();
 
         return response()->json([
             'message' => 'Preference setting updated successfully for faculty',
