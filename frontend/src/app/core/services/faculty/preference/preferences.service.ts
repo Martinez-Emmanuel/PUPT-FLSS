@@ -94,7 +94,7 @@ export class PreferencesService {
   }
 
   /**
-   * Retrieves the current user preferences.
+   * Retrieves the current faculty preferences.
    * Uses ReplaySubject to cache the preferences data.
    */
   getPreferences(): Observable<any> {
@@ -173,9 +173,9 @@ export class PreferencesService {
   }
 
   /**
-   * Sends a preference-related email.
+   * Sends email to all faculty members to submit their preferences.
    */
-  sendPrefEmail(): Observable<any> {
+  sendPreferencesEmailToAll(): Observable<any> {
     const url = `${this.baseUrl}/email-pref-enable`;
     return this.http.post(url, {}).pipe(
       tap(() => {
@@ -191,13 +191,13 @@ export class PreferencesService {
   toggleSingleFacultyPreferences(
     faculty_id: number,
     status: boolean,
-    individual_deadline?: string | null // Added individual_deadline
+    individual_deadline?: string | null
   ): Observable<any> {
     return this.http
       .post(`${this.baseUrl}/toggle-preferences-single`, {
         faculty_id,
         status,
-        individual_deadline, // Send individual_deadline to backend
+        individual_deadline,
       })
       .pipe(tap(() => this.clearCaches()));
   }

@@ -108,7 +108,7 @@ export class DialogActionComponent {
       this.submissionDeadline = this.data.global_deadline || null;
       this.showDeadlinePicker = true;
     } else if (this.data.type === 'single_preferences') {
-      this.submissionDeadline = this.data.individual_deadline || null;
+      this.submissionDeadline = this.data.individual_deadline || this.data.global_deadline || null;
       this.facultyName = this.data.facultyName || '';
       this.showDeadlinePicker = true;
     }
@@ -236,6 +236,7 @@ export class DialogActionComponent {
     this.submissionDeadline = event.value;
     this.calculateRemainingDays();
   }
+
   /**
    * Handles the single preference toggle operation
    */
@@ -258,7 +259,7 @@ export class DialogActionComponent {
       )
       .pipe(
         switchMap(() => {
-          // Implement email sending for single faculty here
+          // Implement email sending for single faculty here if needed
           return of(null);
         })
       );
@@ -271,7 +272,7 @@ export class DialogActionComponent {
     const newStatus = !this.data.currentState;
 
     let formattedDate: string | null = null;
-    if (this.submissionDeadline) {
+    if (newStatus && this.submissionDeadline) {
       const date = new Date(this.submissionDeadline);
       date.setHours(23, 59, 59, 999);
       formattedDate = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
@@ -283,7 +284,7 @@ export class DialogActionComponent {
       .pipe(
         switchMap(() => {
           if (this.sendEmail && newStatus) {
-            return this.preferencesService.sendPrefEmail();
+            return this.preferencesService.sendPreferencesEmailToAll();
           }
           return of(null);
         })
@@ -295,7 +296,6 @@ export class DialogActionComponent {
    */
   private handlePublishOperation(): Observable<any> {
     const newStatus = !this.data.currentState;
-    // Assuming toggleAllSchedules remains in OverviewService
     return this.overviewService.toggleAllSchedules(newStatus).pipe(
       switchMap(() => {
         if (this.sendEmail && newStatus) {
@@ -398,15 +398,15 @@ export class DialogActionComponent {
       case 'reports':
         return 'Reports generated successfully.';
       case 'all_preferences':
-        return `Faculty Preferences Submission ${
+        return `Preferences Submission ${
           !this.data.currentState ? 'enabled' : 'disabled'
         } successfully.${this.sendEmail ? ' Email notifications sent.' : ''}`;
       case 'publish':
-        return `Faculty Load and Schedule ${
+        return `Load and Schedule ${
           !this.data.currentState ? 'published' : 'unpublished'
         } successfully.${this.sendEmail ? ' Email notifications sent.' : ''}`;
       case 'single_preferences':
-        return `Faculty Preferences Submission for ${this.facultyName} ${
+        return `Preferences Submission for ${this.facultyName} ${
           !this.data.currentState ? 'enabled' : 'disabled'
         } successfully.${
           this.sendEmail ? ` Email sent to ${this.facultyName}.` : ''
@@ -426,15 +426,15 @@ export class DialogActionComponent {
       case 'all_preferences':
         return `Failed to ${
           !this.data.currentState ? 'enable' : 'disable'
-        } Faculty Preferences Submission. Please try again.`;
+        } Preferences Submission. Please try again.`;
       case 'publish':
         return `Failed to ${
           !this.data.currentState ? 'publish' : 'unpublish'
-        } Faculty Load and Schedule. Please try again.`;
+        } Load and Schedule. Please try again.`;
       case 'single_preferences':
         return `Failed to ${
           !this.data.currentState ? 'enable' : 'disable'
-        } Faculty Preferences Submission for ${
+        } Preferences Submission for ${
           this.facultyName
         }. Please try again.`;
       default:

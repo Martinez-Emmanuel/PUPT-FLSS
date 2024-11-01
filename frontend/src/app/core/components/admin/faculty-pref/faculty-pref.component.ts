@@ -199,47 +199,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     );
   }
 
-  onToggleSingleChange(faculty: Faculty, event: MatSlideToggleChange): void {
-    event.source.checked = faculty.is_enabled;
-
-    const dialogData: DialogActionData = {
-      type: 'single_preferences',
-      academicYear: faculty.active_semesters?.[0]?.academic_year || '',
-      semester: faculty.active_semesters?.[0]?.semester_label || '',
-      currentState: faculty.is_enabled,
-      hasSecondaryText: false,
-      facultyName: faculty.facultyName,
-      faculty_id: faculty.faculty_id,
-      individual_deadline:
-        faculty.active_semesters?.[0]?.individual_deadline || null,
-    };
-
-    const dialogRef = this.dialog.open(DialogActionComponent, {
-      data: dialogData,
-      disableClose: true,
-    });
-
-    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
-      if (confirmed) {
-        faculty.is_enabled = !faculty.is_enabled;
-
-        this.preferencesService.getPreferences().subscribe((response) => {
-          const updatedFaculty = response.preferences.find(
-            (item: any) => item.faculty_id === faculty.faculty_id
-          );
-          if (updatedFaculty) {
-            faculty.active_semesters = updatedFaculty.active_semesters;
-          }
-
-          this.updateDisplayedData();
-          this.checkToggleAllState();
-          this.cdr.markForCheck();
-        });
-      }
-    });
-  }
-
-  onToggleAllChange(event: MatSlideToggleChange): void {
+  onToggleAllPreferences(event: MatSlideToggleChange): void {
     event.source.checked = this.isToggleAllChecked;
 
     const existingDeadline = this.allData[0]?.active_semesters?.[0]
@@ -259,6 +219,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     const dialogRef = this.dialog.open(DialogActionComponent, {
       data: dialogData,
       disableClose: true,
+      autoFocus: false,
     });
 
     dialogRef.afterClosed().subscribe((confirmed: boolean) => {
@@ -270,6 +231,50 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
         this.isToggleAllChecked = newStatus;
         this.updateDisplayedData();
         this.cdr.markForCheck();
+      }
+    });
+  }
+
+  onToggleSinglePreferences(
+    faculty: Faculty,
+    event: MatSlideToggleChange
+  ): void {
+    event.source.checked = faculty.is_enabled;
+
+    const dialogData: DialogActionData = {
+      type: 'single_preferences',
+      academicYear: faculty.active_semesters?.[0]?.academic_year || '',
+      semester: faculty.active_semesters?.[0]?.semester_label || '',
+      currentState: faculty.is_enabled,
+      hasSecondaryText: false,
+      facultyName: faculty.facultyName,
+      faculty_id: faculty.faculty_id,
+      individual_deadline:
+        faculty.active_semesters?.[0]?.individual_deadline || null,
+    };
+
+    const dialogRef = this.dialog.open(DialogActionComponent, {
+      data: dialogData,
+      disableClose: true,
+      autoFocus: false,
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        faculty.is_enabled = !faculty.is_enabled;
+
+        this.preferencesService.getPreferences().subscribe((response) => {
+          const updatedFaculty = response?.preferences?.find(
+            (item: any) => item.faculty_id === faculty.faculty_id
+          );
+          if (updatedFaculty) {
+            faculty.active_semesters = updatedFaculty.active_semesters;
+          }
+
+          this.updateDisplayedData();
+          this.checkToggleAllState();
+          this.cdr.markForCheck();
+        });
       }
     });
   }
@@ -560,6 +565,10 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   }
 
   getSingleToggleTooltip(faculty: Faculty): string {
+    if (this.isToggleAllChecked) {
+      return `Global preferences submission is active 
+      – individual changes disabled`;
+    }
     return `${
       faculty.is_enabled ? 'Disable' : 'Enable'
     } preferences submission for ${faculty.facultyName}`;

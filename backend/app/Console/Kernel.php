@@ -13,8 +13,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         $schedule->command('preferences:check-deadline')
-            ->everyMinute()
-        // ->dailyAt('00:01')
+        // ->everyMinute()
+            ->dailyAt('00:01')
             ->timezone('Asia/Manila');
     }
 

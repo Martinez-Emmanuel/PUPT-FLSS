@@ -66,6 +66,7 @@
           [(ngModel)]="submissionDeadline"
           (dateChange)="onDeadlineChange($event)"
           [disabled]="data.currentState"
+          readonly
           required
         />
         <mat-datepicker-toggle matIconSuffix [for]="picker">
