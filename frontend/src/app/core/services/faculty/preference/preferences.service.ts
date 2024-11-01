@@ -203,6 +203,14 @@ export class PreferencesService {
   }
 
   /**
+   * Sends email to a specific faculty to submit their preferences.
+   */
+  sendPreferencesEmailToFaculty(faculty_id: number): Observable<any> {
+    const url = `${this.baseUrl}/email-single-pref-toggle`;
+    return this.http.post(url, { faculty_id });
+  }
+
+  /**
    * Updates the preferences cache by fetching the latest data.
    */
   public updatePreferencesCache(): void {

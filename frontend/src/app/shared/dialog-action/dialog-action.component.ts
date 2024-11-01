@@ -260,7 +260,19 @@ export class DialogActionComponent {
       )
       .pipe(
         switchMap(() => {
-          // Implement email sending for single faculty here if needed
+          if (this.sendEmail) {
+            return this.preferencesService
+              .sendPreferencesEmailToFaculty(this.data.faculty_id!)
+              .pipe(
+                tap(() => {
+                  this.snackBar.open(
+                    `Email sent to ${this.data.facultyName}`,
+                    'Close',
+                    { duration: 3000 }
+                  );
+                })
+              );
+          }
           return of(null);
         })
       );

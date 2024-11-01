@@ -48,10 +48,11 @@ Route::get('/get-faculty', [FacultyController::class, 'getFacultyDetails']);
 Route::get('/get-rooms', [RoomController::class, 'getAllRooms']);
 
 //Email routes for scheduling
-Route::post('/email-pref-enable', [FacultyController::class, 'emailPrefEnable']); // Send preferences-enabled email
+Route::post('/email-pref-enable', [FacultyController::class, 'emailAllPrefEnable']); // Send preferences-enabled email
 Route::post('/email-pref-submitted', [FacultyController::class, 'emailPrefSubmitted']); // Send preferences submitted email
 Route::post('/email-single-schedule', [FacultyController::class, 'emailSingleSchedule']); // Send schedule for individual faculty
 Route::post('/email-all-schedule', [FacultyController::class, 'emailAllSchedule']); // Send schedule to all faculty
+Route::post('/email-single-pref-toggle', [FacultyController::class, 'emailSinglePrefToggle']);
 
 // Scheduling Reports Routes
 Route::get('/faculty-schedules-report', [ReportsController::class, 'getFacultySchedulesReport']);

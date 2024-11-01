@@ -35,7 +35,7 @@ class FacultyController extends Controller
         return response()->json(['faculty' => $response], 200);
     }
 
-    public function emailPrefEnable()
+    public function emailAllPrefEnable()
     {
         // Retrieve all faculties from the database
         $faculties = Faculty::all();
@@ -125,6 +125,34 @@ class FacultyController extends Controller
 
         // Return a response after the jobs are dispatched
         return response()->json(['message' => 'Emails are being sent asynchronously'], 200);
+    }
+
+    public function emailSinglePrefToggle(Request $request)
+    {
+        $facultyId = $request->input('faculty_id');
+
+        $faculty = Faculty::find($facultyId);
+
+        if ($faculty) {
+            // Send email to the faculty regarding preference status change
+            $this->sendPreferenceToggleNotification($faculty);
+            return response()->json(['message' => 'Preference status notification sent successfully'], 200);
+        } else {
+            return response()->json(['message' => 'Faculty not found'], 404);
+        }
+    }
+
+    protected function sendPreferenceToggleNotification($faculty)
+    {
+        $data = [
+            'faculty_name' => $faculty->user->name,
+            'email' => $faculty->faculty_email,
+        ];
+
+        Mail::send('emails.preference_toggle', $data, function ($message) use ($data) {
+            $message->to($data['email'])
+                ->subject('Preferences Submission Update');
+        });
     }
 
 }
