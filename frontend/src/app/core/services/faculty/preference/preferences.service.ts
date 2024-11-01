@@ -205,7 +205,7 @@ export class PreferencesService {
   /**
    * Updates the preferences cache by fetching the latest data.
    */
-  private updatePreferencesCache(): void {
+  public updatePreferencesCache(): void {
     const url = `${this.baseUrl}/view-preferences`;
     this.http.get(url).subscribe((response) => {
       this.preferencesCacheSubject.next(response);

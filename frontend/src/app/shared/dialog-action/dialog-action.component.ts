@@ -3,8 +3,8 @@ import { RouterLink } from '@angular/router';
 import { CommonModule, formatDate } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { of, Observable } from 'rxjs';
-import { switchMap, finalize } from 'rxjs/operators';
+import { forkJoin, of, Observable } from 'rxjs';
+import { switchMap, finalize, tap } from 'rxjs/operators';
 
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -108,7 +108,8 @@ export class DialogActionComponent {
       this.submissionDeadline = this.data.global_deadline || null;
       this.showDeadlinePicker = true;
     } else if (this.data.type === 'single_preferences') {
-      this.submissionDeadline = this.data.individual_deadline || this.data.global_deadline || null;
+      this.submissionDeadline =
+        this.data.individual_deadline || this.data.global_deadline || null;
       this.facultyName = this.data.facultyName || '';
       this.showDeadlinePicker = true;
     }
@@ -279,16 +280,24 @@ export class DialogActionComponent {
       console.log('Sending date to backend:', formattedDate);
     }
 
-    return this.preferencesService
+    const togglePreferences$ = this.preferencesService
       .toggleAllPreferences(newStatus, formattedDate)
       .pipe(
-        switchMap(() => {
-          if (this.sendEmail && newStatus) {
-            return this.preferencesService.sendPreferencesEmailToAll();
-          }
-          return of(null);
+        tap(() => {
+          this.preferencesService.updatePreferencesCache();
         })
       );
+
+    const emailNotification$ =
+      this.sendEmail && newStatus
+        ? this.preferencesService.sendPreferencesEmailToAll()
+        : of(null);
+
+    return forkJoin([togglePreferences$, emailNotification$]).pipe(
+      tap(() => {
+        this.preferencesService.updatePreferencesCache();
+      })
+    );
   }
 
   /**
@@ -434,9 +443,7 @@ export class DialogActionComponent {
       case 'single_preferences':
         return `Failed to ${
           !this.data.currentState ? 'enable' : 'disable'
-        } Preferences Submission for ${
-          this.facultyName
-        }. Please try again.`;
+        } Preferences Submission for ${this.facultyName}. Please try again.`;
       default:
         return 'Operation failed. Please try again.';
     }
