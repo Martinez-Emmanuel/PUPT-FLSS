@@ -4,6 +4,10 @@
   @include reset-styles;
 }
 
+:host {
+  @include custom-spinner(var(--secondary-text));
+}
+
 .faculty-preferences-container {
   @include flex-layout(
     $direction: column,
@@ -200,11 +204,7 @@
       margin-bottom: var(--spacing-xs);
       border-radius: var(--border-radius-sm);
       cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-
-      &:hover {
-        transform: scale(0.98);
-      }
+      transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
       &:active {
         transform: scale(0.96);
@@ -219,6 +219,7 @@
 
       .course-code,
       .program-code {
+        @include default-transition;
         font-weight: 600;
         font-size: var(--font-size-md);
         color: var(--neutral-base);
@@ -240,6 +241,7 @@
 
 /* Preferences Table Styling */
 #table_container {
+  @include default-transition;
   @include hide-scrollbar;
   @include flex-layout($direction: column, $align: none, $justify: none);
   flex: 5;
@@ -247,6 +249,7 @@
   background-color: var(--neutral-light);
 
   .table-main {
+    @include default-transition;
     width: 100%;
     background-color: var(--neutral-light);
     table-layout: fixed;
@@ -260,6 +263,7 @@
   }
 
   .table-cell {
+    @include default-transition;
     padding: var(--spacing-sm);
     text-wrap: wrap;
     text-align: center;
@@ -302,6 +306,7 @@
   }
 
   .table-footer {
+    @include default-transition;
     @include flex-layout($justify: space-between, $gap: var(--spacing-xs));
     @include sticky;
     margin-top: auto;

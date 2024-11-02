@@ -1,14 +1,12 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { forkJoin, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 
 import { MatTableModule } from '@angular/material/table';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSelectModule } from '@angular/material/select';
-import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -24,7 +22,7 @@ import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { TableDialogComponent } from '../../../../shared/table-dialog/table-dialog.component';
 import { DialogTimeComponent } from '../../../../shared/dialog-time/dialog-time.component';
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
-import { DialogConfirmPrefComponent } from '../../../../shared/dialog-confirm-pref/dialog-confirm-pref.component';
+import { DialogPrefSuccessComponent } from '../../../../shared/dialog-pref-success/dialog-pref-success.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { ThemeService } from '../../../services/theme/theme.service';
@@ -47,15 +45,13 @@ interface TableData extends Course {
     FormsModule,
     TableDialogComponent,
     DialogTimeComponent,
-    DialogConfirmPrefComponent,
+    DialogPrefSuccessComponent,
     LoadingComponent,
     TimeFormatPipe,
     MatSymbolDirective,
     MatTableModule,
     MatButtonModule,
     MatIconModule,
-    MatSelectModule,
-    MatOptionModule,
     MatFormFieldModule,
     MatInputModule,
     MatTooltipModule,
@@ -75,6 +71,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   showProgramSelection = true;
   isDarkMode = false;
   isLoading = true;
+  isSubmitting = false;
 
   academicYear: string = '';
   semesterLabel: string = '';
@@ -117,6 +114,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
 
   isPreferencesEnabled: boolean = true;
   activeSemesterId: number | null = null;
+  deadline: string | null = null;
 
   constructor(
     private readonly themeService: ThemeService,
@@ -191,16 +189,14 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
           if (facultyPreference) {
             this.isPreferencesEnabled = facultyPreference.is_enabled === 1;
 
-            const preferences = facultyPreference.active_semesters.flatMap(
-              (semester: any) => {
-                this.activeSemesterId = semester.active_semester_id;
-                this.academicYear = semester.academic_year;
-                this.semesterLabel = semester.semester_label;
-                return semester.courses;
-              }
-            );
+            const activeSemester = facultyPreference.active_semesters[0];
+            this.academicYear = activeSemester.academic_year;
+            this.semesterLabel = activeSemester.semester_label;
+            this.deadline =
+              activeSemester.individual_deadline ||
+              activeSemester.global_deadline;
 
-            this.allSelectedCourses = preferences.map((course: any) => ({
+            const preferences = activeSemester.courses.map((course: any) => ({
               course_id: course.course_details.course_id,
               course_assignment_id: course.course_assignment_id,
               course_code: course.course_details.course_code,
@@ -220,6 +216,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
               isSubmitted: true,
             }));
 
+            this.allSelectedCourses = preferences;
             this.updateDataSource();
             this.updateTotalUnits();
           } else {
@@ -491,7 +488,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   // ====================
 
   submitPreferences(): void {
-    if (!this.isPreferencesEnabled) {
+    if (!this.isPreferencesEnabled || this.isSubmitting) {
       this.showSnackBar('You have already submitted your preferences.');
       return;
     }
@@ -516,28 +513,12 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
-    const dialogRef = this.dialog.open(DialogConfirmPrefComponent, {
-      disableClose: true,
-    });
+    this.isSubmitting = true;
+    this.cdr.markForCheck();
 
-    const dialogInstance = dialogRef.componentInstance;
-    dialogInstance.confirmSubmission.subscribe(() => {
-      this.performSubmission(facultyId, this.activeSemesterId!, dialogInstance);
-    });
-
-    dialogRef.afterClosed().subscribe(() => {
-      // Dialog closed
-    });
-  }
-
-  private performSubmission(
-    facultyId: string,
-    activeSemesterId: number,
-    dialogInstance: DialogConfirmPrefComponent
-  ): void {
     const submittedData = this.prepareSubmissionData(
       facultyId,
-      activeSemesterId
+      this.activeSemesterId
     );
 
     this.preferencesService.submitPreferences(submittedData).subscribe({
@@ -546,18 +527,29 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
           ...course,
           isSubmitted: true,
         }));
-        this.isPreferencesEnabled = false;
+
+        this.isPreferencesEnabled = true;
         this.updateTotalUnits();
+        this.isSubmitting = false;
+
+        this.dialog.open(DialogPrefSuccessComponent, {
+          width: '30rem',
+          disableClose: true,
+          panelClass: ['dialog-base', 'success-dialog'],
+          data: { deadline: this.deadline },
+        });
+
         this.cdr.markForCheck();
-        dialogInstance.onSubmissionComplete(true);
       },
       error: (error) => {
         console.error('Error submitting preferences:', error);
         this.showSnackBar('Error submitting preferences.');
-        dialogInstance.onSubmissionComplete(false);
+        this.isSubmitting = false;
+        this.cdr.markForCheck();
       },
     });
   }
+
   private prepareSubmissionData(facultyId: string, activeSemesterId: number) {
     return {
       faculty_id: parseInt(facultyId),
@@ -663,6 +655,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
         isEdit: false,
         initialValue: { preferredDay: element.preferredDay },
       },
+      disableClose: true,
     });
 
     dialogRef.afterClosed().subscribe((result) => {
@@ -768,6 +761,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   get isSubmitDisabled(): boolean {
     return (
       this.isRemoveDisabled ||
+      this.isSubmitting ||
       this.dataSource.data.some(
         (course) => !course.preferredDay || !course.preferredTime
       )

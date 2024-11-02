@@ -317,8 +317,13 @@
           "
           [class.disabled]="isSubmitDisabled"
         >
+          @if (!isSubmitting) {
           <span class="button-text submit">Submit Preferences</span>
           <span mat-symbol="done_all" class="submit"></span>
+          } @else {
+          <span class="button-text submit">Submit Preferences</span>
+          <mat-spinner class="custom-spinner" diameter="20"></mat-spinner>
+          }
         </div>
       </div>
     </div>

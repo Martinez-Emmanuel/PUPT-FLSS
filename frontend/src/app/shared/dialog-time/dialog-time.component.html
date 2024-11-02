@@ -13,11 +13,11 @@
         (selectionChange)="onStartTimeChange()"
         [disabled]="isWholeDay"
       >
-      @for (time of timeOptions; track time) {
+        @for (time of timeOptions; track time) {
         <mat-option [value]="time">
           {{ time }}
         </mat-option>
-      }
+        }
       </mat-select>
     </mat-form-field>
 
@@ -33,9 +33,8 @@
     </mat-form-field>
 
     @if (startTime && endTime && !isEndTimeValid()) {
-      <mat-error>End time must be after start time</mat-error>
-    }
-    }
+    <mat-error>End time must be after start time</mat-error>
+    } }
     <mat-checkbox [(ngModel)]="isWholeDay" (change)="onWholeDayChange()">
       Whole Day (Any time is preferred)
     </mat-checkbox>
@@ -43,13 +42,17 @@
 
   <!--Dialog buttons-->
   <mat-dialog-actions class="dialog-actions">
-    <button mat-button class="cancel" 
-      (click)="onCancel()">
-      Cancel
-    </button>
-    <button mat-flat-button class="confirm" 
-      (click)="onConfirm()" 
-      [disabled]="!isWholeDay && (!startTime || !endTime || !isEndTimeValid())">
+    <button mat-button class="cancel" (click)="onCancel()">Cancel</button>
+    <button
+      mat-flat-button
+      class="confirm"
+      (click)="onConfirm()"
+      [disabled]="!isWholeDay && (!startTime || !endTime || !isEndTimeValid())"
+      [ngClass]="{
+        'confirm-btn-disabled':
+          !isWholeDay && (!startTime || !endTime || !isEndTimeValid())
+      }"
+    >
       Confirm
     </button>
   </mat-dialog-actions>

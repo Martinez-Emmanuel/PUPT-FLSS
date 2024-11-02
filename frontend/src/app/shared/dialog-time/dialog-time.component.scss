@@ -25,15 +25,15 @@
   width: 100%;
 }
 
+.dialog-actions {
+  margin-bottom: var(--spacing-xs);
+}
+
 .cancel {
   color: var(--primary-text) !important;
 }
 
-.confirm {
-  color: white;
-  opacity: 1;
-
-  &:disabled {
-    opacity: 0.5;
-  }
+.confirm-btn-disabled {
+  color: var(--neutral-base) !important;
+  opacity: var(--opacity-semi-opaque);
 }

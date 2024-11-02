@@ -60,11 +60,6 @@ class PreferenceController extends Controller
                     ->whereIn('course_assignment_id', $preferencesToDelete)
                     ->delete();
             }
-
-            PreferencesSetting::updateOrCreate(
-                ['faculty_id' => $facultyId],
-                ['is_enabled' => 0, 'updated_at' => now()]
-            );
         });
 
         return response()->json([
