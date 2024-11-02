@@ -82,33 +82,51 @@ class AcademicYearController extends Controller
             'end_date' => 'required|date|after_or_equal:start_date',
         ]);
     
-        // Deactivate all current active semesters
-        ActiveSemester::query()->update(['is_active' => 0]);
+        DB::beginTransaction();
     
-        // Deactivate all academic years
-        DB::table('academic_years')->update(['is_active' => 0]);
+        try {
+            // Deactivate all current active semesters
+            ActiveSemester::query()->update(['is_active' => 0]);
     
-        // Update the given academic year and semester to active in ActiveSemester
-        ActiveSemester::where('academic_year_id', $academicYearId)
-            ->where('semester_id', $semesterId)
-            ->update([
-                'is_active' => 1,
-                'start_date' => $startDate,
-                'end_date' => $endDate,
+            // Deactivate all academic years
+            DB::table('academic_years')->update(['is_active' => 0]);
+    
+            // Reset preferences settings for all faculty
+            DB::table('preferences_settings')->update([
+                'is_enabled' => 0,
+                'global_deadline' => null,
+                'individual_deadline' => null,
             ]);
     
-        // Activate the selected academic year
-        DB::table('academic_years')
-            ->where('academic_year_id', $academicYearId)
-            ->update(['is_active' => 1]);
+            // Update the given academic year and semester to active in ActiveSemester
+            ActiveSemester::where('academic_year_id', $academicYearId)
+                ->where('semester_id', $semesterId)
+                ->update([
+                    'is_active' => 1,
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
+                ]);
     
-        return response()->json([
-            'message' => 'Active academic year and semester updated successfully',
-            'academic_year_id' => $academicYearId,
-            'semester_id' => $semesterId
-        ]);
+            // Activate the selected academic year
+            DB::table('academic_years')
+                ->where('academic_year_id', $academicYearId)
+                ->update(['is_active' => 1]);
+    
+            DB::commit();
+    
+            return response()->json([
+                'message' => 'Active academic year and semester updated successfully',
+                'academic_year_id' => $academicYearId,
+                'semester_id' => $semesterId,
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Failed to update active academic year and semester',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
-    
 
     public function getActiveYearLevelsCurricula()
     {
