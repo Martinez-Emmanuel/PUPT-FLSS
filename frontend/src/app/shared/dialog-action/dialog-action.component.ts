@@ -72,6 +72,8 @@ export const MY_DATE_FORMATS = {
   styleUrls: ['./dialog-action.component.scss'],
 })
 export class DialogActionComponent {
+  private readonly SNACKBAR_DURATION = 5000;
+
   dialogTitle!: string;
   actionText!: string;
   navigationLink!: string;
@@ -198,13 +200,13 @@ export class DialogActionComponent {
       .subscribe({
         next: () => {
           const successMessage = this.getSuccessMessage();
-          this.snackBar.open(successMessage, 'Close', { duration: 3000 });
+          this.snackBar.open(successMessage, 'Close', { duration: this.SNACKBAR_DURATION });
           this.dialogRef.close(true);
         },
         error: (error) => {
           console.error('Operation failed:', error);
           const errorMessage = this.getErrorMessage();
-          this.snackBar.open(errorMessage, 'Close', { duration: 3000 });
+          this.snackBar.open(errorMessage, 'Close', { duration: this.SNACKBAR_DURATION });
         },
       });
   }
@@ -268,7 +270,7 @@ export class DialogActionComponent {
                   this.snackBar.open(
                     `Email sent to ${this.data.facultyName}`,
                     'Close',
-                    { duration: 3000 }
+                    { duration: this.SNACKBAR_DURATION }
                   );
                 })
               );
@@ -334,7 +336,7 @@ export class DialogActionComponent {
       this.snackBar.open(
         'Please select at least one report to generate.',
         'Close',
-        { duration: 3000 }
+        { duration: this.SNACKBAR_DURATION }
       );
       return;
     }
@@ -358,7 +360,7 @@ export class DialogActionComponent {
         next: (reports) => {
           if (reports.length === 0) {
             this.snackBar.open('No reports selected.', 'Close', {
-              duration: 3000,
+              duration: this.SNACKBAR_DURATION,
             });
             return;
           }
@@ -387,7 +389,7 @@ export class DialogActionComponent {
           this.snackBar.open(
             'Selected reports have been generated and downloaded successfully.',
             'Close',
-            { duration: 3000 }
+            { duration: this.SNACKBAR_DURATION }
           );
 
           this.dialogRef.close(true);
@@ -397,7 +399,7 @@ export class DialogActionComponent {
           this.snackBar.open(
             'Failed to generate reports. Please try again later.',
             'Close',
-            { duration: 3000 }
+            { duration: this.SNACKBAR_DURATION }
           );
         },
       });
@@ -411,15 +413,15 @@ export class DialogActionComponent {
       case 'reports':
         return 'Reports generated successfully.';
       case 'all_preferences':
-        return `Preferences Submission ${
+        return `Preferences submission for all faculty ${
           !this.data.currentState ? 'enabled' : 'disabled'
         } successfully.${this.sendEmail ? ' Email notifications sent.' : ''}`;
       case 'publish':
-        return `Load and Schedule ${
+        return `Official load and schedule for all faculty ${
           !this.data.currentState ? 'published' : 'unpublished'
         } successfully.${this.sendEmail ? ' Email notifications sent.' : ''}`;
       case 'single_preferences':
-        return `Preferences Submission for ${this.facultyName} ${
+        return `Preferences submission for ${this.facultyName} ${
           !this.data.currentState ? 'enabled' : 'disabled'
         } successfully.${
           this.sendEmail ? ` Email sent to ${this.facultyName}.` : ''
@@ -439,15 +441,15 @@ export class DialogActionComponent {
       case 'all_preferences':
         return `Failed to ${
           !this.data.currentState ? 'enable' : 'disable'
-        } Preferences Submission. Please try again.`;
+        } preferences submission for all faculty. Please try again.`;
       case 'publish':
         return `Failed to ${
           !this.data.currentState ? 'publish' : 'unpublish'
-        } Load and Schedule. Please try again.`;
+        } Official load and schedule for all faculty. Please try again.`;
       case 'single_preferences':
         return `Failed to ${
           !this.data.currentState ? 'enable' : 'disable'
-        } Preferences Submission for ${this.facultyName}. Please try again.`;
+        } preferences submission for ${this.facultyName}. Please try again.`;
       default:
         return 'Operation failed. Please try again.';
     }
