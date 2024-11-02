@@ -163,20 +163,30 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.isLoading = true;
 
     const programs$ = this.preferencesService.getPrograms();
-    const preferences$ = this.preferencesService.getPreferences();
+    const facultyId = this.cookieService.get('faculty_id');
+    const preferences$ =
+      this.preferencesService.getPreferencesByFacultyId(facultyId);
 
     this.subscriptions.add(
-      forkJoin([programs$, preferences$]).subscribe({
-        next: ([programsResponse, preferencesResponse]) => {
-          // Process Programs
+      programs$.subscribe({
+        next: (programsResponse) => {
           this.programs = programsResponse.programs;
           this.activeSemesterId = programsResponse.active_semester_id;
+          this.cdr.markForCheck();
+        },
+        error: (error) => {
+          console.error('Error loading programs:', error);
+          this.showSnackBar('Error loading programs.');
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        },
+      })
+    );
 
-          // Process Preferences
-          const facultyId = this.cookieService.get('faculty_id');
-          const facultyPreference = preferencesResponse.preferences.find(
-            (pref: any) => pref.faculty_id == facultyId
-          );
+    this.subscriptions.add(
+      preferences$.subscribe({
+        next: (preferencesResponse) => {
+          const facultyPreference = preferencesResponse.preferences;
 
           if (facultyPreference) {
             this.isPreferencesEnabled = facultyPreference.is_enabled === 1;
@@ -220,8 +230,8 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
           this.cdr.markForCheck();
         },
         error: (error) => {
-          console.error('Error loading data:', error);
-          this.showSnackBar('Error loading data.');
+          console.error('Error loading preferences:', error);
+          this.showSnackBar('Error loading preferences.');
           this.isLoading = false;
           this.cdr.markForCheck();
         },

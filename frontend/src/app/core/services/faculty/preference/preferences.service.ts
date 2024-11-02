@@ -113,6 +113,14 @@ export class PreferencesService {
   }
 
   /**
+   * Retrieves preferences for a specific faculty.
+   */
+  getPreferencesByFacultyId(facultyId: string): Observable<any> {
+    const url = `${this.baseUrl}/view-preferences/${facultyId}`;
+    return this.http.get(url);
+  }
+
+  /**
    * Submits user preferences and clears the caches.
    */
   submitPreferences(preferences: any): Observable<any> {

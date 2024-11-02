@@ -74,7 +74,7 @@ class PreferenceController extends Controller
     /**
      * Retrieves all faculty preferences for the active year and semester.
      */
-    public function getFacultyPreferences()
+    public function getAllFacultyPreferences()
     {
         $activeSemester = ActiveSemester::with(['academicYear', 'semester'])
             ->where('is_active', 1)
@@ -148,6 +148,74 @@ class PreferenceController extends Controller
 
         return response()->json([
             'preferences' => $facultyPreferences,
+        ], 200, [], JSON_PRETTY_PRINT);
+    }
+
+    /**
+     * Retrieves preferences for a specific faculty based on their faculty_id.
+     */
+    public function getFacultyPreferencesById($faculty_id)
+    {
+        $activeSemester = ActiveSemester::with(['academicYear', 'semester'])
+            ->where('is_active', 1)
+            ->first();
+
+        if (!$activeSemester) {
+            return response()->json(['error' => 'No active semester found'], 404);
+        }
+
+        $faculty = Faculty::where('id', $faculty_id)
+            ->with(['user', 'preferenceSetting', 'preferences.courseAssignment.course'])
+            ->first();
+
+        if (!$faculty) {
+            return response()->json(['error' => 'Faculty not found'], 404);
+        }
+
+        $preferenceSetting = $faculty->preferenceSetting;
+
+        $courses = $faculty->preferences->map(function ($preference) {
+            return [
+                'course_assignment_id' => $preference->course_assignment_id ?? 'N/A',
+                'course_details' => [
+                    'course_id' => $preference->courseAssignment->course->course_id ?? 'N/A',
+                    'course_code' => $preference->courseAssignment->course->course_code ?? null,
+                    'course_title' => $preference->courseAssignment->course->course_title ?? null,
+                ],
+                'lec_hours' => $preference->courseAssignment->course->lec_hours ?? 'N/A',
+                'lab_hours' => $preference->courseAssignment->course->lab_hours ?? 'N/A',
+                'units' => $preference->courseAssignment->course->units ?? 'N/A',
+                'preferred_day' => $preference->preferred_day,
+                'preferred_start_time' => $preference->preferred_start_time,
+                'preferred_end_time' => $preference->preferred_end_time,
+                'created_at' => $preference->created_at ? Carbon::parse($preference->created_at)->toDateTimeString() : 'N/A',
+                'updated_at' => $preference->updated_at ? Carbon::parse($preference->updated_at)->toDateTimeString() : 'N/A',
+            ];
+        });
+
+        $facultyPreference = [
+            'faculty_id' => $faculty->id,
+            'faculty_name' => $faculty->user->name ?? 'N/A',
+            'faculty_code' => $faculty->user->code ?? 'N/A',
+            'faculty_type' => $faculty->faculty_type ?? 'N/A',
+            'faculty_units' => $faculty->faculty_units,
+            'is_enabled' => (int) ($preferenceSetting->is_enabled ?? 0),
+            'active_semesters' => [
+                [
+                    'active_semester_id' => $activeSemester->active_semester_id,
+                    'academic_year_id' => $activeSemester->academic_year_id,
+                    'academic_year' => $activeSemester->academicYear->year_start . '-' . $activeSemester->academicYear->year_end,
+                    'semester_id' => $activeSemester->semester_id,
+                    'semester_label' => $this->getSemesterLabel($activeSemester->semester_id),
+                    'global_deadline' => $preferenceSetting && $preferenceSetting->global_deadline ? Carbon::parse($preferenceSetting->global_deadline)->toDateString() : null,
+                    'individual_deadline' => $preferenceSetting && $preferenceSetting->individual_deadline ? Carbon::parse($preferenceSetting->individual_deadline)->toDateString() : null,
+                    'courses' => $courses->toArray(),
+                ],
+            ],
+        ];
+
+        return response()->json([
+            'preferences' => $facultyPreference,
         ], 200, [], JSON_PRETTY_PRINT);
     }
 
