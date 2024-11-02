@@ -27,44 +27,45 @@ class PreferenceController extends Controller
             'preferences.*.preferred_end_time' => 'required|string',
         ]);
 
-        $facultyId = $request->faculty_id;
-        $activeSemesterId = $request->active_semester_id;
+        DB::transaction(function () use ($request) {
+            $facultyId = $request->faculty_id;
+            $activeSemesterId = $request->active_semester_id;
 
-        $existingPreferences = Preference::where('faculty_id', $facultyId)
-            ->where('active_semester_id', $activeSemesterId)
-            ->get();
-
-        $existingIds = $existingPreferences->pluck('course_assignment_id')->toArray();
-
-        $newIds = array_column($request->preferences, 'course_assignment_id');
-
-        foreach ($request->preferences as $preference) {
-            Preference::updateOrCreate(
-                [
-                    'faculty_id' => $facultyId,
-                    'active_semester_id' => $activeSemesterId,
-                    'course_assignment_id' => $preference['course_assignment_id'],
-                ],
-                [
-                    'preferred_day' => $preference['preferred_day'],
-                    'preferred_start_time' => $preference['preferred_start_time'],
-                    'preferred_end_time' => $preference['preferred_end_time'],
-                ]
-            );
-        }
-
-        $preferencesToDelete = array_diff($existingIds, $newIds);
-        if (!empty($preferencesToDelete)) {
-            Preference::where('faculty_id', $facultyId)
+            $existingPreferences = Preference::where('faculty_id', $facultyId)
                 ->where('active_semester_id', $activeSemesterId)
-                ->whereIn('course_assignment_id', $preferencesToDelete)
-                ->delete();
-        }
+                ->get();
 
-        PreferencesSetting::updateOrCreate(
-            ['faculty_id' => $facultyId],
-            ['is_enabled' => 0, 'updated_at' => now()]
-        );
+            $existingIds = $existingPreferences->pluck('course_assignment_id')->toArray();
+            $newIds = array_column($request->preferences, 'course_assignment_id');
+
+            foreach ($request->preferences as $preference) {
+                Preference::updateOrCreate(
+                    [
+                        'faculty_id' => $facultyId,
+                        'active_semester_id' => $activeSemesterId,
+                        'course_assignment_id' => $preference['course_assignment_id'],
+                    ],
+                    [
+                        'preferred_day' => $preference['preferred_day'],
+                        'preferred_start_time' => $preference['preferred_start_time'],
+                        'preferred_end_time' => $preference['preferred_end_time'],
+                    ]
+                );
+            }
+
+            $preferencesToDelete = array_diff($existingIds, $newIds);
+            if (!empty($preferencesToDelete)) {
+                Preference::where('faculty_id', $facultyId)
+                    ->where('active_semester_id', $activeSemesterId)
+                    ->whereIn('course_assignment_id', $preferencesToDelete)
+                    ->delete();
+            }
+
+            PreferencesSetting::updateOrCreate(
+                ['faculty_id' => $facultyId],
+                ['is_enabled' => 0, 'updated_at' => now()]
+            );
+        });
 
         return response()->json([
             'message' => 'Preferences submitted successfully',
@@ -265,13 +266,11 @@ class PreferenceController extends Controller
             return response()->json(['message' => 'Active semester ID is required.'], 400);
         }
 
-        $deletedCount = Preference::where('faculty_id', $facultyId)
-            ->where('active_semester_id', $activeSemesterId)
-            ->delete();
-
-        if ($deletedCount === 0) {
-            return response()->json(['message' => 'No preferences to delete.'], 404);
-        }
+        DB::transaction(function () use ($facultyId, $activeSemesterId) {
+            Preference::where('faculty_id', $facultyId)
+                ->where('active_semester_id', $activeSemesterId)
+                ->delete();
+        });
 
         return response()->json(['message' => 'All preferences deleted successfully.'], 200);
     }
@@ -286,9 +285,7 @@ class PreferenceController extends Controller
             'global_deadline' => 'nullable|date|after:today',
         ]);
 
-        DB::beginTransaction();
-
-        try {
+        DB::transaction(function () use ($validated) {
             $status = $validated['status'];
             $global_deadline = $status ? $validated['global_deadline'] : null;
 
@@ -310,22 +307,14 @@ class PreferenceController extends Controller
                     'individual_deadline' => null,
                 ]);
             }
+        });
 
-            DB::commit();
-
-            return response()->json([
-                'message' => 'All preferences settings updated successfully',
-                'status' => $status,
-                'global_deadline' => $global_deadline,
-                'updated_preferences' => PreferencesSetting::all(),
-            ], 200);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'message' => 'Failed to update all preferences settings',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+        return response()->json([
+            'message' => 'All preferences settings updated successfully',
+            'status' => $validated['status'],
+            'global_deadline' => $validated['global_deadline'],
+            'updated_preferences' => PreferencesSetting::all(),
+        ], 200);
     }
 
     /**
@@ -339,9 +328,7 @@ class PreferenceController extends Controller
             'individual_deadline' => 'nullable|date|after:today',
         ]);
 
-        DB::beginTransaction();
-
-        try {
+        DB::transaction(function () use ($validated) {
             $faculty_id = $validated['faculty_id'];
             $status = $validated['status'];
             $individual_deadline = $status ? $validated['individual_deadline'] : null;
@@ -355,24 +342,15 @@ class PreferenceController extends Controller
             $preferenceSetting->individual_deadline = $individual_deadline;
             $preferenceSetting->global_deadline = null;
             $preferenceSetting->save();
+        });
 
-            DB::commit();
-
-            return response()->json([
-                'message' => 'Preference setting updated successfully for faculty',
-                'faculty_id' => $faculty_id,
-                'is_enabled' => $status,
-                'individual_deadline' => $preferenceSetting->individual_deadline,
-                'global_deadline' => $preferenceSetting->global_deadline,
-                'updated_preference' => $preferenceSetting,
-            ], 200);
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'message' => 'Failed to update preference setting for faculty',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+        return response()->json([
+            'message' => 'Preference setting updated successfully for faculty',
+            'faculty_id' => $validated['faculty_id'],
+            'is_enabled' => $validated['status'],
+            'individual_deadline' => $validated['individual_deadline'],
+            'updated_preference' => PreferencesSetting::find($validated['faculty_id']),
+        ], 200);
     }
 
     /**
