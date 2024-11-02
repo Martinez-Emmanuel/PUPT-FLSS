@@ -21,22 +21,21 @@ use Illuminate\Support\Facades\Route;
 // Public routes
 Route::post('login', [AuthController::class, 'login'])->name('login');
 
-//Academic Year Routes
-Route::get('/get-academic-years', [AcademicYearController::class, 'getAcademicYearsForDropdown']);
-Route::post('/set-active-ay-sem', [AcademicYearController::class, 'setActiveAcademicYearAndSemester']);
-Route::get('/active-year-levels-curricula', [AcademicYearController::class, 'getActiveYearLevelsCurricula']);
-Route::post('/fetch-ay-prog-details', [AcademicYearController::class, 'fetchProgramDetailsByAcademicYear']);
+// Academic Year Routes
+Route::get('/get-academic-years', [AcademicYearController::class, 'getAcademicYears']);
 Route::post('/add-academic-year', [AcademicYearController::class, 'addAcademicYear']);
+Route::delete('/delete-ay', [AcademicYearController::class, 'deleteAcademicYear']);
+
+Route::get('/get-active-year-semester', [AcademicYearController::class, 'getActiveAcademicYearAndSemester']);
+Route::post('/set-active-year-semester', [AcademicYearController::class, 'setActiveAcademicYearAndSemester']);
+Route::post('/fetch-ay-prog-details', [AcademicYearController::class, 'getProgramDetailsByAcademicYear']);
+Route::get('/active-year-levels-curricula', [AcademicYearController::class, 'getActiveYearLevelsCurricula']);
 Route::post('/update-yr-lvl-curricula', [AcademicYearController::class, 'updateYearLevelCurricula']);
 Route::post('/update-sections', [AcademicYearController::class, 'updateSections']);
 Route::delete('/remove-program', [AcademicYearController::class, 'removeProgramFromAcademicYear']);
-Route::delete('/delete-ay', [AcademicYearController::class, 'deleteAcademicYear']);
-Route::get('/active-year-semester', [AcademicYearController::class, 'getActiveYearAndSemester']);
+Route::get('/offered-courses-sem', [AcademicYearController::class, 'getOfferedCoursesBySem']);
 
-//Admin side routes
-Route::get('/get-assigned-courses', [AcademicYearController::class, 'getAssignedCourses']);
-Route::get('/offered-courses-sem', [AcademicYearController::class, 'getAssignedCoursesBySem']);
-
+// Schedule Routes
 Route::get('/populate-schedules', [ScheduleController::class, 'populateSchedules']);
 Route::post('/assign-schedule', [ScheduleController::class, 'assignSchedule']);
 
