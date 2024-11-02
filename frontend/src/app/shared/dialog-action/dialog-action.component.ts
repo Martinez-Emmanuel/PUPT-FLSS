@@ -289,27 +289,19 @@ export class DialogActionComponent {
       const date = new Date(this.submissionDeadline);
       date.setHours(23, 59, 59, 999);
       formattedDate = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
-      console.log('Sending date to backend:', formattedDate);
     }
 
-    const togglePreferences$ = this.preferencesService
-      .toggleAllPreferences(newStatus, formattedDate)
-      .pipe(
-        tap(() => {
-          this.preferencesService.updatePreferencesCache();
-        })
-      );
+    const togglePreferences$ = this.preferencesService.toggleAllPreferences(
+      newStatus,
+      formattedDate
+    );
 
     const emailNotification$ =
       this.sendEmail && newStatus
         ? this.preferencesService.sendPreferencesEmailToAll()
         : of(null);
 
-    return forkJoin([togglePreferences$, emailNotification$]).pipe(
-      tap(() => {
-        this.preferencesService.updatePreferencesCache();
-      })
-    );
+    return forkJoin([togglePreferences$, emailNotification$]);
   }
 
   /**

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
-import { ReplaySubject, Observable } from 'rxjs';
-import { map, shareReplay, tap } from 'rxjs/operators';
+import { Observable, BehaviorSubject } from 'rxjs';
+import { map, shareReplay, tap, take } from 'rxjs/operators';
 
 import { environment } from '../../../../../environments/environment.dev';
 
@@ -62,9 +62,10 @@ export interface AssignedCoursesResponse {
 export class PreferencesService {
   private baseUrl = environment.apiUrl;
 
-  private preferencesCacheSubject = new ReplaySubject<any>(1);
-  private preferencesCache$ = this.preferencesCacheSubject.asObservable();
+  private preferencesSubject = new BehaviorSubject<any>(null);
+  private preferences$ = this.preferencesSubject.asObservable();
 
+  private isLoading = false;
   private programsCache$: Observable<{
     programs: Program[];
     active_semester_id: number;
@@ -94,26 +95,39 @@ export class PreferencesService {
   }
 
   /**
-   * Retrieves the current faculty preferences.
-   * Uses ReplaySubject to cache the preferences data.
+   * Retrieves cached user preferences, triggering an API call if none are loaded.
    */
   getPreferences(): Observable<any> {
-    if (!this.preferencesCacheSubject.observed) {
-      const url = `${this.baseUrl}/view-preferences`;
-      this.http.get(url).subscribe(
-        (response) => {
-          this.preferencesCacheSubject.next(response);
-        },
-        (error) => {
-          this.preferencesCacheSubject.error(error);
-        }
-      );
+    if (!this.preferencesSubject.value && !this.isLoading) {
+      this.fetchPreferences();
     }
-    return this.preferencesCache$;
+    return this.preferences$;
   }
 
   /**
-   * Retrieves preferences for a specific faculty.
+   * Fetches preferences data from the API and updates the preferences cache.
+   */
+  private fetchPreferences(): void {
+    this.isLoading = true;
+    const url = `${this.baseUrl}/view-preferences`;
+    this.http
+      .get(url)
+      .pipe(take(1))
+      .subscribe({
+        next: (response) => {
+          this.preferencesSubject.next(response);
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error fetching preferences:', error);
+          this.preferencesSubject.error(error);
+          this.isLoading = false;
+        },
+      });
+  }
+
+  /**
+   * Retrieves preferences for a specific faculty by ID.
    */
   getPreferencesByFacultyId(facultyId: string): Observable<any> {
     const url = `${this.baseUrl}/view-preferences/${facultyId}`;
@@ -121,7 +135,7 @@ export class PreferencesService {
   }
 
   /**
-   * Submits user preferences and clears the caches.
+   * Submits user preferences and clears the cached data.
    */
   submitPreferences(preferences: any): Observable<any> {
     const url = `${this.baseUrl}/submit-preferences`;
@@ -166,18 +180,21 @@ export class PreferencesService {
 
   /**
    * Toggles the preferences status for all faculty members.
-   * Optionally accepts a deadline for the preference.
    */
   toggleAllPreferences(
     status: boolean,
-    deadline?: string | null
+    deadline: string | null
   ): Observable<any> {
     return this.http
       .post(`${this.baseUrl}/toggle-preferences-all`, {
         status,
         global_deadline: deadline,
       })
-      .pipe(tap(() => this.updatePreferencesCache()));
+      .pipe(
+        tap(() => {
+          this.fetchPreferences();
+        })
+      );
   }
 
   /**
@@ -194,12 +211,11 @@ export class PreferencesService {
 
   /**
    * Toggles the preference status for a specific faculty member.
-   * Now accepts an optional individual_deadline parameter.
    */
   toggleSingleFacultyPreferences(
     faculty_id: number,
     status: boolean,
-    individual_deadline?: string | null
+    individual_deadline: string | null
   ): Observable<any> {
     return this.http
       .post(`${this.baseUrl}/toggle-preferences-single`, {
@@ -207,7 +223,11 @@ export class PreferencesService {
         status,
         individual_deadline,
       })
-      .pipe(tap(() => this.clearCaches()));
+      .pipe(
+        tap(() => {
+          this.fetchPreferences();
+        })
+      );
   }
 
   /**
@@ -221,27 +241,16 @@ export class PreferencesService {
   /**
    * Updates the preferences cache by fetching the latest data.
    */
-  public updatePreferencesCache(): void {
-    const url = `${this.baseUrl}/view-preferences`;
-    this.http.get(url).subscribe((response) => {
-      this.preferencesCacheSubject.next(response);
-    });
+  updatePreferencesCache(): void {
+    this.fetchPreferences();
   }
 
-  /**
-   * Clears both preferences and programs caches.
-   */
   clearCaches(): void {
-    this.clearPreferencesCache();
+    this.preferencesSubject.next(null);
     this.programsCache$ = null;
   }
 
-  /**
-   * Clears the preferences cache and reinitializes the ReplaySubject.
-   */
   clearPreferencesCache(): void {
-    this.preferencesCacheSubject.next(null);
-    this.preferencesCacheSubject = new ReplaySubject<any>(1);
-    this.preferencesCache$ = this.preferencesCacheSubject.asObservable();
+    this.preferencesSubject.next(null);
   }
 }
