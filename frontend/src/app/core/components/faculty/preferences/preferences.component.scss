@@ -404,23 +404,30 @@
     $direction: column,
     $align: center,
     $justify: center,
-    $gap: var(--spacing-lg)
   );
-  height: 100%;
   opacity: var(--opacity-semi-opaque);
+  height: 100%;
 
   svg {
     width: 20rem;
     height: auto;
   }
 
-  .unpublished-text {
+  .closed-info {
+    @include flex-layout($direction: column, $gap: var(--spacing-lg));
+  }
+
+  .closed-text {
     @include flex-layout($gap: var(--spacing-xs));
-    font-size: var(--font-size-mdx);
+    font-size: var(--font-size-md);
     text-align: center;
 
     span[mat-symbol] {
-      font-size: var(--font-size-mdx);
+      font-size: var(--font-size-md);
     }
+  }
+
+  .view-preferences button {
+    font-size: var(--font-size-md);
   }
 }
