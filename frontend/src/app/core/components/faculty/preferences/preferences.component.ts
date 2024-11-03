@@ -1,7 +1,7 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { Subscription } from 'rxjs';
+import { of, Subscription, switchMap, tap } from 'rxjs';
 
 import { MatTableModule } from '@angular/material/table';
 import { MatTableDataSource } from '@angular/material/table';
@@ -48,7 +48,7 @@ interface TableData extends Course {
     DialogTimeComponent,
     DialogPrefSuccessComponent,
     LoadingComponent,
-    DialogPrefComponent, // Add DialogPrefComponent to imports
+    DialogPrefComponent,
     TimeFormatPipe,
     MatSymbolDirective,
     MatTableModule,
@@ -69,7 +69,7 @@ interface TableData extends Course {
   animations: [fadeAnimation, cardEntranceAnimation, rowAdditionAnimation],
 })
 export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
-  // Existing properties...
+
   showSidenav = false;
   showProgramSelection = true;
   isDarkMode = false;
@@ -167,82 +167,88 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   private loadAllData() {
     this.isLoading = true;
 
-    const programs$ = this.preferencesService.getPrograms();
     const facultyId = this.cookieService.get('faculty_id');
-    const preferences$ =
-      this.preferencesService.getPreferencesByFacultyId(facultyId);
 
     this.subscriptions.add(
-      programs$.subscribe({
-        next: (programsResponse) => {
-          this.programs = programsResponse.programs;
-          this.activeSemesterId = programsResponse.active_semester_id;
-          this.cdr.markForCheck();
-        },
-        error: (error) => {
-          console.error('Error loading programs:', error);
-          this.showSnackBar('Error loading programs.');
-          this.isLoading = false;
-          this.cdr.markForCheck();
-        },
-      })
-    );
+      this.preferencesService
+        .getPreferencesByFacultyId(facultyId)
+        .pipe(
+          tap((preferencesResponse) => {
+            const facultyPreference = preferencesResponse.preferences;
 
-    this.subscriptions.add(
-      preferences$.subscribe({
-        next: (preferencesResponse) => {
-          const facultyPreference = preferencesResponse.preferences;
+            if (facultyPreference) {
+              this.facultyId = facultyPreference.faculty_id.toString();
+              this.facultyName = facultyPreference.faculty_name;
 
-          if (facultyPreference) {
-            this.facultyId = facultyPreference.faculty_id.toString();
-            this.facultyName = facultyPreference.faculty_name;
+              this.isPreferencesEnabled = facultyPreference.is_enabled === 1;
 
-            this.isPreferencesEnabled = facultyPreference.is_enabled === 1;
+              const activeSemester = facultyPreference.active_semesters[0];
+              this.academicYear = activeSemester.academic_year;
+              this.semesterLabel = activeSemester.semester_label;
+              this.deadline =
+                activeSemester.individual_deadline ||
+                activeSemester.global_deadline;
 
-            const activeSemester = facultyPreference.active_semesters[0];
-            this.academicYear = activeSemester.academic_year;
-            this.semesterLabel = activeSemester.semester_label;
-            this.deadline =
-              activeSemester.individual_deadline ||
-              activeSemester.global_deadline;
+              const preferences = activeSemester.courses.map((course: any) => ({
+                course_id: course.course_details.course_id,
+                course_assignment_id: course.course_assignment_id,
+                course_code: course.course_details.course_code,
+                course_title: course.course_details.course_title,
+                lec_hours: course.lec_hours,
+                lab_hours: course.lab_hours,
+                units: course.units,
+                preferredDay: course.preferred_day,
+                preferredTime:
+                  course.preferred_start_time === '00:00:00' &&
+                  course.preferred_end_time === '23:59:59'
+                    ? 'Whole Day'
+                    : course.preferred_start_time && course.preferred_end_time
+                    ? `${this.convertTo12HourFormat(
+                        course.preferred_start_time
+                      )} - ${this.convertTo12HourFormat(
+                        course.preferred_end_time
+                      )}`
+                    : '',
+                isSubmitted: true,
+              }));
 
-            const preferences = activeSemester.courses.map((course: any) => ({
-              course_id: course.course_details.course_id,
-              course_assignment_id: course.course_assignment_id,
-              course_code: course.course_details.course_code,
-              course_title: course.course_details.course_title,
-              lec_hours: course.lec_hours,
-              lab_hours: course.lab_hours,
-              units: course.units,
-              preferredDay: course.preferred_day,
-              preferredTime:
-                course.preferred_start_time === '00:00:00' &&
-                course.preferred_end_time === '23:59:59'
-                  ? 'Whole Day'
-                  : course.preferred_start_time && course.preferred_end_time
-                  ? `${this.convertTo12HourFormat(course.preferred_start_time)} 
-                    - ${this.convertTo12HourFormat(course.preferred_end_time)}`
-                  : '',
-              isSubmitted: true,
-            }));
-
-            this.allSelectedCourses = preferences;
-            this.updateDataSource();
-            this.updateTotalUnits();
-          } else {
-            this.isPreferencesEnabled = true;
-          }
-
-          this.isLoading = false;
-          this.cdr.markForCheck();
-        },
-        error: (error) => {
-          console.error('Error loading preferences:', error);
-          this.showSnackBar('Error loading preferences.');
-          this.isLoading = false;
-          this.cdr.markForCheck();
-        },
-      })
+              this.allSelectedCourses = preferences;
+              this.updateDataSource();
+              this.updateTotalUnits();
+            } else {
+              this.isPreferencesEnabled = true;
+            }
+          }),
+          switchMap((preferencesResponse) => {
+            if (preferencesResponse.preferences.is_enabled === 1) {
+              return this.preferencesService.getPrograms();
+            } else {
+              return of(null);
+            }
+          })
+        )
+        .subscribe({
+          next: (programsResponse) => {
+            if (programsResponse) {
+              this.programs = programsResponse.programs;
+              this.activeSemesterId = programsResponse.active_semester_id;
+            }
+            this.isLoading = false;
+            this.cdr.markForCheck();
+          },
+          error: (error) => {
+            console.error('Error loading data:', error);
+            if (error.url.includes('/offered-courses-sem')) {
+              this.showSnackBar('Error loading programs.');
+            } else if (error.url.includes(`/view-preferences/${facultyId}`)) {
+              this.showSnackBar('Error loading preferences.');
+            } else {
+              this.showSnackBar('An unexpected error occurred.');
+            }
+            this.isLoading = false;
+            this.cdr.markForCheck();
+          },
+        })
     );
   }
 
@@ -762,5 +768,4 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       .toString()
       .padStart(2, '0')} ${ampm}`;
   }
-
 }
