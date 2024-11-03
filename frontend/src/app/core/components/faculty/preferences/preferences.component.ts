@@ -387,31 +387,46 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    this.preferencesService
-      .deletePreference(
-        course.course_assignment_id,
-        facultyId,
-        activeSemesterId
-      )
-      .subscribe({
-        next: () => {
-          this.allSelectedCourses = this.allSelectedCourses.filter(
-            (c) => c.course_code !== course.course_code
-          );
-          this.updateDataSource();
-          this.updateTotalUnits();
-          this.showSnackBar('Course preference removed successfully.');
-        },
-        error: (error) => {
-          if (error.status === 403) {
-            this.showSnackBar(
-              'The submission deadline has passed. You cannot modify your preferences anymore.'
+    if (course.isSubmitted) {
+      this.preferencesService
+        .deletePreference(
+          course.course_assignment_id,
+          facultyId,
+          activeSemesterId
+        )
+        .subscribe({
+          next: () => {
+            this.allSelectedCourses = this.allSelectedCourses.filter(
+              (c) => c.course_code !== course.course_code
             );
-          } else {
-            this.showSnackBar('Error removing course preference.');
-          }
-        },
-      });
+
+            this.dataSource = new MatTableDataSource<TableData>(
+              this.allSelectedCourses
+            );
+            this.updateTotalUnits();
+            this.showSnackBar('Course preference removed successfully.');
+          },
+          error: (error) => {
+            if (error.status === 403) {
+              this.showSnackBar(
+                'The submission deadline has passed. You cannot modify your preferences anymore.'
+              );
+            } else {
+              this.showSnackBar('Error removing course preference.');
+            }
+          },
+        });
+    } else {
+      this.allSelectedCourses = this.allSelectedCourses.filter(
+        (c) => c.course_code !== course.course_code
+      );
+
+      this.dataSource = new MatTableDataSource<TableData>(
+        this.allSelectedCourses
+      );
+      this.updateTotalUnits();
+      this.showSnackBar('Course preference removed successfully.');
+    }
   }
 
   removeAllCourses(): void {
@@ -445,7 +460,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       .afterClosed()
       .subscribe((result) => {
         if (result === 'remove') {
-          this.isRemovingAll = true; // Start loading state
+          this.isRemovingAll = true;
           this.cdr.markForCheck();
 
           this.preferencesService
@@ -458,7 +473,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.showSnackBar(
                   'All course preferences removed successfully.'
                 );
-                this.isRemovingAll = false; // End loading state
+                this.isRemovingAll = false;
                 this.cdr.markForCheck();
               },
               error: (error) => {
@@ -469,7 +484,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
                 } else {
                   this.showSnackBar('Error removing all course preferences.');
                 }
-                this.isRemovingAll = false; // End loading state
+                this.isRemovingAll = false;
                 this.cdr.markForCheck();
               },
             });
@@ -517,13 +532,16 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.preferencesService.submitPreferences(submittedData).subscribe({
       next: () => {
-        this.allSelectedCourses = this.allSelectedCourses.map((course) => ({
-          ...course,
-          isSubmitted: true,
-        }));
+        this.allSelectedCourses.forEach((course) => {
+          if (
+            this.dataSource.data.some(
+              (c) => c.course_code === course.course_code
+            )
+          ) {
+            course.isSubmitted = true;
+          }
+        });
 
-        this.isPreferencesEnabled = true;
-        this.updateTotalUnits();
         this.isSubmitting = false;
 
         this.dialog.open(DialogPrefSuccessComponent, {
