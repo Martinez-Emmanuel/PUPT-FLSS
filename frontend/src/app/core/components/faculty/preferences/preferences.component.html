@@ -39,10 +39,11 @@
     <div id="courses_container" [@fadeAnimation]>
       <div id="courses_search">
         <mat-form-field appearance="fill" class="custom-mat-search">
-          <mat-label>Search</mat-label>
+          <mat-label>Search Courses</mat-label>
           <input
             matInput
             maxlength="50"
+            matTooltip="Search using a course code or course title"
             [(ngModel)]="searchQuery"
             (input)="onSearchInput()"
             #searchInput
@@ -300,10 +301,15 @@
           [matTooltip]="
             isRemoveDisabled ? 'You must select at least one course.' : ''
           "
-          [class.disabled]="isRemoveDisabled"
+          [class.disabled]="isRemoveDisabled || isRemovingAll"
         >
+          @if (!isRemovingAll) {
           <span mat-symbol="delete_sweep" class="remove"></span>
           <span class="button-text remove">Remove all</span>
+          } @else {
+          <mat-spinner class="custom-spinner" diameter="20"></mat-spinner>
+          <span class="button-text remove">Remove all</span>
+          }
         </div>
 
         <!-- Submit Preferences Button -->
@@ -322,7 +328,7 @@
           <span mat-symbol="done_all" class="submit"></span>
           } @else {
           <span class="button-text submit">Submit Preferences</span>
-          <mat-spinner class="custom-spinner" diameter="20"></mat-spinner>
+          <mat-spinner class="custom-spinner-two" diameter="20"></mat-spinner>
           }
         </div>
       </div>

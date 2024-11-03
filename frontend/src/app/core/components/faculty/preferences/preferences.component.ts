@@ -72,6 +72,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   isDarkMode = false;
   isLoading = true;
   isSubmitting = false;
+  isRemovingAll = false;
 
   academicYear: string = '';
   semesterLabel: string = '';
@@ -378,47 +379,52 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
-    if (course.isSubmitted) {
-      const facultyId = this.cookieService.get('faculty_id');
-      const activeSemesterId = this.activeSemesterId;
+    const facultyId = this.cookieService.get('faculty_id');
+    const activeSemesterId = this.activeSemesterId;
 
-      if (!facultyId || !activeSemesterId) {
-        this.showSnackBar('Error: Missing faculty or semester information.');
-        return;
-      }
-
-      this.preferencesService
-        .deletePreference(
-          course.course_assignment_id,
-          facultyId,
-          activeSemesterId
-        )
-        .subscribe({
-          next: () => {
-            this.allSelectedCourses = this.allSelectedCourses.filter(
-              (c) => c.course_code !== course.course_code
-            );
-            this.updateDataSource();
-            this.updateTotalUnits();
-            this.showSnackBar('Course preference removed successfully.');
-          },
-          error: (error) => {
-            console.error('Error deleting preference:', error);
-            this.showSnackBar('Error removing course preference.');
-          },
-        });
-    } else {
-      this.allSelectedCourses = this.allSelectedCourses.filter(
-        (c) => c.course_code !== course.course_code
-      );
-      this.updateDataSource();
-      this.updateTotalUnits();
+    if (!facultyId || !activeSemesterId) {
+      this.showSnackBar('Error: Missing faculty or semester information.');
+      return;
     }
+
+    this.preferencesService
+      .deletePreference(
+        course.course_assignment_id,
+        facultyId,
+        activeSemesterId
+      )
+      .subscribe({
+        next: () => {
+          this.allSelectedCourses = this.allSelectedCourses.filter(
+            (c) => c.course_code !== course.course_code
+          );
+          this.updateDataSource();
+          this.updateTotalUnits();
+          this.showSnackBar('Course preference removed successfully.');
+        },
+        error: (error) => {
+          if (error.status === 403) {
+            this.showSnackBar(
+              'The submission deadline has passed. You cannot modify your preferences anymore.'
+            );
+          } else {
+            this.showSnackBar('Error removing course preference.');
+          }
+        },
+      });
   }
 
   removeAllCourses(): void {
-    if (!this.isPreferencesEnabled) {
+    if (!this.isPreferencesEnabled || this.isRemovingAll) {
       this.showSnackBar('You have already submitted your preferences.');
+      return;
+    }
+
+    const facultyId = this.cookieService.get('faculty_id');
+    const activeSemesterId = this.activeSemesterId;
+
+    if (!facultyId || !activeSemesterId) {
+      this.showSnackBar('Error: Missing faculty or semester information.');
       return;
     }
 
@@ -439,46 +445,34 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       .afterClosed()
       .subscribe((result) => {
         if (result === 'remove') {
-          const facultyId = this.cookieService.get('faculty_id');
-          const activeSemesterId = this.activeSemesterId;
+          this.isRemovingAll = true; // Start loading state
+          this.cdr.markForCheck();
 
-          if (!facultyId || !activeSemesterId) {
-            this.showSnackBar(
-              'Error: Missing faculty or semester information.'
-            );
-            return;
-          }
-
-          const submittedCourses = this.allSelectedCourses.filter(
-            (c) => c.isSubmitted
-          );
-          const nonSubmittedCourses = this.allSelectedCourses.filter(
-            (c) => !c.isSubmitted
-          );
-
-          if (submittedCourses.length > 0) {
-            this.preferencesService
-              .deleteAllPreferences(facultyId, activeSemesterId)
-              .subscribe({
-                next: () => {
-                  this.allSelectedCourses = nonSubmittedCourses;
-                  this.updateDataSource();
-                  this.updateTotalUnits();
+          this.preferencesService
+            .deleteAllPreferences(facultyId, activeSemesterId)
+            .subscribe({
+              next: () => {
+                this.allSelectedCourses = [];
+                this.updateDataSource();
+                this.updateTotalUnits();
+                this.showSnackBar(
+                  'All course preferences removed successfully.'
+                );
+                this.isRemovingAll = false; // End loading state
+                this.cdr.markForCheck();
+              },
+              error: (error) => {
+                if (error.status === 403) {
                   this.showSnackBar(
-                    'All submitted course preferences removed successfully.'
+                    'The submission deadline has passed. You cannot modify your preferences anymore.'
                   );
-                },
-                error: (error) => {
-                  console.error('Error deleting preferences:', error);
-                  this.showSnackBar('Error removing course preferences.');
-                },
-              });
-          } else {
-            this.allSelectedCourses = [];
-            this.updateDataSource();
-            this.updateTotalUnits();
-            this.showSnackBar('All course preferences removed successfully.');
-          }
+                } else {
+                  this.showSnackBar('Error removing all course preferences.');
+                }
+                this.isRemovingAll = false; // End loading state
+                this.cdr.markForCheck();
+              },
+            });
         }
       });
   }
@@ -535,15 +529,19 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
         this.dialog.open(DialogPrefSuccessComponent, {
           width: '30rem',
           disableClose: true,
-          panelClass: ['dialog-base', 'success-dialog'],
           data: { deadline: this.deadline },
         });
 
         this.cdr.markForCheck();
       },
       error: (error) => {
-        console.error('Error submitting preferences:', error);
-        this.showSnackBar('Error submitting preferences.');
+        if (error.status === 403) {
+          this.showSnackBar(
+            'The submission deadline has passed. You cannot submit preferences.'
+          );
+        } else {
+          this.showSnackBar('Error submitting preferences.');
+        }
         this.isSubmitting = false;
         this.cdr.markForCheck();
       },

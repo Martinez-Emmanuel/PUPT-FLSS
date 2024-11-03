@@ -5,7 +5,8 @@
 }
 
 :host {
-  @include custom-spinner(var(--secondary-text));
+  @include custom-spinner;
+  @include custom-spinner-two();
 }
 
 .faculty-preferences-container {
@@ -289,6 +290,7 @@
   }
 
   .no-data-text {
+    @include default-transition;
     @include flex-layout($gap: var(--spacing-xs));
     width: 100%;
     text-align: center;

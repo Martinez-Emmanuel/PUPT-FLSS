@@ -27,18 +27,37 @@ class PreferenceController extends Controller
             'preferences.*.preferred_end_time' => 'required|string',
         ]);
 
-        DB::transaction(function () use ($request) {
-            $facultyId = $request->faculty_id;
-            $activeSemesterId = $request->active_semester_id;
+        // Check if the current date is past the submission deadline
+        $facultyId = $validatedData['faculty_id'];
+        $activeSemesterId = $validatedData['active_semester_id'];
 
+        // Retrieve preference setting for deadline check
+        $preferenceSetting = PreferencesSetting::where('faculty_id', $facultyId)->first();
+        $globalDeadline = $preferenceSetting->global_deadline;
+        $individualDeadline = $preferenceSetting->individual_deadline;
+
+        $currentDate = Carbon::now();
+        $deadline = $individualDeadline ?? $globalDeadline;
+
+        if ($deadline) {
+            $deadline = Carbon::parse($deadline)->endOfDay();
+            if ($currentDate->greaterThan($deadline)) {
+                return response()->json([
+                    'message' => 'The submission deadline has passed. You cannot submit preferences.',
+                ], 403);
+            }
+        }
+
+        // Perform preference submission within a transaction
+        DB::transaction(function () use ($validatedData, $facultyId, $activeSemesterId, $request) {
             $existingPreferences = Preference::where('faculty_id', $facultyId)
                 ->where('active_semester_id', $activeSemesterId)
                 ->get();
 
             $existingIds = $existingPreferences->pluck('course_assignment_id')->toArray();
-            $newIds = array_column($request->preferences, 'course_assignment_id');
+            $newIds = array_column($validatedData['preferences'], 'course_assignment_id');
 
-            foreach ($request->preferences as $preference) {
+            foreach ($validatedData['preferences'] as $preference) {
                 Preference::updateOrCreate(
                     [
                         'faculty_id' => $facultyId,
@@ -231,6 +250,21 @@ class PreferenceController extends Controller
             return response()->json(['message' => 'Active semester ID is required.'], 400);
         }
 
+        // Check deadline
+        $preferenceSetting = PreferencesSetting::where('faculty_id', $facultyId)->first();
+        $deadline = $preferenceSetting->individual_deadline ?? $preferenceSetting->global_deadline;
+
+        if ($deadline) {
+            // Parse deadline as end of the day
+            $deadline = Carbon::parse($deadline)->endOfDay();
+            if (Carbon::now()->greaterThan($deadline)) {
+                return response()->json([
+                    'message' => 'The submission deadline has passed. You cannot delete preferences.',
+                ], 403);
+            }
+        }
+
+        // Find and delete the specific preference
         $preference = Preference::where('faculty_id', $facultyId)
             ->where('active_semester_id', $activeSemesterId)
             ->where('course_assignment_id', $preference_id)
@@ -261,6 +295,21 @@ class PreferenceController extends Controller
             return response()->json(['message' => 'Active semester ID is required.'], 400);
         }
 
+        // Check deadline
+        $preferenceSetting = PreferencesSetting::where('faculty_id', $facultyId)->first();
+        $deadline = $preferenceSetting->individual_deadline ?? $preferenceSetting->global_deadline;
+
+        if ($deadline) {
+            // Parse deadline as end of the day
+            $deadline = Carbon::parse($deadline)->endOfDay();
+            if (Carbon::now()->greaterThan($deadline)) {
+                return response()->json([
+                    'message' => 'The submission deadline has passed. You cannot delete all preferences.',
+                ], 403);
+            }
+        }
+
+        // Delete all preferences for the specified faculty and semester
         DB::transaction(function () use ($facultyId, $activeSemesterId) {
             Preference::where('faculty_id', $facultyId)
                 ->where('active_semester_id', $activeSemesterId)
