@@ -39,13 +39,10 @@ class PreferenceController extends Controller
         $currentDate = Carbon::now();
         $deadline = $individualDeadline ?? $globalDeadline;
 
-        if ($deadline) {
-            $deadline = Carbon::parse($deadline)->endOfDay();
-            if ($currentDate->greaterThan($deadline)) {
-                return response()->json([
-                    'message' => 'The submission deadline has passed. You cannot submit preferences.',
-                ], 403);
-            }
+        if ($preferenceSetting->is_enabled == 0 || ($deadline && $currentDate->greaterThan(Carbon::parse($deadline)->endOfDay()))) {
+            return response()->json([
+                'message' => 'The submission deadline has passed. You cannot submit preferences.',
+            ], 403);
         }
 
         // Perform preference submission within a transaction
@@ -254,14 +251,10 @@ class PreferenceController extends Controller
         $preferenceSetting = PreferencesSetting::where('faculty_id', $facultyId)->first();
         $deadline = $preferenceSetting->individual_deadline ?? $preferenceSetting->global_deadline;
 
-        if ($deadline) {
-            // Parse deadline as end of the day
-            $deadline = Carbon::parse($deadline)->endOfDay();
-            if (Carbon::now()->greaterThan($deadline)) {
-                return response()->json([
-                    'message' => 'The submission deadline has passed. You cannot delete preferences.',
-                ], 403);
-            }
+        if ($preferenceSetting->is_enabled == 0 || ($deadline && Carbon::now()->greaterThan(Carbon::parse($deadline)->endOfDay()))) {
+            return response()->json([
+                'message' => 'The submission deadline has passed. You cannot delete preferences.',
+            ], 403);
         }
 
         // Find and delete the specific preference
@@ -299,14 +292,10 @@ class PreferenceController extends Controller
         $preferenceSetting = PreferencesSetting::where('faculty_id', $facultyId)->first();
         $deadline = $preferenceSetting->individual_deadline ?? $preferenceSetting->global_deadline;
 
-        if ($deadline) {
-            // Parse deadline as end of the day
-            $deadline = Carbon::parse($deadline)->endOfDay();
-            if (Carbon::now()->greaterThan($deadline)) {
-                return response()->json([
-                    'message' => 'The submission deadline has passed. You cannot delete all preferences.',
-                ], 403);
-            }
+        if ($preferenceSetting->is_enabled == 0 || ($deadline && Carbon::now()->greaterThan(Carbon::parse($deadline)->endOfDay()))) {
+            return response()->json([
+                'message' => 'The submission deadline has passed or preferences modification is disabled. You cannot delete all preferences.',
+            ], 403);
         }
 
         // Delete all preferences for the specified faculty and semester
