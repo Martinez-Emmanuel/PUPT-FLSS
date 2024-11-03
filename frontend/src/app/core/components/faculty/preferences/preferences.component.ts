@@ -1,13 +1,4 @@
-import {
-  Component,
-  OnInit,
-  AfterViewInit,
-  OnDestroy,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  ViewChild,
-  ElementRef,
-} from '@angular/core';
+import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { of, Subscription, switchMap, tap } from 'rxjs';
@@ -30,28 +21,16 @@ import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 import { TableDialogComponent } from '../../../../shared/table-dialog/table-dialog.component';
 import { DialogTimeComponent } from '../../../../shared/dialog-time/dialog-time.component';
-import {
-  DialogGenericComponent,
-  DialogData,
-} from '../../../../shared/dialog-generic/dialog-generic.component';
+import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
 import { DialogPrefSuccessComponent } from '../../../../shared/dialog-pref-success/dialog-pref-success.component';
 import { DialogPrefComponent } from '../../../../shared/dialog-pref/dialog-pref.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { ThemeService } from '../../../services/theme/theme.service';
-import {
-  PreferencesService,
-  Program,
-  Course,
-  YearLevel,
-} from '../../../services/faculty/preference/preferences.service';
+import { PreferencesService, Program, Course, YearLevel } from '../../../services/faculty/preference/preferences.service';
 import { CookieService } from 'ngx-cookie-service';
 
-import {
-  fadeAnimation,
-  cardEntranceAnimation,
-  rowAdditionAnimation,
-} from '../../../animations/animations';
+import { fadeAnimation, cardEntranceAnimation, rowAdditionAnimation } from '../../../animations/animations';
 
 interface TableData extends Course {
   preferredDay: string;
@@ -143,6 +122,9 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   facultyId: string = '';
   facultyName: string = '';
 
+  submissionDeadline: Date | null = null;
+  daysLeft: string | number = 0;
+
   constructor(
     private readonly themeService: ThemeService,
     private readonly cdr: ChangeDetectorRef,
@@ -208,6 +190,23 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
               this.deadline =
                 activeSemester.individual_deadline ||
                 activeSemester.global_deadline;
+
+              if (this.deadline) {
+                this.submissionDeadline = new Date(this.deadline);
+                const today = new Date();
+                const deadlineDate = new Date(this.deadline);
+
+                deadlineDate.setHours(0, 0, 0, 0);
+                today.setHours(0, 0, 0, 0);
+
+                const diffTime = deadlineDate.getTime() - today.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                this.daysLeft = diffDays < 1 ? 'Today' : `${diffDays} days left`;
+              } else {
+                this.submissionDeadline = null;
+                this.daysLeft = 'N/A';
+              }
 
               const preferences = activeSemester.courses.map((course: any) => ({
                 course_id: course.course_details.course_id,

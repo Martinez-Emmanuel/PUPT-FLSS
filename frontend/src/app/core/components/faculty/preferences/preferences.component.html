@@ -9,12 +9,18 @@
   <div class="preferences-row-one">
     <div id="preferences_title" [@fadeAnimation]>
       <h1>Set Preferences</h1>
-      <p class="pref-description">
-        Submit your preferred courses and schedule for the upcoming
+      <div class="pref-description">
+        Select your preferred courses and schedule for the upcoming
         <span class="highlight"
           >A.Y. {{ academicYear }}, {{ semesterLabel }}</span
-        >.
-      </p>
+        >. @if (isPreferencesEnabled) {
+        <p class="submission-deadline">
+          Submission Deadline: {{ submissionDeadline | date : "longDate" }} ({{
+            daysLeft === "Today" ? "Today" : daysLeft
+          }})
+        </p>
+        }
+      </div>
     </div>
 
     @if(isPreferencesEnabled) {

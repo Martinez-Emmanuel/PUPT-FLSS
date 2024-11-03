@@ -72,9 +72,14 @@
 
     .pref-description {
       font-size: var(--font-size-mdx);
+      line-height: var(--line-height-sm);
       white-space: normal;
 
       .highlight {
+        font-weight: 600;
+      }
+
+      .submission-deadline {
         font-weight: 600;
       }
     }
