@@ -23,6 +23,7 @@ import { TableDialogComponent } from '../../../../shared/table-dialog/table-dial
 import { DialogTimeComponent } from '../../../../shared/dialog-time/dialog-time.component';
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
 import { DialogPrefSuccessComponent } from '../../../../shared/dialog-pref-success/dialog-pref-success.component';
+import { DialogPrefComponent } from '../../../../shared/dialog-pref/dialog-pref.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { ThemeService } from '../../../services/theme/theme.service';
@@ -47,6 +48,7 @@ interface TableData extends Course {
     DialogTimeComponent,
     DialogPrefSuccessComponent,
     LoadingComponent,
+    DialogPrefComponent, // Add DialogPrefComponent to imports
     TimeFormatPipe,
     MatSymbolDirective,
     MatTableModule,
@@ -67,6 +69,7 @@ interface TableData extends Course {
   animations: [fadeAnimation, cardEntranceAnimation, rowAdditionAnimation],
 })
 export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
+  // Existing properties...
   showSidenav = false;
   showProgramSelection = true;
   isDarkMode = false;
@@ -116,6 +119,9 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   isPreferencesEnabled: boolean = true;
   activeSemesterId: number | null = null;
   deadline: string | null = null;
+
+  facultyId: string = '';
+  facultyName: string = '';
 
   constructor(
     private readonly themeService: ThemeService,
@@ -188,6 +194,9 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
           const facultyPreference = preferencesResponse.preferences;
 
           if (facultyPreference) {
+            this.facultyId = facultyPreference.faculty_id.toString();
+            this.facultyName = facultyPreference.faculty_name;
+
             this.isPreferencesEnabled = facultyPreference.is_enabled === 1;
 
             const activeSemester = facultyPreference.active_semesters[0];
@@ -338,10 +347,9 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   // =========================
 
   addCourseToTable(course: Course): void {
-
-    // if (this.isCourseAlreadyAdded(course) || this.isMaxUnitsExceeded(course)) {
-    //   return;
-    // }
+    if (this.isCourseAlreadyAdded(course)) {
+      return;
+    }
 
     const newCourse: TableData = {
       ...course,
@@ -385,7 +393,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
           error: (error) => {
             if (error.status === 403) {
               this.showSnackBar(
-                'The submission deadline has passed. You cannot modify your preferences anymore.'
+                'Preferences submission is now closed. You cannot modify your preferences anymore.'
               );
             } else {
               this.showSnackBar('Error removing course preference.');
@@ -450,7 +458,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
               error: (error) => {
                 if (error.status === 403) {
                   this.showSnackBar(
-                    'The submission deadline has passed. You cannot modify your preferences anymore.'
+                    'Preferences submission is now closed. You cannot modify your preferences anymore.'
                   );
                 } else {
                   this.showSnackBar('Error removing all course preferences.');
@@ -526,7 +534,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       error: (error) => {
         if (error.status === 403) {
           this.showSnackBar(
-            'The submission deadline has passed. You cannot submit preferences.'
+            'Preferences submission is now closed. You cannot modify your preferences anymore.'
           );
         } else {
           this.showSnackBar('Error submitting preferences.');
@@ -645,6 +653,19 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  openViewPreferencesDialog(): void {
+    this.dialog.open(DialogPrefComponent, {
+      maxWidth: '70rem',
+      width: '100%',
+      data: {
+        facultyName: this.facultyName,
+        faculty_id: parseInt(this.facultyId, 10),
+        viewOnlyTable: true,
+      },
+      disableClose: true,
+    });
+  }
+
   // ====================
   // Utility Methods
   // ====================
@@ -741,4 +762,5 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       .toString()
       .padStart(2, '0')} ${ampm}`;
   }
+
 }

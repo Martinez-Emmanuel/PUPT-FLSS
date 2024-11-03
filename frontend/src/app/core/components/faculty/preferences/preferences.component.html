@@ -1509,7 +1509,9 @@
           <span>Faculty preferences submission has been closed.</span>
         </div>
         <div class="view-preferences">
-          <button mat-flat-button>View my submitted preferences</button>
+          <button mat-flat-button (click)="openViewPreferencesDialog()">
+            View my submitted preferences
+          </button>
         </div>
       </div>
     </div>

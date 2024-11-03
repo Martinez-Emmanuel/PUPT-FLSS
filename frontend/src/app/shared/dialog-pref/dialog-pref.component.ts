@@ -31,6 +31,7 @@ interface DialogPrefData {
   facultyName: string;
   faculty_id: number;
   generatePdfFunction?: (preview: boolean) => Blob | void;
+  viewOnlyTable?: boolean;
 }
 
 @Component({
@@ -70,35 +71,44 @@ export class DialogPrefComponent implements OnInit {
     this.isLoading = true;
     this.facultyName = this.data.facultyName;
 
-    this.preferencesService.getPreferences().subscribe(
-      (response) => {
-        const faculty = response.preferences.find(
-          (f: any) => f.faculty_id === this.data.faculty_id
-        );
-        if (faculty) {
-          const activeSemester = faculty.active_semesters[0];
-          this.academicYear = activeSemester.academic_year;
-          this.semesterLabel = activeSemester.semester_label;
+    if (this.data.viewOnlyTable) {
+      this.selectedView = 'table-view';
+    }
 
-          this.courses = activeSemester.courses.map((course: any) => ({
-            course_code: course.course_details.course_code,
-            course_title: course.course_details.course_title,
-            lec_hours: course.lec_hours,
-            lab_hours: course.lab_hours,
-            units: course.units,
-            preferred_day: course.preferred_day,
-            preferred_start_time: course.preferred_start_time,
-            preferred_end_time: course.preferred_end_time,
-          }));
+    this.preferencesService
+      .getPreferencesByFacultyId(this.data.faculty_id.toString())
+      .subscribe(
+        (response) => {
+          const faculty = response.preferences;
+
+          if (faculty) {
+            const activeSemester = faculty.active_semesters[0];
+            this.academicYear = activeSemester.academic_year;
+            this.semesterLabel = activeSemester.semester_label;
+
+            this.courses = activeSemester.courses.map((course: any) => ({
+              course_code: course.course_details.course_code,
+              course_title: course.course_details.course_title,
+              lec_hours: course.lec_hours,
+              lab_hours: course.lab_hours,
+              units: course.units,
+              preferred_day: course.preferred_day,
+              preferred_start_time: course.preferred_start_time,
+              preferred_end_time: course.preferred_end_time,
+            }));
+          }
+
+          this.isLoading = false;
+
+          if (!this.data.viewOnlyTable && this.selectedView === 'pdf-view') {
+            this.generateAndDisplayPdf();
+          }
+        },
+        (error) => {
+          console.error('Error loading faculty preferences:', error);
+          this.isLoading = false;
         }
-
-        this.isLoading = false;
-      },
-      (error) => {
-        console.error('Error loading faculty preferences:', error);
-        this.isLoading = false;
-      }
-    );
+      );
   }
 
   onViewChange(): void {
