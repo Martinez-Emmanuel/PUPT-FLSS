@@ -63,8 +63,8 @@ Route::get('/overview-details', [ReportsController::class, 'getOverviewDetails']
 
 // Preferences routes
 Route::post('/submit-preferences', [PreferenceController::class, 'submitPreferences']);
-Route::get('/view-preferences', [PreferenceController::class, 'getAllFacultyPreferences']);
-Route::get('/view-preferences/{faculty_id}', [PreferenceController::class, 'getFacultyPreferencesById']);
+Route::get('/get-preferences', [PreferenceController::class, 'getAllFacultyPreferences']);
+Route::get('/get-preferences/{faculty_id}', [PreferenceController::class, 'getFacultyPreferencesById']);
 Route::delete('/preferences/{preference_id}', [PreferenceController::class, 'deletePreferences']);
 Route::delete('/preferences', [PreferenceController::class, 'deleteAllPreferences']);
 Route::post('/toggle-preferences-all', [PreferenceController::class, 'toggleAllPreferences']);

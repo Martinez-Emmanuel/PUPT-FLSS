@@ -1,4 +1,13 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { of, Subscription, switchMap, tap } from 'rxjs';
@@ -21,16 +30,28 @@ import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 import { TableDialogComponent } from '../../../../shared/table-dialog/table-dialog.component';
 import { DialogTimeComponent } from '../../../../shared/dialog-time/dialog-time.component';
-import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
+import {
+  DialogGenericComponent,
+  DialogData,
+} from '../../../../shared/dialog-generic/dialog-generic.component';
 import { DialogPrefSuccessComponent } from '../../../../shared/dialog-pref-success/dialog-pref-success.component';
 import { DialogPrefComponent } from '../../../../shared/dialog-pref/dialog-pref.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { ThemeService } from '../../../services/theme/theme.service';
-import { PreferencesService, Program, Course, YearLevel } from '../../../services/faculty/preference/preferences.service';
+import {
+  PreferencesService,
+  Program,
+  Course,
+  YearLevel,
+} from '../../../services/faculty/preference/preferences.service';
 import { CookieService } from 'ngx-cookie-service';
 
-import { fadeAnimation, cardEntranceAnimation, rowAdditionAnimation } from '../../../animations/animations';
+import {
+  fadeAnimation,
+  cardEntranceAnimation,
+  rowAdditionAnimation,
+} from '../../../animations/animations';
 
 interface TableData extends Course {
   preferredDay: string;
@@ -69,7 +90,6 @@ interface TableData extends Course {
   animations: [fadeAnimation, cardEntranceAnimation, rowAdditionAnimation],
 })
 export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
-
   showSidenav = false;
   showProgramSelection = true;
   isDarkMode = false;
@@ -240,7 +260,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
             console.error('Error loading data:', error);
             if (error.url.includes('/offered-courses-sem')) {
               this.showSnackBar('Error loading programs.');
-            } else if (error.url.includes(`/view-preferences/${facultyId}`)) {
+            } else if (error.url.includes(`/get-preferences/${facultyId}`)) {
               this.showSnackBar('Error loading preferences.');
             } else {
               this.showSnackBar('An unexpected error occurred.');

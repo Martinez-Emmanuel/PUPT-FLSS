@@ -113,7 +113,7 @@ export class PreferencesService {
    * Fetches preferences data from the API and updates the preferences cache.
    */
   private fetchPreferences(): void {
-    const url = `${this.baseUrl}/view-preferences`;
+    const url = `${this.baseUrl}/get-preferences`;
     this.http
       .get(url)
       .pipe(take(1))
@@ -145,7 +145,7 @@ export class PreferencesService {
       return this.preferencesCache.get(facultyId)!;
     }
 
-    const url = `${this.baseUrl}/view-preferences/${facultyId}`;
+    const url = `${this.baseUrl}/get-preferences/${facultyId}`;
     const preferences$ = this.http.get(url).pipe(
       shareReplay(1),
       catchError((error) => {
