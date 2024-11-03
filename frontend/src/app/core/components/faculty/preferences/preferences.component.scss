@@ -398,3 +398,29 @@
     }
   }
 }
+
+.preferences-closed {
+  @include flex-layout(
+    $direction: column,
+    $align: center,
+    $justify: center,
+    $gap: var(--spacing-lg)
+  );
+  height: 100%;
+  opacity: var(--opacity-semi-opaque);
+
+  svg {
+    width: 20rem;
+    height: auto;
+  }
+
+  .unpublished-text {
+    @include flex-layout($gap: var(--spacing-xs));
+    font-size: var(--font-size-mdx);
+    text-align: center;
+
+    span[mat-symbol] {
+      font-size: var(--font-size-mdx);
+    }
+  }
+}

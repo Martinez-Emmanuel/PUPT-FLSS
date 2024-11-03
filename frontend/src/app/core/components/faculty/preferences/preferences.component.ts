@@ -251,11 +251,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   // =========================
 
   selectProgram(program: Program): void {
-    if (!this.isPreferencesEnabled) {
-      this.showSnackBar('You have already submitted your preferences.');
-      return;
-    }
-
     this.selectedProgram = program;
     this.showProgramSelection = false;
 
@@ -282,22 +277,12 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   filterByYear(year: number | null): void {
-    if (!this.isPreferencesEnabled) {
-      this.showSnackBar('You have already submitted your preferences.');
-      return;
-    }
-
     this.selectedYearLevel = year;
     this.applyYearLevelFilter();
     this.cdr.markForCheck();
   }
 
   backToProgramSelection(): void {
-    if (!this.isPreferencesEnabled) {
-      this.showSnackBar('You have already submitted your preferences.');
-      return;
-    }
-
     this.showProgramSelection = true;
     this.selectedProgram = undefined;
     this.courses = [];
@@ -353,10 +338,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   // =========================
 
   addCourseToTable(course: Course): void {
-    if (!this.isPreferencesEnabled) {
-      this.showSnackBar('You have already submitted your preferences.');
-      return;
-    }
 
     // if (this.isCourseAlreadyAdded(course) || this.isMaxUnitsExceeded(course)) {
     //   return;
@@ -374,11 +355,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   removeCourse(course: TableData): void {
-    if (!this.isPreferencesEnabled) {
-      this.showSnackBar('You have already submitted your preferences.');
-      return;
-    }
-
     const facultyId = this.cookieService.get('faculty_id');
     const activeSemesterId = this.activeSemesterId;
 
@@ -430,11 +406,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   removeAllCourses(): void {
-    if (!this.isPreferencesEnabled || this.isRemovingAll) {
-      this.showSnackBar('You have already submitted your preferences.');
-      return;
-    }
-
     const facultyId = this.cookieService.get('faculty_id');
     const activeSemesterId = this.activeSemesterId;
 
@@ -617,11 +588,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   // ====================
 
   openTimeDialog(element: TableData): void {
-    if (!this.isPreferencesEnabled) {
-      this.showSnackBar('You have already submitted your preferences.');
-      return;
-    }
-
     let startTime = '';
     let endTime = '';
     let isWholeDay = false;
@@ -650,11 +616,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openDayDialog(element: TableData): void {
-    if (!this.isPreferencesEnabled) {
-      this.showSnackBar('You have already submitted your preferences.');
-      return;
-    }
-
     const dialogRef = this.dialog.open(TableDialogComponent, {
       width: '20rem',
       data: {
@@ -682,27 +643,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
         this.cdr.markForCheck();
       }
     });
-  }
-
-  onDisabledSectionClick(event: Event): void {
-    if (!this.isPreferencesEnabled) {
-      event.stopPropagation();
-
-      const dialogData: DialogData = {
-        title: 'Action Not Allowed',
-        content: `You cannot edit your preferences at this time. 
-          Please contact the administrator if you need assistance.`,
-        actionText: 'Close',
-        cancelText: '',
-        action: 'close',
-      };
-
-      this.dialog.open(DialogGenericComponent, {
-        data: dialogData,
-        disableClose: true,
-        panelClass: 'dialog-base',
-      });
-    }
   }
 
   // ====================
