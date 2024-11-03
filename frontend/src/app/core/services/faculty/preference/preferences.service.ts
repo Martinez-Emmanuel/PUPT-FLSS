@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 
-import { Observable, BehaviorSubject } from 'rxjs';
-import { map, shareReplay, tap, take } from 'rxjs/operators';
+import { Observable, BehaviorSubject, throwError } from 'rxjs';
+import { map, shareReplay, tap, take, catchError } from 'rxjs/operators';
 
 import { environment } from '../../../../../environments/environment.dev';
 
@@ -62,10 +62,9 @@ export interface AssignedCoursesResponse {
 export class PreferencesService {
   private baseUrl = environment.apiUrl;
 
+  private preferencesCache = new Map<string, Observable<any>>();
   private preferencesSubject = new BehaviorSubject<any>(null);
   private preferences$ = this.preferencesSubject.asObservable();
-
-  private isLoading = false;
   private programsCache$: Observable<{
     programs: Program[];
     active_semester_id: number;
@@ -88,7 +87,12 @@ export class PreferencesService {
           programs: response.programs,
           active_semester_id: response.active_semester_id,
         })),
-        shareReplay(1)
+        shareReplay(1),
+        catchError((error) => {
+          console.error('Error fetching programs:', error);
+          this.programsCache$ = null;
+          return throwError(() => new Error('Failed to fetch programs'));
+        })
       );
     }
     return this.programsCache$;
@@ -96,9 +100,10 @@ export class PreferencesService {
 
   /**
    * Retrieves cached user preferences, triggering an API call if none are loaded.
+   * **Note**: This method is separate from the cached preferences by faculty_id.
    */
   getPreferences(): Observable<any> {
-    if (!this.preferencesSubject.value && !this.isLoading) {
+    if (!this.preferencesSubject.value) {
       this.fetchPreferences();
     }
     return this.preferences$;
@@ -108,7 +113,6 @@ export class PreferencesService {
    * Fetches preferences data from the API and updates the preferences cache.
    */
   private fetchPreferences(): void {
-    this.isLoading = true;
     const url = `${this.baseUrl}/view-preferences`;
     this.http
       .get(url)
@@ -116,34 +120,67 @@ export class PreferencesService {
       .subscribe({
         next: (response) => {
           this.preferencesSubject.next(response);
-          this.isLoading = false;
         },
         error: (error) => {
           console.error('Error fetching preferences:', error);
-          this.preferencesSubject.error(error);
-          this.isLoading = false;
+          this.preferencesSubject.error(
+            new Error('Failed to fetch preferences')
+          );
         },
       });
   }
 
   /**
-   * Retrieves preferences for a specific faculty by ID.
+   * Retrieves preferences for a specific faculty by ID with caching.
+   * If preferences for the given faculty_id are already cached, returns the cached Observable.
+   * Otherwise, makes an API call, caches the result, and returns the Observable.
    */
   getPreferencesByFacultyId(facultyId: string): Observable<any> {
+    if (!facultyId) {
+      console.error('Invalid faculty ID provided.');
+      return throwError(() => new Error('Invalid faculty ID'));
+    }
+
+    if (this.preferencesCache.has(facultyId)) {
+      return this.preferencesCache.get(facultyId)!;
+    }
+
     const url = `${this.baseUrl}/view-preferences/${facultyId}`;
-    return this.http.get(url);
+    const preferences$ = this.http.get(url).pipe(
+      shareReplay(1),
+      catchError((error) => {
+        console.error(
+          `Error fetching preferences for faculty ID ${facultyId}:`,
+          error
+        );
+        this.preferencesCache.delete(facultyId);
+        return throwError(
+          () =>
+            new Error(`Failed to fetch preferences for faculty ID ${facultyId}`)
+        );
+      })
+    );
+
+    this.preferencesCache.set(facultyId, preferences$);
+    return preferences$;
   }
 
   /**
-   * Submits user preferences and clears the cached data.
+   * Submits user preferences and clears relevant caches upon success.
    */
   submitPreferences(preferences: any): Observable<any> {
     const url = `${this.baseUrl}/submit-preferences`;
-    return this.http.post(url, preferences).pipe(tap(() => this.clearCaches()));
+    return this.http.post(url, preferences).pipe(
+      tap(() => this.clearCaches(preferences.faculty_id.toString())),
+      catchError((error) => {
+        console.error('Error submitting preferences:', error);
+        return throwError(() => new Error('Failed to submit preferences'));
+      })
+    );
   }
 
   /**
-   * Deletes a specific preference by ID and clears preferences cache.
+   * Deletes a specific preference by ID and clears relevant caches upon success.
    */
   deletePreference(
     preferenceId: number,
@@ -155,14 +192,20 @@ export class PreferencesService {
       .set('active_semester_id', activeSemesterId.toString());
 
     const url = `${this.baseUrl}/preferences/${preferenceId}`;
-    return this.http
-      .delete(url, { params })
-      .pipe(tap(() => this.clearPreferencesCache()));
+    return this.http.delete(url, { params }).pipe(
+      tap(() => this.clearCaches(facultyId)),
+      catchError((error) => {
+        console.error(`Error deleting preference ID ${preferenceId}:`, error);
+        return throwError(
+          () => new Error(`Failed to delete preference ID ${preferenceId}`)
+        );
+      })
+    );
   }
 
   /**
    * Deletes all preferences for a specific faculty and active semester,
-   * then clears the cache.
+   * then clears the cache upon success.
    */
   deleteAllPreferences(
     facultyId: string,
@@ -173,13 +216,26 @@ export class PreferencesService {
       .set('active_semester_id', activeSemesterId.toString());
 
     const url = `${this.baseUrl}/preferences`;
-    return this.http
-      .delete(url, { params })
-      .pipe(tap(() => this.clearPreferencesCache()));
+    return this.http.delete(url, { params }).pipe(
+      tap(() => this.clearCaches(facultyId)),
+      catchError((error) => {
+        console.error(
+          `Error deleting all preferences for faculty ID ${facultyId}:`,
+          error
+        );
+        return throwError(
+          () =>
+            new Error(
+              `Failed to delete all preferences for faculty ID ${facultyId}`
+            )
+        );
+      })
+    );
   }
 
   /**
-   * Toggles the preferences status for all faculty members.
+   * Toggles the preferences status for all faculty members and
+   * refreshes preferences cache upon success.
    */
   toggleAllPreferences(
     status: boolean,
@@ -193,24 +249,37 @@ export class PreferencesService {
       .pipe(
         tap(() => {
           this.fetchPreferences();
+        }),
+        catchError((error) => {
+          console.error('Error toggling all preferences:', error);
+          return throwError(
+            () => new Error('Failed to toggle all preferences')
+          );
         })
       );
   }
 
   /**
-   * Sends email to all faculty members to submit their preferences.
+   * Sends an email to all faculty members to submit their preferences.
    */
   sendPreferencesEmailToAll(): Observable<any> {
     const url = `${this.baseUrl}/email-all-faculty-preferences`;
     return this.http.post(url, {}).pipe(
       tap(() => {
-        console.log('Preference-related email sent.');
+        console.log('Preference-related email sent to all faculty.');
+      }),
+      catchError((error) => {
+        console.error('Error sending email to all faculty:', error);
+        return throwError(
+          () => new Error('Failed to send email to all faculty')
+        );
       })
     );
   }
 
   /**
-   * Toggles the preference status for a specific faculty member.
+   * Toggles the preference status for a specific faculty member
+   * and refreshes preferences cache upon success..
    */
   toggleSingleFacultyPreferences(
     faculty_id: number,
@@ -226,28 +295,76 @@ export class PreferencesService {
       .pipe(
         tap(() => {
           this.fetchPreferences();
+        }),
+        catchError((error) => {
+          console.error(
+            `Error toggling preferences for faculty ID ${faculty_id}:`,
+            error
+          );
+          return throwError(
+            () =>
+              new Error(
+                `Failed to toggle preferences for faculty ID ${faculty_id}`
+              )
+          );
         })
       );
   }
 
   /**
-   * Sends email to a specific faculty to submit their preferences.
+   * Sends an email to a specific faculty member to submit their preferences.
    */
   sendPreferencesEmailToFaculty(faculty_id: number): Observable<any> {
     const url = `${this.baseUrl}/email-single-faculty-preferences`;
-    return this.http.post(url, { faculty_id });
+    return this.http.post(url, { faculty_id }).pipe(
+      tap(() => {
+        console.log(
+          `Preference-related email sent to faculty ID ${faculty_id}.`
+        );
+      }),
+      catchError((error) => {
+        console.error(
+          `Error sending email to faculty ID ${faculty_id}:`,
+          error
+        );
+        return throwError(
+          () => new Error(`Failed to send email to faculty ID ${faculty_id}`)
+        );
+      })
+    );
   }
 
   /**
-   * Updates the preferences cache by fetching the latest data.
+   * Updates the preferences cache by fetching the latest data for a specific faculty_id.
    */
-  updatePreferencesCache(): void {
-    this.fetchPreferences();
+  updatePreferencesCache(facultyId: string): void {
+    this.preferencesCache.delete(facultyId);
+    this.getPreferencesByFacultyId(facultyId).subscribe({
+      next: () => {
+        console.log(`Preferences cache updated for faculty ID ${facultyId}.`);
+      },
+      error: (error) => {
+        console.error(
+          `Error updating preferences cache for faculty ID ${facultyId}:`,
+          error
+        );
+      },
+    });
   }
 
-  clearCaches(): void {
-    this.preferencesSubject.next(null);
+  /**
+   * Clears the cached preferences for a specific faculty_id.
+   */
+  private clearCaches(facultyId: string): void {
+    if (this.preferencesCache.has(facultyId)) {
+      this.preferencesCache.delete(facultyId);
+    }
+  }
+
+  clearAllCaches(): void {
+    this.preferencesCache.clear();
     this.programsCache$ = null;
+    this.preferencesSubject.next(null);
   }
 
   clearPreferencesCache(): void {
