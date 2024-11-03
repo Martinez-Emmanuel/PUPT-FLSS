@@ -80,12 +80,18 @@
         @if (data.type === 'all_preferences' || data.type ===
         'single_preferences') {
         <mat-hint>
-          @if (data.currentState) { Current Set Submission Deadline:
+          @if (data.currentState) { Current Set Submission Deadline: @if
+          (isDeadlineToday) {
+          <strong>{{ getDeadlineText(true) }}</strong>
+          } @else {
           {{ submissionDeadline | date }}
           <strong>({{ remainingDays }} days left)</strong>
-          } @else { The preferences submission will close after
+          } } @else { The preferences submission will close after @if
+          (isDeadlineToday) {
+          <strong>{{ getDeadlineText(false) }}</strong>
+          } @else {
           <strong>{{ remainingDays }} days</strong>
-          }
+          } }
         </mat-hint>
         }
       </mat-form-field>

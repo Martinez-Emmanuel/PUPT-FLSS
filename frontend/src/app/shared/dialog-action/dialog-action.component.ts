@@ -84,6 +84,7 @@ export class DialogActionComponent {
 
   submissionDeadline: Date | null = null;
   remainingDays: number = 0;
+  isDeadlineToday: boolean = false;
   minDate: Date = new Date();
 
   showReportOptions = false;
@@ -200,13 +201,17 @@ export class DialogActionComponent {
       .subscribe({
         next: () => {
           const successMessage = this.getSuccessMessage();
-          this.snackBar.open(successMessage, 'Close', { duration: this.SNACKBAR_DURATION });
+          this.snackBar.open(successMessage, 'Close', {
+            duration: this.SNACKBAR_DURATION,
+          });
           this.dialogRef.close(true);
         },
         error: (error) => {
           console.error('Operation failed:', error);
           const errorMessage = this.getErrorMessage();
-          this.snackBar.open(errorMessage, 'Close', { duration: this.SNACKBAR_DURATION });
+          this.snackBar.open(errorMessage, 'Close', {
+            duration: this.SNACKBAR_DURATION,
+          });
         },
       });
   }
@@ -222,13 +227,44 @@ export class DialogActionComponent {
 
   /**
    * Calculates remaining days between today and submission deadline
+   * and determines if the deadline is today
    */
   public calculateRemainingDays(): void {
     if (this.submissionDeadline) {
       const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
       const deadline = new Date(this.submissionDeadline);
+      deadline.setHours(0, 0, 0, 0);
+
       const diffTime = deadline.getTime() - today.getTime();
       this.remainingDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      this.isDeadlineToday =
+        this.remainingDays <= 0 && this.remainingDays >= -1;
+    }
+  }
+
+  /**
+   * Returns formatted deadline text based on whether deadline is today
+   */
+  public getDeadlineText(isCurrentDeadline: boolean = false): string {
+    if (!this.submissionDeadline) return '';
+
+    if (this.isDeadlineToday) {
+      if (isCurrentDeadline) {
+        return 'Today at 11:59 PM';
+      } else {
+        return 'today at 11:59 PM';
+      }
+    }
+
+    if (isCurrentDeadline) {
+      return `${formatDate(this.submissionDeadline, 'longDate', 'en-US')} (${
+        this.remainingDays
+      } days left)`;
+    } else {
+      return `${this.remainingDays} days`;
     }
   }
 
