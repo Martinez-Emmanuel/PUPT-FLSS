@@ -86,7 +86,7 @@
           } @else {
           {{ submissionDeadline | date }}
           <strong>({{ remainingDays }} days left)</strong>
-          } } @else { The preferences submission will close after @if
+          } } @else { The submission will automatically close after @if
           (isDeadlineToday) {
           <strong>{{ getDeadlineText(false) }}</strong>
           } @else {
@@ -123,6 +123,17 @@
           </span>
         </span>
       </mat-checkbox>
+    </div>
+    }
+
+    <!--Confirmation Text-->
+    @if ((data.type === 'all_preferences' || data.type === 'single_preferences')
+    && data.currentState) {
+    <div class="main-text">
+      <div class="confirm-disable">
+        This will override the currently set submission deadline and
+        <strong>immediately</strong> disable the preferences submission.
+      </div>
     </div>
     }
   </div>

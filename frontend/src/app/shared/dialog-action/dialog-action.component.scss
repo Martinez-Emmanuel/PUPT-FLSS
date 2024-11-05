@@ -43,6 +43,15 @@
     margin: 0;
     line-height: var(--line-height-md);
     text-align: justify;
+
+    .confirm-disable {
+      padding: var(--spacing-xs);
+      border-radius: var(--border-radius-sm);
+      background-color: var(--primary-fade);
+      color: var(--primary-text);
+      font-size: var(--font-size-sm);
+      line-height: var(--line-height-sm);
+    }
   }
 
   .secondary-text {
@@ -123,9 +132,10 @@
   }
 }
 
-.deadline-picker, .deadline-info {
+.deadline-picker,
+.deadline-info {
   width: 100%;
-  
+
   mat-form-field {
     width: 100%;
   }
