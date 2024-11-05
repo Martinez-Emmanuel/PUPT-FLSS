@@ -275,12 +275,26 @@
     text-align: center;
     background-color: var(--neutral-light);
 
-    &.title-cell {
-      max-width: 12rem;
+    .day-time-button-container {
+      @include flex-layout;
+
+      .day-time-button {
+        @include flex-layout;
+        color: var(--primary-text);
+      }
+
+      mat-icon {
+        @include flex-layout;
+        padding: var(--spacing-sm);
+      }
     }
 
-    .display-time {
-      @include ellipsis;
+    &.title-cell {
+      width: 15rem;
+    }
+
+    &.picker-cell {
+      width: 20rem;
     }
 
     .remove-button {
@@ -350,16 +364,6 @@
       }
     }
   }
-
-  .preferred-icon {
-    @include flex-layout;
-    font-size: 100%;
-  }
-
-  .preferred-button {
-    @include flex-layout;
-    color: var(--primary-text);
-  }
 }
 
 /* Media Query */
@@ -405,11 +409,7 @@
 }
 
 .preferences-closed {
-  @include flex-layout(
-    $direction: column,
-    $align: center,
-    $justify: center,
-  );
+  @include flex-layout($direction: column, $align: center, $justify: center);
   opacity: var(--opacity-semi-opaque);
   height: 100%;
 

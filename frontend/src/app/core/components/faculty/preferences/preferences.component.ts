@@ -1,4 +1,13 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { of, Subscription, switchMap, tap } from 'rxjs';
@@ -20,17 +29,29 @@ import { TimeFormatPipe } from '../../../pipes/time-format/time-format.pipe';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 import { TableDialogComponent } from '../../../../shared/table-dialog/table-dialog.component';
-import { DialogTimeComponent } from '../../../../shared/dialog-time/dialog-time.component';
-import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
+import { DialogDayTimeComponent } from '../../../../shared/dialog-day-time/dialog-day-time.component';
+import {
+  DialogGenericComponent,
+  DialogData,
+} from '../../../../shared/dialog-generic/dialog-generic.component';
 import { DialogPrefSuccessComponent } from '../../../../shared/dialog-pref-success/dialog-pref-success.component';
 import { DialogPrefComponent } from '../../../../shared/dialog-pref/dialog-pref.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { ThemeService } from '../../../services/theme/theme.service';
-import { PreferencesService, Program, Course, YearLevel } from '../../../services/faculty/preference/preferences.service';
+import {
+  PreferencesService,
+  Program,
+  Course,
+  YearLevel,
+} from '../../../services/faculty/preference/preferences.service';
 import { CookieService } from 'ngx-cookie-service';
 
-import { fadeAnimation, cardEntranceAnimation, rowAdditionAnimation } from '../../../animations/animations';
+import {
+  fadeAnimation,
+  cardEntranceAnimation,
+  rowAdditionAnimation,
+} from '../../../animations/animations';
 
 interface TableData extends Course {
   preferredDay: string;
@@ -45,7 +66,7 @@ interface TableData extends Course {
     CommonModule,
     FormsModule,
     TableDialogComponent,
-    DialogTimeComponent,
+    DialogDayTimeComponent,
     DialogPrefSuccessComponent,
     LoadingComponent,
     DialogPrefComponent,
@@ -92,14 +113,13 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   maxUnits = 0;
   readonly displayedColumns: string[] = [
     'action',
-    'num',
+    // 'num',
     'course_code',
     'course_title',
     'lec_hours',
     'lab_hours',
     'units',
-    'preferredDay',
-    'preferredTime',
+    'availableDayTime',
   ];
   readonly daysOfWeek = [
     'Monday',
@@ -202,7 +222,8 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
                 const diffTime = deadlineDate.getTime() - today.getTime();
                 const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-                this.daysLeft = diffDays < 1 ? 'Today' : `${diffDays} days left`;
+                this.daysLeft =
+                  diffDays < 1 ? 'Today' : `${diffDays} days left`;
               } else {
                 this.submissionDeadline = null;
                 this.daysLeft = 'N/A';
@@ -218,9 +239,9 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
                 units: course.units,
                 preferredDay: course.preferred_day,
                 preferredTime:
-                  course.preferred_start_time === '00:00:00' &&
-                  course.preferred_end_time === '23:59:59'
-                    ? 'Whole Day'
+                  course.preferred_start_time === '07:00:00' &&
+                  course.preferred_end_time === '21:00:00'
+                    ? '07:00 AM - 09:00 PM'
                     : course.preferred_start_time && course.preferred_end_time
                     ? `${this.convertTo12HourFormat(
                         course.preferred_start_time
@@ -409,9 +430,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
               (c) => c.course_code !== course.course_code
             );
 
-            this.dataSource = new MatTableDataSource<TableData>(
-              this.allSelectedCourses
-            );
+            this.updateDataSource();
             this.updateTotalUnits();
             this.showSnackBar('Course preference removed successfully.');
           },
@@ -430,9 +449,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
         (c) => c.course_code !== course.course_code
       );
 
-      this.dataSource = new MatTableDataSource<TableData>(
-        this.allSelectedCourses
-      );
+      this.updateDataSource();
       this.updateTotalUnits();
       this.showSnackBar('Course preference removed successfully.');
     }
@@ -450,7 +467,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     const dialogData: DialogData = {
       title: 'Remove All Courses',
       content: 'Are you sure you want to remove all your selected courses?',
-      actionText: 'Remove All',
+      actionText: 'Confirm',
       cancelText: 'Cancel',
       action: 'remove',
     };
@@ -576,10 +593,10 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       active_semester_id: activeSemesterId,
       preferences: this.dataSource.data.map(
         ({ course_assignment_id, preferredDay, preferredTime }) => {
-          let preferred_start_time = '00:00:00';
-          let preferred_end_time = '23:59:59';
+          let preferred_start_time = '07:00:00';
+          let preferred_end_time = '21:00:00';
 
-          if (preferredTime && preferredTime !== 'Whole Day') {
+          if (preferredTime && preferredTime !== '07:00 AM - 09:00 PM') {
             const times = preferredTime.split(' - ');
             if (times.length === 2) {
               preferred_start_time = this.convertTo24HourFormat(times[0]);
@@ -620,62 +637,28 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   // Dialog Methods
   // ====================
 
-  openTimeDialog(element: TableData): void {
-    let startTime = '';
-    let endTime = '';
-    let isWholeDay = false;
-
-    if (element.preferredTime === 'Whole Day') {
-      isWholeDay = true;
-    } else if (element.preferredTime) {
-      const [start, end] = element.preferredTime.split(' - ');
-      startTime = start.trim();
-      endTime = end.trim();
-    }
-
+  openDayTimeDialog(element: TableData): void {
     this.dialog
-      .open(DialogTimeComponent, {
-        data: { startTime, endTime, isWholeDay },
+      .open(DialogDayTimeComponent, {
+        data: {
+          selectedDay: element.preferredDay,
+          selectedTime: element.preferredTime,
+          daysOfWeek: this.daysOfWeek,
+        },
+        disableClose: true,
+        autoFocus: false,
       })
       .afterClosed()
       .subscribe((result) => {
         if (result) {
-          element.preferredTime = result;
-          this.showSnackBar('Preferred time successfully updated.');
+          const { day, time } = result;
+          element.preferredDay = day;
+          element.preferredTime = time;
+          this.showSnackBar('Available day and time successfully updated.');
           this.updateTotalUnits();
           this.cdr.markForCheck();
         }
       });
-  }
-
-  openDayDialog(element: TableData): void {
-    const dialogRef = this.dialog.open(TableDialogComponent, {
-      width: '20rem',
-      data: {
-        title: 'Select Day',
-        fields: [
-          {
-            label: 'Preferred Day',
-            formControlName: 'preferredDay',
-            type: 'select',
-            options: this.daysOfWeek,
-            required: true,
-          },
-        ],
-        isEdit: false,
-        initialValue: { preferredDay: element.preferredDay },
-      },
-      disableClose: true,
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result && result.preferredDay) {
-        element.preferredDay = result.preferredDay;
-        this.showSnackBar('Preferred day successfully added.');
-        this.updateTotalUnits();
-        this.cdr.markForCheck();
-      }
-    });
   }
 
   openViewPreferencesDialog(): void {

@@ -49,6 +49,7 @@
   --spacing-sm: 0.75rem;
   --spacing-smx: 0.85rem;
   --spacing-md: 1rem;
+  --spacing-mdx: 1.25rem;
   --spacing-lg: 1.5rem;
   --spacing-xl: 2rem;
   --spacing-2xl: 2.5rem;
@@ -177,6 +178,15 @@ body {
     transform: scale(0.96);
   }
 }
+
+.pop-small {
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  &:active {
+    transform: scale(0.80);
+  }
+}
+
 
 .sec-ripple .mat-ripple-element {
   background-color: var(--secondary-fade) !important;
