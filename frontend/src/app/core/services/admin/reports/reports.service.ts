@@ -93,6 +93,14 @@ export class ReportsService {
       .pipe(catchError(this.handleError));
   }
 
+  // Send Schedule Email to Single Faculty
+  sendSingleFacultyScheduleEmail(faculty_id: number): Observable<any> {
+    const payload = { faculty_id };
+    return this.http
+      .post(`${this.baseUrl}/email-single-faculty-schedule`, payload)
+      .pipe(catchError(this.handleError));
+  }
+
   clearCache(
     cacheType: 'faculty' | 'room' | 'program' | 'singleFaculty',
     faculty_id?: number

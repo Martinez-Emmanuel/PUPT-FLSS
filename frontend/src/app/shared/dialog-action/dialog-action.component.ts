@@ -32,7 +32,7 @@ import { PreferencesService } from '../../core/services/faculty/preference/prefe
 import { ReportsService } from '../../core/services/admin/reports/reports.service';
 
 export interface DialogActionData {
-  type: 'all_preferences' | 'single_preferences' | 'all_publish' | 'reports';
+  type: 'all_preferences' | 'single_preferences' | 'all_publish' | 'single_publish' | 'reports';
   currentState: boolean;
   academicYear?: string;
   semester?: string;
@@ -127,10 +127,10 @@ export class DialogActionComponent {
         this.data.individual_deadline || this.data.global_deadline || null;
       this.facultyName = this.data.facultyName || '';
       this.showDeadlinePicker = true;
-    }
-
-    if (this.submissionDeadline) {
-      this.calculateRemainingDays();
+    } else if (this.data.type === 'single_publish') {
+      this.facultyName = this.data.facultyName || '';
+      // Do NOT set showDeadlinePicker to true for 'single_publish'
+      // this.showDeadlinePicker remains false
     }
 
     this.hasIndividualDeadlines = this.data.hasIndividualDeadlines || false;
@@ -151,11 +151,20 @@ export class DialogActionComponent {
         break;
 
       case 'all_publish':
-        this.dialogTitle = 'Faculty Load and Schedule';
+        this.dialogTitle = 'Faculty Load & Schedule';
         this.actionText = this.data.currentState ? 'Unpublish' : 'Publish';
         this.navigationLink = '/admin/reports/faculty';
         this.linkText = 'Faculty Official Reports';
         this.showEmailOption = !this.data.currentState;
+        this.showReportOptions = false;
+        break;
+
+      case 'single_publish':
+        this.dialogTitle = `Faculty Load & Schedule`;
+        this.actionText = this.data.currentState ? 'Unpublish' : 'Publish';
+        this.navigationLink = '/admin/reports/faculty';
+        this.linkText = 'Faculty Official Reports';
+        this.showEmailOption = true;
         this.showReportOptions = false;
         break;
 
@@ -198,6 +207,9 @@ export class DialogActionComponent {
         break;
       case 'all_publish':
         operation$ = this.handleAllPublishOperation();
+        break;
+      case 'single_publish':
+        operation$ = this.handleSinglePublishOperation();
         break;
       case 'single_preferences':
         operation$ = this.handleSinglePreferenceOperation();
@@ -374,6 +386,30 @@ export class DialogActionComponent {
   }
 
   /**
+   * Handles publish/unpublish operation for a single faculty using ReportsService
+   */
+  private handleSinglePublishOperation(): Observable<any> {
+    const newStatus = !this.data.currentState;
+    const isPublished = newStatus ? 1 : 0;
+    const facultyId = this.data.faculty_id!;
+
+    let publish$ = this.reportsService.togglePublishSingleSchedule(
+      facultyId,
+      isPublished
+    );
+
+    if (this.sendEmail && isPublished === 1) {
+      publish$ = publish$.pipe(
+        switchMap(() =>
+          this.reportsService.sendSingleFacultyScheduleEmail(facultyId)
+        )
+      );
+    }
+
+    return publish$;
+  }
+
+  /**
    * Handles report generation
    */
   private handleReportsGeneration(): void {
@@ -473,6 +509,12 @@ export class DialogActionComponent {
         return `Official load and schedule for all faculty ${
           !this.data.currentState ? 'published' : 'unpublished'
         } successfully.${this.sendEmail ? ' Email notifications sent.' : ''}`;
+      case 'single_publish':
+        return `Official load and schedule successfully ${
+          this.data.currentState ? 'unpublished' : 'published'
+        } for ${this.facultyName}.${
+          this.sendEmail ? ` Email notification sent.` : ''
+        }`;
       case 'single_preferences':
         return `Preferences submission for ${this.facultyName} ${
           !this.data.currentState ? 'enabled' : 'disabled'
@@ -499,6 +541,10 @@ export class DialogActionComponent {
         return `Failed to ${
           !this.data.currentState ? 'publish' : 'unpublish'
         } Official load and schedule for all faculty. Please try again.`;
+      case 'single_publish':
+        return `Failed to ${
+          !this.data.currentState ? 'unpublish' : 'publish'
+        } schedule for ${this.facultyName}. Please try again.`;
       case 'single_preferences':
         return `Failed to ${
           !this.data.currentState ? 'enable' : 'disable'

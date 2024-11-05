@@ -300,7 +300,6 @@ export class ReportFacultyComponent
 
         this.filteredData = [...this.dataSource.data];
 
-        // Recalculate hasSchedulesForToggleAll after toggling
         this.hasSchedulesForToggleAll =
           this.dataSource.data.length > 0 &&
           this.dataSource.data.every(
@@ -311,41 +310,34 @@ export class ReportFacultyComponent
     });
   }
 
-  onToggleSingleSchedule(element: Faculty) {
-    const isPublished = element.isEnabled ? 1 : 0;
-
-    this.reportsService
-      .togglePublishSingleSchedule(element.facultyId, isPublished)
-      .subscribe({
-        next: (response) => {
-          this.isToggleAllChecked =
-            this.dataSource.data.length > 0 &&
-            this.dataSource.data.every((faculty) => faculty.isEnabled);
-
-          this.snackBar.open(
-            `Schedules successfully published for ${element.facultyName}.`,
-            'Close',
-            {
-              duration: 3000,
-            }
-          );
-        },
-        error: (error) => {
-          console.error(
-            `Error toggling schedule for faculty ${element.facultyId}:`,
-            error
-          );
-          element.isEnabled = !element.isEnabled;
-
-          this.snackBar.open(
-            `Error publishing schedules for ${element.facultyName}.`,
-            'Close',
-            {
-              duration: 3000,
-            }
-          );
-        },
-      });
+  onToggleSingleSchedule(element: Faculty, event: any): void {
+    const intendedState = event.checked;
+  
+    event.source.checked = element.isEnabled;
+  
+    const dialogRef = this.dialog.open(DialogActionComponent, {
+      data: {
+        type: 'single_publish',
+        currentState: element.isEnabled,
+        facultyName: element.facultyName,
+        faculty_id: element.facultyId,
+        academicYear: element.academicYear,
+        semester: element.semester,
+      },
+      disableClose: true,
+    });
+  
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === true) {
+        element.isEnabled = intendedState;
+  
+        this.isToggleAllChecked = this.dataSource.data.every(
+          (faculty) => faculty.isEnabled
+        );
+      } else {
+        event.source.checked = element.isEnabled;
+      }
+    });
   }
 
   updateDisplayedData() {

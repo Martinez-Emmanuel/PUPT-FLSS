@@ -153,10 +153,10 @@
           </th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
             <mat-slide-toggle
-              [(ngModel)]="element.isEnabled"
+              [checked]="element.isEnabled"
               [disabled]="!element.schedules || element.schedules.length === 0"
               [matTooltip]="getSingleToggleTooltip(element)"
-              (change)="onToggleSingleSchedule(element)"
+              (change)="onToggleSingleSchedule(element, $event)"
             ></mat-slide-toggle>
           </td>
         </ng-container>

@@ -7,21 +7,26 @@
     <!-- Main Action Text -->
     <div class="main-text">
       <strong>{{ actionText }}</strong>
-      @if (data.type === 'all_preferences' || data.type === 'all_publish' ) {
       <span>
         {{
-          data.type === "all_preferences"
-            ? "load and schedule preferences submission for all active faculty members this"
-            : "official load and schedule for all active faculty members this"
+          data.type === "all_preferences" ||
+          data.type === "all_publish" ||
+          data.type === "single_publish"
+            ? data.type === "all_preferences"
+              ? "load and schedule preferences submission for all active faculty members this"
+              : data.type === "all_publish"
+              ? "official load and schedule for all active faculty members this"
+              : "official load and schedule for"
+            : "load and schedule preferences submission for"
         }}
-        A.Y. {{ data.academicYear }}, {{ data.semester }}.
+        @if (data.type === 'single_publish' || data.type === 'single_preferences' ) {
+        {{ data.facultyName }}
+        } @if (data.type === "single_preferences" || data.type ===
+        "single_publish") {
+        {{ data.type === "single_publish" ? " this" : "" }} A.Y.
+        {{ data.academicYear }}, {{ data.semester }}. } @else { A.Y.
+        {{ data.academicYear }}, {{ data.semester }}. }
       </span>
-      } @else if (data.type === 'single_preferences') {
-      <span>
-        load and schedule preferences submission for {{ facultyName }} this A.Y.
-        {{ data.academicYear }}, {{ data.semester }}.
-      </span>
-      }
     </div>
 
     <!-- Report Options Section -->
@@ -117,7 +122,7 @@
         <span class="checkbox-content">
           <span mat-symbol="email"></span>
           <span>
-            Send email to @if (data.type === 'single_preferences') {
+            Send email to @if (data.type === 'single_preferences' || data.type === 'single_publish') {
             {{ facultyName }}
             } @else { all faculty members }
           </span>
@@ -126,9 +131,9 @@
     </div>
     }
 
-    <!--Confirmation Text-->
-    @if ((data.type === 'all_preferences' || data.type === 'single_preferences')
-    && data.currentState) {
+    <!-- Confirmation Text -->
+    @if ((data.type === 'all_preferences' || data.type === 'single_preferences'
+    || data.type === 'single_publish') && data.currentState) {
     <div class="main-text">
       <div class="confirm-disable">
         This will <strong>immediately</strong> disable the preferences
