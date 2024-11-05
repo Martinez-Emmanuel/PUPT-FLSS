@@ -223,7 +223,6 @@
     <button
       mat-flat-button
       class="action-button"
-      color="primary"
       [disabled]="form.invalid"
       (click)="onExport()"
     >
@@ -233,7 +232,6 @@
     <button
       mat-flat-button
       class="action-button"
-      color="primary"
       [disabled]="form.invalid || !hasFormChanged() || isLoading"
       (click)="onSave()"
     >

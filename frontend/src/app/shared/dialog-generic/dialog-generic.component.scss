@@ -1,3 +1,5 @@
+@import "../../../styles/mixins.scss";
+
 :host {
   .mat-dialog-container {
     max-width: var(--dialog-base);
@@ -30,7 +32,7 @@
 
   /* Proceed action button */
   &.custom-dialog-buttons .dialog-action {
-    background-color: var(--primary-one);
+    @include gradient-primary(315deg);
     color: white;
     font-weight: 500;
   }

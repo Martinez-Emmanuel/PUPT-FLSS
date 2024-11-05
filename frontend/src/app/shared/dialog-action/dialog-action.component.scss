@@ -127,6 +127,16 @@
   );
   padding-top: var(--spacing-sm);
 
+  .action-button {
+    @include gradient-primary(315deg);
+  }
+
+  .disabled-button {
+    opacity: var(--opacity-semi-opaque);
+    color: var(--neutral-base) !important;
+    background: var(--neutral-fade) !important;
+  }
+
   .cancel {
     color: var(--primary-text);
   }
@@ -139,9 +149,4 @@
   mat-form-field {
     width: 100%;
   }
-}
-
-.disabled-button {
-  opacity: var(--opacity-semi-opaque);
-  color: var(--neutral-base) !important;
 }
