@@ -76,6 +76,12 @@ export class ReportsService {
       .pipe(catchError(this.handleError));
   }
 
+  // Send Schedule Email to All Faculty
+  sendAllSchedulesEmail(): Observable<any> {
+    const url = `${this.baseUrl}/email-all-faculty-schedule`;
+    return this.http.post(url, {}).pipe(catchError(this.handleError));
+  }
+
   // Toggle Single Faculty Schedule
   togglePublishSingleSchedule(
     faculty_id: number,

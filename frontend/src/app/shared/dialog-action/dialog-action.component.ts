@@ -6,7 +6,11 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin, of, Observable } from 'rxjs';
 import { switchMap, finalize, tap } from 'rxjs/operators';
 
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogRef,
+  MatDialogModule,
+} from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -15,14 +19,20 @@ import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE, NativeDateAdapter } from '@angular/material/core';
+import {
+  MatNativeDateModule,
+  DateAdapter,
+  MAT_DATE_FORMATS,
+  MAT_DATE_LOCALE,
+  NativeDateAdapter,
+} from '@angular/material/core';
 
 import { ReportGenerationService } from '../../core/services/admin/report-generation/report-generation.service';
 import { PreferencesService } from '../../core/services/faculty/preference/preferences.service';
-import { OverviewService } from '../../core/services/admin/overview/overview.service';
+import { ReportsService } from '../../core/services/admin/reports/reports.service';
 
 export interface DialogActionData {
-  type: 'all_preferences' | 'single_preferences' | 'publish' | 'reports';
+  type: 'all_preferences' | 'single_preferences' | 'all_publish' | 'reports';
   currentState: boolean;
   academicYear?: string;
   semester?: string;
@@ -103,8 +113,8 @@ export class DialogActionComponent {
     @Inject(MAT_DIALOG_DATA) public data: DialogActionData,
     private dialogRef: MatDialogRef<DialogActionComponent>,
     private snackBar: MatSnackBar,
-    private overviewService: OverviewService,
     private preferencesService: PreferencesService,
+    private reportsService: ReportsService,
     private reportGenerationService: ReportGenerationService
   ) {
     this.initializeDialogContent();
@@ -140,7 +150,7 @@ export class DialogActionComponent {
         this.showReportOptions = false;
         break;
 
-      case 'publish':
+      case 'all_publish':
         this.dialogTitle = 'Faculty Load and Schedule';
         this.actionText = this.data.currentState ? 'Unpublish' : 'Publish';
         this.navigationLink = '/admin/reports/faculty';
@@ -186,8 +196,8 @@ export class DialogActionComponent {
       case 'all_preferences':
         operation$ = this.handleAllPreferencesOperation();
         break;
-      case 'publish':
-        operation$ = this.handlePublishOperation();
+      case 'all_publish':
+        operation$ = this.handleAllPublishOperation();
         break;
       case 'single_preferences':
         operation$ = this.handleSinglePreferenceOperation();
@@ -216,6 +226,7 @@ export class DialogActionComponent {
           this.snackBar.open(errorMessage, 'Close', {
             duration: this.SNACKBAR_DURATION,
           });
+          this.dialogRef.close(false);
         },
       });
   }
@@ -347,25 +358,19 @@ export class DialogActionComponent {
   }
 
   /**
-   * Handles publish/unpublish operation
+   * Handles publish/unpublish operation using ReportsService
    */
-  private handlePublishOperation(): Observable<any> {
+  private handleAllPublishOperation(): Observable<any> {
     const newStatus = !this.data.currentState;
-    return this.overviewService.toggleAllSchedules(newStatus).pipe(
+    const isPublished = newStatus ? 1 : 0;
+    return this.reportsService.togglePublishAllSchedules(isPublished).pipe(
       switchMap(() => {
-        if (this.sendEmail && newStatus) {
-          return this.overviewService.sendScheduleEmail();
+        if (this.sendEmail && isPublished === 1) {
+          return this.reportsService.sendAllSchedulesEmail();
         }
         return of(null);
       })
     );
-  }
-
-  /**
-   * Checks if at least one report option is selected
-   */
-  public isReportSelectionValid(): boolean {
-    return Object.values(this.reportOptions).some((value) => value);
   }
 
   /**
@@ -441,8 +446,16 @@ export class DialogActionComponent {
             'Close',
             { duration: this.SNACKBAR_DURATION }
           );
+          this.dialogRef.close(false);
         },
       });
+  }
+
+  /**
+   * Checks if at least one report option is selected
+   */
+  public isReportSelectionValid(): boolean {
+    return Object.values(this.reportOptions).some((value) => value);
   }
 
   /**
@@ -456,7 +469,7 @@ export class DialogActionComponent {
         return `Preferences submission for all faculty ${
           !this.data.currentState ? 'enabled' : 'disabled'
         } successfully.${this.sendEmail ? ' Email notifications sent.' : ''}`;
-      case 'publish':
+      case 'all_publish':
         return `Official load and schedule for all faculty ${
           !this.data.currentState ? 'published' : 'unpublished'
         } successfully.${this.sendEmail ? ' Email notifications sent.' : ''}`;
@@ -482,7 +495,7 @@ export class DialogActionComponent {
         return `Failed to ${
           !this.data.currentState ? 'enable' : 'disable'
         } preferences submission for all faculty. Please try again.`;
-      case 'publish':
+      case 'all_publish':
         return `Failed to ${
           !this.data.currentState ? 'publish' : 'unpublish'
         } Official load and schedule for all faculty. Please try again.`;

@@ -33,14 +33,4 @@ export class OverviewService {
     return this.http.get<OverviewDetails>(`${this.baseUrl}/overview-details`);
   }
 
-  sendScheduleEmail(): Observable<any> {
-    const url = `${this.baseUrl}/email-all-faculty-schedule`;
-    return this.http.post(url, {});
-  }
-
-  toggleAllSchedules(is_published: boolean): Observable<any> {
-    return this.http.post(`${this.baseUrl}/toggle-all-schedule`, {
-      is_published,
-    });
-  }
 }

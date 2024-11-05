@@ -148,7 +148,7 @@
               [matTooltip]="getAllToggleTooltip(isToggleAllChecked)"
               [checked]="isToggleAllChecked"
               [disabled]="!hasSchedulesForToggleAll"
-              (change)="onToggleAllChange($event)"
+              (change)="onToggleAllSchedules($event)"
             ></mat-slide-toggle>
           </th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
@@ -156,7 +156,7 @@
               [(ngModel)]="element.isEnabled"
               [disabled]="!element.schedules || element.schedules.length === 0"
               [matTooltip]="getSingleToggleTooltip(element)"
-              (change)="onToggleChange(element)"
+              (change)="onToggleSingleSchedule(element)"
             ></mat-slide-toggle>
           </td>
         </ng-container>
