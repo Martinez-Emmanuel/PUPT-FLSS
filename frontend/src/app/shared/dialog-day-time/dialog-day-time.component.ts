@@ -41,6 +41,8 @@ export class DialogDayTimeComponent {
   selectedDay: string = '';
   startTime: string = '';
   endTime: string = '';
+  courseCode: string = '';
+  courseTitle: string = '';
   isWholeDay: boolean = false;
   timeOptions: string[] = [];
   endTimeOptions: string[] = [];
@@ -76,6 +78,14 @@ export class DialogDayTimeComponent {
         this.startTime = start.trim();
         this.endTime = end.trim();
       }
+    }
+
+    if (data.courseCode) {
+      this.courseCode = data.courseCode;
+    }
+
+    if (data.courseTitle) {
+      this.courseTitle = data.courseTitle;
     }
   }
 

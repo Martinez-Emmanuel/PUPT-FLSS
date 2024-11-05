@@ -621,6 +621,8 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
           selectedDay: element.preferredDay,
           selectedTime: element.preferredTime,
           daysOfWeek: this.daysOfWeek,
+          courseCode: element.course_code,
+          courseTitle: element.course_title,
         },
         disableClose: true,
         autoFocus: false,

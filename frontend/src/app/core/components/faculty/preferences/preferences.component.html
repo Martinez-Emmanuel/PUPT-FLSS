@@ -255,7 +255,6 @@
             <div class="day-time-button-container">
               <button
                 mat-button
-                matTooltip="Click to select your available day and time"
                 (click)="openDayTimeDialog(element)"
                 class="day-time-button"
               >
@@ -268,7 +267,7 @@
                         (element.preferredTime === "07:00 AM - 09:00 PM"
                           ? "Whole Day"
                           : (element.preferredTime | timeFormat))
-                      : "Select day & time"
+                      : "Click to select day & time"
                   }}
                 </span>
               </button>

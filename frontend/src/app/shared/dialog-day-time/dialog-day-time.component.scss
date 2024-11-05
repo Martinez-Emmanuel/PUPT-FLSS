@@ -12,14 +12,17 @@
 }
 
 .dialog-title {
-  margin: 0;
-  font-size: var(--font-size-xl);
-  font-family: var(--font-base);
-  font-weight: 500;
   color: var(--primary-text);
 
-  span[mat-symbol] {
-    @include flex-layout;
+  .title-text {
+    margin: 0;
+    font-size: var(--font-size-xl);
+    font-family: var(--font-base);
+    font-weight: 500;
+  }
+
+  .course-detail {
+    font-size: var(--font-size-smx);
   }
 }
 
