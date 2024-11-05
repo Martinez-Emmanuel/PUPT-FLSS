@@ -31,6 +31,7 @@ export interface DialogActionData {
   individual_deadline?: Date | null;
   facultyName?: string;
   faculty_id?: number;
+  hasIndividualDeadlines?: boolean;
 }
 
 export const MY_DATE_FORMATS = {
@@ -78,24 +79,25 @@ export class DialogActionComponent {
   actionText!: string;
   navigationLink!: string;
   linkText!: string;
+  facultyName: string = '';
+
   sendEmail = false;
   isProcessing = false;
   showEmailOption = false;
+  isDeadlineToday = false;
+  showReportOptions = false;
+  showDeadlinePicker = false;
+  hasIndividualDeadlines = false;
 
+  minDate: Date = new Date();
   submissionDeadline: Date | null = null;
   remainingDays: number = 0;
-  isDeadlineToday: boolean = false;
-  minDate: Date = new Date();
 
-  showReportOptions = false;
   reportOptions = {
     faculty: false,
     programs: false,
     rooms: false,
   };
-
-  showDeadlinePicker = false;
-  facultyName: string = '';
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: DialogActionData,
@@ -120,6 +122,8 @@ export class DialogActionComponent {
     if (this.submissionDeadline) {
       this.calculateRemainingDays();
     }
+
+    this.hasIndividualDeadlines = this.data.hasIndividualDeadlines || false;
   }
 
   /**

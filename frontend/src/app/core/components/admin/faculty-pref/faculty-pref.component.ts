@@ -193,6 +193,12 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     this.isToggleAllChecked = allEnabled;
   }
 
+  hasAnyIndividualDeadlines(): boolean {
+    return this.allData.some(faculty =>
+      faculty.active_semesters?.some(semester => semester.individual_deadline)
+    );
+  }
+
   updateHasAnyPreferences(): void {
     this.hasAnyPreferences = this.allData.some((faculty) =>
       this.hasSubmittedPreferences(faculty)
@@ -207,6 +213,8 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
       ? new Date(this.allData[0].active_semesters[0].global_deadline)
       : null;
 
+    const hasIndividualDeadlines = this.hasAnyIndividualDeadlines();
+
     const dialogData: DialogActionData = {
       type: 'all_preferences',
       academicYear: this.allData[0]?.active_semesters?.[0]?.academic_year || '',
@@ -214,6 +222,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
       currentState: this.isToggleAllChecked,
       hasSecondaryText: false,
       global_deadline: existingDeadline,
+      hasIndividualDeadlines: hasIndividualDeadlines,
     };
 
     const dialogRef = this.dialog.open(DialogActionComponent, {

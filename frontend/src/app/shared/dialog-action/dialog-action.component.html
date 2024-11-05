@@ -135,6 +135,13 @@
         submission and bypass the currently set deadline.
       </div>
     </div>
+    } @if (data.type === 'all_preferences' && !data.currentState &&
+    hasIndividualDeadlines) {
+    <div class="main-text">
+      <div class="confirm-disable">
+        This will bypass individual deadlines set to any faculty members.
+      </div>
+    </div>
     }
   </div>
 
