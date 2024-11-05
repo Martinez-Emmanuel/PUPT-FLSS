@@ -91,7 +91,7 @@ export class PreferencesService {
         catchError((error) => {
           console.error('Error fetching programs:', error);
           this.programsCache$ = null;
-          return throwError(() => new Error('Failed to fetch programs'));
+          return throwError(() => error);
         })
       );
     }
@@ -123,9 +123,7 @@ export class PreferencesService {
         },
         error: (error) => {
           console.error('Error fetching preferences:', error);
-          this.preferencesSubject.error(
-            new Error('Failed to fetch preferences')
-          );
+          this.preferencesSubject.error(error);
         },
       });
   }
@@ -154,10 +152,7 @@ export class PreferencesService {
           error
         );
         this.preferencesCache.delete(facultyId);
-        return throwError(
-          () =>
-            new Error(`Failed to fetch preferences for faculty ID ${facultyId}`)
-        );
+        return throwError(() => error);
       })
     );
 
@@ -174,7 +169,7 @@ export class PreferencesService {
       tap(() => this.clearCaches(preferences.faculty_id.toString())),
       catchError((error) => {
         console.error('Error submitting preferences:', error);
-        return throwError(() => new Error('Failed to submit preferences'));
+        return throwError(() => error);
       })
     );
   }
@@ -196,9 +191,7 @@ export class PreferencesService {
       tap(() => this.clearCaches(facultyId)),
       catchError((error) => {
         console.error(`Error deleting preference ID ${preferenceId}:`, error);
-        return throwError(
-          () => new Error(`Failed to delete preference ID ${preferenceId}`)
-        );
+        return throwError(() => error);
       })
     );
   }
@@ -223,12 +216,7 @@ export class PreferencesService {
           `Error deleting all preferences for faculty ID ${facultyId}:`,
           error
         );
-        return throwError(
-          () =>
-            new Error(
-              `Failed to delete all preferences for faculty ID ${facultyId}`
-            )
-        );
+        return throwError(() => error);
       })
     );
   }
@@ -252,9 +240,7 @@ export class PreferencesService {
         }),
         catchError((error) => {
           console.error('Error toggling all preferences:', error);
-          return throwError(
-            () => new Error('Failed to toggle all preferences')
-          );
+          return throwError(() => error);
         })
       );
   }
@@ -270,9 +256,7 @@ export class PreferencesService {
       }),
       catchError((error) => {
         console.error('Error sending email to all faculty:', error);
-        return throwError(
-          () => new Error('Failed to send email to all faculty')
-        );
+        return throwError(() => error);
       })
     );
   }
@@ -301,12 +285,7 @@ export class PreferencesService {
             `Error toggling preferences for faculty ID ${faculty_id}:`,
             error
           );
-          return throwError(
-            () =>
-              new Error(
-                `Failed to toggle preferences for faculty ID ${faculty_id}`
-              )
-          );
+          return throwError(() => error);
         })
       );
   }
@@ -327,9 +306,7 @@ export class PreferencesService {
           `Error sending email to faculty ID ${faculty_id}:`,
           error
         );
-        return throwError(
-          () => new Error(`Failed to send email to faculty ID ${faculty_id}`)
-        );
+        return throwError(() => error);
       })
     );
   }

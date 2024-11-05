@@ -41,7 +41,7 @@ class PreferenceController extends Controller
 
         if ($preferenceSetting->is_enabled == 0 || ($deadline && $currentDate->greaterThan(Carbon::parse($deadline)->endOfDay()))) {
             return response()->json([
-                'message' => 'The submission deadline has passed. You cannot submit preferences.',
+                'message' => 'Submission is now closed. You cannot submit preferences anymore.',
             ], 403);
         }
 
