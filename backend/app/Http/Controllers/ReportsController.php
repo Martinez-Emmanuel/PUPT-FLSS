@@ -864,6 +864,10 @@ class ReportsController extends Controller
             ->distinct('schedules.faculty_id')
             ->count('schedules.faculty_id');
 
+        $globalDeadline = DB::table('preferences_settings')
+            ->whereNotNull('global_deadline')
+            ->value('global_deadline');
+
         // Step 11: Structure the response with the new field
         return response()->json([
             'activeAcademicYear' => "{$activeSemester->year_start}-{$activeSemester->year_end}",
@@ -877,6 +881,7 @@ class ReportsController extends Controller
             'publishProgress' => round($publishProgress, 0),
             'preferencesSubmissionEnabled' => $preferencesSubmissionEnabled,
             'facultyWithSchedulesCount' => $facultyWithSchedulesCount,
+            'global_deadline' => $globalDeadline,
         ]);
     }
 

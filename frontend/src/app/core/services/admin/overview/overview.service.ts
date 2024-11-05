@@ -18,6 +18,7 @@ export interface OverviewDetails {
   publishProgress: number;
   preferencesSubmissionEnabled: boolean;
   facultyWithSchedulesCount: number;
+  global_deadline: string | null;
 }
 
 @Injectable({
