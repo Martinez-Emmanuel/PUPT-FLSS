@@ -5,24 +5,29 @@
   <!-- Dialog Content -->
   <div class="dialog-content">
     <!-- Main Action Text -->
+    @if (!showReportOptions) {
     <div class="main-text">
       <strong>{{ actionText }}</strong>
-      @if (data.type === 'all_preferences' || data.type === 'publish' ) {
+
       <span>
         {{
           data.type === "all_preferences"
             ? "load and schedule preferences submission for all active faculty members this"
-            : "official load and schedule for all active faculty members this"
+            : data.type === "all_publish"
+            ? "official load and schedule for all active faculty members this"
+            : data.type === "single_publish"
+            ? "official load and schedule for"
+            : data.type === "reports"
+            ? "generate and download schedule reports for"
+            : "load and schedule preferences submission for"
         }}
+
+        {{ data.type.includes("single") ? data.facultyName + " this" : "" }}
+
         A.Y. {{ data.academicYear }}, {{ data.semester }}.
       </span>
-      } @else if (data.type === 'single_preferences') {
-      <span>
-        load and schedule preferences submission for {{ facultyName }} this A.Y.
-        {{ data.academicYear }}, {{ data.semester }}.
-      </span>
-      }
     </div>
+    }
 
     <!-- Report Options Section -->
     @if (showReportOptions) {
@@ -111,13 +116,14 @@
     }
 
     <!-- Email Notification Section -->
-    @if (showEmailOption) {
+    @if (showEmailOption && !data.currentState) {
     <div class="checkbox-container email">
       <mat-checkbox [(ngModel)]="sendEmail" class="email-checkbox">
         <span class="checkbox-content">
           <span mat-symbol="email"></span>
           <span>
-            Send email to @if (data.type === 'single_preferences') {
+            Send email to @if (data.type === 'single_preferences' || data.type
+            === 'single_publish') {
             {{ facultyName }}
             } @else { all faculty members }
           </span>
@@ -126,7 +132,7 @@
     </div>
     }
 
-    <!--Confirmation Text-->
+    <!-- Confirmation Text -->
     @if ((data.type === 'all_preferences' || data.type === 'single_preferences')
     && data.currentState) {
     <div class="main-text">

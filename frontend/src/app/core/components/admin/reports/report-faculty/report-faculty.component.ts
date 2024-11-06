@@ -1,7 +1,6 @@
 import { Component, OnInit, ViewChild, AfterViewInit, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
@@ -15,6 +14,7 @@ import { MatSymbolDirective } from '../../../../imports/mat-symbol.directive';
 
 import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
+import { DialogActionComponent } from '../../../../../shared/dialog-action/dialog-action.component';
 import { DialogViewScheduleComponent } from '../../../../../shared/dialog-view-schedule/dialog-view-schedule.component';
 
 import { ReportsService } from '../../../../services/admin/reports/reports.service';
@@ -44,6 +44,7 @@ interface Faculty {
     CommonModule,
     TableHeaderComponent,
     LoadingComponent,
+    DialogActionComponent,
     MatTableModule,
     MatPaginatorModule,
     MatIconModule,
@@ -85,14 +86,14 @@ export class ReportFacultyComponent
   isToggleAllChecked = false;
   isLoading = true;
   hasAnySchedules = false;
+  sendEmail = true;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   constructor(
     private reportsService: ReportsService,
     public dialog: MatDialog,
-    private snackBar: MatSnackBar,
-    private sanitizer: DomSanitizer 
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -134,12 +135,16 @@ export class ReportFacultyComponent
         this.filteredData = [...facultyData];
         this.dataSource.paginator = this.paginator;
 
-        this.hasSchedulesForToggleAll = facultyData.some(
-          (faculty: { schedules: string | any[]; }) => faculty.schedules && faculty.schedules.length > 0
-        );
+        this.hasSchedulesForToggleAll =
+          facultyData.length > 0 &&
+          facultyData.every(
+            (faculty: { schedules: string | any[] }) =>
+              faculty.schedules && faculty.schedules.length > 0
+          );
 
         this.hasAnySchedules = facultyData.some(
-          (faculty: { schedules: string | any[]; }) => faculty.schedules && faculty.schedules.length > 0
+          (faculty: { schedules: string | any[] }) =>
+            faculty.schedules && faculty.schedules.length > 0
         );
 
         this.isToggleAllChecked =
@@ -189,6 +194,12 @@ export class ReportFacultyComponent
       );
     }
 
+    this.hasSchedulesForToggleAll =
+      this.dataSource.data.length > 0 &&
+      this.dataSource.data.every(
+        (faculty) => faculty.schedules && faculty.schedules.length > 0
+      );
+
     this.isToggleAllChecked =
       this.dataSource.data.length > 0 &&
       this.dataSource.data.every((faculty) => faculty.isEnabled);
@@ -196,7 +207,7 @@ export class ReportFacultyComponent
 
   onView(faculty: Faculty): void {
     const generatePdfFunction = (preview: boolean): Blob | void => {
-        return this.createPdfBlob(faculty);
+      return this.createPdfBlob(faculty);
     };
 
     this.dialog.open(DialogViewScheduleComponent, {
@@ -210,7 +221,6 @@ export class ReportFacultyComponent
         academicYear: faculty.academicYear,
         semester: faculty.semester,
         generatePdfFunction: generatePdfFunction,
-            
       },
       disableClose: true,
     });
@@ -218,10 +228,9 @@ export class ReportFacultyComponent
 
   onExportAll(): void {
     if (this.filteredData.length === 0) {
-      this.snackBar.open(
-        'No faculty data available to export.', 
-        'Close', { duration: 3000 }
-      );
+      this.snackBar.open('No faculty data available to export.', 'Close', {
+        duration: 3000,
+      });
       return;
     }
 
@@ -235,7 +244,9 @@ export class ReportFacultyComponent
       data: {
         exportType: 'all',
         entity: 'faculty',
-        entityData: this.filteredData.map(faculty => faculty.schedules).flat(),
+        entityData: this.filteredData
+          .map((faculty) => faculty.schedules)
+          .flat(),
         customTitle: 'All Faculty Schedules',
         academicYear: this.filteredData[0].academicYear,
         semester: this.filteredData[0].semester,
@@ -251,98 +262,82 @@ export class ReportFacultyComponent
     const blobUrl = URL.createObjectURL(pdfBlob);
     const a = document.createElement('a');
     a.href = blobUrl;
-    a.download = 
-    `${faculty.facultyName.replace(/\s+/g, '_')}_Official_Schedule_.pdf`;
+    a.download = `${faculty.facultyName.replace(
+      /\s+/g,
+      '_'
+    )}_Official_Schedule_.pdf`;
     document.body.appendChild(a);
     a.click();
-    document.body.removeChild(a); 
+    document.body.removeChild(a);
   }
 
-  onToggleAllChange(event: any) {
-    const isPublished = event.checked ? 1 : 0;
+  onToggleAllSchedules(event: any) {
+    event.source.checked = this.isToggleAllChecked;
 
-    this.snackBar.open('Loading, please wait...', 'Close', {
-      duration: undefined,
+    const intendedState = !this.isToggleAllChecked;
+
+    const dialogRef = this.dialog.open(DialogActionComponent, {
+      data: {
+        type: 'all_publish',
+        currentState: !intendedState,
+        academicYear: this.filteredData[0]?.academicYear || '',
+        semester: this.filteredData[0]?.semester || '',
+        hasSecondaryText: false,
+        sendEmail: this.sendEmail,
+      },
+      disableClose: true,
     });
 
-    this.reportsService.togglePublishAllSchedules(isPublished).subscribe({
-      next: (response) => {
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === true) {
+        this.isToggleAllChecked = intendedState;
+
         this.dataSource.data.forEach((faculty) => {
           if (faculty.schedules && faculty.schedules.length > 0) {
-            faculty.isEnabled = isPublished === 1;
+            faculty.isEnabled = intendedState;
           }
         });
 
-        this.isToggleAllChecked =
+        this.filteredData = [...this.dataSource.data];
+
+        this.hasSchedulesForToggleAll =
           this.dataSource.data.length > 0 &&
-          this.dataSource.data
-            .filter(
-              (faculty) => faculty.schedules && faculty.schedules.length > 0
-            )
-            .every((faculty) => faculty.isEnabled);
-
-        this.snackBar.open(
-          'Schedules successfully published for all applicable faculty.',
-          'Close',
-          {
-            duration: 3000,
-          }
-        );
-      },
-      error: (error) => {
-        console.error('Error toggling all schedules:', error);
-        this.isToggleAllChecked = !event.checked;
-
-        this.snackBar.open(
-          'Error publishing schedules for all applicable faculty.',
-          'Close',
-          {
-            duration: 3000,
-          }
-        );
-      },
+          this.dataSource.data.every(
+            (faculty) => faculty.schedules && faculty.schedules.length > 0
+          );
+      }
+      event.source.checked = this.isToggleAllChecked;
     });
   }
 
-  onToggleChange(element: Faculty) {
-    const isPublished = element.isEnabled ? 1 : 0;
-
-    this.snackBar.open('Loading, please wait...', 'Close', {
-      duration: undefined,
+  onToggleSingleSchedule(element: Faculty, event: any): void {
+    const intendedState = event.checked;
+  
+    event.source.checked = element.isEnabled;
+  
+    const dialogRef = this.dialog.open(DialogActionComponent, {
+      data: {
+        type: 'single_publish',
+        currentState: element.isEnabled,
+        facultyName: element.facultyName,
+        faculty_id: element.facultyId,
+        academicYear: element.academicYear,
+        semester: element.semester,
+      },
+      disableClose: true,
     });
-
-    this.reportsService
-      .togglePublishSingleSchedule(element.facultyId, isPublished)
-      .subscribe({
-        next: (response) => {
-          this.isToggleAllChecked =
-            this.dataSource.data.length > 0 &&
-            this.dataSource.data.every((faculty) => faculty.isEnabled);
-
-          this.snackBar.open(
-            `Schedules successfully published for ${element.facultyName}.`,
-            'Close',
-            {
-              duration: 3000,
-            }
-          );
-        },
-        error: (error) => {
-          console.error(
-            `Error toggling schedule for faculty ${element.facultyId}:`,
-            error
-          );
-          element.isEnabled = !element.isEnabled;
-
-          this.snackBar.open(
-            `Error publishing schedules for ${element.facultyName}.`,
-            'Close',
-            {
-              duration: 3000,
-            }
-          );
-        },
-      });
+  
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === true) {
+        element.isEnabled = intendedState;
+  
+        this.isToggleAllChecked = this.dataSource.data.every(
+          (faculty) => faculty.isEnabled
+        );
+      } else {
+        event.source.checked = element.isEnabled;
+      }
+    });
   }
 
   updateDisplayedData() {
@@ -636,19 +631,19 @@ export class ReportFacultyComponent
       doc.line(pageWidth - margin, startY, pageWidth - margin, maxYPosition);
       doc.line(margin, maxYPosition, pageWidth - margin, maxYPosition);
   }
-  
+
   private formatTime(time: string): string {
     const [hours, minutes] = time.split(':').map(Number);
     const period = hours >= 12 ? 'PM' : 'AM';
     const formattedHours = hours % 12 || 12;
     return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${period}`;
   }
-  
+
   private timeToMinutes(time: string): number {
     const [hours, minutes] = time.split(':').map(Number);
     return hours * 60 + minutes;
   }
-  
+
   private getAcademicYearSubtitle(faculty: Faculty): string {
     return `For Academic Year ${faculty.academicYear}, ${faculty.semester}`;
   }
@@ -657,14 +652,18 @@ export class ReportFacultyComponent
     if (!faculty.schedules || faculty.schedules.length === 0) {
       return `Cannot publish/unpublish empty schedule for ${faculty.facultyName}`;
     }
-    return `${faculty.isEnabled ? 'Unpublish' : 'Publish'} schedule for ${faculty.facultyName}`;
+    return `${faculty.isEnabled ? 'Unpublish' : 'Publish'} schedule for ${
+      faculty.facultyName
+    }`;
   }
 
   getAllToggleTooltip(isEnabled: boolean): string {
     if (!this.hasSchedulesForToggleAll) {
-      return 'Cannot publish/unpublish empty schedules';
+      return 'Cannot be toggled unless all faculty has schedule';
     }
-    return `${isEnabled ? 'Unpublish' : 'Publish'} schedules for all applicable faculty`;
+    return `${
+      isEnabled ? 'Unpublish' : 'Publish'
+    } schedules for all applicable faculty`;
   }
 
   hasSchedules(faculty: Faculty): boolean {

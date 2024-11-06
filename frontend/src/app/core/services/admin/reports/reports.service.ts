@@ -76,6 +76,12 @@ export class ReportsService {
       .pipe(catchError(this.handleError));
   }
 
+  // Send Schedule Email to All Faculty
+  sendAllSchedulesEmail(): Observable<any> {
+    const url = `${this.baseUrl}/email-all-faculty-schedule`;
+    return this.http.post(url, {}).pipe(catchError(this.handleError));
+  }
+
   // Toggle Single Faculty Schedule
   togglePublishSingleSchedule(
     faculty_id: number,
@@ -84,6 +90,14 @@ export class ReportsService {
     const payload = { faculty_id, is_published };
     return this.http
       .post(`${this.baseUrl}/toggle-single-schedule`, payload)
+      .pipe(catchError(this.handleError));
+  }
+
+  // Send Schedule Email to Single Faculty
+  sendSingleFacultyScheduleEmail(faculty_id: number): Observable<any> {
+    const payload = { faculty_id };
+    return this.http
+      .post(`${this.baseUrl}/email-single-faculty-schedule`, payload)
       .pipe(catchError(this.handleError));
   }
 

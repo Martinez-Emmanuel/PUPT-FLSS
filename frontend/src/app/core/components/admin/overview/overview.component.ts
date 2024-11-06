@@ -190,10 +190,11 @@ export class OverviewComponent implements OnInit, OnDestroy {
     }
 
     const dialogData: DialogActionData = {
-      type: 'publish',
+      type: 'all_publish',
       academicYear: this.activeYear,
       semester: this.activeSemester,
       currentState: this.schedulesPublished,
+      hasSecondaryText: true,
     };
 
     const dialogRef = this.dialog.open(DialogActionComponent, {

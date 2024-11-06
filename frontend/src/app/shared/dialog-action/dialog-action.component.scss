@@ -92,7 +92,7 @@
     .email-checkbox,
     .report-checkbox {
       width: 100%;
-      background-color: var(--neutral-option);
+      background-color: var(--neutral-light);
       border-radius: var(--spacing-xs);
       padding: var(--spacing-xxxs);
 
@@ -125,7 +125,7 @@
     $justify: flex-end,
     $gap: var(--spacing-sm)
   );
-  padding-top: var(--spacing-sm);
+  padding-bottom: var(--spacing-xxs);
 
   .action-button {
     @include gradient-primary(315deg);
