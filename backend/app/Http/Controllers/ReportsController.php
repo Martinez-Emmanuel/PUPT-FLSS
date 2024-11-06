@@ -449,12 +449,7 @@ class ReportsController extends Controller
             return response()->json(['message' => 'Invalid faculty_id provided.'], 400);
         }
 
-        // Step 2: First check if the schedule is published
-        $isPublished = DB::table('faculty_schedule_publication')
-            ->where('faculty_id', $faculty_id)
-            ->value('is_published');
-
-        // Step 3: Get basic faculty and semester info regardless of publication status
+        // Step 2: Get active semester info
         $activeSemester = DB::table('active_semesters')
             ->join('academic_years', 'active_semesters.academic_year_id', '=', 'academic_years.academic_year_id')
             ->join('semesters', 'active_semesters.semester_id', '=', 'semesters.semester_id')
@@ -475,6 +470,17 @@ class ReportsController extends Controller
             return response()->json(['message' => 'No active semester found.'], 404);
         }
 
+        // Step 3: Determine if any schedules for the active semester are published
+        $isPublished = DB::table('faculty_schedule_publication')
+            ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->where('faculty_schedule_publication.faculty_id', $faculty_id)
+            ->where('course_assignments.semester_id', $activeSemester->semester_id)
+            ->where('faculty_schedule_publication.is_published', 1)
+            ->exists();
+
+        // Step 4: Get basic faculty info
         $faculty = DB::table('faculty')
             ->join('users', 'faculty.user_id', '=', 'users.id')
             ->where('faculty.id', $faculty_id)
@@ -506,14 +512,13 @@ class ReportsController extends Controller
                 'faculty_type' => $faculty->faculty_type,
                 'assigned_units' => 0,
                 'total_hours' => 0,
-                'is_published' => $isPublished ?? 0,
+                'is_published' => $isPublished ? 1 : 0,
                 'schedules' => [],
             ],
         ];
 
         // Only fetch and include schedule details if the schedule is published
         if ($isPublished) {
-            // Your existing schedule fetching logic here
             $schedulesSub = DB::table('schedules')
                 ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
                 ->join('course_assignments', 'course_assignments.course_assignment_id', '=', 'section_courses.course_assignment_id')
