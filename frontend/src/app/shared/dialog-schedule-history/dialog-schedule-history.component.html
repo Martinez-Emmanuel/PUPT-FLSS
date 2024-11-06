@@ -1,9 +1,4 @@
 <div class="dialog-schedule-history-container">
-  @if (isLoading$ | async) {
-  <div class="loading-wrapper">
-    <app-loading></app-loading>
-  </div>
-  } @else {
   <!-- Dialog Header -->
   <div class="dialog-header">
     <div class="title-section">
@@ -46,6 +41,12 @@
     </div>
   </div>
 
+  @if (isLoading$ | async) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
+
   <!-- Dialog Content -->
   <div class="dialog-content">
     @if (facultySchedule) {
@@ -54,6 +55,7 @@
     ></app-faculty-schedule-timetable>
     }
   </div>
+  }
 
   <!-- Dialog Footer -->
   <div class="dialog-footer">
@@ -61,5 +63,4 @@
       Close
     </button>
   </div>
-  }
 </div>
