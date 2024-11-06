@@ -672,11 +672,16 @@ export class CurriculumDetailComponent implements OnInit {
 
   private getCourseDialogConfig(course?: Course, semester?: number): DialogConfig {
     // Fetch available course titles for the dropdown
-    const availableCourseTitles = this.curriculum?.programs
-        .flatMap(program => program.year_levels)
+    const program = this.getProgram(); // Retrieves the currently selected program
+    let availableCourseTitles: string[] = [];
+
+    if (program) {
+      availableCourseTitles = program.year_levels
         .flatMap(yearLevel => yearLevel.semesters)
         .flatMap(sem => sem.courses)
-        .map(course => `${course.course_code} - ${course.course_title}`) || [];
+        .map(c => `${c.course_code} - ${c.course_title}`);
+    }
+
 
     return {
         title: course ? 'Edit Course' : 'Add Course',
@@ -689,7 +694,7 @@ export class CurriculumDetailComponent implements OnInit {
                 maxLength: 50,
                 required: true,
             },
-            {
+            { 
                 label: 'Pre-requisite',
                 formControlName: 'pre_req',
                 type: 'select', // Changed to select
