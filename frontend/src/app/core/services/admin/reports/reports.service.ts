@@ -17,11 +17,13 @@ export class ReportsService {
     roomSchedulesReport$: Observable<any> | null;
     programSchedulesReport$: Observable<any> | null;
     singleFacultySchedule: { [facultyId: number]: Observable<any> };
+    academicYears$: Observable<any[]> | null;
   } = {
     facultySchedulesReport$: null,
     roomSchedulesReport$: null,
     programSchedulesReport$: null,
     singleFacultySchedule: {},
+    academicYears$: null,
   };
 
   constructor(private http: HttpClient) {}
@@ -96,6 +98,19 @@ export class ReportsService {
   }
 
   /**
+   * Fetches the academic years for history
+   */
+  getAcademicYearsForHistory(): Observable<any[]> {
+    if (!this.cache.academicYears$) {
+      const url = `${this.baseUrl}/get-academic-years`;
+      this.cache.academicYears$ = this.http
+        .get<any[]>(url)
+        .pipe(shareReplay(1), catchError(this.handleError));
+    }
+    return this.cache.academicYears$;
+  }
+
+  /**
    * Toggles the publication status of all faculty schedules.
    */
   togglePublishAllSchedules(is_published: number): Observable<any> {
@@ -140,7 +155,12 @@ export class ReportsService {
    * Clears a specified cache type or a single faculty cache by ID.
    */
   clearCache(
-    cacheType: 'faculty' | 'room' | 'program' | 'singleFaculty',
+    cacheType:
+      | 'faculty'
+      | 'room'
+      | 'program'
+      | 'singleFaculty'
+      | 'academicYears',
     faculty_id?: number
   ): void {
     switch (cacheType) {
@@ -158,16 +178,23 @@ export class ReportsService {
           delete this.cache.singleFacultySchedule[faculty_id];
         }
         break;
+      case 'academicYears':
+        this.cache.academicYears$ = null;
+        break;
       default:
         console.warn('Invalid cache type specified');
     }
   }
 
+  /**
+   * Clears all caches.
+   */
   clearAllCaches(): void {
     this.cache.facultySchedulesReport$ = null;
     this.cache.roomSchedulesReport$ = null;
     this.cache.programSchedulesReport$ = null;
     this.cache.singleFacultySchedule = {};
+    this.cache.academicYears$ = null;
   }
 
   private handleError(error: HttpErrorResponse) {

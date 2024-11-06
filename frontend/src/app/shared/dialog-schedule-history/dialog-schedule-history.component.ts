@@ -13,7 +13,6 @@ import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 import { FacultyScheduleTimetableComponent } from '../faculty-schedule-timetable/faculty-schedule-timetable.component';
 import { LoadingComponent } from '../loading/loading.component';
 
-import { SchedulingService } from '../../core/services/admin/scheduling/scheduling.service';
 import { ReportsService } from '../../core/services/admin/reports/reports.service';
 import { CookieService } from 'ngx-cookie-service';
 
@@ -71,7 +70,6 @@ export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
   facultySchedule: any;
 
   constructor(
-    private schedulingService: SchedulingService,
     private reportsService: ReportsService,
     private cookieService: CookieService,
     private dialogRef: MatDialogRef<DialogScheduleHistoryComponent>
@@ -89,8 +87,8 @@ export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
   private loadAcademicYears(): void {
     this.loadingAcademicYearsSubject.next(true);
 
-    this.schedulingService
-      .getAcademicYears()
+    this.reportsService
+      .getAcademicYearsForHistory()
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => this.loadingAcademicYearsSubject.next(false))
