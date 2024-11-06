@@ -125,7 +125,7 @@
     $justify: flex-end,
     $gap: var(--spacing-sm)
   );
-  padding-top: var(--spacing-sm);
+  padding-bottom: var(--spacing-xxs);
 
   .action-button {
     @include gradient-primary(315deg);
