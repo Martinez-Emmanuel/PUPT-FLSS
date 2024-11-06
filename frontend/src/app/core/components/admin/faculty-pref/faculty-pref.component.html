@@ -155,6 +155,7 @@
             <mat-slide-toggle
               class="header-toggle"
               [checked]="isToggleAllChecked"
+              [disabled]="isAnyIndividualToggleOn"
               [matTooltip]="getAllToggleTooltip(isToggleAllChecked)"
               (change)="onToggleAllPreferences($event)"
             >

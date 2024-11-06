@@ -86,6 +86,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   allData: Faculty[] = [];
   filteredData: Faculty[] = [];
   isToggleAllChecked = false;
+  isAnyIndividualToggleOn = false;
   isLoading = new BehaviorSubject<boolean>(true);
   currentFilter = '';
   hasAnyPreferences = false;
@@ -191,11 +192,15 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   checkToggleAllState(): void {
     const allEnabled = this.filteredData.every((faculty) => faculty.is_enabled);
     this.isToggleAllChecked = allEnabled;
+  
+    this.isAnyIndividualToggleOn = this.filteredData.some(
+      (faculty) => faculty.is_enabled
+    );
   }
 
   hasAnyIndividualDeadlines(): boolean {
-    return this.allData.some(faculty =>
-      faculty.active_semesters?.some(semester => semester.individual_deadline)
+    return this.allData.some((faculty) =>
+      faculty.active_semesters?.some((semester) => semester.individual_deadline)
     );
   }
 
@@ -584,6 +589,10 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   }
 
   getAllToggleTooltip(isEnabled: boolean): string {
+    if (this.isAnyIndividualToggleOn) {
+      return `Global preferences cannot be toggled 
+        because individual deadlines are set`;
+    }
     return `${
       isEnabled ? 'Disable' : 'Enable'
     } preferences submission for all faculty`;
