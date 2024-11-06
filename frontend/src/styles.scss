@@ -183,10 +183,9 @@ body {
   transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
   &:active {
-    transform: scale(0.80);
+    transform: scale(0.8);
   }
 }
-
 
 .sec-ripple .mat-ripple-element {
   background-color: var(--secondary-fade) !important;

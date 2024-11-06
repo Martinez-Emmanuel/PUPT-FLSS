@@ -1,0 +1,49 @@
+<div class="dialog-schedule-history-container">
+  <!-- Dialog Header -->
+  <div class="dialog-header">
+    <!-- Title-->
+    <div class="title-section">
+      <div class="title-and-icon">
+        <span mat-symbol="history"></span>
+        <h2>Schedule History</h2>
+      </div>
+      <p>View your load and schedule from previous semesters</p>
+    </div>
+
+    <!--Input fields-->
+    <div class="field-section">
+      <mat-form-field appearance="fill">
+        <mat-label>Academic Year</mat-label>
+        <mat-select [(ngModel)]="selectedYear">
+          @for (year of academicYears; track year) {
+          <mat-option [value]="year">{{ year }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill">
+        <mat-label>Semester</mat-label>
+        <mat-select [(ngModel)]="selectedSemester">
+          @for (semester of semesters; track semester.value) {
+          <mat-option [value]="semester.value">{{
+            semester.viewValue
+          }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <!-- Dialog Content -->
+  <div class="dialog-content">
+    <app-faculty-schedule-timetable
+    ></app-faculty-schedule-timetable>
+  </div>
+
+  <!-- Dialog Footer -->
+  <div class="dialog-footer">
+    <button class="close-button" mat-button (click)="closeDialog()">
+      Close
+    </button>
+  </div>
+</div>

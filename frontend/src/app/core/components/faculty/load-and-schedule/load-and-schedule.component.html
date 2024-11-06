@@ -11,15 +11,16 @@
       <h1>Load and Schedule</h1>
       @if (isPublished){
       <p>
-        Here's your official load and schedule for
+        Here's your latest official load and schedule for
         <span class="highlight">A.Y. {{ academicYear }}, {{ semester }}</span
         >.
       </p>
-      }
+      } @else {
       <p>
         Your official load and schedule will be shown below. Please wait for its
         release soon.
       </p>
+      }
     </div>
 
     <!--Schedule Overview-->
@@ -41,7 +42,7 @@
       </div>
 
       <!--Schedule Summary-->
-      <div class="schedule-history">
+      <div class="schedule-history" (click)="openScheduleHistory()">
         <h4 class="mini-heading">
           <span mat-symbol="history"></span>Schedule History
         </h4>

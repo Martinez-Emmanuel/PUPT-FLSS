@@ -1,9 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 import { FacultyScheduleTimetableComponent } from '../../../../shared/faculty-schedule-timetable/faculty-schedule-timetable.component';
+import { DialogScheduleHistoryComponent } from '../../../../shared/dialog-schedule-history/dialog-schedule-history.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { ReportsService } from '../../../services/admin/reports/reports.service';
@@ -16,7 +18,9 @@ import { fadeAnimation } from '../../../animations/animations';
   standalone: true,
   imports: [
     CommonModule,
+    MatDialogModule,
     FacultyScheduleTimetableComponent,
+    DialogScheduleHistoryComponent,
     LoadingComponent,
     MatSymbolDirective,
   ],
@@ -31,7 +35,8 @@ export class LoadAndScheduleComponent implements OnInit {
 
   constructor(
     private reportsService: ReportsService,
-    private cookieService: CookieService
+    private cookieService: CookieService,
+    private dialog: MatDialog,
   ) {}
 
   ngOnInit() {
@@ -56,6 +61,15 @@ export class LoadAndScheduleComponent implements OnInit {
       console.error('Faculty ID not found in cookies');
       this.isLoading = false;
     }
+  }
+
+  openScheduleHistory() {
+    this.dialog.open(DialogScheduleHistoryComponent, {
+      maxWidth: '70rem',
+      width: '100%',
+      disableClose: true,
+      autoFocus: false,
+    });
   }
 
   get academicYear(): string {
