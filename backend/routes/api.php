@@ -57,6 +57,7 @@ Route::get('/faculty-schedules-report', [ReportsController::class, 'getFacultySc
 Route::get('/room-schedules-report', [ReportsController::class, 'getRoomSchedulesReport']);
 Route::get('/program-schedules-report', [ReportsController::class, 'getProgramSchedulesReport']);
 Route::get('/single-faculty-schedule/{faculty_id}', [ReportsController::class, 'getSingleFacultySchedule']);
+Route::get('/faculty-schedule-history/{faculty_id}', [ReportsController::class, 'getFacultyScheduleHistory']);
 Route::post('/toggle-all-schedule', [ReportsController::class, 'toggleAllSchedules']);
 Route::post('/toggle-single-schedule', [ReportsController::class, 'toggleSingleSchedule']);
 Route::get('/overview-details', [ReportsController::class, 'getOverviewDetails']);

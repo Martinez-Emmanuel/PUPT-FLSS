@@ -65,7 +65,7 @@ export class LoadAndScheduleComponent implements OnInit {
 
   openScheduleHistory() {
     this.dialog.open(DialogScheduleHistoryComponent, {
-      maxWidth: '70rem',
+      maxWidth: '90vw',
       width: '100%',
       disableClose: true,
       autoFocus: false,

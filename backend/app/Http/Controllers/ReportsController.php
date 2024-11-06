@@ -603,6 +603,103 @@ class ReportsController extends Controller
         return response()->json($response);
     }
 
+    public function getFacultyScheduleHistory($faculty_id, Request $request)
+    {
+        $validator = Validator::make(array_merge($request->all(), ['faculty_id' => $faculty_id]), [
+            'faculty_id' => 'required|integer|exists:faculty,id',
+            'academic_year_id' => 'required|integer|exists:academic_years,academic_year_id',
+            'semester_id' => 'required|integer|exists:semesters,semester_id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Invalid input parameters',
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+
+        $academic_year_id = $request->input('academic_year_id');
+        $semester_id = $request->input('semester_id');
+
+        // Fetch schedules for the faculty based on academic year and semester
+        $schedules = DB::table('schedules')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
+            ->where('schedules.faculty_id', '=', $faculty_id)
+            ->where('sections_per_program_year.academic_year_id', '=', $academic_year_id)
+            ->where('course_assignments.semester_id', '=', $semester_id)
+            ->select(
+                'schedules.schedule_id',
+                'schedules.day',
+                'schedules.start_time',
+                'schedules.end_time',
+                'schedules.room_id',
+                'courses.course_code',
+                'courses.course_title',
+                'courses.lec_hours',
+                'courses.lab_hours',
+                'courses.units',
+                'courses.tuition_hours',
+                'rooms.room_code',
+                'programs.program_code',
+                'programs.program_title',
+                'sections_per_program_year.year_level',
+                'sections_per_program_year.section_name'
+            )
+            ->leftJoin('courses', 'course_assignments.course_id', '=', 'courses.course_id')
+            ->leftJoin('rooms', 'schedules.room_id', '=', 'rooms.room_id')
+            ->leftJoin('programs', 'sections_per_program_year.program_id', '=', 'programs.program_id')
+            ->get();
+
+        // Transform schedules to include course_details
+        $transformedSchedules = $schedules->map(function ($schedule) {
+            return [
+                'schedule_id' => $schedule->schedule_id,
+                'day' => $schedule->day,
+                'start_time' => $schedule->start_time,
+                'end_time' => $schedule->end_time,
+                'room_id' => $schedule->room_id,
+                'course_details' => [
+                    'course_code' => $schedule->course_code,
+                    'course_title' => $schedule->course_title,
+                ],
+                'lec_hours' => $schedule->lec_hours,
+                'lab_hours' => $schedule->lab_hours,
+                'units' => $schedule->units,
+                'tuition_hours' => $schedule->tuition_hours,
+                'room_code' => $schedule->room_code,
+                'program_code' => $schedule->program_code,
+                'program_title' => $schedule->program_title,
+                'year_level' => $schedule->year_level,
+                'section_name' => $schedule->section_name,
+            ];
+        });
+
+        // Calculate total units and total hours
+        $assigned_units = $transformedSchedules->sum('units');
+        $total_hours = $transformedSchedules->sum('tuition_hours');
+
+        // Determine if the schedule is published
+        $is_published = DB::table('faculty_schedule_publication')
+            ->where('faculty_id', '=', $faculty_id)
+            ->whereIn('schedule_id', $transformedSchedules->pluck('schedule_id'))
+            ->value('is_published') ?? 0;
+
+        $response = [
+            'faculty_schedule' => [
+                'academic_year_id' => $academic_year_id,
+                'semester_id' => $semester_id,
+                'assigned_units' => $assigned_units,
+                'total_hours' => $total_hours,
+                'is_published' => $is_published,
+                'schedules' => $transformedSchedules,
+            ],
+        ];
+
+        return response()->json($response);
+    }
+
     public function toggleAllSchedules(Request $request)
     {
         // Step 1: Validate the input

@@ -10,24 +10,33 @@
       <p>View your load and schedule from previous semesters</p>
     </div>
 
-    <!--Input fields-->
+    <!-- Input fields -->
     <div class="field-section">
       <mat-form-field appearance="fill">
         <mat-label>Academic Year</mat-label>
-        <mat-select [(ngModel)]="selectedYear">
-          @for (year of academicYears; track year) {
-          <mat-option [value]="year">{{ year }}</mat-option>
+        <mat-select
+          [(ngModel)]="selectedYear"
+          (selectionChange)="onYearChange()"
+        >
+          @for (year of academicYears; track year.academic_year_id) {
+          <mat-option [value]="year.academic_year_id">
+            {{ year.academic_year }}
+          </mat-option>
           }
         </mat-select>
       </mat-form-field>
 
       <mat-form-field appearance="fill">
         <mat-label>Semester</mat-label>
-        <mat-select [(ngModel)]="selectedSemester">
-          @for (semester of semesters; track semester.value) {
-          <mat-option [value]="semester.value">{{
-            semester.viewValue
-          }}</mat-option>
+        <mat-select
+          [(ngModel)]="selectedSemester"
+          (selectionChange)="onSemesterChange()"
+          [disabled]="!selectedYear"
+        >
+          @for (semester of semesters; track semester.semester_id) {
+          <mat-option [value]="semester.semester_id">
+            {{ semester.semester_number }}
+          </mat-option>
           }
         </mat-select>
       </mat-form-field>
@@ -36,8 +45,15 @@
 
   <!-- Dialog Content -->
   <div class="dialog-content">
+    @if (!isLoading && facultySchedule) {
     <app-faculty-schedule-timetable
+      [facultySchedule]="facultySchedule"
     ></app-faculty-schedule-timetable>
+    } @if (!isLoading && !facultySchedule && selectedYear && selectedSemester) {
+    <div class="no-schedule">
+      <p>No schedule found for the selected academic year and semester.</p>
+    </div>
+    }
   </div>
 
   <!-- Dialog Footer -->
