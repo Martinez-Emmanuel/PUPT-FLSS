@@ -1,6 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { BehaviorSubject, Subject, finalize, takeUntil, combineLatest } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -9,10 +11,24 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 import { FacultyScheduleTimetableComponent } from '../faculty-schedule-timetable/faculty-schedule-timetable.component';
+import { LoadingComponent } from '../loading/loading.component';
 
 import { SchedulingService } from '../../core/services/admin/scheduling/scheduling.service';
 import { ReportsService } from '../../core/services/admin/reports/reports.service';
 import { CookieService } from 'ngx-cookie-service';
+
+import { fadeAnimation } from '../../core/animations/animations';
+
+interface AcademicYear {
+  academic_year_id: number;
+  academic_year: string;
+  semesters: Semester[];
+}
+
+interface Semester {
+  semester_id: number;
+  semester_number: string;
+}
 
 @Component({
   selector: 'app-dialog-schedule-history',
@@ -25,20 +41,34 @@ import { CookieService } from 'ngx-cookie-service';
     MatButtonModule,
     MatSymbolDirective,
     FormsModule,
+    LoadingComponent,
     FacultyScheduleTimetableComponent,
   ],
   templateUrl: './dialog-schedule-history.component.html',
   styleUrls: ['./dialog-schedule-history.component.scss'],
+  animations: [fadeAnimation],
 })
-export class DialogScheduleHistoryComponent implements OnInit {
+export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+
+  private loadingAcademicYearsSubject = new BehaviorSubject<boolean>(true);
+  private loadingScheduleHistorySubject = new BehaviorSubject<boolean>(false);
+
+  isLoading$ = combineLatest([
+    this.loadingAcademicYearsSubject.asObservable(),
+    this.loadingScheduleHistorySubject.asObservable(),
+  ]).pipe(
+    map(
+      ([loadingAcademicYears, loadingScheduleHistory]) =>
+        loadingAcademicYears || loadingScheduleHistory
+    )
+  );
+
   selectedYear: number | null = null;
   selectedSemester: number | null = null;
-
-  academicYears: any[] = [];
-  semesters: any[] = [];
-
-  facultySchedule: any = null;
-  isLoading: boolean = false;
+  academicYears: AcademicYear[] = [];
+  semesters: Semester[] = [];
+  facultySchedule: any;
 
   constructor(
     private schedulingService: SchedulingService,
@@ -47,63 +77,64 @@ export class DialogScheduleHistoryComponent implements OnInit {
     private dialogRef: MatDialogRef<DialogScheduleHistoryComponent>
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadAcademicYears();
   }
 
-  /**
-   * Fetches all academic years
-   * Initialize the selectedYear and selectedSemester with default values
-   */
-  loadAcademicYears() {
-    this.schedulingService.getAcademicYears().subscribe(
-      (data) => {
-        this.academicYears = data;
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
 
-        if (this.academicYears.length > 0) {
-          const latestYear = this.academicYears.reduce((prev, current) =>
-            prev.academic_year_id > current.academic_year_id ? prev : current
-          );
-          this.selectedYear = latestYear.academic_year_id;
+  private loadAcademicYears(): void {
+    this.loadingAcademicYearsSubject.next(true);
 
-          this.onYearChange();
-        }
-      },
-      (error) => {
-        console.error('Error fetching academic years:', error);
-      }
+    this.schedulingService
+      .getAcademicYears()
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.loadingAcademicYearsSubject.next(false))
+      )
+      .subscribe({
+        next: (years: AcademicYear[]) => {
+          this.academicYears = years;
+          if (years.length > 0) {
+            const latestYear = this.getLatestAcademicYear(years);
+            this.selectedYear = latestYear.academic_year_id;
+            this.onYearChange();
+          }
+        },
+        error: (error) =>
+          console.error('Error fetching academic years:', error),
+      });
+  }
+
+  private getLatestAcademicYear(years: AcademicYear[]): AcademicYear {
+    return years.reduce((prev, current) =>
+      prev.academic_year_id > current.academic_year_id ? prev : current
     );
   }
 
-  /**
-   * Updates the semesters dropdown based on the selected academic year.
-   * Initializes the selectedSemester to the first semester by default.
-   */
-  onYearChange() {
-    if (this.selectedYear) {
-      const selectedAcademicYear = this.academicYears.find(
-        (ay) => ay.academic_year_id === this.selectedYear
-      );
-      if (selectedAcademicYear && selectedAcademicYear.semesters.length > 0) {
-        this.semesters = selectedAcademicYear.semesters;
-        this.selectedSemester = this.semesters[0].semester_id;
-        this.onSemesterChange();
-      } else {
-        this.semesters = [];
-        this.selectedSemester = null;
-        this.facultySchedule = null;
-      }
+  onYearChange(): void {
+    if (!this.selectedYear) {
+      this.resetSelections();
+      return;
+    }
+
+    const selectedYear = this.academicYears.find(
+      (ay) => ay.academic_year_id === this.selectedYear
+    );
+
+    if (selectedYear?.semesters.length) {
+      this.semesters = selectedYear.semesters;
+      this.selectedSemester = this.semesters[0].semester_id;
+      this.onSemesterChange();
     } else {
-      this.semesters = [];
-      this.selectedSemester = null;
-      this.facultySchedule = null;
+      this.resetSelections();
     }
   }
 
-  /**
-   * Fetches the schedule history when both academic year and semester are selected.
-   */
-  onSemesterChange() {
+  onSemesterChange(): void {
     if (this.selectedYear && this.selectedSemester) {
       this.fetchScheduleHistory();
     } else {
@@ -111,12 +142,11 @@ export class DialogScheduleHistoryComponent implements OnInit {
     }
   }
 
-  /**
-   * Fetches the schedule history from the backend.
-   */
-  fetchScheduleHistory() {
-    this.isLoading = true;
+  private fetchScheduleHistory(): void {
     const facultyId = Number(this.cookieService.get('faculty_id'));
+
+    this.loadingScheduleHistorySubject.next(true);
+    this.facultySchedule = null;
 
     this.reportsService
       .getFacultyScheduleHistory(
@@ -124,19 +154,26 @@ export class DialogScheduleHistoryComponent implements OnInit {
         this.selectedYear!,
         this.selectedSemester!
       )
-      .subscribe(
-        (data) => {
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.loadingScheduleHistorySubject.next(false))
+      )
+      .subscribe({
+        next: (data) => {
           this.facultySchedule = data.faculty_schedule;
-          this.isLoading = false;
         },
-        (error) => {
-          console.error('Error fetching schedule history:', error);
-          this.isLoading = false;
-        }
-      );
+        error: (error) =>
+          console.error('Error fetching schedule history:', error),
+      });
   }
 
-  closeDialog() {
+  private resetSelections(): void {
+    this.semesters = [];
+    this.selectedSemester = null;
+    this.facultySchedule = null;
+  }
+
+  closeDialog(): void {
     this.dialogRef.close();
   }
 }

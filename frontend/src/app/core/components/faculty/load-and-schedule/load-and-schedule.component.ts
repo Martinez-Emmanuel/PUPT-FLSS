@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 
 import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { FacultyScheduleTimetableComponent } from '../../../../shared/faculty-schedule-timetable/faculty-schedule-timetable.component';
 import { DialogScheduleHistoryComponent } from '../../../../shared/dialog-schedule-history/dialog-schedule-history.component';
@@ -19,6 +20,7 @@ import { fadeAnimation } from '../../../animations/animations';
   imports: [
     CommonModule,
     MatDialogModule,
+    MatTooltipModule,
     FacultyScheduleTimetableComponent,
     DialogScheduleHistoryComponent,
     LoadingComponent,

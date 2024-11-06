@@ -9,56 +9,60 @@
   );
   padding: var(--spacing-lg);
 
-  .dialog-header {
-    @include flex-layout($align: stretch, $justify: space-between);
+  .loading-wrapper {
+    height: 80vh;
+  }
+}
 
-    .title-section {
-      .title-and-icon {
-        @include flex-layout(
-          $align: center,
-          $justify: flex-start,
-          $gap: var(--spacing-xxs)
-        );
+.dialog-header {
+  @include flex-layout($align: stretch, $justify: space-between);
 
-        span[mat-symbol] {
-          color: var(--primary-text);
-        }
+  .title-section {
+    .title-and-icon {
+      @include flex-layout(
+        $align: center,
+        $justify: flex-start,
+        $gap: var(--spacing-xxs)
+      );
 
-        h2 {
-          margin: 0;
-          font-size: var(--font-size-xl);
-          font-weight: 600;
-          color: var(--primary-text);
-        }
+      span[mat-symbol] {
+        color: var(--primary-text);
       }
 
-      p {
-        margin: var(--spacing-xxs) 0;
-        font-size: var(--font-size-md);
+      h2 {
+        margin: 0;
+        font-size: var(--font-size-xl);
+        font-weight: 600;
         color: var(--primary-text);
       }
     }
 
-    .field-section {
-      display: flex;
-      gap: 16px;
-
-      mat-form-field {
-        flex: 1;
-      }
-    }
-  }
-
-  .dialog-content {
-    height: 60vh;
-    overflow-y: hidden;
-  }
-
-  .dialog-footer {
-    @include flex-layout($align: stretch, $justify: flex-end);
-
-    .close-button {
+    p {
+      margin: var(--spacing-xxs) 0;
+      font-size: var(--font-size-md);
       color: var(--primary-text);
     }
+  }
+
+  .field-section {
+    display: flex;
+    gap: 16px;
+
+    mat-form-field {
+      flex: 1;
+    }
+  }
+}
+
+.dialog-content {
+  height: 60vh;
+  overflow-y: hidden;
+}
+
+.dialog-footer {
+  @include flex-layout($align: stretch, $justify: flex-end);
+
+  .close-button {
+    color: var(--primary-text);
   }
 }

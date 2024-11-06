@@ -1,7 +1,11 @@
 <div class="dialog-schedule-history-container">
+  @if (isLoading$ | async) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
   <!-- Dialog Header -->
   <div class="dialog-header">
-    <!-- Title-->
     <div class="title-section">
       <div class="title-and-icon">
         <span mat-symbol="history"></span>
@@ -10,7 +14,6 @@
       <p>View your load and schedule from previous semesters</p>
     </div>
 
-    <!-- Input fields -->
     <div class="field-section">
       <mat-form-field appearance="fill">
         <mat-label>Academic Year</mat-label>
@@ -45,14 +48,10 @@
 
   <!-- Dialog Content -->
   <div class="dialog-content">
-    @if (!isLoading && facultySchedule) {
+    @if (facultySchedule) {
     <app-faculty-schedule-timetable
       [facultySchedule]="facultySchedule"
     ></app-faculty-schedule-timetable>
-    } @if (!isLoading && !facultySchedule && selectedYear && selectedSemester) {
-    <div class="no-schedule">
-      <p>No schedule found for the selected academic year and semester.</p>
-    </div>
     }
   </div>
 
@@ -62,4 +61,5 @@
       Close
     </button>
   </div>
+  }
 </div>

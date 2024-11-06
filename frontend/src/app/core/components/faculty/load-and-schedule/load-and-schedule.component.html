@@ -42,7 +42,11 @@
       </div>
 
       <!--Schedule Summary-->
-      <div class="schedule-history" (click)="openScheduleHistory()">
+      <div
+        class="schedule-history"
+        matTooltip="Click to view your past schedules"
+        (click)="openScheduleHistory()"
+      >
         <h4 class="mini-heading">
           <span mat-symbol="history"></span>Schedule History
         </h4>
