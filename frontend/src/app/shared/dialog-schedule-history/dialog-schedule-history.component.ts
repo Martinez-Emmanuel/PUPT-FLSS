@@ -88,7 +88,7 @@ export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
     this.loadingAcademicYearsSubject.next(true);
 
     this.reportsService
-      .getAcademicYearsForHistory()
+      .getAcademicYearsHistory()
       .pipe(
         takeUntil(this.destroy$),
         finalize(() => this.loadingAcademicYearsSubject.next(false))

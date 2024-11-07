@@ -23,6 +23,7 @@ Route::post('login', [AuthController::class, 'login'])->name('login');
 
 // Academic Year Routes
 Route::get('/get-academic-years', [AcademicYearController::class, 'getAcademicYears']);
+Route::get('/academic-years-history', [AcademicYearController::class, 'getAcademicYearsHistory']);
 Route::post('/add-academic-year', [AcademicYearController::class, 'addAcademicYear']);
 Route::delete('/delete-ay', [AcademicYearController::class, 'deleteAcademicYear']);
 
