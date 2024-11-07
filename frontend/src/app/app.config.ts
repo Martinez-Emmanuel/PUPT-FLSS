@@ -33,7 +33,8 @@ export const appConfig: ApplicationConfig = {
     {
       provide: MAT_DIALOG_DEFAULT_OPTIONS,
       useValue: {
-        exitAnimationDuration: '250ms',
+        enterAnimationDuration: 150,
+        exitAnimationDuration: 250,
       },
     },
   ],
