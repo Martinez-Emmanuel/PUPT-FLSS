@@ -6,11 +6,12 @@
         <span mat-symbol="history"></span>
         <h2>Schedule History</h2>
       </div>
-      <p>View your load and schedule from previous semesters</p>
+      <p>View your past load and schedule from previous semesters</p>
     </div>
 
+    @if (!hasNoScheduleHistory) {
     <div class="field-section">
-      <mat-form-field appearance="fill">
+      <mat-form-field appearance="fill" class="no-subscript">
         <mat-label>Academic Year</mat-label>
         <mat-select
           [(ngModel)]="selectedYear"
@@ -24,7 +25,7 @@
         </mat-select>
       </mat-form-field>
 
-      <mat-form-field appearance="fill">
+      <mat-form-field appearance="fill" class="no-subscript">
         <mat-label>Semester</mat-label>
         <mat-select
           [(ngModel)]="selectedSemester"
@@ -39,6 +40,7 @@
         </mat-select>
       </mat-form-field>
     </div>
+    }
   </div>
 
   @if (isLoading$ | async) {
@@ -46,7 +48,13 @@
     <app-loading></app-loading>
   </div>
   } @else {
-
+  <!-- Empty Past Schedules -->
+  @if (hasNoScheduleHistory) {
+  <div class="no-schedule-message" [@fadeAnimation]>
+    <span mat-symbol="info"></span>
+    <p class="empty-state-message">No recorded schedule history available.</p>
+  </div>
+  } @else {
   <!-- Dialog Content -->
   <div class="dialog-content">
     @if (facultySchedule) {
@@ -55,7 +63,7 @@
     ></app-faculty-schedule-timetable>
     }
   </div>
-  }
+  } }
 
   <!-- Dialog Footer -->
   <div class="dialog-footer">

@@ -59,6 +59,15 @@
   overflow-y: hidden;
 }
 
+.no-schedule-message {
+  height: 60vh;
+  @include flex-layout($gap: var(--spacing-xs));
+
+  span[mat-symbol] {
+    font-size: 100%;
+  }
+}
+
 .dialog-footer {
   @include flex-layout($align: stretch, $justify: flex-end);
 

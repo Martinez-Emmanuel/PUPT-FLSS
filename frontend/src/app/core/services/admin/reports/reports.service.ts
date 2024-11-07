@@ -18,12 +18,14 @@ export class ReportsService {
     programSchedulesReport$: Observable<any> | null;
     singleFacultySchedule: { [facultyId: number]: Observable<any> };
     academicYearsHistory$: Observable<any[]> | null;
+    facultyAcademicYearsHistory: { [facultyId: number]: Observable<any[]> };
   } = {
     facultySchedulesReport$: null,
     roomSchedulesReport$: null,
     programSchedulesReport$: null,
     singleFacultySchedule: {},
     academicYearsHistory$: null,
+    facultyAcademicYearsHistory: {},
   };
 
   constructor(private http: HttpClient) {}
@@ -98,16 +100,16 @@ export class ReportsService {
   }
 
   /**
-   * Fetches the academic years for history
+   * Fetches the past academic years and semesters where the faculty had schedules.
    */
-  getAcademicYearsHistory(): Observable<any[]> {
-    if (!this.cache.academicYearsHistory$) {
-      const url = `${this.baseUrl}/academic-years-history`;
-      this.cache.academicYearsHistory$ = this.http
+  getFacultyAcademicYearsHistory(faculty_id: number): Observable<any[]> {
+    if (!this.cache.facultyAcademicYearsHistory[faculty_id]) {
+      const url = `${this.baseUrl}/faculty-academic-years-history/${faculty_id}`;
+      this.cache.facultyAcademicYearsHistory[faculty_id] = this.http
         .get<any[]>(url)
         .pipe(shareReplay(1), catchError(this.handleError));
     }
-    return this.cache.academicYearsHistory$;
+    return this.cache.facultyAcademicYearsHistory[faculty_id];
   }
 
   /**
@@ -160,7 +162,8 @@ export class ReportsService {
       | 'room'
       | 'program'
       | 'singleFaculty'
-      | 'academicYears',
+      | 'academicYears'
+      | 'facultyAcademicYears',
     faculty_id?: number
   ): void {
     switch (cacheType) {
@@ -181,6 +184,11 @@ export class ReportsService {
       case 'academicYears':
         this.cache.academicYearsHistory$ = null;
         break;
+      case 'facultyAcademicYears':
+        if (faculty_id !== undefined) {
+          delete this.cache.facultyAcademicYearsHistory[faculty_id];
+        }
+        break;
       default:
         console.warn('Invalid cache type specified');
     }
@@ -195,6 +203,7 @@ export class ReportsService {
     this.cache.programSchedulesReport$ = null;
     this.cache.singleFacultySchedule = {};
     this.cache.academicYearsHistory$ = null;
+    this.cache.facultyAcademicYearsHistory = {};
   }
 
   private handleError(error: HttpErrorResponse) {

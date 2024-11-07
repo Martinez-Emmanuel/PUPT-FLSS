@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AcademicYear;
+use App\Models\ActiveSemester;
 use App\Models\PreferencesSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -703,6 +705,108 @@ class ReportsController extends Controller
         ];
 
         return response()->json($response);
+    }
+
+    /**
+     * Retrieves academic years and semesters where a faculty had schedules &
+     * ensure these are before the current active academic year and semester
+     */
+    public function getFacultyAcademicYearsHistory($faculty_id)
+    {
+        $validator = Validator::make(['faculty_id' => $faculty_id], [
+            'faculty_id' => 'required|integer|exists:faculty,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Invalid faculty ID',
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+
+        // Retrieve the current active academic year
+        $activeYear = AcademicYear::where('is_active', true)->first();
+
+        if (!$activeYear) {
+            return response()->json([
+                'message' => 'No active academic year found.',
+            ], 404);
+        }
+
+        // Retrieve the current active semester within the active academic year
+        $activeSemester = ActiveSemester::where('academic_year_id', $activeYear->academic_year_id)
+            ->where('is_active', true)
+            ->first();
+
+        if (!$activeSemester) {
+            return response()->json([
+                'message' => 'No active semester found for the current academic year.',
+            ], 404);
+        }
+
+        // Fetch distinct academic_years and semesters where the faculty has schedules
+        $schedules = DB::table('schedules')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
+            ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
+            ->join('academic_years', 'sections_per_program_year.academic_year_id', '=', 'academic_years.academic_year_id')
+            ->leftJoin('active_semesters', function ($join) {
+                $join->on('academic_years.academic_year_id', '=', 'active_semesters.academic_year_id')
+                    ->on('semesters.semester_id', '=', 'active_semesters.semester_id');
+            })
+            ->where('schedules.faculty_id', $faculty_id)
+        // Filter to include only academic years and semesters **before the current active**
+            ->where(function ($query) use ($activeYear, $activeSemester) {
+                $query->where('academic_years.academic_year_id', '<', $activeYear->academic_year_id)
+                    ->orWhere(function ($q) use ($activeYear, $activeSemester) {
+                        $q->where('academic_years.academic_year_id', '=', $activeYear->academic_year_id)
+                            ->where('semesters.semester', '<', $activeSemester->semester_id);
+                    });
+            })
+            ->select(
+                'academic_years.academic_year_id',
+                'academic_years.year_start',
+                DB::raw("CONCAT(academic_years.year_start, '-', academic_years.year_end) as academic_year"),
+                'semesters.semester_id',
+                'semesters.semester as semester_number',
+                'active_semesters.start_date',
+                'active_semesters.end_date'
+            )
+            ->distinct()
+            ->orderBy('academic_years.year_start', 'desc')
+            ->orderBy('semesters.semester', 'asc')
+            ->get();
+
+        $groupedAcademicYears = [];
+
+        foreach ($schedules as $schedule) {
+            if (!isset($groupedAcademicYears[$schedule->academic_year_id])) {
+                $groupedAcademicYears[$schedule->academic_year_id] = [
+                    'academic_year_id' => $schedule->academic_year_id,
+                    'academic_year' => $schedule->academic_year,
+                    'semesters' => [],
+                ];
+            }
+
+            $semesterLabel = '';
+            if ($schedule->semester_number == 1) {
+                $semesterLabel = '1st Semester';
+            } elseif ($schedule->semester_number == 2) {
+                $semesterLabel = '2nd Semester';
+            } elseif ($schedule->semester_number == 3) {
+                $semesterLabel = 'Summer Semester';
+            }
+
+            $groupedAcademicYears[$schedule->academic_year_id]['semesters'][] = [
+                'semester_id' => $schedule->semester_id,
+                'semester_number' => $semesterLabel,
+                'start_date' => $schedule->start_date,
+                'end_date' => $schedule->end_date,
+            ];
+        }
+
+        return response()->json(array_values($groupedAcademicYears));
     }
 
     public function toggleAllSchedules(Request $request)

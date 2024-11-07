@@ -52,6 +52,7 @@ export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
 
   private loadingAcademicYearsSubject = new BehaviorSubject<boolean>(true);
   private loadingScheduleHistorySubject = new BehaviorSubject<boolean>(false);
+  private hasLoadedDataSubject = new BehaviorSubject<boolean>(false);
 
   isLoading$ = combineLatest([
     this.loadingAcademicYearsSubject.asObservable(),
@@ -62,6 +63,8 @@ export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
         loadingAcademicYears || loadingScheduleHistory
     )
   );
+
+  hasLoadedData$ = this.hasLoadedDataSubject.asObservable();
 
   selectedYear: number | null = null;
   selectedSemester: number | null = null;
@@ -85,13 +88,19 @@ export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
   }
 
   private loadAcademicYears(): void {
+    const facultyId = Number(this.cookieService.get('faculty_id'));
+
     this.loadingAcademicYearsSubject.next(true);
+    this.hasLoadedDataSubject.next(false);
 
     this.reportsService
-      .getAcademicYearsHistory()
+      .getFacultyAcademicYearsHistory(facultyId)
       .pipe(
         takeUntil(this.destroy$),
-        finalize(() => this.loadingAcademicYearsSubject.next(false))
+        finalize(() => {
+          this.loadingAcademicYearsSubject.next(false);
+          this.hasLoadedDataSubject.next(true);
+        })
       )
       .subscribe({
         next: (years: AcademicYear[]) => {
@@ -102,8 +111,10 @@ export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
             this.onYearChange();
           }
         },
-        error: (error) =>
-          console.error('Error fetching academic years:', error),
+        error: (error) => {
+          console.error('Error fetching academic years:', error);
+          this.academicYears = [];
+        },
       });
   }
 
@@ -169,6 +180,10 @@ export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
     this.semesters = [];
     this.selectedSemester = null;
     this.facultySchedule = null;
+  }
+
+  get hasNoScheduleHistory(): boolean {
+    return this.hasLoadedDataSubject.value && this.academicYears.length === 0;
   }
 
   closeDialog(): void {

@@ -23,7 +23,6 @@ Route::post('login', [AuthController::class, 'login'])->name('login');
 
 // Academic Year Routes
 Route::get('/get-academic-years', [AcademicYearController::class, 'getAcademicYears']);
-Route::get('/academic-years-history', [AcademicYearController::class, 'getAcademicYearsHistory']);
 Route::post('/add-academic-year', [AcademicYearController::class, 'addAcademicYear']);
 Route::delete('/delete-ay', [AcademicYearController::class, 'deleteAcademicYear']);
 
@@ -59,6 +58,7 @@ Route::get('/room-schedules-report', [ReportsController::class, 'getRoomSchedule
 Route::get('/program-schedules-report', [ReportsController::class, 'getProgramSchedulesReport']);
 Route::get('/single-faculty-schedule/{faculty_id}', [ReportsController::class, 'getSingleFacultySchedule']);
 Route::get('/faculty-schedule-history/{faculty_id}', [ReportsController::class, 'getFacultyScheduleHistory']);
+Route::get('/faculty-academic-years-history/{faculty_id}', [ReportsController::class, 'getFacultyAcademicYearsHistory']);
 Route::post('/toggle-all-schedule', [ReportsController::class, 'toggleAllSchedules']);
 Route::post('/toggle-single-schedule', [ReportsController::class, 'toggleSingleSchedule']);
 Route::get('/overview-details', [ReportsController::class, 'getOverviewDetails']);
