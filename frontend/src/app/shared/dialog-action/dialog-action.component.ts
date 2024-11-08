@@ -112,11 +112,13 @@ export class DialogActionComponent {
     if (this.data.type === 'all_preferences') {
       this.submissionDeadline = this.data.global_deadline || null;
       this.showDeadlinePicker = true;
+      this.calculateRemainingDays;
     } else if (this.data.type === 'single_preferences') {
       this.submissionDeadline =
         this.data.individual_deadline || this.data.global_deadline || null;
       this.facultyName = this.data.facultyName || '';
       this.showDeadlinePicker = true;
+      this.calculateRemainingDays;
     }
 
     if (this.submissionDeadline) {
