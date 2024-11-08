@@ -6,15 +6,14 @@ import { BehaviorSubject } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatSlideToggleChange } from '@angular/material/slide-toggle';
+import { MatSlideToggleModule, MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
-import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 import { TableHeaderComponent, InputField } from '../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
@@ -79,13 +78,24 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     'toggle',
   ];
 
+  // ===========================
+  // Data Properties
+  // ===========================
+
+  // Data source for the material table
   dataSource = new MatTableDataSource<Faculty>([]);
   allData: Faculty[] = [];
   filteredData: Faculty[] = [];
+  currentFilter = '';
+
+  // Toggle states
   isToggleAllChecked = false;
   isAnyIndividualToggleOn = false;
+
+  // Loading state
   isLoading = new BehaviorSubject<boolean>(true);
-  currentFilter = '';
+
+  // Preferences state
   hasAnyPreferences = false;
   hasIndividualDeadlines = false;
 
@@ -101,6 +111,22 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     this.preferencesService.clearPreferencesCache();
     this.loadFacultyPreferences();
+    this.setupFilterPredicate();
+  }
+
+  ngAfterViewInit(): void {
+    this.dataSource.paginator = this.paginator ?? null;
+    this.applyFilter(this.currentFilter);
+  }
+
+  // ===========================
+  // Data Loading and Handling
+  // ===========================
+
+  /**
+   * Sets up the filter predicate for the data source.
+   */
+  private setupFilterPredicate(): void {
     this.dataSource.filterPredicate = (data: Faculty, filter: string) => {
       return (
         data.facultyName.toLowerCase().includes(filter) ||
@@ -110,11 +136,9 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     };
   }
 
-  ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator ?? null;
-    this.applyFilter(this.currentFilter);
-  }
-
+  /**
+   * Loads faculty preferences from the service.
+   */
   loadFacultyPreferences(): void {
     this.isLoading.next(true);
     this.preferencesService
@@ -137,7 +161,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
           this.applyFilter(this.currentFilter);
           this.checkToggleAllState();
           this.updateHasAnyPreferences();
-          this.updateIndividualDeadlinesState(); // Add this new call
+          this.updateIndividualDeadlinesState();
           this.isLoading.next(false);
         },
         (error) => {
@@ -152,6 +176,10 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
       );
   }
 
+  /**
+   * Applies the filter to the data source.
+   * @param filterValue The filter string.
+   */
   applyFilter(filterValue: string): void {
     this.currentFilter = filterValue.trim().toLowerCase();
 
@@ -170,6 +198,12 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     this.updateDisplayedData();
   }
 
+  /**
+   * Custom filter predicate for the data source.
+   * @param data The faculty data.
+   * @param filter The filter string.
+   * @returns Whether the data matches the filter.
+   */
   filterPredicate(data: Faculty, filter: string): boolean {
     return (
       data.facultyName.toLowerCase().includes(filter) ||
@@ -178,6 +212,9 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     );
   }
 
+  /**
+   * Updates the data displayed in the table based on pagination.
+   */
   updateDisplayedData(): void {
     if (this.paginator) {
       const startIndex = this.paginator.pageIndex * this.paginator.pageSize;
@@ -188,6 +225,22 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /**
+   * Handles changes in input fields.
+   * @param inputValues The current input values.
+   */
+  onInputChange(inputValues: { [key: string]: any }): void {
+    const searchValue = inputValues['searchFaculty'] || '';
+    this.applyFilter(searchValue);
+  }
+
+  // ===========================
+  // Toggle Management
+  // ===========================
+
+  /**
+   * Checks and updates the state of the "Toggle All" checkbox.
+   */
   checkToggleAllState(): void {
     const allEnabled = this.filteredData.every((faculty) => faculty.is_enabled);
     this.isToggleAllChecked = allEnabled;
@@ -197,18 +250,31 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     );
   }
 
-  hasAnyIndividualDeadlines(): boolean {
-    return this.allData.some((faculty) =>
-      faculty.active_semesters?.some((semester) => semester.individual_deadline)
-    );
-  }
-
+  /**
+   * Updates the state indicating if any faculty has submitted preferences.
+   */
   updateHasAnyPreferences(): void {
     this.hasAnyPreferences = this.allData.some((faculty) =>
       this.hasSubmittedPreferences(faculty)
     );
   }
 
+  /**
+   * Checks if a faculty has submitted preferences.
+   */
+  hasSubmittedPreferences(faculty: Faculty): boolean {
+    return !!(
+      faculty.active_semesters &&
+      faculty.active_semesters.length > 0 &&
+      faculty.active_semesters.some(
+        (semester) => semester.courses && semester.courses.length > 0
+      )
+    );
+  }
+
+  /**
+   * Updates the state indicating if any faculty has individual deadlines.
+   */
   updateIndividualDeadlinesState(): void {
     this.hasIndividualDeadlines = this.allData.some((faculty) =>
       faculty.active_semesters?.some(
@@ -221,8 +287,13 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     );
   }
 
+  /**
+   * Handles the toggle action for all preferences.
+   * @param event The slide toggle change event.
+   */
   onToggleAllPreferences(event: MatSlideToggleChange): void {
     if (this.hasIndividualDeadlines && !this.isToggleAllChecked) {
+      // Updated reference
       event.source.checked = false;
       this.snackBar.open(
         'Cannot enable global preferences when individual deadlines exist',
@@ -239,7 +310,8 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
       ? new Date(this.allData[0].active_semesters[0].global_deadline)
       : null;
 
-    const hasIndividualDeadlines = this.hasAnyIndividualDeadlines();
+    // Removed the incorrect method call and used the property instead
+    const hasIndividualDeadlines = this.hasIndividualDeadlines; // Updated reference
 
     const dialogData: DialogActionData = {
       type: 'all_preferences',
@@ -270,6 +342,11 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     });
   }
 
+  /**
+   * Handles the toggle action for a single faculty's preferences.
+   * @param faculty The faculty being toggled.
+   * @param event The slide toggle change event.
+   */
   onToggleSinglePreferences(
     faculty: Faculty,
     event: MatSlideToggleChange
@@ -314,17 +391,19 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     });
   }
 
-  onInputChange(inputValues: { [key: string]: any }): void {
-    const searchValue = inputValues['searchFaculty'] || '';
-    this.applyFilter(searchValue);
-  }
+  // ===========================
+  // View & Export Functionality
+  // ===========================
 
+  /**
+   * Opens the view dialog for a specific faculty.
+   */
   onView(faculty: Faculty): void {
     const generatePdfFunction = (preview: boolean): Blob | void => {
       return this.generateFacultyPDF(false, [faculty], preview);
     };
 
-    const dialogRef = this.dialog.open(DialogPrefComponent, {
+    this.dialog.open(DialogPrefComponent, {
       maxWidth: '70rem',
       width: '100%',
       data: {
@@ -336,6 +415,9 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     });
   }
 
+  /**
+   * Exports all faculty preferences as a PDF.
+   */
   onExportAll(): void {
     if (!this.allData.length) {
       this.snackBar.open(
@@ -390,6 +472,9 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     });
   }
 
+  /**
+   * Exports a single faculty's preferences as a PDF.
+   */
   onExportSingle(faculty: Faculty): void {
     const activeSemester = faculty.active_semesters?.[0];
     if (!activeSemester || !activeSemester.courses?.length) {
@@ -409,6 +494,9 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     );
   }
 
+  /**
+   * Generates a PDF for faculty preferences.
+   */
   generateFacultyPDF(
     isAll: boolean,
     faculties: Faculty[],
@@ -425,6 +513,9 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     const normalFont = { font: 'times', style: 'normal', size: 12 };
     const centerAlign = { align: 'center' };
 
+    /**
+     * Adds the header to the PDF.
+     */
     const addHeader = () => {
       const leftLogoUrl =
         'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
@@ -507,7 +598,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
         ]
       );
 
-      // Constants for table styling
+      // Table Configuration
       const tableHead = [
         [
           '#',
@@ -586,10 +677,16 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /**
+   * Generates a sanitized file name.
+   */
   sanitizeFileName(fileName: string): string {
     return fileName.toLowerCase().replace(/[^a-z0-9]/g, '_');
   }
 
+  /**
+   * Formats time from 24-hour to 12-hour format.
+   */
   formatTimeTo12Hour(time: string): string {
     const [hour, minute] = time.split(':');
     const hours = parseInt(hour, 10);
@@ -599,6 +696,13 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     return `${formattedHour}:${minutesFormatted} ${period}`;
   }
 
+  // ===========================
+  // Utility Methods
+  // ===========================
+
+  /**
+   * Gets the tooltip text for a single faculty toggle.
+   */
   getSingleToggleTooltip(faculty: Faculty): string {
     if (this.isToggleAllChecked) {
       return `Global preferences submission is active 
@@ -609,23 +713,17 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     } preferences submission for ${faculty.facultyName}`;
   }
 
+  /**
+   * Gets the tooltip text for the "Toggle All" checkbox.
+   */
   getAllToggleTooltip(isEnabled: boolean): string {
     if (this.hasIndividualDeadlines && !this.isToggleAllChecked) {
+      // Updated reference
       return `Global preferences toggle is disabled 
         because individual deadlines exist`;
     }
     return `${
       isEnabled ? 'Disable' : 'Enable'
     } preferences submission for all faculty`;
-  }
-
-  hasSubmittedPreferences(faculty: Faculty): boolean {
-    return !!(
-      faculty.active_semesters &&
-      faculty.active_semesters.length > 0 &&
-      faculty.active_semesters.some(
-        (semester) => semester.courses && semester.courses.length > 0
-      )
-    );
   }
 }
