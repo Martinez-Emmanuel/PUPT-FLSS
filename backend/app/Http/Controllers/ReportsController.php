@@ -857,7 +857,12 @@ class ReportsController extends Controller
 
         // Step 6: Disable preferences for all faculty by setting `is_enabled` to 0
         DB::table('preferences_settings')
-            ->update(['is_enabled' => 0, 'updated_at' => now()]);
+            ->update([
+                'is_enabled' => 0,
+                'global_deadline' => null,
+                'individual_deadline' => null,
+                'updated_at' => now(),
+            ]);
 
         // Step 6: Return a response
         return response()->json([
@@ -923,7 +928,12 @@ class ReportsController extends Controller
         // Step 6: Disable preferences for the individual faculty** by setting `is_enabled` to 0
         DB::table('preferences_settings')
             ->where('faculty_id', $facultyId)
-            ->update(['is_enabled' => 0, 'updated_at' => now()]);
+            ->update([
+                'is_enabled' => 0,
+                'global_deadline' => null,
+                'individual_deadline' => null,
+                'updated_at' => now(),
+            ]);
 
         // Step 7: Return a success response
         return response()->json([
