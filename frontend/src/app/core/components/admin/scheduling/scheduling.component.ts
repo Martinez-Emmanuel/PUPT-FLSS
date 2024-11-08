@@ -155,7 +155,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       'lec_hours',
       'lab_hours',
       'units',
-      'tuition_hours',
+      // 'tuition_hours',
       'day',
       'time',
       'professor',
