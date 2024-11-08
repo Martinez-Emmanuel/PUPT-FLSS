@@ -44,11 +44,7 @@ interface TableData extends Course {
   imports: [
     CommonModule,
     FormsModule,
-    TableDialogComponent,
-    DialogDayTimeComponent,
-    DialogPrefSuccessComponent,
     LoadingComponent,
-    DialogPrefComponent,
     TimeFormatPipe,
     MatSymbolDirective,
     MatTableModule,

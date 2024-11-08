@@ -41,7 +41,6 @@ import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animati
   imports: [
     CommonModule,
     TableHeaderComponent,
-    DialogGenericComponent,
     LoadingComponent,
     MatTableModule,
     MatButtonModule,

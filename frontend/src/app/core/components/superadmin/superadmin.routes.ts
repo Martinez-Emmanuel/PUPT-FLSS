@@ -40,14 +40,6 @@ export const SUPERADMIN_ROUTES: Routes = [
         data: { pageTitle: 'Programs' },
       },
       {
-        path: 'courses',
-        loadComponent: () =>
-          import('./maintenance/courses/courses.component').then(
-            (m) => m.CoursesComponent
-          ),
-        data: { pageTitle: 'Courses' },
-      },
-      {
         path: 'curriculum',
         loadComponent: () =>
           import('./maintenance/curriculum/curriculum.component').then(

@@ -29,7 +29,6 @@ interface CurriculumInfo {
     MatDialogModule,
     MatTooltipModule,
     LoadingComponent,
-    DialogActionComponent,
   ],
   templateUrl: './overview.component.html',
   styleUrls: ['./overview.component.scss'],
