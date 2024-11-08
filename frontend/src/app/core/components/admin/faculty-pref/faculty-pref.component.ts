@@ -46,9 +46,6 @@ interface Faculty {
     CommonModule,
     TableHeaderComponent,
     LoadingComponent,
-    DialogPrefComponent,
-    DialogExportComponent,
-    DialogActionComponent,
     FormsModule,
     MatTableModule,
     MatButtonModule,
@@ -86,9 +83,11 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   allData: Faculty[] = [];
   filteredData: Faculty[] = [];
   isToggleAllChecked = false;
+  isAnyIndividualToggleOn = false;
   isLoading = new BehaviorSubject<boolean>(true);
   currentFilter = '';
   hasAnyPreferences = false;
+  hasIndividualDeadlines = false;
 
   @ViewChild(MatPaginator) paginator?: MatPaginator;
 
@@ -138,6 +137,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
           this.applyFilter(this.currentFilter);
           this.checkToggleAllState();
           this.updateHasAnyPreferences();
+          this.updateIndividualDeadlinesState(); // Add this new call
           this.isLoading.next(false);
         },
         (error) => {
@@ -191,11 +191,15 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   checkToggleAllState(): void {
     const allEnabled = this.filteredData.every((faculty) => faculty.is_enabled);
     this.isToggleAllChecked = allEnabled;
+
+    this.isAnyIndividualToggleOn = this.filteredData.some(
+      (faculty) => faculty.is_enabled
+    );
   }
 
   hasAnyIndividualDeadlines(): boolean {
-    return this.allData.some(faculty =>
-      faculty.active_semesters?.some(semester => semester.individual_deadline)
+    return this.allData.some((faculty) =>
+      faculty.active_semesters?.some((semester) => semester.individual_deadline)
     );
   }
 
@@ -205,7 +209,29 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     );
   }
 
+  updateIndividualDeadlinesState(): void {
+    this.hasIndividualDeadlines = this.allData.some((faculty) =>
+      faculty.active_semesters?.some(
+        (semester) =>
+          semester.individual_deadline &&
+          (!semester.global_deadline ||
+            new Date(semester.individual_deadline) !==
+              new Date(semester.global_deadline))
+      )
+    );
+  }
+
   onToggleAllPreferences(event: MatSlideToggleChange): void {
+    if (this.hasIndividualDeadlines && !this.isToggleAllChecked) {
+      event.source.checked = false;
+      this.snackBar.open(
+        'Cannot enable global preferences when individual deadlines exist',
+        'Close',
+        { duration: 3000 }
+      );
+      return;
+    }
+
     event.source.checked = this.isToggleAllChecked;
 
     const existingDeadline = this.allData[0]?.active_semesters?.[0]
@@ -584,6 +610,10 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   }
 
   getAllToggleTooltip(isEnabled: boolean): string {
+    if (this.hasIndividualDeadlines && !this.isToggleAllChecked) {
+      return `Global preferences toggle is disabled 
+        because individual deadlines exist`;
+    }
     return `${
       isEnabled ? 'Disable' : 'Enable'
     } preferences submission for all faculty`;
