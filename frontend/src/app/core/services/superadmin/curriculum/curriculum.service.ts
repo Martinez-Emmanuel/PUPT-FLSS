@@ -15,7 +15,7 @@ export interface Course {
   units: number;
   tuition_hours: number;
   semester_id?: number;
-  pre_req?: string; 
+  pre_req?: string[] | string; //updated to handle array 
   co_req?: string;  
 }
 

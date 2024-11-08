@@ -316,58 +316,83 @@ export class CurriculumDetailComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe((result) => {
-        if (result) {
-            const program = this.getProgram();
+      if (result) {
 
-            // Handle the case where the program is undefined
-            if (!program) {
-                this.snackBar.open(
-                  'Error: Selected program not found.', 'Close', 
-                  { duration: 3000 });
-                return;
-            }
+      // Debug log the form result
+      console.log('Raw Form result:', result);
 
-            // Map course titles to their respective IDs for pre-reqs and co-reqs
-            const preReqId = this.getCourseIdByTitle(result.pre_req);
-            const coReqId = this.getCourseIdByTitle(result.co_req);
+      const program = this.getProgram();
 
-            const updatedCourse = {
-                course_code: result.course_code,
-                course_title: result.course_title,
-                lec_hours: result.lec_hours,
-                lab_hours: result.lab_hours,
-                units: result.units,
-                tuition_hours: result.tuition_hours,
-                curriculum_id: this.curriculum?.curriculum_id, // Automatically use the fetched curriculum ID
-                semester_id: semester.semester_id, // Automatically use the fetched semester ID
-                year_level_id: this.getYearLevel(program)?.year_level_id, // Automatically use the fetched year level ID
-                curricula_program_id: program.curricula_program_id, // Automatically use the fetched program ID
-                requirements: [
-                    { requirement_type: 'pre', required_course_id: preReqId },
-                    { requirement_type: 'co', required_course_id: coReqId }
-                ].filter(req => req.required_course_id), // Filter out any undefined requirements
-            };
+      // Handle the case where the program is undefined
+      if (!program) {
+        this.snackBar.open(
+          'Error: Selected program not found.', 'Close', 
+        { duration: 3000 });
+        return;
+      }
 
-            const previousSelectedProgram = this.selectedProgram;
-            const previousSelectedYear = this.selectedYear;
+      // Ensure pre_req is always an array
+      const preReqIds = Array.isArray(result.pre_req) 
+        ? result.pre_req
+        .filter((title: string) => title && title !== 'None')
+        .map((title: string) => {
+          const id = this.getCourseIdByTitle(title);
+          console.log(`Mapping prerequisite ${title} to ID:`, id);
+            return id;
+        })
+          .filter((id: number | undefined) => id !== undefined)
+          : [];
 
-            // Proceed with your logic to update the course
-            this.curriculumService.updateCourse(course.course_id, updatedCourse).subscribe({
-                next: (response) => {
-                    this.snackBar.open('Course updated successfully', 'Close', {
-                        duration: 3000,
-                    });
-                     this.fetchCurriculum(this.curriculum!.curriculum_year, previousSelectedProgram, previousSelectedYear);
-                    this.cdr.detectChanges(); // Force update the view
-                },
-                error: (error) => {
-                    console.error('Error updating course:', error);
-                    this.snackBar.open('Error updating course. Please try again.', 'Close', {
-                        duration: 3000,
-                    });
-                }
-            });
-        }
+        console.log('Processed prerequisite IDs:', preReqIds);
+
+        const coReqId = this.getCourseIdByTitle(result.co_req);
+
+        const updatedCourse = {
+          course_code: result.course_code,
+          course_title: result.course_title,
+          lec_hours: result.lec_hours,
+          lab_hours: result.lab_hours,
+          units: result.units,
+          tuition_hours: result.tuition_hours,
+          curriculum_id: this.curriculum?.curriculum_id, // Automatically use the fetched curriculum ID
+          semester_id: semester.semester_id, // Automatically use the fetched semester ID
+          year_level_id: this.getYearLevel(program)?.year_level_id, // Automatically use the fetched year level ID
+          curricula_program_id: program.curricula_program_id, // Automatically use the fetched program ID
+          requirements: [
+            ...preReqIds.map((id: number) => ({
+            requirement_type: 'pre',
+            required_course_id: id
+            })),
+            ...(coReqId ? [{
+            requirement_type: 'co',
+            required_course_id: coReqId
+            }] : [])
+          ]
+        };
+
+        // Add debug logging
+        console.log('Final course update payload:', updatedCourse);
+
+        const previousSelectedProgram = this.selectedProgram;
+        const previousSelectedYear = this.selectedYear;
+
+        // Proceed with your logic to update the course
+        this.curriculumService.updateCourse(course.course_id, updatedCourse).subscribe({
+          next: (response) => {
+          this.snackBar.open('Course updated successfully', 'Close', {
+            duration: 3000,
+          });
+          this.fetchCurriculum(this.curriculum!.curriculum_year, previousSelectedProgram, previousSelectedYear);
+          this.cdr.detectChanges(); // Force update the view
+          },
+          error: (error) => {
+          console.error('Error updating course:', error);
+          this.snackBar.open('Error updating course. Please try again.', 'Close', {
+            duration: 3000,
+          });
+          }
+          });
+      }
     });
   }
 
@@ -420,7 +445,6 @@ export class CurriculumDetailComponent implements OnInit {
     const previousSelectedProgram = this.selectedProgram; // Store the selected program
     const previousSelectedYear = this.selectedYear; // Save the current selected year level before reloading
     
-
     console.log('Fetched Curriculum ID:', curriculumId); // Log the fetched curriculum ID
     console.log('Fetched Program ID:', programId); // Log the fetched program ID
     console.log('Fetched Year Level ID:', yearLevel.year_level_id); // Log the fetched year level ID
@@ -434,56 +458,83 @@ export class CurriculumDetailComponent implements OnInit {
 
     dialogRef.afterClosed().subscribe((result) => {
         if (result) {
-            // Map course titles to their respective IDs for pre-reqs and co-reqs
-            const preReqId = this.getCourseIdByTitle(result.pre_req);
-            const coReqId = this.getCourseIdByTitle(result.co_req);
+        // Debug log the form result
+          console.log('Form result:', result);
 
-            const newCourse = {
-                course_code: result.course_code,
-                course_title: result.course_title,
-                lec_hours: result.lec_hours,
-                lab_hours: result.lab_hours,
-                units: result.units,
-                tuition_hours: result.tuition_hours,
-                curriculum_id: curriculumId, // Automatically use the fetched curriculum ID
-                semester_id: semesterId, // Automatically use the fetched semester ID
-                year_level_id: yearLevel.year_level_id, // Automatically use the fetched year level ID
-                curricula_program_id: programId, // Automatically use the fetched program ID
-                requirements: [
-                    { requirement_type: 'pre', required_course_id: preReqId },
-                    { requirement_type: 'co', required_course_id: coReqId }
-                ].filter(req => req.required_course_id), // Filter out any undefined requirements
-            };
+          const preReqIds = Array.isArray(result.pre_req) 
+            ? result.pre_req
+            .filter((title: string) => title && title !== 'None')
+            .map((title: string) => {
+              const id = this.getCourseIdByTitle(title);
+              console.log(`Mapping prerequisite ${title} to ID`, id);
+              return id;
+              })
+            .filter((id: number | undefined) => id !== undefined)
+            : [];
 
-            this.curriculumService.addCourse(newCourse).subscribe({
-                next: (response) => {
-                    this.snackBar.open('Course added successfully', 'Close', {
-                        duration: 3000,
-                    });
+        // Debug log the processed prerequisites
+          console.log('Processed preReqIds:', preReqIds);
 
-                    this.fetchCurriculum(this.curriculum!.curriculum_year, previousSelectedProgram, previousSelectedYear);
-                    this.cdr.detectChanges(); // Force update the view
-                },
-                error: (error) => {
-                    console.error('Error adding course:', error);
-                    this.snackBar.open('Error adding course. Please try again.', 'Close', {
-                        duration: 3000,
-                    });
-                }
-            });
+          const coReqId = this.getCourseIdByTitle(result.co_req);
+
+          const newCourse = {
+            course_code: result.course_code,
+            course_title: result.course_title,
+            lec_hours: result.lec_hours,
+            lab_hours: result.lab_hours,
+            units: result.units,
+            tuition_hours: result.tuition_hours,
+            curriculum_id: curriculumId, // Automatically use the fetched curriculum ID
+            semester_id: semesterId, // Automatically use the fetched semester ID
+            year_level_id: yearLevel.year_level_id, // Automatically use the fetched year level ID
+            curricula_program_id: programId, // Automatically use the fetched program ID
+            requirements: [
+              ...preReqIds.map((id: number) => ({ 
+              requirement_type: 'pre', 
+              required_course_id: id 
+              })),
+              ...(coReqId ? [{ 
+              requirement_type: 'co', 
+              required_course_id: coReqId 
+              }] : [])
+            ]//.filter(req => req.required_course_id), // Filter out any undefined requirements
+          };
+
+        // Debug log the final course object
+          console.log('Final course object:', newCourse);
+
+          this.curriculumService.addCourse(newCourse).subscribe({
+            next: (response) => {
+              this.snackBar.open('Course added successfully', 'Close', {
+                duration: 3000,
+              });
+
+              this.fetchCurriculum(this.curriculum!.curriculum_year, previousSelectedProgram, previousSelectedYear);
+              this.cdr.detectChanges(); // Force update the view
+            },
+            error: (error) => {
+              console.error('Error adding course:', error);
+              this.snackBar.open('Error adding course. Please try again.', 'Close', {
+                duration: 3000,
+              });
+            }
+          });
         }
     });
   }
-  private getCourseIdByTitle(courseTitle: string): number | undefined {
+  
+  getCourseIdByTitle(title: string): number | undefined {
+    console.log('Looking up course ID for title:', title);
+    
     const course = this.curriculum?.programs
         .flatMap(program => program.year_levels)
         .flatMap(yearLevel => yearLevel.semesters)
         .flatMap(sem => sem.courses)
-        .find(course => `${course.course_code} - ${course.course_title}` === courseTitle);
+        .find(course => `${course.course_code} - ${course.course_title}` === title);
+    
+    console.log('Found course:', course);
     return course?.course_id;
-  }
-
-
+}
 
   onManagePrograms() {
     const curriculumYear = this.curriculum?.curriculum_year;
@@ -626,19 +677,23 @@ export class CurriculumDetailComponent implements OnInit {
 
   // Helper method to populate prerequisites and corequisites
   populateCourseRequisites(course: Course): Course {
-    const pre_req = course.prerequisites?.length 
-        ? course.prerequisites.map(p => p.course_title).join(', ') 
-        : 'None';
-    const co_req = course.corequisites?.length 
-        ? course.corequisites.map(c => c.course_title).join(', ') 
-        : 'None';
+    // Add debug logging
+    console.log('Raw course data:', course);
 
-    console.log(`Course: ${course.course_code}, Pre-req: ${pre_req}, Co-req: ${co_req}`);
+    const pre_req = course.prerequisites?.map(p => 
+      `${p.course_code} - ${p.course_title}`
+    ) || [];
+
+    const co_req = course.corequisites?.[0] 
+      ? `${course.corequisites[0].course_code} - ${course.corequisites[0].course_title}`
+      : 'None';
+
+    console.log('Transformed prerequisites:', pre_req);
 
     return {
-        ...course,
-        pre_req,
-        co_req,
+      ...course,
+      pre_req,
+      co_req,
     };
   }
 
@@ -678,6 +733,16 @@ export class CurriculumDetailComponent implements OnInit {
         .flatMap(sem => sem.courses)
         .map(course => `${course.course_code} - ${course.course_title}`) || [];
 
+     // Improved handling of existing pre-reqs
+     let existingPreReqs: string[] = [];
+     if (course?.pre_req) {
+         if (Array.isArray(course.pre_req)) {
+             existingPreReqs = course.pre_req;
+         } else if (typeof course.pre_req === 'string' && course.pre_req !== 'None') {
+             existingPreReqs = course.pre_req.split(', ');
+         }
+     }
+
     return {
         title: course ? 'Edit Course' : 'Add Course',
         isEdit: !!course,
@@ -692,9 +757,10 @@ export class CurriculumDetailComponent implements OnInit {
             {
                 label: 'Pre-requisite',
                 formControlName: 'pre_req',
-                type: 'select', // Changed to select
+                type: 'multiselect', // Changed to multiselect
                 options: availableCourseTitles, // Use course titles as options
                 required: false,
+                initialSelection: existingPreReqs,
             },
             {
                 label: 'Co-requisite',
@@ -743,7 +809,7 @@ export class CurriculumDetailComponent implements OnInit {
                 required: true,
             },
         ],
-      initialValue: course || { semester },
+      initialValue: course ? this.populateCourseRequisites(course) : { semester },
     };
   }
   
