@@ -122,15 +122,17 @@ export class DialogActionComponent {
     if (this.data.type === 'all_preferences') {
       this.submissionDeadline = this.data.global_deadline || null;
       this.showDeadlinePicker = true;
+      this.calculateRemainingDays;
     } else if (this.data.type === 'single_preferences') {
       this.submissionDeadline =
         this.data.individual_deadline || this.data.global_deadline || null;
       this.facultyName = this.data.facultyName || '';
       this.showDeadlinePicker = true;
-    } else if (this.data.type === 'single_publish') {
-      this.facultyName = this.data.facultyName || '';
-      // Do NOT set showDeadlinePicker to true for 'single_publish'
-      // this.showDeadlinePicker remains false
+      this.calculateRemainingDays;
+    }
+
+    if (this.submissionDeadline) {
+      this.calculateRemainingDays();
     }
 
     this.hasIndividualDeadlines = this.data.hasIndividualDeadlines || false;
