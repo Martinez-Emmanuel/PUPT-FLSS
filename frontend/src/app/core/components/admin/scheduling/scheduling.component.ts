@@ -18,37 +18,22 @@ import { DialogSchedulingComponent } from '../../../../shared/dialog-scheduling/
 import { DialogGenericComponent } from '../../../../shared/dialog-generic/dialog-generic.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
+import { SchedulingService, CacheType } from '../../../services/admin/scheduling/scheduling.service';
+import { AcademicYearService } from '../../../services/admin/academic-year/academic-year.service';
 import {
-  SchedulingService,
   Schedule,
-  Program,
   AcademicYear,
   Semester,
+  Program,
   YearLevel,
   PopulateSchedulesResponse,
   CourseResponse,
-  SubmittedPrefResponse,
-  CacheType,
-} from '../../../services/admin/scheduling/scheduling.service';
+  ProgramOption,
+  SectionOption,
+  YearLevelOption,
+} from '../../../models/scheduling.model';
 
 import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
-
-interface ProgramOption {
-  display: string;
-  id: number;
-  year_levels: YearLevelOption[];
-}
-
-interface YearLevelOption {
-  year_level: number;
-  curriculum_id: number;
-  sections: SectionOption[];
-}
-
-interface SectionOption {
-  section_id: number;
-  section_name: string;
-}
 
 @Component({
   selector: 'app-scheduling',
@@ -111,6 +96,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
   constructor(
     private schedulingService: SchedulingService,
+    private academicYearService: AcademicYearService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef
@@ -177,7 +163,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   // ====================
 
   private loadActiveYearAndSemester(): Observable<void> {
-    return this.schedulingService.getActiveYearAndSemester().pipe(
+    return this.academicYearService.getActiveYearAndSemester().pipe(
       tap(({ activeYear, activeSemester, startDate, endDate }) => {
         this.activeYear = activeYear;
         this.activeSemester = activeSemester;
@@ -215,25 +201,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         return of([]);
       })
     );
-  }
-
-  private loadViewPreferences(): Observable<SubmittedPrefResponse> {
-    return this.schedulingService
-      .getSubmittedPreferencesForActiveSemester(true)
-      .pipe(
-        tap((preferences) => {
-          console.log('Loaded view preferences:', preferences);
-        }),
-        catchError((error) => {
-          console.error('Failed to load view preferences:', error);
-          this.snackBar.open(
-            'Failed to load view preferences. Please try again.',
-            'Close',
-            { duration: 3000 }
-          );
-          return of({} as SubmittedPrefResponse);
-        })
-      );
   }
 
   // ===========================
@@ -512,7 +479,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   // ====================
 
   openActiveYearSemesterDialog(): void {
-    this.schedulingService
+    this.academicYearService
       .getAcademicYears()
       .pipe(
         takeUntil(this.destroy$),
@@ -658,7 +625,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                       CacheType.Preferences,
                     ]);
 
-                    return this.schedulingService
+                    return this.academicYearService
                       .setActiveYearAndSemester(
                         selectedYearObj.academic_year_id,
                         selectedSemesterObj.semester_id,
@@ -667,7 +634,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                       )
                       .pipe(
                         switchMap(() =>
-                          this.schedulingService.getActiveYearAndSemester()
+                          this.academicYearService.getActiveYearAndSemester()
                         ),
                         switchMap((activeYearData) => {
                           this.activeYear = result.academicYear;

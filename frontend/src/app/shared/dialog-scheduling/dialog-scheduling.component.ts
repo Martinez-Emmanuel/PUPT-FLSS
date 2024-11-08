@@ -2,8 +2,8 @@ import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
-import { Observable, Subject, forkJoin, of } from 'rxjs';
-import { map, startWith, takeUntil, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { Observable, Subject, forkJoin } from 'rxjs';
+import { map, startWith, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -17,7 +17,8 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
-import { SchedulingService, Faculty, Room } from '../../core/services/admin/scheduling/scheduling.service';
+import { SchedulingService } from '../../core/services/admin/scheduling/scheduling.service';
+import { Faculty, Room } from '../../core/models/scheduling.model';
 
 import { cardEntranceSide } from '../../core/animations/animations';
 
