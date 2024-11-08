@@ -65,7 +65,7 @@ class FacultyController extends Controller
             'email' => $faculty->faculty_email,
         ];
 
-        Mail::send('emails.preference_single_open', $data, function ($message) use ($data) {
+        Mail::send('emails.preferences_single_open', $data, function ($message) use ($data) {
             $message->to($data['email'])
                 ->subject('Load & Schedule Preferences Submission Update');
         });

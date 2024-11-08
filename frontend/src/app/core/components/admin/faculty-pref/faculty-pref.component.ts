@@ -292,17 +292,6 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
    * @param event The slide toggle change event.
    */
   onToggleAllPreferences(event: MatSlideToggleChange): void {
-    if (this.hasIndividualDeadlines && !this.isToggleAllChecked) {
-      // Updated reference
-      event.source.checked = false;
-      this.snackBar.open(
-        'Cannot enable global preferences when individual deadlines exist',
-        'Close',
-        { duration: 3000 }
-      );
-      return;
-    }
-
     event.source.checked = this.isToggleAllChecked;
 
     const existingDeadline = this.allData[0]?.active_semesters?.[0]
@@ -310,8 +299,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
       ? new Date(this.allData[0].active_semesters[0].global_deadline)
       : null;
 
-    // Removed the incorrect method call and used the property instead
-    const hasIndividualDeadlines = this.hasIndividualDeadlines; // Updated reference
+    const hasIndividualDeadlines = this.hasIndividualDeadlines;
 
     const dialogData: DialogActionData = {
       type: 'all_preferences',
@@ -331,7 +319,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe((confirmed: boolean) => {
       if (confirmed) {
-        const newStatus = !this.isToggleAllChecked;
+        const newStatus = this.isToggleAllChecked;
         this.filteredData.forEach(
           (faculty) => (faculty.is_enabled = newStatus)
         );
