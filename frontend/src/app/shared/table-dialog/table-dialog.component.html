@@ -166,6 +166,16 @@
           </mat-option>
           }
         </mat-select>
+        } 
+        @case ('multiselect') {
+        <mat-select [formControlName]="field.formControlName" 
+            multiple>
+          @for (option of field.options; track option) {
+          <mat-option [value]="option">
+            {{ option }}
+          </mat-option>
+          }
+        </mat-select>         
         } @case ('autocomplete') {
         <input
           type="text"
