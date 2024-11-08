@@ -16,7 +16,7 @@ export interface Course {
   tuition_hours: number;
   semester_id?: number;
   pre_req?: string[] | string; //updated to handle array 
-  co_req?: string;  
+  co_req?: string[] | string;  
 }
 
 export interface CourseRequirement { 

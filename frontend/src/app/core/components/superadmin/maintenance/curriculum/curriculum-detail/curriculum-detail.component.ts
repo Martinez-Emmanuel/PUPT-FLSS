@@ -298,8 +298,7 @@ export class CurriculumDetailComponent implements OnInit {
 
     // Ensure that the view is updated
     this.cdr.markForCheck();
-}
-
+  }
 
   onEditCourse(course: Course, semester: Semester) {
     // Fetch available course titles for the dropdown
@@ -345,57 +344,67 @@ export class CurriculumDetailComponent implements OnInit {
 
         console.log('Processed prerequisite IDs:', preReqIds);
 
-        const coReqId = this.getCourseIdByTitle(result.co_req);
+      // Process co-requisite IDs
+      const coReqIds = Array.isArray(result.co_req)
+        ? result.co_req
+          .filter((title: string) => title && title !== 'None')
+          .map((title: string) => {
+            const id = this.getCourseIdByTitle(title);
+            console.log(`Mapping corequisite ${title} to ID:`, id);
+            return id;
+          })
+        .filter((id: number | undefined) => id !== undefined)
+        : [];
+     console.log('Processed corequisite IDs:', coReqIds);
 
-        const updatedCourse = {
-          course_code: result.course_code,
-          course_title: result.course_title,
-          lec_hours: result.lec_hours,
-          lab_hours: result.lab_hours,
-          units: result.units,
-          tuition_hours: result.tuition_hours,
-          curriculum_id: this.curriculum?.curriculum_id, // Automatically use the fetched curriculum ID
-          semester_id: semester.semester_id, // Automatically use the fetched semester ID
-          year_level_id: this.getYearLevel(program)?.year_level_id, // Automatically use the fetched year level ID
-          curricula_program_id: program.curricula_program_id, // Automatically use the fetched program ID
-          requirements: [
-            ...preReqIds.map((id: number) => ({
-            requirement_type: 'pre',
-            required_course_id: id
-            })),
-            ...(coReqId ? [{
+      const updatedCourse = {
+        course_code: result.course_code,
+        course_title: result.course_title,
+        lec_hours: result.lec_hours,
+        lab_hours: result.lab_hours,
+        units: result.units,
+        tuition_hours: result.tuition_hours,
+        curriculum_id: this.curriculum?.curriculum_id, // Automatically use the fetched curriculum ID
+        semester_id: semester.semester_id, // Automatically use the fetched semester ID
+        year_level_id: this.getYearLevel(program)?.year_level_id, // Automatically use the fetched year level ID
+        curricula_program_id: program.curricula_program_id, // Automatically use the fetched program ID
+        requirements: [
+          ...preReqIds.map((id: number) => ({
+          requirement_type: 'pre',
+          required_course_id: id
+          })),
+            ...coReqIds.map((id: number) => ({
             requirement_type: 'co',
-            required_course_id: coReqId
-            }] : [])
-          ]
-        };
+            required_course_id: id
+          }))
+        ]
+      };
 
-        // Add debug logging
-        console.log('Final course update payload:', updatedCourse);
+      // Add debug logging
+      console.log('Final course update payload:', updatedCourse);
 
-        const previousSelectedProgram = this.selectedProgram;
-        const previousSelectedYear = this.selectedYear;
+      const previousSelectedProgram = this.selectedProgram;
+      const previousSelectedYear = this.selectedYear;
 
-        // Proceed with your logic to update the course
-        this.curriculumService.updateCourse(course.course_id, updatedCourse).subscribe({
-          next: (response) => {
+      // Proceed with your logic to update the course
+      this.curriculumService.updateCourse(course.course_id, updatedCourse).subscribe({
+        next: (response) => {
           this.snackBar.open('Course updated successfully', 'Close', {
             duration: 3000,
           });
           this.fetchCurriculum(this.curriculum!.curriculum_year, previousSelectedProgram, previousSelectedYear);
           this.cdr.detectChanges(); // Force update the view
-          },
-          error: (error) => {
+        },
+        error: (error) => {
           console.error('Error updating course:', error);
           this.snackBar.open('Error updating course. Please try again.', 'Close', {
             duration: 3000,
           });
-          }
-          });
+        }
+      });
       }
     });
   }
-
 
   onDeleteCourse(course: Course) {
     const previousSelectedProgram = this.selectedProgram;
@@ -417,7 +426,6 @@ export class CurriculumDetailComponent implements OnInit {
     });
   }
   
-
   onAddCourse(semester: Semester) {
     if (!this.curriculum) {
         this.snackBar.open('Error: No curriculum loaded.', 'Close', { duration: 3000 });
@@ -457,69 +465,79 @@ export class CurriculumDetailComponent implements OnInit {
     });
 
     dialogRef.afterClosed().subscribe((result) => {
-        if (result) {
-        // Debug log the form result
-          console.log('Form result:', result);
+      if (result) {
+        console.log('Form result:', result);
 
-          const preReqIds = Array.isArray(result.pre_req) 
-            ? result.pre_req
-            .filter((title: string) => title && title !== 'None')
-            .map((title: string) => {
-              const id = this.getCourseIdByTitle(title);
-              console.log(`Mapping prerequisite ${title} to ID`, id);
-              return id;
-              })
-            .filter((id: number | undefined) => id !== undefined)
-            : [];
+        const preReqIds = Array.isArray(result.pre_req) 
+        ? result.pre_req
+        .filter((title: string) => title && title !== 'None')
+        .map((title: string) => {
+          const id = this.getCourseIdByTitle(title);
+          console.log(`Mapping prerequisite ${title} to ID`, id);
+          return id;
+        })
+        .filter((id: number | undefined) => id !== undefined)
+        : [];
 
         // Debug log the processed prerequisites
-          console.log('Processed preReqIds:', preReqIds);
+        console.log('Processed preReqIds:', preReqIds);
 
-          const coReqId = this.getCourseIdByTitle(result.co_req);
-
-          const newCourse = {
-            course_code: result.course_code,
-            course_title: result.course_title,
-            lec_hours: result.lec_hours,
-            lab_hours: result.lab_hours,
-            units: result.units,
-            tuition_hours: result.tuition_hours,
-            curriculum_id: curriculumId, // Automatically use the fetched curriculum ID
-            semester_id: semesterId, // Automatically use the fetched semester ID
-            year_level_id: yearLevel.year_level_id, // Automatically use the fetched year level ID
-            curricula_program_id: programId, // Automatically use the fetched program ID
-            requirements: [
-              ...preReqIds.map((id: number) => ({ 
-              requirement_type: 'pre', 
-              required_course_id: id 
-              })),
-              ...(coReqId ? [{ 
-              requirement_type: 'co', 
-              required_course_id: coReqId 
-              }] : [])
-            ]//.filter(req => req.required_course_id), // Filter out any undefined requirements
-          };
+        // Process co-requisite IDs
+        const coReqIds = Array.isArray(result.co_req)
+        ? result.co_req
+        .filter((title: string) => title && title !== 'None')
+        .map((title: string) => {
+          const id = this.getCourseIdByTitle(title);
+          console.log(`Mapping corequisite ${title} to ID`, id);
+          return id;
+        })
+        .filter((id: number | undefined) => id !== undefined)
+        : [];
+        console.log('Processed coReqIds:', coReqIds);
+          
+        const newCourse = {
+          course_code: result.course_code,
+          course_title: result.course_title,
+          lec_hours: result.lec_hours,
+          lab_hours: result.lab_hours,
+          units: result.units,
+          tuition_hours: result.tuition_hours,
+          curriculum_id: curriculumId, // Automatically use the fetched curriculum ID
+          semester_id: semesterId, // Automatically use the fetched semester ID
+          year_level_id: yearLevel.year_level_id, // Automatically use the fetched year level ID
+          curricula_program_id: programId, // Automatically use the fetched program ID
+          requirements: [
+            ...preReqIds.map((id: number) => ({ 
+            requirement_type: 'pre', 
+            required_course_id: id 
+            })),
+            ...coReqIds.map((id: number) => ({
+            requirement_type: 'co',
+            required_course_id: id
+            }))
+          ]
+        };
 
         // Debug log the final course object
-          console.log('Final course object:', newCourse);
+        console.log('Final course object:', newCourse);
 
-          this.curriculumService.addCourse(newCourse).subscribe({
-            next: (response) => {
-              this.snackBar.open('Course added successfully', 'Close', {
-                duration: 3000,
-              });
+        this.curriculumService.addCourse(newCourse).subscribe({
+          next: (response) => {
+            this.snackBar.open('Course added successfully', 'Close', {
+            duration: 3000,
+            });
 
-              this.fetchCurriculum(this.curriculum!.curriculum_year, previousSelectedProgram, previousSelectedYear);
-              this.cdr.detectChanges(); // Force update the view
-            },
-            error: (error) => {
-              console.error('Error adding course:', error);
-              this.snackBar.open('Error adding course. Please try again.', 'Close', {
-                duration: 3000,
-              });
-            }
-          });
-        }
+            this.fetchCurriculum(this.curriculum!.curriculum_year, previousSelectedProgram, previousSelectedYear);
+            this.cdr.detectChanges(); // Force update the view
+          },
+          error: (error) => {
+            console.error('Error adding course:', error);
+            this.snackBar.open('Error adding course. Please try again.', 'Close', {
+            duration: 3000,
+            });
+          }
+        });
+      }
     });
   }
   
@@ -534,7 +552,7 @@ export class CurriculumDetailComponent implements OnInit {
     
     console.log('Found course:', course);
     return course?.course_id;
-}
+  }
 
   onManagePrograms() {
     const curriculumYear = this.curriculum?.curriculum_year;
@@ -642,7 +660,6 @@ export class CurriculumDetailComponent implements OnInit {
   }
   }
 
-
   fetchCoursesForSelectedProgram(selectedProgram: string) {
     this.selectedSemesters = []; // Reset semesters
 
@@ -684,9 +701,9 @@ export class CurriculumDetailComponent implements OnInit {
       `${p.course_code} - ${p.course_title}`
     ) || [];
 
-    const co_req = course.corequisites?.[0] 
-      ? `${course.corequisites[0].course_code} - ${course.corequisites[0].course_title}`
-      : 'None';
+    const co_req = course.corequisites?.map(c => 
+      `${c.course_code} - ${c.course_title}`
+  ) || [];
 
     console.log('Transformed prerequisites:', pre_req);
 
@@ -728,86 +745,87 @@ export class CurriculumDetailComponent implements OnInit {
   private getCourseDialogConfig(course?: Course, semester?: number): DialogConfig {
     // Fetch available course titles for the dropdown
     const availableCourseTitles = this.curriculum?.programs
-        .flatMap(program => program.year_levels)
-        .flatMap(yearLevel => yearLevel.semesters)
-        .flatMap(sem => sem.courses)
-        .map(course => `${course.course_code} - ${course.course_title}`) || [];
+      .flatMap(program => program.year_levels)
+      .flatMap(yearLevel => yearLevel.semesters)
+      .flatMap(sem => sem.courses)
+      .map(course => `${course.course_code} - ${course.course_title}`) || [];
 
-     // Improved handling of existing pre-reqs
-     let existingPreReqs: string[] = [];
-     if (course?.pre_req) {
-         if (Array.isArray(course.pre_req)) {
-             existingPreReqs = course.pre_req;
-         } else if (typeof course.pre_req === 'string' && course.pre_req !== 'None') {
-             existingPreReqs = course.pre_req.split(', ');
-         }
-     }
+    // Improved handling of existing pre-reqs
+    let existingPreReqs: string[] = [];
+      if (course?.prerequisites) {
+        existingPreReqs = course.prerequisites.map(p => `${p.course_code} - ${p.course_title}`);
+      }
+    let existingCoReqs: string[] = [];
+      if (course?.corequisites) {
+        existingCoReqs = course.corequisites.map(c => `${c.course_code} - ${c.course_title}`);
+      }
 
     return {
-        title: course ? 'Edit Course' : 'Add Course',
-        isEdit: !!course,
-        fields: [
-            {
-                label: 'Course Code',
-                formControlName: 'course_code',
-                type: 'text',
-                maxLength: 50,
-                required: true,
-            },
-            {
-                label: 'Pre-requisite',
-                formControlName: 'pre_req',
-                type: 'multiselect', // Changed to multiselect
-                options: availableCourseTitles, // Use course titles as options
-                required: false,
-                initialSelection: existingPreReqs,
-            },
-            {
-                label: 'Co-requisite',
-                formControlName: 'co_req',
-                type: 'select', // Changed to select
-                options: availableCourseTitles, // Use course titles as options
-                required: false,
-            },
-            {
-                label: 'Course Title',
-                formControlName: 'course_title',
-                type: 'text',
-                maxLength: 100,
-                required: true,
-            },
-            {
-                label: 'Lecture Hours',
-                formControlName: 'lec_hours',
-                type: 'number',
-                min: 0,
-                maxLength: 2,
-                required: true,
-            },
-            {
-                label: 'Laboratory Hours',
-                formControlName: 'lab_hours',
-                type: 'number',
-                min: 0,
-                maxLength: 2,
-                required: true,
-            },
-            {
-                label: 'Units',
-                formControlName: 'units',
-                type: 'number',
-                min: 0,
-                maxLength: 2,
-                required: true,
-            },
-            {
-                label: 'Tuition Hours',
-                formControlName: 'tuition_hours',
-                type: 'number',
-                min: 0,
-                maxLength: 2,
-                required: true,
-            },
+      title: course ? 'Edit Course' : 'Add Course',
+      isEdit: !!course,
+      fields: [
+        {
+          label: 'Course Code',
+          formControlName: 'course_code',
+          type: 'text',
+          maxLength: 50,
+          required: true,
+        },
+        {
+          label: 'Pre-requisite',
+          formControlName: 'pre_req',
+          type: 'multiselect', // Changed to multiselect
+          options: availableCourseTitles, // Use course titles as options
+          required: false,
+          initialSelection: existingPreReqs,
+        },
+        {
+          label: 'Co-requisite',
+          formControlName: 'co_req',
+          type: 'multiselect', // Changed to select
+          options: availableCourseTitles, // Use course titles as options
+          required: false,
+          initialSelection: existingCoReqs,
+        },
+        {
+          label: 'Course Title',
+          formControlName: 'course_title',
+          type: 'text',
+          maxLength: 100,
+          required: true,
+        },
+        {
+          label: 'Lecture Hours',
+          formControlName: 'lec_hours',
+          type: 'number',
+          min: 0,
+          maxLength: 2,
+          required: true,
+        },
+        {
+          label: 'Laboratory Hours',
+          formControlName: 'lab_hours',
+          type: 'number',
+          min: 0,
+          maxLength: 2,
+          required: true,
+        },
+        {
+          label: 'Units',
+          formControlName: 'units',
+          type: 'number',
+          min: 0,
+          maxLength: 2,
+          required: true,
+        },
+        {
+          label: 'Tuition Hours',
+          formControlName: 'tuition_hours',
+          type: 'number',
+          min: 0,
+          maxLength: 2,
+          required: true,
+        },
         ],
       initialValue: course ? this.populateCourseRequisites(course) : { semester },
     };
