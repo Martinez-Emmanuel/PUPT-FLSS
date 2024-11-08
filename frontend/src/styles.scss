@@ -51,6 +51,7 @@
   --spacing-md: 1rem;
   --spacing-mdx: 1.25rem;
   --spacing-lg: 1.5rem;
+  --spacing-lgx: 1.75rem;
   --spacing-xl: 2rem;
   --spacing-2xl: 2.5rem;
   --spacing-3xl: 3rem;
@@ -185,7 +186,7 @@ body {
   transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 
   &:active {
-    transform: scale(0.8);
+    transform: scale(0.85);
   }
 }
 

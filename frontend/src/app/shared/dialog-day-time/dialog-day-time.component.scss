@@ -48,13 +48,14 @@
 
   .day-button {
     @include flex-layout;
-    font-size: var(--font-size-smx);
+    font-size: var(--font-size-sm);
     width: var(--font-size-md);
     aspect-ratio: 1 / 1;
     padding: var(--spacing-sm);
     border-radius: 50%;
     user-select: none;
     cursor: pointer;
+    border: 1px solid transparent;
 
     position: relative;
     overflow: hidden;
@@ -81,6 +82,11 @@
         opacity: 1;
         transform: scale(1);
       }
+    }
+
+    &.original-day {
+      border-color: var(--primary-text);
+      border-style: dashed;
     }
 
     &:hover:not(.selected) {

@@ -10,7 +10,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRippleModule } from '@angular/material/core';
-import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 interface DayButton {
   name: string;
@@ -32,13 +31,13 @@ interface DayButton {
     MatIconModule,
     MatCheckboxModule,
     MatRippleModule,
-    MatSymbolDirective,
   ],
   templateUrl: './dialog-day-time.component.html',
   styleUrls: ['./dialog-day-time.component.scss'],
 })
 export class DialogDayTimeComponent {
   selectedDay: string = '';
+  originalDay: string = '';
   startTime: string = '';
   endTime: string = '';
   courseCode: string = '';
@@ -65,6 +64,7 @@ export class DialogDayTimeComponent {
     this.generateTimeOptions();
 
     if (data.selectedDay) {
+      this.originalDay = data.selectedDay;
       this.selectedDay = data.selectedDay;
     }
 
