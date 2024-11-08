@@ -706,9 +706,8 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
    */
   getAllToggleTooltip(isEnabled: boolean): string {
     if (this.hasIndividualDeadlines && !this.isToggleAllChecked) {
-      // Updated reference
       return `Global preferences toggle is disabled 
-        because individual deadlines exist`;
+        because individual deadlines are set`;
     }
     return `${
       isEnabled ? 'Disable' : 'Enable'

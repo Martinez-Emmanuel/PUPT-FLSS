@@ -280,7 +280,7 @@
     background-color: var(--neutral-light);
 
     .day-time-button-container {
-      @include flex-layout;
+      @include flex-layout($justify: flex-start);
 
       .day-time-button {
         @include flex-layout;
