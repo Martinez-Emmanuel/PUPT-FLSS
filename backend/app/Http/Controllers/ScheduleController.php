@@ -96,10 +96,16 @@ class ScheduleController extends Controller
             }
         }
 
+        // Determine if submission is enabled by checking `is_enabled` in `preferences_settings`
+        $isSubmissionEnabled = DB::table('preferences_settings')
+            ->where('is_enabled', 1)
+            ->exists() ? 1 : 0;
+
         return response()->json([
             'active_semester_id' => $activeSemester->active_semester_id,
             'academic_year_id' => $activeAcademicYearId,
             'semester_id' => $activeSemester->semester_id,
+            'is_submission_enabled' => $isSubmissionEnabled,
             'programs' => $response,
         ]);
     }

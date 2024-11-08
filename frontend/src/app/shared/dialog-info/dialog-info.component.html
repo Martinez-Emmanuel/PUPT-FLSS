@@ -1,0 +1,28 @@
+<div class="dialog-info-container">
+  <!-- Title -->
+  <div class="title">
+    <span mat-symbol="info"></span>
+    <h1 class="heading">Preference Submission On-Going</h1>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+    <!-- Message -->
+    <p class="message">
+      The submission period for faculty preferences is still open. Preferences
+      may not have been finalized yet or could still change.
+      <strong> Please proceed carefully when scheduling. </strong>
+    </p>
+
+    <div class="checkbox">
+      <mat-checkbox [(ngModel)]="doNotShowAgain"
+        >Do not show this message again</mat-checkbox
+      >
+    </div>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions">
+    <button mat-button color="primary" (click)="onProceed()">Proceed</button>
+  </div>
+</div>

@@ -297,6 +297,11 @@ span[mat-symbol] {
   color: var(--primary-text-reverse) !important;
 }
 
+.mdc-checkbox__native-control:enabled:checked~.mdc-checkbox__background {
+  border-color: var(--primary-text) !important;
+  background-color: var(--primary-text) !important;
+}
+
 [mat-flat-button] {
   color: white !important;
 }

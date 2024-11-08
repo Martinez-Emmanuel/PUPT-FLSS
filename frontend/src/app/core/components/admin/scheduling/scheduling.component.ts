@@ -16,6 +16,7 @@ import { TableHeaderComponent, InputField } from '../../../../shared/table-heade
 import { TableDialogComponent } from '../../../../shared/table-dialog/table-dialog.component';
 import { DialogSchedulingComponent } from '../../../../shared/dialog-scheduling/dialog-scheduling.component';
 import { DialogGenericComponent } from '../../../../shared/dialog-generic/dialog-generic.component';
+import { DialogInfoComponent } from '../../../../shared/dialog-info/dialog-info.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { SchedulingService, CacheType } from '../../../services/admin/scheduling/scheduling.service';
@@ -90,8 +91,10 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   headerInputFields: InputField[] = [];
   isLoading = true;
   loadingScheduleId: number | null = null;
+  isSubmissionEnabled: number = 0;
 
   private destroy$ = new Subject<void>();
+  private readonly DIALOG_INFO_PREF_KEY = 'showDialogInfo';
 
   constructor(
     private schedulingService: SchedulingService,
@@ -117,6 +120,10 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.isLoading = false;
+
+          if (this.isSubmissionEnabled === 1 && !this.shouldSkipDialog()) {
+            this.openInfoDialog();
+          }
         },
         error: this.handleError('Error initializing scheduling component'),
       });
@@ -420,6 +427,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           return;
         }
 
+        this.isSubmissionEnabled = response.is_submission_enabled;
+
         this.schedules = sectionData.courses.map(
           (course: CourseResponse, index, array) => {
             const isLastInGroup =
@@ -476,6 +485,18 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   // ====================
   // Dialog Methods
   // ====================
+
+  openInfoDialog(): void {
+    const dialogRef = this.dialog.open(DialogInfoComponent, {
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result && result.doNotShowAgain) {
+        this.setSkipDialogFlag();
+      }
+    });
+  }
 
   openActiveYearSemesterDialog(): void {
     this.academicYearService
@@ -1074,5 +1095,13 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       this.hasCopies(element) &&
       element.course_code !== nextSchedule.course_code
     );
+  }
+
+  private shouldSkipDialog(): boolean {
+    return localStorage.getItem(this.DIALOG_INFO_PREF_KEY) === 'true';
+  }
+
+  private setSkipDialogFlag(): void {
+    localStorage.setItem(this.DIALOG_INFO_PREF_KEY, 'true');
   }
 }

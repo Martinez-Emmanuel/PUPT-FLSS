@@ -78,6 +78,7 @@ export interface Program {
     active_semester_id: number;
     academic_year_id: number;
     semester_id: number;
+    is_submission_enabled: number;
     programs: ProgramResponse[];
   }
   
