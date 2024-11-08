@@ -1,0 +1,77 @@
+@import "../../../styles/mixins.scss";
+
+.dialog-schedule-history-container {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: space-between,
+    $gap: var(--spacing-md)
+  );
+  padding: var(--spacing-lg);
+
+  .loading-wrapper {
+    height: 60vh;
+  }
+}
+
+.dialog-header {
+  @include flex-layout($align: stretch, $justify: space-between);
+
+  .title-section {
+    .title-and-icon {
+      @include flex-layout(
+        $align: center,
+        $justify: flex-start,
+        $gap: var(--spacing-xxs)
+      );
+
+      span[mat-symbol] {
+        color: var(--primary-text);
+      }
+
+      h2 {
+        margin: 0;
+        font-size: var(--font-size-xl);
+        font-weight: 600;
+        color: var(--primary-text);
+      }
+    }
+
+    p {
+      margin: var(--spacing-xxs) 0;
+      font-size: var(--font-size-md);
+      color: var(--primary-text);
+    }
+  }
+
+  .field-section {
+    display: flex;
+    gap: 16px;
+
+    mat-form-field {
+      flex: 1;
+    }
+  }
+}
+
+.dialog-content {
+  height: 60vh;
+  overflow-y: hidden;
+}
+
+.no-schedule-message {
+  height: 60vh;
+  @include flex-layout($gap: var(--spacing-xs));
+
+  span[mat-symbol] {
+    font-size: 100%;
+  }
+}
+
+.dialog-footer {
+  @include flex-layout($align: stretch, $justify: flex-end);
+
+  .close-button {
+    color: var(--primary-text);
+  }
+}
