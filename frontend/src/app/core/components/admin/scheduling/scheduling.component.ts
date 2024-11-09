@@ -94,7 +94,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   isSubmissionEnabled: number = 0;
 
   private destroy$ = new Subject<void>();
-  private readonly DIALOG_INFO_PREF_KEY = 'showDialogInfo';
+  private readonly DIALOG_INFO_PREF_KEY = 'doNotShowDialogInfo';
 
   constructor(
     private schedulingService: SchedulingService,
