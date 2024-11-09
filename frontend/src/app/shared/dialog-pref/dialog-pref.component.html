@@ -4,7 +4,7 @@
     <app-loading></app-loading>
   </div>
   } @else {
-  <!-- Faculty Info and View Toggle -->
+  <!-- Faculty Info and Conditional View Toggle -->
   <div class="faculty-info" [@fadeAnimation]>
     <!-- Info Text -->
     <div class="info-text">
@@ -17,6 +17,7 @@
     </div>
 
     <!-- Toggle View -->
+    @if (!data.viewOnlyTable) {
     <div class="view-option">
       <mat-button-toggle-group
         name="viewOption"
@@ -35,12 +36,13 @@
         </mat-button-toggle>
       </mat-button-toggle-group>
     </div>
+    }
   </div>
 
   <!-- Faculty Preferences Table or PDF View -->
   <div class="dialog-pref-content">
     <!-- Table View -->
-    @if (selectedView === 'table-view') {
+    @if (data.viewOnlyTable || selectedView === 'table-view') {
     <div class="dialog-pref-table-container">
       <div class="table-container">
         <table
@@ -173,8 +175,9 @@
       </div>
     </div>
     }
+
     <!-- PDF View -->
-    @else if (selectedView === 'pdf-view') {
+    @if (selectedView === 'pdf-view' && !data.viewOnlyTable) {
     <div class="dialog-pref-pdf-container">
       @if (pdfBlobUrl) {
       <div class="pdf-container">
@@ -192,7 +195,7 @@
   <!-- Action buttons -->
   <div class="dialog-actions" [@fadeAnimation]>
     <button mat-button (click)="closeDialog()">Close</button>
-    @if (selectedView === 'pdf-view') {
+    @if (selectedView === 'pdf-view' && !data.viewOnlyTable) {
     <button mat-flat-button (click)="downloadPdf()">
       <mat-icon>print</mat-icon>
       Download PDF

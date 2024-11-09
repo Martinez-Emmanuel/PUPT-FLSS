@@ -95,7 +95,10 @@
   padding-bottom: var(--spacing-lg);
 
   .action-button {
+    @include gradient-primary(315deg);
+  
     &:disabled {
+      background: var(--neutral-fade);
       color: var(--neutral-base) !important;
       opacity: var(--opacity-semi-opaque);
     }

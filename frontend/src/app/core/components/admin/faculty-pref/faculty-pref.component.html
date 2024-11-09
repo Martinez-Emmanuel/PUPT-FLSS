@@ -148,21 +148,27 @@
         </ng-container>
 
         <!-- Toggle Column -->
+
+        <!-- Global Toggle -->
         <ng-container matColumnDef="toggle">
           <th mat-header-cell *matHeaderCellDef class="custom-header">
             <mat-slide-toggle
               class="header-toggle"
               [checked]="isToggleAllChecked"
+              [disabled]="hasIndividualDeadlines && !isToggleAllChecked"
               [matTooltip]="getAllToggleTooltip(isToggleAllChecked)"
-              (change)="onToggleAllChange($event)"
+              (change)="onToggleAllPreferences($event)"
             >
             </mat-slide-toggle>
           </th>
+
+          <!-- Individual Toggle -->
           <td mat-cell *matCellDef="let element" class="custom-cell">
             <mat-slide-toggle
-              [(ngModel)]="element.is_enabled"
+              [checked]="element.is_enabled"
+              [disabled]="isToggleAllChecked"
               [matTooltip]="getSingleToggleTooltip(element)"
-              (change)="onToggleSingleChange(element)"
+              (change)="onToggleSinglePreferences(element, $event)"
             >
             </mat-slide-toggle>
           </td>

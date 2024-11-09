@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { BehaviorSubject } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -19,6 +20,7 @@ import { TableHeaderComponent, InputField } from '../../../../shared/table-heade
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 import { DialogPrefComponent } from '../../../../shared/dialog-pref/dialog-pref.component';
 import { DialogExportComponent } from '../../../../shared/dialog-export/dialog-export.component';
+import { DialogActionComponent, DialogActionData } from '../../../../shared/dialog-action/dialog-action.component';
 
 import { PreferencesService, ActiveSemester } from '../../../services/faculty/preference/preferences.service';
 
@@ -44,8 +46,6 @@ interface Faculty {
     CommonModule,
     TableHeaderComponent,
     LoadingComponent,
-    DialogPrefComponent,
-    DialogExportComponent,
     FormsModule,
     MatTableModule,
     MatButtonModule,
@@ -83,9 +83,11 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   allData: Faculty[] = [];
   filteredData: Faculty[] = [];
   isToggleAllChecked = false;
+  isAnyIndividualToggleOn = false;
   isLoading = new BehaviorSubject<boolean>(true);
   currentFilter = '';
   hasAnyPreferences = false;
+  hasIndividualDeadlines = false;
 
   @ViewChild(MatPaginator) paginator?: MatPaginator;
 
@@ -115,35 +117,39 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
 
   loadFacultyPreferences(): void {
     this.isLoading.next(true);
-    this.preferencesService.getPreferences().subscribe(
-      (response) => {
-        const faculties = response.preferences.map((faculty: any) => ({
-          faculty_id: faculty.faculty_id,
-          facultyName: faculty.faculty_name,
-          facultyCode: faculty.faculty_code,
-          facultyType: faculty.faculty_type,
-          facultyUnits: faculty.faculty_units,
-          is_enabled: faculty.is_enabled === 1,
-          active_semesters: faculty.active_semesters,
-        }));
+    this.preferencesService
+      .getPreferences()
+      .pipe(filter((response) => !!response))
+      .subscribe(
+        (response) => {
+          const faculties = response.preferences.map((faculty: any) => ({
+            faculty_id: faculty.faculty_id,
+            facultyName: faculty.faculty_name,
+            facultyCode: faculty.faculty_code,
+            facultyType: faculty.faculty_type,
+            facultyUnits: faculty.faculty_units,
+            is_enabled: faculty.is_enabled === 1,
+            active_semesters: faculty.active_semesters,
+          }));
 
-        this.allData = faculties;
-        this.filteredData = faculties;
-        this.applyFilter(this.currentFilter);
-        this.checkToggleAllState();
-        this.updateHasAnyPreferences(); // Update the hasAnyPreferences value
-        this.isLoading.next(false);
-      },
-      (error) => {
-        console.error('Error loading faculty preferences:', error);
-        this.snackBar.open(
-          'Error loading faculty preferences. Please try again.',
-          'Close',
-          { duration: 3000 }
-        );
-        this.isLoading.next(false);
-      }
-    );
+          this.allData = faculties;
+          this.filteredData = faculties;
+          this.applyFilter(this.currentFilter);
+          this.checkToggleAllState();
+          this.updateHasAnyPreferences();
+          this.updateIndividualDeadlinesState(); // Add this new call
+          this.isLoading.next(false);
+        },
+        (error) => {
+          console.error('Error loading faculty preferences:', error);
+          this.snackBar.open(
+            'Error loading faculty preferences. Please try again.',
+            'Close',
+            { duration: 3000 }
+          );
+          this.isLoading.next(false);
+        }
+      );
   }
 
   applyFilter(filterValue: string): void {
@@ -185,6 +191,16 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   checkToggleAllState(): void {
     const allEnabled = this.filteredData.every((faculty) => faculty.is_enabled);
     this.isToggleAllChecked = allEnabled;
+
+    this.isAnyIndividualToggleOn = this.filteredData.some(
+      (faculty) => faculty.is_enabled
+    );
+  }
+
+  hasAnyIndividualDeadlines(): boolean {
+    return this.allData.some((faculty) =>
+      faculty.active_semesters?.some((semester) => semester.individual_deadline)
+    );
   }
 
   updateHasAnyPreferences(): void {
@@ -193,73 +209,109 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     );
   }
 
-  onToggleSingleChange(faculty: Faculty): void {
-    const status = faculty.is_enabled;
-
-    this.preferencesService
-      .toggleFacultyPreferences(faculty.faculty_id, status)
-      .subscribe(
-        (response) => {
-          this.snackBar.open(
-            `Preferences submission ${status ? 'enabled' : 'disabled'} for ${
-              faculty.facultyName
-            }.`,
-            'Close',
-            { duration: 3000 }
-          );
-          this.checkToggleAllState();
-          this.cdr.markForCheck();
-        },
-        (error) => {
-          this.snackBar.open(
-            `Failed to update preference for ${faculty.facultyName}`,
-            'Close',
-            { duration: 3000 }
-          );
-          console.error('Error updating faculty preference:', error);
-        }
-      );
+  updateIndividualDeadlinesState(): void {
+    this.hasIndividualDeadlines = this.allData.some((faculty) =>
+      faculty.active_semesters?.some(
+        (semester) =>
+          semester.individual_deadline &&
+          (!semester.global_deadline ||
+            new Date(semester.individual_deadline) !==
+              new Date(semester.global_deadline))
+      )
+    );
   }
 
-  onToggleAllChange(event: MatSlideToggleChange): void {
-    const status = event.checked;
+  onToggleAllPreferences(event: MatSlideToggleChange): void {
+    if (this.hasIndividualDeadlines && !this.isToggleAllChecked) {
+      event.source.checked = false;
+      this.snackBar.open(
+        'Cannot enable global preferences when individual deadlines exist',
+        'Close',
+        { duration: 3000 }
+      );
+      return;
+    }
 
-    const loadingSnackBarRef = this.snackBar.open(
-      'Loading, please wait...',
-      'Close',
-      {
-        duration: undefined,
-      }
-    );
+    event.source.checked = this.isToggleAllChecked;
 
-    this.preferencesService.toggleAllFacultyPreferences(status).subscribe(
-      (response) => {
-        this.filteredData.forEach((faculty) => (faculty.is_enabled = status));
+    const existingDeadline = this.allData[0]?.active_semesters?.[0]
+      ?.global_deadline
+      ? new Date(this.allData[0].active_semesters[0].global_deadline)
+      : null;
+
+    const hasIndividualDeadlines = this.hasAnyIndividualDeadlines();
+
+    const dialogData: DialogActionData = {
+      type: 'all_preferences',
+      academicYear: this.allData[0]?.active_semesters?.[0]?.academic_year || '',
+      semester: this.allData[0]?.active_semesters?.[0]?.semester_label || '',
+      currentState: this.isToggleAllChecked,
+      hasSecondaryText: false,
+      global_deadline: existingDeadline,
+      hasIndividualDeadlines: hasIndividualDeadlines,
+    };
+
+    const dialogRef = this.dialog.open(DialogActionComponent, {
+      data: dialogData,
+      disableClose: true,
+      autoFocus: false,
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        const newStatus = !this.isToggleAllChecked;
+        this.filteredData.forEach(
+          (faculty) => (faculty.is_enabled = newStatus)
+        );
+        this.isToggleAllChecked = newStatus;
         this.updateDisplayedData();
-        loadingSnackBarRef.dismiss();
-
-        this.snackBar.open(
-          `Preferences submission for all faculty is ${
-            status ? 'enabled' : 'disabled'
-          }.`,
-          'Close',
-          { duration: 3000 }
-        );
-
-        this.isToggleAllChecked = status;
         this.cdr.markForCheck();
-      },
-      (error) => {
-        loadingSnackBarRef.dismiss();
-
-        this.snackBar.open(
-          'Failed to update preferences for all faculty',
-          'Close',
-          { duration: 3000 }
-        );
-        console.error('Error updating all preferences:', error);
       }
-    );
+    });
+  }
+
+  onToggleSinglePreferences(
+    faculty: Faculty,
+    event: MatSlideToggleChange
+  ): void {
+    event.source.checked = faculty.is_enabled;
+
+    const dialogData: DialogActionData = {
+      type: 'single_preferences',
+      academicYear: faculty.active_semesters?.[0]?.academic_year || '',
+      semester: faculty.active_semesters?.[0]?.semester_label || '',
+      currentState: faculty.is_enabled,
+      hasSecondaryText: false,
+      facultyName: faculty.facultyName,
+      faculty_id: faculty.faculty_id,
+      individual_deadline:
+        faculty.active_semesters?.[0]?.individual_deadline || null,
+    };
+
+    const dialogRef = this.dialog.open(DialogActionComponent, {
+      data: dialogData,
+      disableClose: true,
+      autoFocus: false,
+    });
+
+    dialogRef.afterClosed().subscribe((confirmed: boolean) => {
+      if (confirmed) {
+        faculty.is_enabled = !faculty.is_enabled;
+
+        this.preferencesService.getPreferences().subscribe((response) => {
+          const updatedFaculty = response?.preferences?.find(
+            (item: any) => item.faculty_id === faculty.faculty_id
+          );
+          if (updatedFaculty) {
+            faculty.active_semesters = updatedFaculty.active_semesters;
+          }
+
+          this.updateDisplayedData();
+          this.checkToggleAllState();
+          this.cdr.markForCheck();
+        });
+      }
+    });
   }
 
   onInputChange(inputValues: { [key: string]: any }): void {
@@ -514,13 +566,13 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     if (showPreview) {
       return pdfBlob;
     } else {
-      let fileName = 'faculty_preferences_report.pdf'; // Default name
+      let fileName = 'faculty_preferences_report.pdf';
 
       if (isAll) {
         const firstFaculty = faculties[0];
         const activeSemester = firstFaculty.active_semesters?.[0];
         if (activeSemester) {
-          const academicYear = activeSemester.academic_year.replace('/', '_'); // Replace '/' to avoid file name issues
+          const academicYear = activeSemester.academic_year.replace('/', '_');
           const semester = activeSemester.semester_label.toLowerCase();
           fileName = `${academicYear}_${semester}_faculty_preferences.pdf`;
         }
@@ -548,12 +600,20 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   }
 
   getSingleToggleTooltip(faculty: Faculty): string {
+    if (this.isToggleAllChecked) {
+      return `Global preferences submission is active 
+      – individual changes disabled`;
+    }
     return `${
       faculty.is_enabled ? 'Disable' : 'Enable'
     } preferences submission for ${faculty.facultyName}`;
   }
 
   getAllToggleTooltip(isEnabled: boolean): string {
+    if (this.hasIndividualDeadlines && !this.isToggleAllChecked) {
+      return `Global preferences toggle is disabled 
+        because individual deadlines exist`;
+    }
     return `${
       isEnabled ? 'Disable' : 'Enable'
     } preferences submission for all faculty`;

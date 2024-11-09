@@ -1,0 +1,116 @@
+@import "../../../styles/mixins.scss";
+
+.dialog-day-time-container {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-lg)
+  );
+  padding: var(--spacing-lg);
+  width: var(--dialog-base);
+}
+
+.dialog-title {
+  color: var(--primary-text);
+
+  .title-text {
+    margin: 0;
+    font-size: var(--font-size-xl);
+    font-family: var(--font-base);
+    font-weight: 500;
+  }
+
+  .course-detail {
+    font-size: var(--font-size-smx);
+  }
+}
+
+.dialog-content {
+  height: auto;
+
+  .dialog-field {
+    width: 100%;
+  }
+
+  .day-buttons-container {
+    @include flex-layout(
+      $justify: space-between,
+      $align: stretch,
+      $gap: var(--spacing-sm)
+    );
+    padding: var(--spacing-xs);
+    margin-bottom: var(--spacing-mdx);
+    background: var(--neutral-light);
+    border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+    border-bottom: 1px solid var(--neutral-base);
+  }
+
+  .day-button {
+    @include flex-layout;
+    font-size: var(--font-size-smx);
+    width: var(--font-size-md);
+    aspect-ratio: 1 / 1;
+    padding: var(--spacing-sm);
+    border-radius: 50%;
+    user-select: none;
+    cursor: pointer;
+
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+
+    &::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      border-radius: 50%;
+      @include gradient-primary(315deg);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: -1;
+    }
+
+    &.selected {
+      color: white;
+
+      &::before {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    &:hover:not(.selected) {
+      background-color: var(--neutral-fade);
+    }
+  }
+
+  .time-fields {
+    @include flex-layout($gap: var(--spacing-md));
+  }
+}
+
+.dialog-actions {
+  @include flex-layout(
+    $align: center,
+    $justify: flex-end,
+    $gap: var(--spacing-sm)
+  );
+
+  .cancel {
+    color: var(--primary-text) !important;
+  }
+
+  .confirm-button {
+    @include gradient-primary(315deg);
+  }
+
+  .confirm-btn-disabled {
+    background: var(--neutral-fade) !important;
+    color: var(--neutral-base) !important;
+    opacity: var(--opacity-semi-opaque);
+  }
+}

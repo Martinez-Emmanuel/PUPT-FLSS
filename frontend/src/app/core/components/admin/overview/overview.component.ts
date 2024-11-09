@@ -48,6 +48,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
   activeCurricula: CurriculumInfo[] = [
     { curriculum_id: 0, curriculum_year: '0' },
   ];
+  globalDeadline: string | null = null;
 
   // Progress metrics
   preferencesProgress = 0;
@@ -130,6 +131,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
     this.facultyWithSchedulesCount = data.facultyWithSchedulesCount;
     this.preferencesEnabled = data.preferencesSubmissionEnabled;
     this.schedulesPublished = data.publishProgress > 0;
+    this.globalDeadline = data.global_deadline || null;
   }
 
   private resetProgressMetrics(): void {
@@ -156,16 +158,22 @@ export class OverviewComponent implements OnInit, OnDestroy {
   // ================
 
   togglePreferencesSubmission(): void {
+    const deadlineDate = this.globalDeadline
+      ? new Date(this.globalDeadline)
+      : null;
+
     const dialogData: DialogActionData = {
-      type: 'preferences',
+      type: 'all_preferences',
       academicYear: this.activeYear,
       semester: this.activeSemester,
       currentState: this.preferencesEnabled,
+      global_deadline: deadlineDate,
     };
 
     const dialogRef = this.dialog.open(DialogActionComponent, {
       data: dialogData,
       disableClose: true,
+      autoFocus: false,
     });
 
     dialogRef.afterClosed().subscribe((result: boolean) => {
@@ -182,10 +190,11 @@ export class OverviewComponent implements OnInit, OnDestroy {
     }
 
     const dialogData: DialogActionData = {
-      type: 'publish',
+      type: 'all_publish',
       academicYear: this.activeYear,
       semester: this.activeSemester,
       currentState: this.schedulesPublished,
+      hasSecondaryText: true,
     };
 
     const dialogRef = this.dialog.open(DialogActionComponent, {
@@ -205,7 +214,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
       this.showSchedulingRedirectMessage();
       return;
     }
-  
+
     const dialogRef = this.dialog.open(DialogActionComponent, {
       data: {
         type: 'reports',
@@ -215,10 +224,9 @@ export class OverviewComponent implements OnInit, OnDestroy {
       },
       disableClose: true,
     });
-  
-    dialogRef.afterClosed().subscribe((result: boolean) => {
-      if (result) {
-      }
+
+    dialogRef.afterClosed().subscribe((result) => {
+      console.log('Export All dialog closed', result);
     });
   }
 
@@ -230,12 +238,12 @@ export class OverviewComponent implements OnInit, OnDestroy {
         duration: this.SNACKBAR_DURATION,
       }
     );
-  
+
     snackBarRef.onAction().subscribe(() => {
       this.navigateToScheduling();
     });
   }
-  
+
   private navigateToScheduling(): void {
     this.router.navigate(['/admin/scheduling']);
   }

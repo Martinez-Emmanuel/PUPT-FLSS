@@ -1,0 +1,85 @@
+<div class="dialog-day-time-container">
+  <!-- Dialog Title -->
+  <div class="dialog-title">
+    <h2 class="title-text">Select Day & Time</h2>
+    <span class="course-detail">For {{ courseCode }} - {{ courseTitle }}</span>
+  </div>
+
+  <!-- Dialog Content -->
+  <div class="dialog-content">
+    <!-- Day Picker -->
+    <div class="day-buttons-container">
+      @for (day of dayButtons; track day.name) {
+      <div
+        class="day-button pop-small"
+        [class.selected]="day.name === selectedDay"
+        (click)="selectDay(day.name)"
+        matRipple
+        [matRippleColor]="'rgba(255, 255, 255, 0.1)'"
+      >
+        {{ day.shortName }}
+      </div>
+      }
+    </div>
+
+    <div class="time-fields">
+      <!-- Start Time Selection -->
+      <mat-form-field appearance="fill" class="dialog-field">
+        <mat-label>Start Time</mat-label>
+        <mat-select
+          [(ngModel)]="startTime"
+          (selectionChange)="onStartTimeChange()"
+          [disabled]="isWholeDay"
+        >
+          @for (time of timeOptions; track time) {
+          <mat-option [value]="time">
+            {{ time }}
+          </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <!-- End Time Selection -->
+      <mat-form-field appearance="fill" class="dialog-field">
+        <mat-label>End Time</mat-label>
+        <mat-select [(ngModel)]="endTime" [disabled]="isWholeDay">
+          @for (time of endTimeOptions; track time) {
+          <mat-option [value]="time">
+            {{ time }}
+          </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- Whole Day Checkbox -->
+    <mat-checkbox
+      class="day-checkbox"
+      [(ngModel)]="isWholeDay"
+      (change)="onWholeDayChange()"
+    >
+      Whole Day (Any time is preferred)
+    </mat-checkbox>
+  </div>
+
+  <!-- Dialog buttons -->
+  <div class="dialog-actions">
+    <button mat-button class="cancel" (click)="onCancel()">Cancel</button>
+    <button
+      mat-flat-button
+      class="confirm-button"
+      (click)="onConfirm()"
+      [disabled]="
+        !selectedDay ||
+        (!isWholeDay && (!startTime || !endTime || !isEndTimeValid()))
+      "
+      [ngClass]="{
+        'confirm-btn-disabled':
+          !selectedDay ||
+          (!isWholeDay && (!startTime || !endTime || !isEndTimeValid()))
+      }"
+    >
+      Confirm
+    </button>
+  </div>
+</div>

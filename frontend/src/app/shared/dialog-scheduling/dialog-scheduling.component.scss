@@ -130,6 +130,7 @@
     @include reset-styles;
     @include flex-layout($align: stretch, $justify: space-between);
     padding: var(--spacing-lg) 0;
+    user-select: none;
 
     .clear-all-button {
       color: var(--neutral-base);
@@ -153,7 +154,10 @@
         color: var(--primary-text) !important;
       }
       .action-button {
+        @include gradient-primary(315deg);
+
         &:disabled {
+          background: var(--neutral-fade);
           color: var(--neutral-base) !important;
           opacity: var(--opacity-semi-opaque);
         }

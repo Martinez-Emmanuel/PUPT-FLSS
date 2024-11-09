@@ -1,7 +1,6 @@
--- PUPT-FLSS 2025 Official Database Schema (Version 1.3)
+-- PUPT-FLSS 2025 Official Database Schema (Version 1.5)
 -- Key Changes from the previous version:
--- (*) Updated data types, constraints, and table structure based on the changes in the new exported script.
--- (*) Introduced new tables like `faculty_schedule_publication` and adjusted existing table structures to align with the updated schema.
+-- (+) Add `individual_deadline` column to `preferences_setting` to enable submission period for specific faculty
 
 
 -- Table structure for table `users`
@@ -204,6 +203,8 @@ CREATE TABLE `preferences_settings` (
   `preferences_settings_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `faculty_id` bigint(20) UNSIGNED DEFAULT NULL,
   `is_enabled` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1 for enabled, 0 for disabled',
+  `global_deadline` date DEFAULT NULL,
+  `individual_deadline` date DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`preferences_settings_id`),

@@ -10,11 +10,9 @@ use Illuminate\Support\Facades\Mail;
 
 class FacultyController extends Controller
 {
-    public function getFaculty()
-    {
-        return response()->json(Faculty::all(), 200);
-    }
-
+    /**
+     * Retrieve detailed information for active faculty members.
+     */
     public function getFacultyDetails()
     {
         $facultyDetails = Faculty::whereHas('user', function ($query) {
@@ -35,30 +33,47 @@ class FacultyController extends Controller
         return response()->json(['faculty' => $response], 200);
     }
 
-    public function emailPrefEnable()
+    /**
+     * Send email to all faculty members to submit their preferences.
+     */
+    public function emailAllFacultyPreferences()
     {
-        // Retrieve all faculties from the database
         $faculties = Faculty::all();
 
-        // Loop through each faculty and dispatch the email job asynchronously
         foreach ($faculties as $faculty) {
-            // Dispatch the new preference email job for each faculty
             SendFacultyPreferenceEmailJob::dispatch($faculty);
         }
 
         // Return a response after the jobs are dispatched
         return response()->json(['message' => 'Preference emails are being sent asynchronously'], 200);
     }
-    public function testEmail()
+
+    /**
+     * Send email to a specific faculty to submit their preferences.
+     */
+    public function emailSingleFacultyPreferences(Request $request)
     {
+        $facultyId = $request->input('faculty_id');
+        $faculty = Faculty::find($facultyId);
+
+        if (!$faculty) {
+            return response()->json(['message' => 'Faculty not found'], 404);
+        }
+
         $data = [
-            'faculty_name' => 'Juan Dela Cruz',
-            'faculty_units' => '30',
+            'faculty_name' => $faculty->user->name,
+            'email' => $faculty->faculty_email,
         ];
 
-        return view('emails.faculty_notification', $data);
+        Mail::send('emails.preference_single_open', $data, function ($message) use ($data) {
+            $message->to($data['email'])
+                ->subject('Load & Schedule Preferences Submission Update');
+        });
+
+        return response()->json(['message' => 'Preference status notification sent successfully'], 200);
     }
 
+    //========
     public function emailPrefSubmitted(Request $request)
     {
         $facultyId = $request->input('faculty_id');
@@ -82,49 +97,49 @@ class FacultyController extends Controller
 
         Mail::send('emails.preferences_submitted', $data, function ($message) use ($data) {
             $message->to($data['email'])
-                ->subject('Your Preferences Have Been Submitted and Are Under Review');
+                ->subject('Your Load & Schedule Preferences has been submitted successfully');
         });
     }
-    public function emailSingleSchedule(Request $request)
+
+    //========
+
+    /**
+     * Send email to a specific faculty to view their load and schedule.
+     */
+    public function emailAllFacultySchedule()
     {
-        $facultyId = $request->input('faculty_id');
+        $faculties = Faculty::all();
 
-        $faculty = Faculty::find($facultyId);
-
-        if ($faculty) {
-            $this->sendSubjectsScheduleSetNotification($faculty);
-            return response()->json(['message' => 'Subjects, load, and schedule set notification sent successfully'], 200);
-        } else {
-            return response()->json(['message' => 'Faculty not found'], 404);
+        foreach ($faculties as $faculty) {
+            SendFacultyScheduleEmailJob::dispatch($faculty);
         }
+
+        return response()->json(['message' => 'Emails are being sent asynchronously'], 200);
     }
 
-    protected function sendSubjectsScheduleSetNotification($faculty)
+    /**
+     * Send email to a specific faculty to view their load and schedule.
+     */
+    public function emailSingleFacultySchedule(Request $request)
     {
+        $facultyId = $request->input('faculty_id');
+        $faculty = Faculty::find($facultyId);
+
+        if (!$faculty) {
+            return response()->json(['message' => 'Faculty not found'], 404);
+        }
+
         $data = [
             'faculty_name' => $faculty->user->name,
             'email' => $faculty->faculty_email,
         ];
 
-        Mail::send('emails.subjects_schedule_set', $data, function ($message) use ($data) {
+        Mail::send('emails.load_schedule_published', $data, function ($message) use ($data) {
             $message->to($data['email'])
-                ->subject('Your Subjects, Load, and Schedule Have Been Set');
+                ->subject('Your Official Load & Schedule is now available');
         });
-    }
 
-    public function emailAllSchedule()
-    {
-        // Retrieve all faculties from the database
-        $faculties = Faculty::all();
-
-        // Loop through each faculty and dispatch the job to send the emails
-        foreach ($faculties as $faculty) {
-            // Dispatch the email sending job to the queue
-            SendFacultyScheduleEmailJob::dispatch($faculty);
-        }
-
-        // Return a response after the jobs are dispatched
-        return response()->json(['message' => 'Emails are being sent asynchronously'], 200);
+        return response()->json(['message' => 'Faculty load and schedule email notification sent successfully'], 200);
     }
 
 }

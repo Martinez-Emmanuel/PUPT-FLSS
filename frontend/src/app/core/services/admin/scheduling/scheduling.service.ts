@@ -256,7 +256,7 @@ export class SchedulingService {
     endDate: string
   ): Observable<void> {
     return this.http
-      .post<void>(`${this.baseUrl}/set-active-ay-sem`, {
+      .post<void>(`${this.baseUrl}/set-active-year-semester`, {
         academic_year_id: academicYearId,
         semester_id: semesterId,
         start_date: startDate,
@@ -304,7 +304,7 @@ export class SchedulingService {
         activeSemester: number;
         startDate: string;
         endDate: string;
-      }>(`${this.baseUrl}/active-year-semester`)
+      }>(`${this.baseUrl}/get-active-year-semester`)
       .pipe(catchError(this.handleError));
   }
 
@@ -378,12 +378,12 @@ export class SchedulingService {
       .pipe(catchError(this.handleError));
   }
 
-  // Fetch active year levels and curricula for programs
-  getProgramsFromYearLevels(): Observable<any[]> {
-    return this.http
-      .get<any[]>(`${this.baseUrl}/active-year-levels-curricula`)
-      .pipe(catchError(this.handleError));
-  }
+  // // Fetch active year levels and curricula for programs
+  // getProgramsFromYearLevels(): Observable<any[]> {
+  //   return this.http
+  //     .get<any[]>(`${this.baseUrl}/active-year-levels-curricula`)
+  //     .pipe(catchError(this.handleError));
+  // }
 
   // Get active year levels curricula
   getActiveYearLevelsCurricula(): Observable<any[]> {
@@ -432,7 +432,7 @@ export class SchedulingService {
   ): Observable<SubmittedPrefResponse> {
     if (forceRefresh || !this.submittedPreferences$) {
       this.submittedPreferences$ = this.http
-        .get<SubmittedPrefResponse>(`${this.baseUrl}/view-preferences`)
+        .get<SubmittedPrefResponse>(`${this.baseUrl}/get-preferences`)
         .pipe(
           shareReplay(1),
           catchError((error) => {

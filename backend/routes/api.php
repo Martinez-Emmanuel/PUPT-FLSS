@@ -13,7 +13,6 @@ use App\Http\Controllers\ProgramFetchController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\RoomController;
 use App\Http\Controllers\ScheduleController;
-use App\Http\Controllers\SchedulingController;
 use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\YearLevelController;
 use Illuminate\Http\Request;
@@ -22,22 +21,21 @@ use Illuminate\Support\Facades\Route;
 // Public routes
 Route::post('login', [AuthController::class, 'login'])->name('login');
 
-//Academic Year Routes
-Route::get('/get-academic-years', [AcademicYearController::class, 'getAcademicYearsForDropdown']);
-Route::post('/set-active-ay-sem', [AcademicYearController::class, 'setActiveAcademicYearAndSemester']);
-Route::get('/active-year-levels-curricula', [AcademicYearController::class, 'getActiveYearLevelsCurricula']);
-Route::post('/fetch-ay-prog-details', [AcademicYearController::class, 'fetchProgramDetailsByAcademicYear']);
+// Academic Year Routes
+Route::get('/get-academic-years', [AcademicYearController::class, 'getAcademicYears']);
 Route::post('/add-academic-year', [AcademicYearController::class, 'addAcademicYear']);
+Route::delete('/delete-ay', [AcademicYearController::class, 'deleteAcademicYear']);
+
+Route::get('/get-active-year-semester', [AcademicYearController::class, 'getActiveAcademicYearAndSemester']);
+Route::post('/set-active-year-semester', [AcademicYearController::class, 'setActiveAcademicYearAndSemester']);
+Route::post('/fetch-ay-prog-details', [AcademicYearController::class, 'getProgramDetailsByAcademicYear']);
+Route::get('/active-year-levels-curricula', [AcademicYearController::class, 'getActiveYearLevelsCurricula']);
 Route::post('/update-yr-lvl-curricula', [AcademicYearController::class, 'updateYearLevelCurricula']);
 Route::post('/update-sections', [AcademicYearController::class, 'updateSections']);
 Route::delete('/remove-program', [AcademicYearController::class, 'removeProgramFromAcademicYear']);
-Route::delete('/delete-ay', [AcademicYearController::class, 'deleteAcademicYear']);
-Route::get('/active-year-semester', [AcademicYearController::class, 'getActiveYearAndSemester']);
+Route::get('/offered-courses-sem', [AcademicYearController::class, 'getOfferedCoursesBySem']);
 
-//Admin side routes
-Route::get('/get-assigned-courses', [AcademicYearController::class, 'getAssignedCourses']);
-Route::get('/offered-courses-sem', [AcademicYearController::class, 'getAssignedCoursesBySem']);
-
+// Schedule Routes
 Route::get('/populate-schedules', [ScheduleController::class, 'populateSchedules']);
 Route::post('/assign-schedule', [ScheduleController::class, 'assignSchedule']);
 
@@ -47,33 +45,32 @@ Route::delete('/remove-duplicate-course', [ScheduleController::class, 'removeDup
 Route::get('/get-faculty', [FacultyController::class, 'getFacultyDetails']);
 Route::get('/get-rooms', [RoomController::class, 'getAllRooms']);
 
-//Email routes for scheduling
-Route::post('/email-pref-enable', [FacultyController::class, 'emailPrefEnable']); // Send preferences-enabled email
-Route::post('/email-pref-submitted', [FacultyController::class, 'emailPrefSubmitted']); // Send preferences submitted email
-Route::post('/email-single-schedule', [FacultyController::class, 'emailSingleSchedule']); // Send schedule for individual faculty
-Route::post('/email-all-schedule', [FacultyController::class, 'emailAllSchedule']); // Send schedule to all faculty
+// Email routes
+Route::post('/email-all-faculty-preferences', [FacultyController::class, 'emailAllFacultyPreferences']);
+Route::post('/email-single-faculty-preferences', [FacultyController::class, 'emailSingleFacultyPreferences']);
+Route::post('/email-all-faculty-pref-submitted', [FacultyController::class, 'emailPrefSubmitted']);
+Route::post('/email-all-faculty-schedule', [FacultyController::class, 'emailAllFacultySchedule']);
+Route::post('/email-single-faculty-schedule', [FacultyController::class, 'emailSingleFacultySchedule']);
 
 // Scheduling Reports Routes
 Route::get('/faculty-schedules-report', [ReportsController::class, 'getFacultySchedulesReport']);
 Route::get('/room-schedules-report', [ReportsController::class, 'getRoomSchedulesReport']);
 Route::get('/program-schedules-report', [ReportsController::class, 'getProgramSchedulesReport']);
 Route::get('/single-faculty-schedule/{faculty_id}', [ReportsController::class, 'getSingleFacultySchedule']);
+Route::get('/faculty-schedule-history/{faculty_id}', [ReportsController::class, 'getFacultyScheduleHistory']);
+Route::get('/faculty-academic-years-history/{faculty_id}', [ReportsController::class, 'getFacultyAcademicYearsHistory']);
 Route::post('/toggle-all-schedule', [ReportsController::class, 'toggleAllSchedules']);
 Route::post('/toggle-single-schedule', [ReportsController::class, 'toggleSingleSchedule']);
 Route::get('/overview-details', [ReportsController::class, 'getOverviewDetails']);
 
-//Scheduling routes
+// Preferences routes
 Route::post('/submit-preferences', [PreferenceController::class, 'submitPreferences']);
-Route::get('/view-preferences', [PreferenceController::class, 'getPreferencesForActiveSemester']);
-Route::delete('/preferences/{preference_id}', [PreferenceController::class, 'deletePreference']);
+Route::get('/get-preferences', [PreferenceController::class, 'getAllFacultyPreferences']);
+Route::get('/get-preferences/{faculty_id}', [PreferenceController::class, 'getFacultyPreferencesById']);
+Route::delete('/preferences/{preference_id}', [PreferenceController::class, 'deletePreferences']);
 Route::delete('/preferences', [PreferenceController::class, 'deleteAllPreferences']);
-
-//Scheduling toggle preferences
-Route::get('/setting-preferences', [PreferenceController::class, 'getPreferencesSetting']);
-Route::post('/toggle-preferences-all', [PreferenceController::class, 'togglePreferencesSettings']);
-Route::post('/toggle-preferences-single', [PreferenceController::class, 'toggleSpecificFacultyPreferences']);
-// Route::get('/submitted-pref', [PreferenceController::class, 'getPreferences']);
-// Route::post('/pref-courses-sem', [PreferenceController::class, 'findFacultyByCourseCode']);
+Route::post('/toggle-preferences-all', [PreferenceController::class, 'toggleAllPreferences']);
+Route::post('/toggle-preferences-single', [PreferenceController::class, 'toggleSinglePreferences']);
 
 //Get all Program and Year Level and Semester with year for superadmin
 Route::get('/curricula-details/{curriculumYear}/', [CurriculumDetailsController::class, 'getCurriculumDetails']);
