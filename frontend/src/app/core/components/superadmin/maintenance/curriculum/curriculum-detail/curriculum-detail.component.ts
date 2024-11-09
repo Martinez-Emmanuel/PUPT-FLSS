@@ -668,7 +668,9 @@ export class CurriculumDetailComponent implements OnInit {
     this.cdr.markForCheck(); 
   }
 
-  private getCourseDialogConfig(course?: Course, semester?: number): DialogConfig {
+  private getCourseDialogConfig(
+    course?: Course, semester?: number
+  ): DialogConfig {
     const program = this.getProgram();
     // Fetch available course titles for the dropdown
     const availableCourseTitles = program?.year_levels
@@ -678,11 +680,15 @@ export class CurriculumDetailComponent implements OnInit {
 
     let existingPreReqs: string[] = [];
       if (course?.prerequisites) {
-        existingPreReqs = course.prerequisites.map(p => `${p.course_code} - ${p.course_title}`);
+        existingPreReqs = course.prerequisites.map(
+          p => `${p.course_code} - ${p.course_title}`
+        );
       }
     let existingCoReqs: string[] = [];
       if (course?.corequisites) {
-        existingCoReqs = course.corequisites.map(c => `${c.course_code} - ${c.course_title}`);
+        existingCoReqs = course.corequisites.map(
+          c => `${c.course_code} - ${c.course_title}`
+        );
       }
 
     return {
@@ -752,7 +758,7 @@ export class CurriculumDetailComponent implements OnInit {
           required: true,
         },
         ],
-      initialValue: course ? this.populateCourseRequisites(course) : { semester },
+    initialValue: course ? this.populateCourseRequisites(course) : { semester },
     };
   }
   
@@ -806,7 +812,9 @@ export class CurriculumDetailComponent implements OnInit {
     const dialogRef = this.dialog.open(DialogExportComponent, {
       data: {
         exportType: exportAll ? 'all' : 'single',
-        generatePdfFunction: (showPreview: boolean) => this.generatePDF(showPreview, exportAll),
+        generatePdfFunction: (
+          showPreview: boolean) => this.generatePDF(showPreview, exportAll
+        ),
       },
       maxWidth: '70rem',
       width: '100%',
@@ -821,77 +829,117 @@ export class CurriculumDetailComponent implements OnInit {
     const pageWidth = doc.internal.pageSize.width;
     const margin = 10;
     const topMargin = 15;
-    let currentY = topMargin;
-
-    const leftLogoUrl = 'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
-    doc.addImage(leftLogoUrl, 'PNG', margin, 5, 22, 22);
-
-    doc.setFontSize(12);
-    doc.setFont('times', 'bold');
-    doc.text('POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH', pageWidth / 2, currentY, { align: 'center' });
-    currentY += 5;
-
-    doc.setFontSize(8);
-    doc.text('Gen. Santos Ave. Upper Bicutan, Taguig City', pageWidth / 2, currentY, { align: 'center' });
-    currentY += 10;
 
     if (this.curriculum) {
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(17);
-      const curriculumText = `${this.curriculum.curriculum_year} Curriculum`;
-      doc.text(curriculumText, pageWidth / 2, currentY, { align: 'center' });
-      currentY += 7;
+      if (exportAll) {
+        // Loop through each program and specify if it’s the first program
+        this.curriculum.programs.forEach((program, index) => {
+          const isFirstProgram = index === 0;
+          this.addProgramToPDF(doc, program, isFirstProgram);
+        });
+      } else {
+        const currentProgram = this.getProgram();
+        if (currentProgram) {
+          // If only exporting the current program, pass true for isFirstProgram
+          this.addProgramToPDF(doc, currentProgram, true);
+        } else {
+          console.error('No current program available for export');
+          return;
+        }
+      }
+
+      const pdfBlob = doc.output('blob');
+      if (showPreview) {
+        return pdfBlob;
+      } else {
+        doc.save('curriculum_report.pdf');
+      }
     } else {
       console.error('No curriculum data available');
       return;
     }
-
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.5);
-    doc.line(margin, currentY, pageWidth - margin, currentY);
-    currentY += 8; 
-
-    if (exportAll) {
-        for (const program of this.curriculum.programs || []) {
-            this.addProgramToPDF(doc, program, currentY);
-            doc.addPage();
-            currentY = topMargin;
-        }
-    } else {
-        const currentProgram = this.getProgram();
-        if (currentProgram) {
-            this.addProgramToPDF(doc, currentProgram, currentY);
-        } else {
-            console.error('No current program available for export');
-            return;
-        }
-    }
-
-    const pdfBlob = doc.output('blob');
-    
-    if (showPreview) {
-      return pdfBlob;
-    } else {
-      doc.save('curriclum_report.pdf');
-    }
   }
 
-  private addProgramToPDF(doc: any, program: Program, startY: number): void {
-    let currentY = startY;
-    const pageWidth = doc.internal.pageSize.width; 
-    const margin = 10; 
-  
+  private addProgramToPDF(
+    doc: any, 
+    program: Program, 
+    isFirstProgram: boolean
+  ): void {
+    const pageWidth = doc.internal.pageSize.width;
+    const pageHeight = doc.internal.pageSize.height;
+    const margin = 10;
+    const topMargin = 15;
+    const bottomMargin = 15;
+    const logoSize = 22;
+
+    if (!isFirstProgram) {
+        doc.addPage();
+    }
+    let currentY = this.drawHeader(
+      doc, topMargin,
+      pageWidth, margin, 
+      logoSize, `Curriculum Year ${this.curriculum?.curriculum_year || ''}`
+    );
+
     if (!program || !program.year_levels || program.year_levels.length === 0) {
       console.warn('No valid program or year levels found');
       return;
     }
-  
+
     const sortedYearLevels = program.year_levels.sort((a, b) => a.year - b.year);
-  
+
     for (const yearLevel of sortedYearLevels) {
-      let yearLevelHasCourses = false;
-  
-      for (const semester of yearLevel.semesters) {
+      const hasCoursesInYear = yearLevel.semesters.some(
+        semester => semester.courses && semester.courses.length > 0
+      );
+
+      if (!hasCoursesInYear) continue;
+
+      if (currentY + 20 > pageHeight - bottomMargin) {
+        doc.addPage();
+        currentY = this.drawHeader(
+          doc, topMargin, 
+          pageWidth, margin, 
+          logoSize, 
+          `Curriculum Year ${this.curriculum?.curriculum_year || ''}`
+        );
+      }
+
+      // Print the year level header
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(15);
+      doc.text(`${program.name} - Year ${yearLevel.year}`, margin, currentY);
+      currentY += 10;
+
+      const sortedSemesters = yearLevel.semesters.sort(
+        (a, b) => a.semester - b.semester
+      );
+
+      for (const semester of sortedSemesters) {
+        if (!semester.courses || semester.courses.length === 0) continue;
+        if (currentY + 40 > pageHeight - bottomMargin) {
+          doc.addPage();
+          currentY = this.drawHeader(
+            doc, topMargin, 
+            pageWidth, margin, 
+            logoSize,
+            `Curriculum Year ${this.curriculum?.curriculum_year || ''}`
+          );
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(15);
+          doc.text(
+            `${program.name} - Year ${yearLevel.year} (continued)`, 
+            margin, currentY
+          );
+          currentY += 10;
+        }
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(13);
+        doc.text(`Semester ${semester.semester}`, margin, currentY);
+        currentY += 6;
+
+        // Prepare table data for courses in the semester
         const tableData = semester.courses.map((course) => {
           const processedCourse = this.populateCourseRequisites(course);
           return [
@@ -905,92 +953,115 @@ export class CurriculumDetailComponent implements OnInit {
             processedCourse.tuition_hours?.toString() || '0',
           ];
         });
-  
-        if (tableData.length > 0) {
-          yearLevelHasCourses = true;
-          break;
-        }
+
+        // Render the table for the semester courses
+        doc.autoTable({
+          startY: currentY,
+          head: [[
+            'Code', 'Pre-req', 
+            'Co-req', 'Title', 
+            'Lec', 'Lab', 'Units', 'Tuition']
+          ],
+          body: tableData,
+          theme: 'grid',
+          headStyles: {
+            fillColor: [128, 0, 0],
+            textColor: [255, 255, 255],
+            fontSize: 10,
+            halign: 'center',
+            cellPadding: 1
+          },
+          bodyStyles: {
+            fontSize: 9,
+            textColor: [0, 0, 0],
+          },
+          styles: {
+            lineWidth: 0.1,
+            overflow: 'linebreak',
+            cellPadding: 0.5,
+          },
+          columnStyles: {
+            0: { cellWidth: 18 },
+            1: { cellWidth: 40 },
+            2: { cellWidth: 40 },
+            3: { cellWidth: 45 },
+            4: { cellWidth: 15 },
+            5: { cellWidth: 15 },
+            6: { cellWidth: 15 },
+            7: { cellWidth: 15 },
+          },
+          margin: { left: 10, right: 10 },
+        });
+        // Update currentY after the table, adding space below it
+        currentY = (doc as any).lastAutoTable.finalY + 8;
       }
-  
-      if (yearLevelHasCourses) {
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(15);
-        doc.text(`${program.name} - Year ${yearLevel.year}`, margin, currentY);
-        currentY += 7;
-  
-        const sortedSemesters = yearLevel.semesters.sort((a, b) => a.semester - b.semester);
-  
-        for (const semester of sortedSemesters) {
-          const tableData = semester.courses.map((course) => {
-            const processedCourse = this.populateCourseRequisites(course);
-            return [
-              processedCourse.course_code || 'N/A',
-              processedCourse.pre_req || 'None',
-              processedCourse.co_req || 'None',
-              processedCourse.course_title || 'N/A',
-              processedCourse.lec_hours?.toString() || '0',
-              processedCourse.lab_hours?.toString() || '0',
-              processedCourse.units?.toString() || '0',
-              processedCourse.tuition_hours?.toString() || '0',
-            ];
-          });
-  
-          if (tableData.length > 0) {
-            doc.setFont('helvetica', 'bold');
-            doc.setFontSize(13);
-            const semesterText = `Semester ${semester.semester}`;
-            doc.text(semesterText, margin, currentY);
-            currentY += 7;
-  
-            const availableWidth = pageWidth - 20;
-            const columnWidths = [30, 20, 20, 70, 15, 15, 15, 20]; 
-  
-            doc.autoTable({
-              startY: currentY,
-              head: [['Code', 'Pre-req', 'Co-req', 'Title', 'Lec', 'Lab', 'Units', 'Tuition']],
-              body: tableData,
-              theme: 'grid',
-              headStyles: {
-                fillColor: [128, 0, 0],
-                textColor: [255, 255, 255],
-                fontSize: 9,
-                halign: 'center',
-              },
-              bodyStyles: {
-                fontSize: 10,
-                textColor: [0, 0, 0],
-              },
-              styles: {
-                lineWidth: 0.1,
-                overflow: 'linebreak',
-                cellPadding: 1,
-              },
-              columnStyles: {
-                0: { cellWidth: 20 },
-                1: { cellWidth: 40 },
-                2: { cellWidth: 20 },
-                3: { cellWidth: 50 },
-                4: { cellWidth: 15 },
-                5: { cellWidth: 15 },
-                6: { cellWidth: 15 },
-                7: { cellWidth: 20 },
-              },
-              margin: { left: 10, right: 10 },
-            });
-  
-            currentY = (doc as any).lastAutoTable.finalY + 10;
-  
-            if (currentY > doc.internal.pageSize.height - 40) {
-              doc.addPage();
-              currentY = startY;
-            }
-          }
-        }
-      }
+      currentY += 5;
     }
   }
-  
+
+  private drawHeader(
+    doc: jsPDF,
+    startY: number,
+    pageWidth: number,
+    margin: number,
+    logoSize: number,
+    title: string
+  ): number {
+    doc.setTextColor(0, 0, 0);
+    const logoUrl =
+      'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
+
+    // Place the logo at the left margin
+    const logoXPosition = margin;
+    doc.addImage(logoUrl, 'PNG', logoXPosition, startY - 5, logoSize, logoSize);
+
+    // Calculate the center position of the page
+    const centerX = pageWidth / 2;
+
+    let currentY = startY;
+
+    // Set font and styles for the header text
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+
+    // Center the main header text
+    doc.text(
+        'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
+        centerX,
+        currentY,
+        { align: 'center' }
+    );
+
+    currentY += 5;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+
+    // Center the address text
+    doc.text(
+      'Gen. Santos Ave. Upper Bicutan, Taguig City',
+      centerX,
+      currentY,
+      { align: 'center' }
+    );
+
+    currentY += 10;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+
+    // Center the title text
+    doc.text(title, centerX, currentY, { align: 'center' });
+    currentY += 8;
+
+    // Draw a line under the header
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.line(margin, currentY, pageWidth - margin, currentY);
+    currentY += 7;
+
+    return currentY;
+  }
+
   cancelPreview(): void {
     this.showPreview = false;
   }
-}
+} 
