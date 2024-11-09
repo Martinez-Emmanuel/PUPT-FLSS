@@ -476,9 +476,9 @@ class ReportsController extends Controller
         $isPublished = DB::table('faculty_schedule_publication')
             ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
             ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
-            ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
+            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
             ->where('faculty_schedule_publication.faculty_id', $faculty_id)
-            ->where('sections_per_program_year.academic_year_id', $activeSemester->academic_year_id)
+            ->where('course_assignments.semester_id', $activeSemester->semester_id)
             ->where('faculty_schedule_publication.is_published', 1)
             ->exists();
 
@@ -857,7 +857,12 @@ class ReportsController extends Controller
 
         // Step 6: Disable preferences for all faculty by setting `is_enabled` to 0
         DB::table('preferences_settings')
-            ->update(['is_enabled' => 0, 'updated_at' => now()]);
+            ->update([
+                'is_enabled' => 0,
+                'global_deadline' => null,
+                'individual_deadline' => null,
+                'updated_at' => now(),
+            ]);
 
         // Step 6: Return a response
         return response()->json([
@@ -923,7 +928,12 @@ class ReportsController extends Controller
         // Step 6: Disable preferences for the individual faculty** by setting `is_enabled` to 0
         DB::table('preferences_settings')
             ->where('faculty_id', $facultyId)
-            ->update(['is_enabled' => 0, 'updated_at' => now()]);
+            ->update([
+                'is_enabled' => 0,
+                'global_deadline' => null,
+                'individual_deadline' => null,
+                'updated_at' => now(),
+            ]);
 
         // Step 7: Return a success response
         return response()->json([
