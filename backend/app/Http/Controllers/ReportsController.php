@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AcademicYear;
+use App\Models\ActiveSemester;
 use App\Models\PreferencesSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -449,12 +451,7 @@ class ReportsController extends Controller
             return response()->json(['message' => 'Invalid faculty_id provided.'], 400);
         }
 
-        // Step 2: First check if the schedule is published
-        $isPublished = DB::table('faculty_schedule_publication')
-            ->where('faculty_id', $faculty_id)
-            ->value('is_published');
-
-        // Step 3: Get basic faculty and semester info regardless of publication status
+        // Step 2: Get active semester info
         $activeSemester = DB::table('active_semesters')
             ->join('academic_years', 'active_semesters.academic_year_id', '=', 'academic_years.academic_year_id')
             ->join('semesters', 'active_semesters.semester_id', '=', 'semesters.semester_id')
@@ -475,6 +472,17 @@ class ReportsController extends Controller
             return response()->json(['message' => 'No active semester found.'], 404);
         }
 
+        // Step 3: Determine if any schedules for the active semester are published
+        $isPublished = DB::table('faculty_schedule_publication')
+            ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->where('faculty_schedule_publication.faculty_id', $faculty_id)
+            ->where('course_assignments.semester_id', $activeSemester->semester_id)
+            ->where('faculty_schedule_publication.is_published', 1)
+            ->exists();
+
+        // Step 4: Get basic faculty info
         $faculty = DB::table('faculty')
             ->join('users', 'faculty.user_id', '=', 'users.id')
             ->where('faculty.id', $faculty_id)
@@ -506,14 +514,13 @@ class ReportsController extends Controller
                 'faculty_type' => $faculty->faculty_type,
                 'assigned_units' => 0,
                 'total_hours' => 0,
-                'is_published' => $isPublished ?? 0,
+                'is_published' => $isPublished ? 1 : 0,
                 'schedules' => [],
             ],
         ];
 
         // Only fetch and include schedule details if the schedule is published
         if ($isPublished) {
-            // Your existing schedule fetching logic here
             $schedulesSub = DB::table('schedules')
                 ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
                 ->join('course_assignments', 'course_assignments.course_assignment_id', '=', 'section_courses.course_assignment_id')
@@ -603,6 +610,205 @@ class ReportsController extends Controller
         return response()->json($response);
     }
 
+    public function getFacultyScheduleHistory($faculty_id, Request $request)
+    {
+        $validator = Validator::make(array_merge($request->all(), ['faculty_id' => $faculty_id]), [
+            'faculty_id' => 'required|integer|exists:faculty,id',
+            'academic_year_id' => 'required|integer|exists:academic_years,academic_year_id',
+            'semester_id' => 'required|integer|exists:semesters,semester_id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Invalid input parameters',
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+
+        $academic_year_id = $request->input('academic_year_id');
+        $semester_id = $request->input('semester_id');
+
+        // Fetch schedules for the faculty based on academic year and semester
+        $schedules = DB::table('schedules')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
+            ->where('schedules.faculty_id', '=', $faculty_id)
+            ->where('sections_per_program_year.academic_year_id', '=', $academic_year_id)
+            ->where('course_assignments.semester_id', '=', $semester_id)
+            ->select(
+                'schedules.schedule_id',
+                'schedules.day',
+                'schedules.start_time',
+                'schedules.end_time',
+                'schedules.room_id',
+                'courses.course_code',
+                'courses.course_title',
+                'courses.lec_hours',
+                'courses.lab_hours',
+                'courses.units',
+                'courses.tuition_hours',
+                'rooms.room_code',
+                'programs.program_code',
+                'programs.program_title',
+                'sections_per_program_year.year_level',
+                'sections_per_program_year.section_name'
+            )
+            ->leftJoin('courses', 'course_assignments.course_id', '=', 'courses.course_id')
+            ->leftJoin('rooms', 'schedules.room_id', '=', 'rooms.room_id')
+            ->leftJoin('programs', 'sections_per_program_year.program_id', '=', 'programs.program_id')
+            ->get();
+
+        // Transform schedules to include course_details
+        $transformedSchedules = $schedules->map(function ($schedule) {
+            return [
+                'schedule_id' => $schedule->schedule_id,
+                'day' => $schedule->day,
+                'start_time' => $schedule->start_time,
+                'end_time' => $schedule->end_time,
+                'room_id' => $schedule->room_id,
+                'course_details' => [
+                    'course_code' => $schedule->course_code,
+                    'course_title' => $schedule->course_title,
+                ],
+                'lec_hours' => $schedule->lec_hours,
+                'lab_hours' => $schedule->lab_hours,
+                'units' => $schedule->units,
+                'tuition_hours' => $schedule->tuition_hours,
+                'room_code' => $schedule->room_code,
+                'program_code' => $schedule->program_code,
+                'program_title' => $schedule->program_title,
+                'year_level' => $schedule->year_level,
+                'section_name' => $schedule->section_name,
+            ];
+        });
+
+        // Calculate total units and total hours
+        $assigned_units = $transformedSchedules->sum('units');
+        $total_hours = $transformedSchedules->sum('tuition_hours');
+
+        // Determine if the schedule is published
+        $is_published = DB::table('faculty_schedule_publication')
+            ->where('faculty_id', '=', $faculty_id)
+            ->whereIn('schedule_id', $transformedSchedules->pluck('schedule_id'))
+            ->value('is_published') ?? 0;
+
+        $response = [
+            'faculty_schedule' => [
+                'academic_year_id' => $academic_year_id,
+                'semester_id' => $semester_id,
+                'assigned_units' => $assigned_units,
+                'total_hours' => $total_hours,
+                'is_published' => $is_published,
+                'schedules' => $transformedSchedules,
+            ],
+        ];
+
+        return response()->json($response);
+    }
+
+    /**
+     * Retrieves academic years and semesters where a faculty had schedules &
+     * ensure these are before the current active academic year and semester
+     */
+    public function getFacultyAcademicYearsHistory($faculty_id)
+    {
+        $validator = Validator::make(['faculty_id' => $faculty_id], [
+            'faculty_id' => 'required|integer|exists:faculty,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Invalid faculty ID',
+                'errors' => $validator->errors(),
+            ], 400);
+        }
+
+        // Retrieve the current active academic year
+        $activeYear = AcademicYear::where('is_active', true)->first();
+
+        if (!$activeYear) {
+            return response()->json([
+                'message' => 'No active academic year found.',
+            ], 404);
+        }
+
+        // Retrieve the current active semester within the active academic year
+        $activeSemester = ActiveSemester::where('academic_year_id', $activeYear->academic_year_id)
+            ->where('is_active', true)
+            ->first();
+
+        if (!$activeSemester) {
+            return response()->json([
+                'message' => 'No active semester found for the current academic year.',
+            ], 404);
+        }
+
+        // Fetch distinct academic_years and semesters where the faculty has schedules
+        $schedules = DB::table('schedules')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
+            ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
+            ->join('academic_years', 'sections_per_program_year.academic_year_id', '=', 'academic_years.academic_year_id')
+            ->leftJoin('active_semesters', function ($join) {
+                $join->on('academic_years.academic_year_id', '=', 'active_semesters.academic_year_id')
+                    ->on('semesters.semester_id', '=', 'active_semesters.semester_id');
+            })
+            ->where('schedules.faculty_id', $faculty_id)
+        // Filter to include only academic years and semesters **before the current active**
+            ->where(function ($query) use ($activeYear, $activeSemester) {
+                $query->where('academic_years.academic_year_id', '<', $activeYear->academic_year_id)
+                    ->orWhere(function ($q) use ($activeYear, $activeSemester) {
+                        $q->where('academic_years.academic_year_id', '=', $activeYear->academic_year_id)
+                            ->where('semesters.semester', '<', $activeSemester->semester_id);
+                    });
+            })
+            ->select(
+                'academic_years.academic_year_id',
+                'academic_years.year_start',
+                DB::raw("CONCAT(academic_years.year_start, '-', academic_years.year_end) as academic_year"),
+                'semesters.semester_id',
+                'semesters.semester as semester_number',
+                'active_semesters.start_date',
+                'active_semesters.end_date'
+            )
+            ->distinct()
+            ->orderBy('academic_years.year_start', 'desc')
+            ->orderBy('semesters.semester', 'asc')
+            ->get();
+
+        $groupedAcademicYears = [];
+
+        foreach ($schedules as $schedule) {
+            if (!isset($groupedAcademicYears[$schedule->academic_year_id])) {
+                $groupedAcademicYears[$schedule->academic_year_id] = [
+                    'academic_year_id' => $schedule->academic_year_id,
+                    'academic_year' => $schedule->academic_year,
+                    'semesters' => [],
+                ];
+            }
+
+            $semesterLabel = '';
+            if ($schedule->semester_number == 1) {
+                $semesterLabel = '1st Semester';
+            } elseif ($schedule->semester_number == 2) {
+                $semesterLabel = '2nd Semester';
+            } elseif ($schedule->semester_number == 3) {
+                $semesterLabel = 'Summer Semester';
+            }
+
+            $groupedAcademicYears[$schedule->academic_year_id]['semesters'][] = [
+                'semester_id' => $schedule->semester_id,
+                'semester_number' => $semesterLabel,
+                'start_date' => $schedule->start_date,
+                'end_date' => $schedule->end_date,
+            ];
+        }
+
+        return response()->json(array_values($groupedAcademicYears));
+    }
+
     public function toggleAllSchedules(Request $request)
     {
         // Step 1: Validate the input
@@ -651,7 +857,12 @@ class ReportsController extends Controller
 
         // Step 6: Disable preferences for all faculty by setting `is_enabled` to 0
         DB::table('preferences_settings')
-            ->update(['is_enabled' => 0, 'updated_at' => now()]);
+            ->update([
+                'is_enabled' => 0,
+                'global_deadline' => null,
+                'individual_deadline' => null,
+                'updated_at' => now(),
+            ]);
 
         // Step 6: Return a response
         return response()->json([
@@ -717,7 +928,12 @@ class ReportsController extends Controller
         // Step 6: Disable preferences for the individual faculty** by setting `is_enabled` to 0
         DB::table('preferences_settings')
             ->where('faculty_id', $facultyId)
-            ->update(['is_enabled' => 0, 'updated_at' => now()]);
+            ->update([
+                'is_enabled' => 0,
+                'global_deadline' => null,
+                'individual_deadline' => null,
+                'updated_at' => now(),
+            ]);
 
         // Step 7: Return a success response
         return response()->json([
