@@ -108,6 +108,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     this.initializeHeaderInputFields();
     this.initializeDisplayedColumns();
     this.generateTimeOptions();
+    this.schedulingService.resetCaches([CacheType.Schedules]);
 
     forkJoin({
       activeYearSemester: this.loadActiveYearAndSemester(),
