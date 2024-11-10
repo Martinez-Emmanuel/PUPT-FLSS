@@ -78,7 +78,6 @@ interface Program {
     MatSlideToggleModule,
     MatTooltipModule,
     TableHeaderComponent,
-    TableDialogComponent,
     LoadingComponent,
     MatSymbolDirective,
   ],

@@ -104,6 +104,12 @@
   }
 }
 
+@mixin custom-spinner-two($color: var(--secondary-text)) {
+  .custom-spinner-two {
+    --mdc-circular-progress-active-indicator-color: #{$color};
+  }
+}
+
 /* Custom scrollbar styling */
 @mixin custom-scrollbar {
   &::-webkit-scrollbar {

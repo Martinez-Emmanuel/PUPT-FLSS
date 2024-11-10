@@ -1,8 +1,6 @@
 import { Component, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
-
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { AuthService } from '../../../services/auth/auth.service';
@@ -23,7 +21,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [MatSymbolDirective, LoadingComponent, FullCalendarModule],
+  imports: [LoadingComponent, FullCalendarModule],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
   animations: [fadeAnimation],

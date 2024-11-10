@@ -20,7 +20,7 @@ class FacultyTableSeeder extends Seeder
             [
                 'id' => 2,
                 'user_id' => 4,
-                'faculty_email' => 'Adriannaoe7@gmail.com',
+                'faculty_email' => 'adrian.naoe@example.com',
                 'faculty_type' => 'Part-time',
                 'faculty_units' => '25',
             ],

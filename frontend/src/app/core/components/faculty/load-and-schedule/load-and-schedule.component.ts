@@ -1,9 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
+import { MatDialogModule, MatDialog } from '@angular/material/dialog';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { FacultyScheduleTimetableComponent } from '../../../../shared/faculty-schedule-timetable/faculty-schedule-timetable.component';
+import { DialogScheduleHistoryComponent } from '../../../../shared/dialog-schedule-history/dialog-schedule-history.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { ReportsService } from '../../../services/admin/reports/reports.service';
@@ -16,6 +19,8 @@ import { fadeAnimation } from '../../../animations/animations';
   standalone: true,
   imports: [
     CommonModule,
+    MatDialogModule,
+    MatTooltipModule,
     FacultyScheduleTimetableComponent,
     LoadingComponent,
     MatSymbolDirective,
@@ -31,7 +36,8 @@ export class LoadAndScheduleComponent implements OnInit {
 
   constructor(
     private reportsService: ReportsService,
-    private cookieService: CookieService
+    private cookieService: CookieService,
+    private dialog: MatDialog,
   ) {}
 
   ngOnInit() {
@@ -58,6 +64,15 @@ export class LoadAndScheduleComponent implements OnInit {
     }
   }
 
+  openScheduleHistory() {
+    this.dialog.open(DialogScheduleHistoryComponent, {
+      maxWidth: '90vw',
+      width: '100%',
+      disableClose: true,
+      autoFocus: false,
+    });
+  }
+
   get academicYear(): string {
     if (this.facultySchedule) {
       return `${this.facultySchedule.year_start}-${this.facultySchedule.year_end}`;
@@ -73,7 +88,7 @@ export class LoadAndScheduleComponent implements OnInit {
         case 2:
           return '2nd Semester';
         case 3:
-          return 'Summer Term';
+          return 'Summer Semester';
         default:
           return '';
       }

@@ -37,16 +37,14 @@ class SendFacultyScheduleEmailJob implements ShouldQueue
      */
     public function handle()
     {
-        // Prepare data for the "Subjects, Load, and Schedule Set" email
         $dataSchedule = [
             'faculty_name' => $this->faculty->user->name,
             'email' => $this->faculty->faculty_email,
         ];
 
-        // Send the "Subjects, Load, and Schedule Set" email
-        Mail::send('emails.subjects_schedule_set', $dataSchedule, function ($message) use ($dataSchedule) {
+        Mail::send('emails.load_schedule_published', $dataSchedule, function ($message) use ($dataSchedule) {
             $message->to($dataSchedule['email'])
-                ->subject('Your Subjects, Load, and Schedule Have Been Set');
+                ->subject('Your Official Load & Schedule is now available');
         });
     }
 
@@ -57,7 +55,6 @@ class SendFacultyScheduleEmailJob implements ShouldQueue
      */
     public function failed(Exception $exception)
     {
-        // Log the failure
         \Log::error('Failed to send schedule email to faculty: ' . $this->faculty->faculty_email . ' Error: ' . $exception->getMessage());
     }
 }

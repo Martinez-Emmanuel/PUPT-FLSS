@@ -2,16 +2,20 @@ import { Component, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-// Angular Material Imports
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatCheckbox } from '@angular/material/checkbox';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatRippleModule } from '@angular/material/core';
 
-import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
+interface DayButton {
+  name: string;
+  shortName: string;
+  selected: boolean;
+}
 
 @Component({
   selector: 'app-dialog-time',
@@ -25,46 +29,72 @@ import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
     MatOptionModule,
     MatButtonModule,
     MatIconModule,
-    MatCheckbox,
-    MatSymbolDirective
+    MatCheckboxModule,
+    MatRippleModule,
   ],
-  templateUrl: './dialog-time.component.html',
-  styleUrls: ['./dialog-time.component.scss'],
+  templateUrl: './dialog-day-time.component.html',
+  styleUrls: ['./dialog-day-time.component.scss'],
 })
-export class DialogTimeComponent {
-  // Updated class name
+export class DialogDayTimeComponent {
+  selectedDay: string = '';
+  originalDay: string = '';
   startTime: string = '';
   endTime: string = '';
+  courseCode: string = '';
+  courseTitle: string = '';
   isWholeDay: boolean = false;
   timeOptions: string[] = [];
   endTimeOptions: string[] = [];
 
+  dayButtons: DayButton[] = [
+    { name: 'Monday', shortName: 'Mon', selected: false },
+    { name: 'Tuesday', shortName: 'Tue', selected: false },
+    { name: 'Wednesday', shortName: 'Wed', selected: false },
+    { name: 'Thursday', shortName: 'Thu', selected: false },
+    { name: 'Friday', shortName: 'Fri', selected: false },
+    { name: 'Saturday', shortName: 'Sat', selected: false },
+    { name: 'Sunday', shortName: 'Sun', selected: false },
+  ];
+
   constructor(
-    public dialogRef: MatDialogRef<DialogTimeComponent>,
+    public dialogRef: MatDialogRef<DialogDayTimeComponent>,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     dialogRef.disableClose = true;
     this.generateTimeOptions();
-  
-    if (this.data.startTime && this.data.endTime) {
-      this.startTime = this.data.startTime;
-      this.endTime = this.data.endTime;
-      this.onStartTimeChange();
+
+    if (data.selectedDay) {
+      this.originalDay = data.selectedDay;
+      this.selectedDay = data.selectedDay;
     }
-  
-    if (
-      this.data.startTime === '07:00 AM' &&
-      this.data.endTime === '09:00 PM'
-    ) {
-      this.isWholeDay = true;
-      this.startTime = '';
-      this.endTime = '';
-    } else {
-      this.isWholeDay = this.data.isWholeDay || false;
+
+    if (data.selectedTime) {
+      if (data.selectedTime === '07:00 AM - 09:00 PM') {
+        this.isWholeDay = true;
+        this.startTime = '07:00 AM';
+        this.endTime = '09:00 PM';
+      } else {
+        const [start, end] = data.selectedTime.split(' - ');
+        this.startTime = start.trim();
+        this.endTime = end.trim();
+      }
+    }
+
+    if (data.courseCode) {
+      this.courseCode = data.courseCode;
+    }
+
+    if (data.courseTitle) {
+      this.courseTitle = data.courseTitle;
     }
   }
 
+  selectDay(day: string): void {
+    this.selectedDay = day;
+  }
+
   generateTimeOptions() {
+    this.timeOptions = [];
     for (let hour = 7; hour <= 21; hour++) {
       for (let minute = 0; minute < 60; minute += 30) {
         if (hour === 21 && minute === 30) break;
@@ -95,12 +125,17 @@ export class DialogTimeComponent {
 
   onConfirm(): void {
     if (this.isWholeDay) {
-      this.dialogRef.close('07:00 AM - 09:00 PM');
-    } else if (this.startTime && this.endTime) {
-      this.dialogRef.close(`${this.startTime} - ${this.endTime}`);
+      this.dialogRef.close({
+        day: this.selectedDay,
+        time: '07:00 AM - 09:00 PM',
+      });
+    } else if (this.selectedDay && this.startTime && this.endTime) {
+      this.dialogRef.close({
+        day: this.selectedDay,
+        time: `${this.startTime} - ${this.endTime}`,
+      });
     }
   }
-  
 
   isEndTimeValid(): boolean {
     if (!this.startTime || !this.endTime) {
@@ -113,6 +148,9 @@ export class DialogTimeComponent {
 
   onWholeDayChange(): void {
     if (this.isWholeDay) {
+      this.startTime = '07:00 AM';
+      this.endTime = '09:00 PM';
+    } else {
       this.startTime = '';
       this.endTime = '';
     }

@@ -32,6 +32,10 @@
 .dialog-actions {
   @include flex-layout($justify: flex-end, $gap: var(--spacing-sm));
 
+  .action-button {
+    @include gradient-primary(315deg);
+  }
+
   button {
     color: var(--primary-text);
   }

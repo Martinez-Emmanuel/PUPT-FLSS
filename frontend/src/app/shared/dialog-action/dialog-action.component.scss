@@ -43,6 +43,15 @@
     margin: 0;
     line-height: var(--line-height-md);
     text-align: justify;
+
+    .confirm-disable {
+      padding: var(--spacing-xs);
+      border-radius: var(--border-radius-sm);
+      background-color: var(--primary-fade);
+      color: var(--primary-text);
+      font-size: var(--font-size-sm);
+      line-height: var(--line-height-sm);
+    }
   }
 
   .secondary-text {
@@ -83,7 +92,7 @@
     .email-checkbox,
     .report-checkbox {
       width: 100%;
-      background-color: var(--neutral-option);
+      background-color: var(--neutral-light);
       border-radius: var(--spacing-xs);
       padding: var(--spacing-xxxs);
 
@@ -116,9 +125,28 @@
     $justify: flex-end,
     $gap: var(--spacing-sm)
   );
-  padding-top: var(--spacing-sm);
+  padding-bottom: var(--spacing-xxs);
+
+  .action-button {
+    @include gradient-primary(315deg);
+  }
+
+  .disabled-button {
+    opacity: var(--opacity-semi-opaque);
+    color: var(--neutral-base) !important;
+    background: var(--neutral-fade) !important;
+  }
 
   .cancel {
     color: var(--primary-text);
+  }
+}
+
+.deadline-picker,
+.deadline-info {
+  width: 100%;
+
+  mat-form-field {
+    width: 100%;
   }
 }

@@ -1,7 +1,20 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+
 import { Observable, throwError, forkJoin, of } from 'rxjs';
 import { catchError, map, switchMap, shareReplay, tap } from 'rxjs/operators';
+
+import {
+  Schedule,
+  PopulateSchedulesResponse,
+  CourseResponse,
+  Room,
+  Faculty,
+  SubmittedPrefResponse,
+  ConflictingCourseDetail,
+  ConflictingScheduleDetail,
+} from '../../../models/scheduling.model';
+
 import { environment } from '../../../../../environments/environment.dev';
 
 export enum CacheType {
@@ -9,208 +22,6 @@ export enum CacheType {
   Faculty = 'faculty',
   Schedules = 'schedules',
   Preferences = 'preferences',
-}
-
-export interface Program {
-  program_id: number;
-  program_code: string;
-  program_title: string;
-  year_levels: YearLevel[];
-  sections: { [yearLevel: string]: number };
-  curriculums: { [yearLevel: string]: string };
-}
-
-export interface Section {
-  section_id: number;
-  section_name: string;
-}
-
-export interface SectionsByProgram {
-  [program: string]: {
-    [year: number]: string[];
-  };
-}
-
-export interface Curriculum {
-  id: number;
-  curriculum_year: string;
-  name: string;
-}
-
-export interface Schedule {
-  course_id: number;
-  course_code: string;
-  course_title: string;
-  lec_hours: number;
-  lab_hours: number;
-  units: number;
-  tuition_hours: number;
-  day: string;
-  time: string;
-  professor: string;
-  room: string;
-  program: string;
-  program_code: string;
-  year: number;
-  curriculum: string;
-  section: string;
-
-  schedule_id?: number;
-  faculty_id?: number;
-  faculty_email?: string;
-  room_id?: number;
-  section_course_id: number;
-  is_copy: number;
-}
-
-export interface Semester {
-  semester_id: number;
-  semester_number: string;
-  semester: number;
-  start_date: string;
-  end_date: string;
-  courses: Schedule[];
-}
-
-export interface AcademicYear {
-  academic_year_id: number;
-  academic_year: string;
-  semesters: Semester[];
-}
-
-export interface YearLevel {
-  year_level: number;
-  curriculum_id: number;
-  curriculum_year: string;
-  number_of_sections: number;
-  sections: Section[];
-  semesters: Semester[];
-}
-
-export interface PopulateSchedulesResponse {
-  active_semester_id: number;
-  academic_year_id: number;
-  semester_id: number;
-  programs: ProgramResponse[];
-}
-
-export interface ProgramResponse {
-  program_id: number;
-  program_code: string;
-  program_title: string;
-  year_levels: YearLevelResponse[];
-}
-
-export interface YearLevelResponse {
-  year_level: number;
-  curriculum_id: number;
-  curriculum_year: string;
-  semesters: SemesterResponse[];
-}
-
-export interface SemesterResponse {
-  semester: number;
-  sections: SectionResponse[];
-}
-
-export interface SectionResponse {
-  section_per_program_year_id: number;
-  section_name: string;
-  courses: CourseResponse[];
-}
-
-export interface CourseResponse {
-  course_assignment_id: number;
-  course_id: number;
-  course_code: string;
-  course_title: string;
-  lec_hours: number;
-  lab_hours: number;
-  units: number;
-  tuition_hours: number;
-  schedule?: {
-    schedule_id: number;
-    day: string;
-    start_time: string;
-    end_time: string;
-    room_id?: number;
-  };
-  professor: string;
-  faculty_id: number;
-  faculty_email: string;
-  room?: {
-    room_id: number;
-    room_code: string;
-  };
-  section_course_id: number;
-  is_copy?: number;
-}
-
-export interface Room {
-  room_id: number;
-  room_code: string;
-  location: string;
-  floor_level: string;
-  room_type: string;
-  capacity: number;
-  status: string;
-}
-
-export interface Faculty {
-  faculty_id: number;
-  name: string;
-  faculty_email: string;
-  faculty_type: string;
-  faculty_units: number;
-}
-
-export interface SubmittedPrefResponse {
-  preferences: Preference[];
-}
-
-export interface Preference {
-  faculty_id: number;
-  faculty_name: string;
-  faculty_code: string;
-  faculty_units: string;
-  active_semesters: ActiveSemester[];
-}
-
-export interface ActiveSemester {
-  active_semester_id: number;
-  academic_year_id: number;
-  academic_year: string;
-  semester_id: number;
-  semester_label: string;
-  courses: CoursePreference[];
-}
-
-export interface CoursePreference {
-  course_assignment_id: number;
-  course_details: CourseDetails;
-  preferred_day: string;
-  preferred_start_time: string;
-  preferred_end_time: string;
-  created_at: string;
-  updated_at: string;
-}
-
-export interface CourseDetails {
-  course_id: number;
-  course_code: string;
-  course_title: string;
-}
-
-interface ConflictingCourseDetail {
-  course: CourseResponse;
-  sectionName: string;
-}
-
-interface ConflictingScheduleDetail {
-  course: CourseResponse;
-  programCode: string;
-  yearLevel: number;
-  sectionName: string;
 }
 
 @Injectable({
@@ -237,151 +48,12 @@ export class SchedulingService {
     return throwError(() => new Error(errorMessage));
   }
 
-  // =============================
-  // Academic Year-related methods
-  // =============================
-
-  // Fetch academic years from the backend
-  getAcademicYears(): Observable<any[]> {
-    return this.http
-      .get<any[]>(`${this.baseUrl}/get-academic-years`)
-      .pipe(catchError(this.handleError));
-  }
-
-  // Set the active academic year and semester
-  setActiveYearAndSemester(
-    academicYearId: number,
-    semesterId: number,
-    startDate: string,
-    endDate: string
-  ): Observable<void> {
-    return this.http
-      .post<void>(`${this.baseUrl}/set-active-ay-sem`, {
-        academic_year_id: academicYearId,
-        semester_id: semesterId,
-        start_date: startDate,
-        end_date: endDate,
-      })
-      .pipe(catchError(this.handleError));
-  }
-
-  // Delete academic year
-  deleteAcademicYear(academicYearId: number): Observable<any> {
-    return this.http
-      .request('DELETE', `${this.baseUrl}/delete-ay`, {
-        body: { academic_year_id: academicYearId },
-      })
-      .pipe(catchError(this.handleError));
-  }
-
-  // Add new academic year
-  addAcademicYear(yearStart: string, yearEnd: string): Observable<any> {
-    return this.http
-      .post<any>(`${this.baseUrl}/add-academic-year`, {
-        year_start: yearStart,
-        year_end: yearEnd,
-      })
-      .pipe(
-        catchError((error) => {
-          if (error.error && error.error.message) {
-            return throwError(() => new Error(error.error.message));
-          }
-          return throwError(() => new Error('An unexpected error occurred.'));
-        })
-      );
-  }
-
-  // Get active academic year and semester details
-  getActiveYearAndSemester(): Observable<{
-    activeYear: string;
-    activeSemester: number;
-    startDate: string;
-    endDate: string;
-  }> {
-    return this.http
-      .get<{
-        activeYear: string;
-        activeSemester: number;
-        startDate: string;
-        endDate: string;
-      }>(`${this.baseUrl}/active-year-semester`)
-      .pipe(catchError(this.handleError));
-  }
-
-  // =============================
-  // Program-related methods
-  // =============================
-
-  // Fetch program details with year levels and curriculum versions for a specific academic year
-  fetchProgramDetailsByAcademicYear(payload: {
-    academic_year_id: number;
-  }): Observable<any> {
-    return this.http
-      .post<any>(`${this.baseUrl}/fetch-ay-prog-details`, payload)
-      .pipe(catchError(this.handleError));
-  }
-
-  // Update year levels' curricula for a specific academic year and program
-  updateYearLevelsCurricula(
-    academicYearId: number,
-    programId: number,
-    yearLevels: YearLevel[]
-  ): Observable<any> {
-    const payload = {
-      academic_year_id: academicYearId,
-      program_id: programId,
-      year_levels: yearLevels.map((yl) => ({
-        year_level: yl.year_level,
-        curriculum_id: yl.curriculum_id,
-      })),
-    };
-    return this.http
-      .post<any>(`${this.baseUrl}/update-yr-lvl-curricula`, payload)
-      .pipe(catchError(this.handleError));
-  }
-
-  // Remove a program from an academic year
-  removeProgramFromAcademicYear(
-    academicYearId: number,
-    programId: number
-  ): Observable<any> {
-    return this.http
-      .request('DELETE', `${this.baseUrl}/remove-program`, {
-        body: { academic_year_id: academicYearId, program_id: programId },
-      })
-      .pipe(catchError(this.handleError));
-  }
-
-  // Edit section on a specific year level
-  updateSections(
-    academicYearId: number,
-    programId: number,
-    yearLevel: number,
-    numberOfSections: number
-  ): Observable<any> {
-    return this.http
-      .post<any>(`${this.baseUrl}/update-sections`, {
-        academic_year_id: academicYearId,
-        program_id: programId,
-        year_level: yearLevel,
-        number_of_sections: numberOfSections,
-      })
-      .pipe(catchError(this.handleError));
-  }
-
   // Fetch sections by program and year level
   getSections(program: string, year: number): Observable<string[]> {
     return this.http
       .get<string[]>(
         `${this.baseUrl}/programs/${program}/year/${year}/sections`
       )
-      .pipe(catchError(this.handleError));
-  }
-
-  // Fetch active year levels and curricula for programs
-  getProgramsFromYearLevels(): Observable<any[]> {
-    return this.http
-      .get<any[]>(`${this.baseUrl}/active-year-levels-curricula`)
       .pipe(catchError(this.handleError));
   }
 
@@ -432,7 +104,7 @@ export class SchedulingService {
   ): Observable<SubmittedPrefResponse> {
     if (forceRefresh || !this.submittedPreferences$) {
       this.submittedPreferences$ = this.http
-        .get<SubmittedPrefResponse>(`${this.baseUrl}/view-preferences`)
+        .get<SubmittedPrefResponse>(`${this.baseUrl}/get-preferences`)
         .pipe(
           shareReplay(1),
           catchError((error) => {

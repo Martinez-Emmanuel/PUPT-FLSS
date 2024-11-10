@@ -2,8 +2,8 @@ import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
 
-import { Observable, Subject, forkJoin, of } from 'rxjs';
-import { map, startWith, takeUntil, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
+import { Observable, Subject, forkJoin } from 'rxjs';
+import { map, startWith, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -17,7 +17,8 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
-import { SchedulingService, Faculty, Room } from '../../core/services/admin/scheduling/scheduling.service';
+import { SchedulingService } from '../../core/services/admin/scheduling/scheduling.service';
+import { Faculty, Room } from '../../core/models/scheduling.model';
 
 import { cardEntranceSide } from '../../core/animations/animations';
 
@@ -83,6 +84,10 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     time: string;
   } | null = null;
 
+  dayButtons: { name: string; shortName: string }[] = [];
+  selectedDay: string = '';
+  originalDay: string = '';
+
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<DialogSchedulingComponent>,
@@ -94,10 +99,17 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.initializeDayButtons();
     this.setupAutocomplete();
     this.handleStartTimeChanges();
     this.populateExistingSchedule();
     this.setupConflictDetection();
+
+    this.selectedDay = this.scheduleForm.get('day')!.value || '';
+    this.originalDay = this.selectedDay;
+    this.scheduleForm.get('day')!.valueChanges
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(day => this.selectedDay = day);
   }
 
   ngOnDestroy(): void {
@@ -105,6 +117,23 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  private initializeDayButtons(): void {
+    const dayShortNames: { [key: string]: string } = {
+      Monday: 'Mon',
+      Tuesday: 'Tue',
+      Wednesday: 'Wed',
+      Thursday: 'Thu',
+      Friday: 'Fri',
+      Saturday: 'Sat',
+      Sunday: 'Sun',
+    };
+    this.dayButtons = this.data.dayOptions.map(day => ({
+      name: day,
+      shortName: dayShortNames[day] || day.substring(0, 3),
+    }));
+  }
+
+  /*** Conflict Detection ***/
   private setupConflictDetection(): void {
     this.scheduleForm.valueChanges
       .pipe(
@@ -282,12 +311,16 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   /*** Form Actions ***/
 
   public onCancel(): void {
+    this.scheduleForm.patchValue({ day: this.originalDay });
+    this.selectedDay = this.originalDay;
     this.dialogRef.close();
   }
 
   public onClearAll(): void {
     this.scheduleForm.reset();
     this.data.endTimeOptions = [...this.data.timeOptions];
+    this.selectedDay = '';
+    this.originalDay = '';
   }
 
   public onAssign(): void {
@@ -333,6 +366,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.isLoading = false;
+          this.originalDay = this.selectedDay;
           this.dialogRef.close(true);
         },
         error: (error) => {
@@ -380,6 +414,8 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
       professor: faculty.name,
     });
 
+    this.selectedDay = day;
+    this.originalDay = day;
     this.scheduleForm.markAllAsTouched();
   }
 
@@ -476,5 +512,10 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     time: string;
   }): boolean {
     return this.selectedFaculty === faculty;
+  }
+
+  public selectDay(dayName: string): void {
+    this.selectedDay = dayName;
+    this.scheduleForm.patchValue({ day: dayName });
   }
 }

@@ -30,7 +30,6 @@ import 'jspdf-autotable';
     TableGenericComponent,
     TableHeaderComponent,
     LoadingComponent,
-    DialogExportComponent,
   ],
   templateUrl: './programs.component.html',
   styleUrls: ['./programs.component.scss'],

@@ -4,6 +4,11 @@
   @include reset-styles;
 }
 
+:host {
+  @include custom-spinner;
+  @include custom-spinner-two();
+}
+
 .faculty-preferences-container {
   @include flex-layout(
     $direction: column,
@@ -67,9 +72,14 @@
 
     .pref-description {
       font-size: var(--font-size-mdx);
+      line-height: var(--line-height-sm);
       white-space: normal;
 
       .highlight {
+        font-weight: 600;
+      }
+
+      .submission-deadline {
         font-weight: 600;
       }
     }
@@ -200,10 +210,10 @@
       margin-bottom: var(--spacing-xs);
       border-radius: var(--border-radius-sm);
       cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease;
 
       &:hover {
-        transform: scale(0.98);
+        opacity: var(--opacity-semi-opaque);
       }
 
       &:active {
@@ -219,6 +229,7 @@
 
       .course-code,
       .program-code {
+        @include default-transition;
         font-weight: 600;
         font-size: var(--font-size-md);
         color: var(--neutral-base);
@@ -240,6 +251,7 @@
 
 /* Preferences Table Styling */
 #table_container {
+  @include default-transition;
   @include hide-scrollbar;
   @include flex-layout($direction: column, $align: none, $justify: none);
   flex: 5;
@@ -247,6 +259,7 @@
   background-color: var(--neutral-light);
 
   .table-main {
+    @include default-transition;
     width: 100%;
     background-color: var(--neutral-light);
     table-layout: fixed;
@@ -260,17 +273,32 @@
   }
 
   .table-cell {
+    @include default-transition;
     padding: var(--spacing-sm);
     text-wrap: wrap;
     text-align: center;
     background-color: var(--neutral-light);
 
-    &.title-cell {
-      max-width: 12rem;
+    .day-time-button-container {
+      @include flex-layout($justify: flex-start);
+
+      .day-time-button {
+        @include flex-layout;
+        color: var(--primary-text);
+      }
+
+      mat-icon {
+        @include flex-layout;
+        padding: var(--spacing-sm);
+      }
     }
 
-    .display-time {
-      @include ellipsis;
+    &.title-cell {
+      width: 15rem;
+    }
+
+    &.picker-cell {
+      width: 20rem;
     }
 
     .remove-button {
@@ -285,6 +313,7 @@
   }
 
   .no-data-text {
+    @include default-transition;
     @include flex-layout($gap: var(--spacing-xs));
     width: 100%;
     text-align: center;
@@ -302,6 +331,7 @@
   }
 
   .table-footer {
+    @include default-transition;
     @include flex-layout($justify: space-between, $gap: var(--spacing-xs));
     @include sticky;
     margin-top: auto;
@@ -337,16 +367,6 @@
         transform: none;
       }
     }
-  }
-
-  .preferred-icon {
-    @include flex-layout;
-    font-size: 100%;
-  }
-
-  .preferred-button {
-    @include flex-layout;
-    color: var(--primary-text);
   }
 }
 
@@ -389,5 +409,34 @@
         padding-right: 0;
       }
     }
+  }
+}
+
+.preferences-closed {
+  @include flex-layout($direction: column, $align: center, $justify: center);
+  opacity: var(--opacity-semi-opaque);
+  height: 100%;
+
+  svg {
+    width: 20rem;
+    height: auto;
+  }
+
+  .closed-info {
+    @include flex-layout($direction: column, $gap: var(--spacing-lg));
+  }
+
+  .closed-text {
+    @include flex-layout($gap: var(--spacing-xs));
+    font-size: var(--font-size-md);
+    text-align: center;
+
+    span[mat-symbol] {
+      font-size: var(--font-size-md);
+    }
+  }
+
+  .view-preferences button {
+    font-size: var(--font-size-md);
   }
 }
