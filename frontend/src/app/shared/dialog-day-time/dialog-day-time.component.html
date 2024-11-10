@@ -13,6 +13,9 @@
       <div
         class="day-button pop-small"
         [class.selected]="day.name === selectedDay"
+        [class.original-day]="
+          day.name === originalDay && day.name !== selectedDay
+        "
         (click)="selectDay(day.name)"
         matRipple
         [matRippleColor]="'rgba(255, 255, 255, 0.1)'"

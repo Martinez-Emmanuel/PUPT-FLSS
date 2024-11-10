@@ -22,7 +22,6 @@ import { fadeAnimation } from '../../../animations/animations';
     MatDialogModule,
     MatTooltipModule,
     FacultyScheduleTimetableComponent,
-    DialogScheduleHistoryComponent,
     LoadingComponent,
     MatSymbolDirective,
   ],

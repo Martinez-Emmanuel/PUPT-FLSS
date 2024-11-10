@@ -177,7 +177,14 @@ class PreferenceController extends Controller
         }
 
         $faculty = Faculty::where('id', $faculty_id)
-            ->with(['user', 'preferenceSetting', 'preferences.courseAssignment.course'])
+            ->with([
+                'user',
+                'preferenceSetting',
+                'preferences' => function ($query) use ($activeSemester) {
+                    $query->where('active_semester_id', $activeSemester->active_semester_id)
+                        ->with(['courseAssignment.course']);
+                },
+            ])
             ->first();
 
         if (!$faculty) {

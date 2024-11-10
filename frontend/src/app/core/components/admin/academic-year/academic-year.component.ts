@@ -15,7 +15,8 @@ import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-ge
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { CurriculumService } from '../../../services/superadmin/curriculum/curriculum.service';
-import { YearLevel, Program, SchedulingService } from '../../../services/admin/scheduling/scheduling.service';
+import { AcademicYearService } from '../../../services/admin/academic-year/academic-year.service';
+import { AcademicYear, Program, YearLevel } from '../../../models/scheduling.model';
 
 import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
 
@@ -62,10 +63,12 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     'action',
   ];
 
+  academicYearMap: { [name: string]: number } = {};
+
   constructor(
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private schedulingService: SchedulingService,
+    private academicYearService: AcademicYearService,
     private curriculumService: CurriculumService
   ) {}
 
@@ -78,18 +81,21 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  /**
+   * Load initial data: academic years and active year.
+   */
   loadData() {
     this.isLoading = true;
 
     forkJoin({
-      academicYears: this.schedulingService.getAcademicYears(),
-      activeYear: this.schedulingService.getActiveYearAndSemester(),
+      academicYears: this.academicYearService.getAcademicYears(),
+      activeYear: this.academicYearService.getActiveYearAndSemester(),
     })
       .pipe(takeUntil(this.destroy$))
       .subscribe(
         ({ academicYears, activeYear }) => {
           // Map academic years for dropdown
-          this.academicYearOptions = academicYears.map((ay) => ({
+          this.academicYearOptions = academicYears.map((ay: AcademicYear) => ({
             academic_year_id: ay.academic_year_id,
             academic_year: ay.academic_year,
           }));
@@ -133,12 +139,15 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
       );
   }
 
+  /**
+   * Load academic years and set the latest as selected.
+   */
   loadAcademicYears() {
-    this.schedulingService
+    this.academicYearService
       .getAcademicYears()
       .pipe(takeUntil(this.destroy$))
       .subscribe(
-        (academicYears) => {
+        (academicYears: AcademicYear[]) => {
           this.academicYearOptions = academicYears.map((ay) => ({
             academic_year_id: ay.academic_year_id,
             academic_year: ay.academic_year,
@@ -173,6 +182,10 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
       );
   }
 
+  /**
+   * Fetch programs associated with the selected academic year.
+   * @param academicYear - The selected academic year.
+   */
   fetchProgramsForAcademicYear(academicYear: string) {
     const selectedYear = this.academicYearOptions.find(
       (year) => year.academic_year === academicYear
@@ -185,7 +198,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
 
     this.selectedAcademicYearId = selectedYear.academic_year_id;
 
-    this.schedulingService
+    this.academicYearService
       .fetchProgramDetailsByAcademicYear({
         academic_year_id: selectedYear.academic_year_id,
       })
@@ -213,6 +226,10 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
       );
   }
 
+  /**
+   * Extract sections information from a program.
+   * @param program - The program object.
+   */
   getSectionsByProgram(program: any): { [yearLevel: string]: number } {
     const sections: { [yearLevel: string]: number } = {};
     program.year_levels.forEach((yearLevel: any) => {
@@ -221,6 +238,10 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     return sections;
   }
 
+  /**
+   * Handle input changes from the header (e.g., selecting a different academic year).
+   * @param values - The key-value pairs of input changes.
+   */
   onInputChange(values: { [key: string]: any }) {
     if (values['academicYear']) {
       this.selectedAcademicYear = values['academicYear'];
@@ -228,6 +249,10 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * Open dialog to manage year levels for a specific program.
+   * @param program - The program to manage.
+   */
   onManageYearLevels(program: Program) {
     const fields: DialogFieldConfig[] = [];
 
@@ -331,7 +356,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
           });
 
           if (this.selectedAcademicYearId != null) {
-            this.schedulingService
+            this.academicYearService
               .updateYearLevelsCurricula(
                 this.selectedAcademicYearId,
                 program.program_id,
@@ -358,6 +383,10 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Open dialog to manage sections for a specific program.
+   * @param program - The program to manage.
+   */
   onManageSections(program: Program) {
     const fields: DialogFieldConfig[] = [];
 
@@ -433,7 +462,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
             changesMade = true;
 
             if (this.selectedAcademicYearId != null) {
-              this.schedulingService
+              this.academicYearService
                 .updateSections(
                   this.selectedAcademicYearId,
                   program.program_id,
@@ -473,10 +502,15 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Remove a program from the selected academic year.
+   * @param program - The program to remove.
+   */
   onRemoveProgram(program: Program) {
     const dialogData: DialogData = {
       title: 'Confirm Delete',
-      content: `Are you sure you want to delete the program "${program.program_code}"? This action cannot be undone.`,
+      content: `Are you sure you want to delete the program 
+        "${program.program_code}"? This action cannot be undone.`,
       actionText: 'Delete',
       cancelText: 'Cancel',
       action: 'Delete',
@@ -491,7 +525,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {
       if (result === 'Delete') {
         if (this.selectedAcademicYearId != null) {
-          this.schedulingService
+          this.academicYearService
             .removeProgramFromAcademicYear(
               this.selectedAcademicYearId,
               program.program_id
@@ -537,6 +571,9 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Open dialog to add a new academic year.
+   */
   openAddAcademicYearDialog(): void {
     const dialogConfig: DialogConfig = {
       title: 'Add Academic Year',
@@ -572,7 +609,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
           this.isValidYear(result.yearStart) &&
           this.isValidYear(result.yearEnd)
         ) {
-          this.schedulingService
+          this.academicYearService
             .addAcademicYear(result.yearStart, result.yearEnd)
             .subscribe(
               (response) => {
@@ -605,18 +642,23 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Validate the year format.
+   * @param year - The year string to validate.
+   */
   private isValidYear(year: string): boolean {
     return (
       /^\d{4}$/.test(year) && parseInt(year) > 1900 && parseInt(year) < 2100
     );
   }
 
-  academicYearMap: { [name: string]: number } = {};
-
+  /**
+   * Open dialog to manage academic years (e.g., delete).
+   */
   openManageAcademicYearDialog(): void {
     forkJoin({
-      academicYears: this.schedulingService.getAcademicYears(),
-      activeDetails: this.schedulingService.getActiveYearAndSemester(),
+      academicYears: this.academicYearService.getAcademicYears(),
+      activeDetails: this.academicYearService.getActiveYearAndSemester(),
     }).subscribe({
       next: ({ academicYears, activeDetails }) => {
         this.academicYearMap = {};
@@ -666,8 +708,12 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Delete an academic year by ID.
+   * @param academicYearId - The ID of the academic year to delete.
+   */
   deleteAcademicYear(academicYearId: number): void {
-    this.schedulingService.deleteAcademicYear(academicYearId).subscribe(
+    this.academicYearService.deleteAcademicYear(academicYearId).subscribe(
       (response) => {
         this.snackBar.open('Academic year deleted successfully.', 'Close', {
           duration: 3000,
@@ -681,11 +727,5 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
         });
       }
     );
-  }
-
-  private handleError(message: string) {
-    return (error: any) => {
-      console.error(`${message}:`, error);
-    };
   }
 }

@@ -44,7 +44,6 @@ interface Faculty {
     CommonModule,
     TableHeaderComponent,
     LoadingComponent,
-    DialogActionComponent,
     MatTableModule,
     MatPaginatorModule,
     MatIconModule,

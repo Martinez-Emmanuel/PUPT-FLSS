@@ -166,7 +166,7 @@ export class DialogActionComponent {
         this.actionText = this.data.currentState ? 'Unpublish' : 'Publish';
         this.navigationLink = '/admin/reports/faculty';
         this.linkText = 'Faculty Official Reports';
-        this.showEmailOption = true;
+        this.showEmailOption = !this.data.currentState;
         this.showReportOptions = false;
         break;
 
@@ -504,25 +504,21 @@ export class DialogActionComponent {
       case 'reports':
         return 'Reports generated successfully.';
       case 'all_preferences':
-        return `Preferences submission for all faculty ${
+        return `Preferences for all faculty ${
           !this.data.currentState ? 'enabled' : 'disabled'
-        } successfully.${this.sendEmail ? ' Email notifications sent.' : ''}`;
+        } successfully.${this.sendEmail ? ' Email sent.' : ''}`;
       case 'all_publish':
-        return `Official load and schedule for all faculty ${
+        return `Schedules for all faculty ${
           !this.data.currentState ? 'published' : 'unpublished'
-        } successfully.${this.sendEmail ? ' Email notifications sent.' : ''}`;
+        } successfully.${this.sendEmail ? ' Email sent.' : ''}`;
       case 'single_publish':
-        return `Official load and schedule successfully ${
-          this.data.currentState ? 'unpublished' : 'published'
-        } for ${this.facultyName}.${
-          this.sendEmail ? ` Email notification sent.` : ''
-        }`;
+        return `Schedule for ${this.data.facultyName} ${
+          !this.data.currentState ? 'published' : 'unpublished'
+        } successfully.${this.sendEmail ? ' Email sent.' : ''}`;
       case 'single_preferences':
-        return `Preferences submission for ${this.facultyName} ${
+        return `Preferences for ${this.facultyName} ${
           !this.data.currentState ? 'enabled' : 'disabled'
-        } successfully.${
-          this.sendEmail ? ` Email sent to ${this.facultyName}.` : ''
-        }`;
+        } successfully.${this.sendEmail ? ' Email sent.' : ''}`;
       default:
         return 'Operation completed successfully.';
     }
@@ -534,25 +530,25 @@ export class DialogActionComponent {
   private getErrorMessage(): string {
     switch (this.data.type) {
       case 'reports':
-        return 'Failed to generate reports. Please try again.';
+        return 'Failed to generate reports.';
       case 'all_preferences':
         return `Failed to ${
           !this.data.currentState ? 'enable' : 'disable'
-        } preferences submission for all faculty. Please try again.`;
+        } preferences for all faculty.`;
       case 'all_publish':
         return `Failed to ${
           !this.data.currentState ? 'publish' : 'unpublish'
-        } Official load and schedule for all faculty. Please try again.`;
+        } schedules for all faculty.`;
       case 'single_publish':
         return `Failed to ${
-          !this.data.currentState ? 'unpublish' : 'publish'
-        } schedule for ${this.facultyName}. Please try again.`;
+          !this.data.currentState ? 'publish' : 'unpublish'
+        } schedule for ${this.data.facultyName}.`;
       case 'single_preferences':
         return `Failed to ${
           !this.data.currentState ? 'enable' : 'disable'
-        } preferences submission for ${this.facultyName}. Please try again.`;
+        } preferences for ${this.facultyName}.`;
       default:
-        return 'Operation failed. Please try again.';
+        return 'Operation failed.';
     }
   }
 }
