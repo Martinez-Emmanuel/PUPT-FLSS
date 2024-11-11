@@ -1,0 +1,593 @@
+@import "../../../styles/mixins";
+
+*,
+*::before {
+  @include default-transition;
+}
+
+:host {
+  @include custom-spinner(white);
+}
+
+.login-container {
+  display: flex;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  padding: var(--spacing-lg);
+  box-sizing: border-box;
+  transition: background-image 1s ease-in-out;
+}
+
+.login-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--blur-bg);
+  backdrop-filter: blur(50px) saturate(150%);
+  z-index: 1;
+}
+
+.login-image-section,
+.login-form-section {
+  position: relative;
+  z-index: 2;
+}
+
+/* ------- LOGIN IMAGE SECTION STYLING ------- */
+.login-image-section {
+  padding: var(--spacing-lg);
+  flex: 60%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  app-slideshow {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+/* ------- LOGIN FORM SECTION STYLING ------- */
+
+.login-form-section {
+  padding: var(--spacing-2xl);
+  flex: 40%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+  overflow: scroll;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  #login_header {
+    @include flex-layout($gap: var(--spacing-lg));
+    width: inherit;
+    text-align: left;
+
+    .university-logo {
+      width: 4.5rem;
+      height: auto;
+    }
+
+    .header-text {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: var(--spacing-xxs);
+    }
+
+    .university-name,
+    .system-name {
+      font-family: var(--font-header);
+      font-size: var(--font-size-md);
+      font-weight: 600;
+    }
+
+    .university-name {
+      color: var(--primary-text);
+    }
+  }
+
+  #login_form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+    width: inherit;
+
+    #form_header {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xs);
+
+      h1 {
+        @include gradient-primary-text(315deg);
+        width: fit-content;
+        font-size: var(--font-size-2xxl);
+        margin: 0;
+      }
+
+      p {
+        font-size: var(--font-size-mdx);
+        margin: 0;
+      }
+    }
+
+    .custom-mat-button,
+    .login-input {
+      width: inherit;
+      height: 3.5rem;
+      font-size: var(--font-size-lg);
+    }
+
+    .custom-mat-button {
+      @include flex-layout($direction: row-reverse, $gap: var(--spacing-sm));
+      @include gradient-primary(315deg);
+      font-weight: 600;
+
+      span {
+        color: white;
+      }
+
+      mat-icon {
+        color: white;
+        padding: var(--spacing-xxs);
+        font-size: var(--font-size-lg);
+        font-weight: 600;
+      }
+    }
+
+    #form_fields {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-xl);
+
+      .input-group {
+        position: relative;
+
+        &.has-error .input-container .login-input {
+          border-color: var(--primary-one);
+        }
+      }
+
+      .input-container {
+        position: relative;
+
+        .password-visibility-toggle {
+          position: absolute;
+          right: var(--spacing-xs);
+          top: 50%;
+          transform: translateY(-50%);
+          border-radius: var(--border-radius-xl);
+          padding: var(--spacing-xs);
+          opacity: var(--opacity-semi-opaque);
+          cursor: pointer;
+
+          &:hover {
+            background-color: var(--neutral-fade);
+          }
+        }
+
+        .input-icon {
+          position: absolute;
+          left: var(--spacing-lg);
+          top: 50%;
+          transform: translateY(-50%);
+          color: var(--neutral-base);
+          opacity: var(--opacity-semi-opaque);
+        }
+
+        .login-input {
+          @include default-transition;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 100%;
+          padding: 10px 10px 10px 60px;
+          background: var(--neutral-fade);
+          border-radius: var(--border-radius-xl);
+          box-sizing: border-box;
+          border: 2px solid transparent;
+          color: var(--neutral-base);
+          transition: border-color 0.5s ease;
+
+          &:focus {
+            outline: none;
+            border-color: var(--primary-one);
+          }
+
+          &.ng-invalid.ng-touched {
+            border-color: var(--primary-one);
+          }
+        }
+      }
+    }
+
+    #login_button {
+      width: inherit;
+    }
+  }
+
+  #login_misc {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-lg);
+
+    #terms_text {
+      font-size: var(--font-size-md);
+      text-align: center;
+
+      span {
+        line-height: var(--line-height-md);
+      }
+
+      a {
+        color: var(--primary-text);
+        text-decoration: none;
+      }
+    }
+
+    #switch_theme_container {
+      width: inherit;
+      display: flex;
+      justify-content: flex-end;
+
+      #switch_theme {
+        color: var(--primary-text);
+
+        span {
+          color: var(--primary-text);
+        }
+      }
+    }
+  }
+
+  .error-message {
+    @include flex-layout;
+    position: absolute;
+    min-height: var(--spacing-lg);
+    margin-top: var(--spacing-xxs);
+    left: var(--spacing-sm);
+    visibility: hidden;
+    overflow: hidden;
+    gap: var(--spacing-xxs);
+    font-size: var(--font-size-sm);
+
+    span.material-symbols-rounded {
+      font-size: var(--font-size-md);
+    }
+
+    span {
+      color: var(--primary-text);
+      font-weight: 500;
+    }
+
+    &.show {
+      animation: slideDown 0.5s ease forwards;
+      visibility: visible;
+    }
+  }
+
+  .button-enabled {
+    opacity: 1;
+  }
+
+  .button-disabled {
+    opacity: var(--opacity-half);
+    cursor: not-allowed !important;
+  }
+}
+
+@keyframes slideDown {
+  0% {
+    height: 0;
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  100% {
+    height: auto;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// =============
+// Media Queries
+// =============
+
+@media screen and (max-width: 1500px) {
+  .login-form-section {
+    #login_header {
+      @include flex-layout($direction: column, $gap: var(--spacing-sm));
+
+      .university-name,
+      .system-name {
+        text-align: center;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
+  #login-container {
+    padding: var(--spacing-md);
+  }
+
+  .login-image-section {
+    display: none;
+  }
+
+  .login-form-section {
+    padding: var(--spacing-lg);
+    width: 100%;
+    align-items: center;
+  }
+
+  #login_header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    .university-logo {
+      width: 3rem;
+    }
+
+    .header-text {
+      gap: var(--spacing-xs);
+    }
+
+    .university-name,
+    .system-name {
+      font-size: var(--font-size-sm);
+      text-align: center;
+    }
+  }
+
+  #form_header {
+    h1 {
+      font-size: var(--font-size-xl);
+    }
+
+    p {
+      font-size: var(--font-size-md);
+    }
+  }
+
+  .login-input {
+    height: 3rem;
+    font-size: var(--font-size-md);
+  }
+
+  .custom-mat-button {
+    height: 3rem;
+    font-size: var(--font-size-md);
+
+    mat-icon {
+      font-size: var(--font-size-md);
+    }
+  }
+
+  #login_misc {
+    padding: var(--spacing-sm);
+  }
+
+  #terms_text {
+    font-size: var(--font-size-sm);
+  }
+
+  #switch_theme_container {
+    justify-content: center;
+
+    #switch_theme {
+      font-size: var(--font-size-sm);
+
+      mat-icon {
+        font-size: var(--font-size-md);
+      }
+    }
+  }
+
+  .error-message {
+    font-size: var(--font-size-xs);
+  }
+
+  #login_form {
+    max-width: 100%;
+    padding: 0 15px;
+  }
+
+  .custom-mat-button,
+  .login-input {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  #login-container {
+    padding: var(--spacing-sm);
+  }
+
+  .login-form-section {
+    padding: var(--spacing-sm);
+    align-items: center;
+  }
+
+  #login_header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    .university-logo {
+      width: 2.5rem;
+    }
+
+    .university-name,
+    .system-name {
+      font-size: var(--font-size-xs);
+      text-align: center;
+    }
+  }
+
+  #form_header {
+    h1 {
+      font-size: var(--font-size-lg);
+    }
+
+    p {
+      font-size: var(--font-size-sm);
+    }
+  }
+
+  .login-input {
+    height: 2.5rem;
+    font-size: var(--font-size-sm);
+  }
+
+  .custom-mat-button {
+    height: 2.5rem;
+    font-size: var(--font-size-sm);
+
+    mat-icon {
+      font-size: var(--font-size-sm);
+    }
+  }
+
+  #login_misc {
+    padding: var(--spacing-sm);
+  }
+
+  #terms_text {
+    font-size: var(--font-size-xs);
+  }
+
+  #switch_theme_container {
+    justify-content: center;
+
+    #switch_theme {
+      font-size: var(--font-size-xs);
+
+      mat-icon {
+        font-size: var(--font-size-sm);
+      }
+    }
+  }
+
+  .error-message {
+    font-size: var(--font-size-xxs);
+  }
+
+  #login_form {
+    max-width: 100%;
+    padding: 0 10px;
+  }
+
+  .custom-mat-button,
+  .login-input {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+@media screen and (max-width: 320px) {
+  #login-container {
+    padding: var(--spacing-xs);
+  }
+
+  .login-form-section {
+    padding: var(--spacing-xs);
+    align-items: center;
+  }
+
+  #login_header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+
+    .university-logo {
+      width: 2rem;
+    }
+
+    .header-text {
+      gap: var(--spacing-xxs);
+    }
+
+    .university-name,
+    .system-name {
+      font-size: var(--font-size-xxs);
+      text-align: center;
+    }
+  }
+
+  #form_header {
+    h1 {
+      font-size: var(--font-size-md);
+    }
+
+    p {
+      font-size: var(--font-size-xs);
+    }
+  }
+
+  .login-input {
+    height: 2rem;
+    font-size: var(--font-size-xs);
+  }
+
+  .custom-mat-button {
+    height: 2rem;
+    font-size: var(--font-size-xs);
+
+    mat-icon {
+      font-size: var(--font-size-xs);
+    }
+  }
+
+  #login_misc {
+    padding: var(--spacing-xs);
+  }
+
+  #terms_text {
+    font-size: var(--font-size-xxs);
+  }
+
+  #switch_theme_container {
+    justify-content: center;
+
+    #switch_theme {
+      font-size: var(--font-size-xxs);
+
+      mat-icon {
+        font-size: var(--font-size-xs);
+      }
+    }
+  }
+
+  .error-message {
+    font-size: var(--font-size-xxxs);
+  }
+
+  #login_form {
+    max-width: 100%;
+    padding: 0 5px;
+  }
+
+  .custom-mat-button,
+  .login-input {
+    width: 100%;
+    max-width: 100%;
+  }
+}

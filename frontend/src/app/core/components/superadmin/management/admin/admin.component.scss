@@ -1,0 +1,19 @@
+@import "../../../../../../styles/mixins"; 
+
+.admin-management-container {
+  @include default-transition;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  height: 100%;
+}
+  
+.admin-table-container {
+  @include flex-layout($direction: column, $align: none, $justify: none);
+  @include hide-scrollbar;
+  flex: 1;
+  overflow: auto;
+  position: relative;
+  border-radius: var(--border-radius-md);
+}
+  

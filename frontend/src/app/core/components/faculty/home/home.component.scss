@@ -1,0 +1,107 @@
+@import "../../../../../styles/mixins";
+* {
+  @include reset-styles;
+  @include default-transition;
+  @include hide-scrollbar;
+}
+
+.faculty-home-container {
+  @include flex-layout(
+    $align: stretch,
+    $justify: center,
+    $gap: var(--spacing-lg)
+  );
+  height: 100%;
+  overflow: hidden;
+}
+
+.home-row-one {
+  @include flex-layout(
+    $direction: column,
+    $align: flex-start,
+    $justify: flex-start,
+    $gap: var(--spacing-md)
+  );
+  flex: 9;
+
+  #home_greetings {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xxs);
+
+    h1 {
+      @include reset-styles;
+      width: max-content;
+      font-size: var(--font-size-2xxl);
+      font-weight: 700;
+
+      @include gradient-primary(315deg);
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    p {
+      @include reset-styles;
+      width: max-content;
+      font-size: var(--font-size-mdx);
+    }
+  }
+
+  .faculty-calendar {
+    height: 100%;
+    width: 100%;
+    user-select: none;
+
+    .full-calendar {
+      max-height: 30rem;
+      overflow-y: auto;
+    }
+  }
+}
+
+.home-row-two {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $gap: var(--spacing-md)
+  );
+  flex: 2;
+
+  .active-year-sem-container {
+    @include flex-layout(
+      $direction: column,
+      $align: flex-start,
+      $gap: var(--spacing-xxs)
+    );
+
+    @include gradient-primary(315deg);
+    padding: var(--spacing-sm);
+    border-radius: var(--border-radius-md);
+    color: white;
+
+    .text,
+    .label {
+      @include reset-styles;
+      @include ellipsis;
+    }
+
+    .text {
+      @include flex-layout($gap: var(--spacing-xs));
+      font-weight: 500;
+    }
+
+    .label {
+      opacity: var(--opacity-semi-opaque);
+    }
+  }
+
+  .faculty-announcement {
+    @include flex-layout($direction: column, $gap: var(--spacing-xs));
+    flex: 1;
+    background-color: var(--neutral-space);
+    border-radius: (var(--border-radius-md));
+    padding: var(--spacing-md);
+    user-select: none;
+  }
+}

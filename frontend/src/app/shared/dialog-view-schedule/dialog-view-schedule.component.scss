@@ -1,0 +1,84 @@
+@import "../../../styles/mixins.scss";
+
+.dialog-view-schedule-container {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-md)
+  );
+  padding: var(--spacing-lg);
+  height: 100%;
+}
+
+.entity-info {
+  @include flex-layout(
+    $align: stretch,
+    $justify: space-between,
+    $gap: var(--spacing-xxs)
+  );
+
+  .schedule-title {
+    .dialog-title {
+      @include reset-styles;
+      font-weight: 600;
+      color: var(--primary-text);
+    }
+
+    .dialog-subtitle {
+      color: var(--primary-text);
+    }
+  }
+}
+
+.multiple-schedules-container {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-xl)
+  );
+  max-height: var(--dialog-base-height);
+  overflow: auto;
+  padding-right: var(--spacing-md);
+
+  .schedule-group {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $justify: flex-start,
+      $gap: var(--spacing-xs)
+    );
+    border-radius: var(--border-radius-md);
+
+    .group-title {
+      @include reset-styles;
+      font-weight: 600;
+    }
+  }
+}
+
+.single-schedule-container {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start
+  );
+
+  min-height: var(--dialog-base-height);
+}
+
+iframe {
+  width: 100%;
+  max-height: var(--dialog-base-height);
+  border: none;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-level-1);
+}
+
+.dialog-actions {
+  @include flex-layout($justify: flex-end, $gap: var(--spacing-sm));
+  .close-button {
+    color: var(--primary-text);
+  }
+}

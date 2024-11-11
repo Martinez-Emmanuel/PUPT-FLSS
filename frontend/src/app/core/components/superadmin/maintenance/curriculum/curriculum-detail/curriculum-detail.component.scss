@@ -1,0 +1,43 @@
+@import "../../../../../../../styles/mixins";
+
+.curriculum-detail-container {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start
+  );
+  height: 100%; // Ensure the container takes full height
+  overflow: hidden; // Prevent scrolling on the container
+}
+
+.curriculum-header-container {
+  position: sticky;
+  top: 0;
+  z-index: 3;
+}
+
+.curriculum-semesters-container {
+  @include default-transition;
+  height: 100%;
+  overflow: hidden;
+  position: relative; 
+
+  .scrollable-content {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    overflow: auto;
+    @include flex-layout($direction: column, $align: stretch, $justify: flex-start, $gap: var(--spacing-md));
+    @include hide-scrollbar;
+  }
+
+  .semester-container {
+    @include flex-layout($direction: column, $align: none, $justify: none);
+    @include hide-scrollbar;
+    flex: 1;
+    position: relative;
+    border-radius: var(--border-radius-md);
+  }
+}

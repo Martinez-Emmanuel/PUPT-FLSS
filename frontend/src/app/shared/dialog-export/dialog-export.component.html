@@ -1,0 +1,43 @@
+<div class="dialog-export-container">
+  <!-- Loading state -->
+  @if (isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } 
+  @else {
+  <!-- Info section for both single and all export types -->
+  <div class="entity-info" [@fadeAnimation]>
+    <h2 class="dialog-title">{{ title }}</h2>
+    @if (subtitle) {
+    <span class="dialog-subtitle">{{ subtitle }}</span>
+    }
+  </div>
+
+  <!-- PDF Preview section (for both single and all types) -->
+  <div class="dialog-export-pdf-container" [@fadeAnimation]>
+    <!-- Preview for 'all' export -->
+    @if (exportType === 'all') {
+    <div class="export-all">
+      <iframe #pdfIframe class="pdf-iframe"></iframe> 
+    </div>
+    }
+    
+    <!-- Preview for 'single' export -->
+    @if (exportType === 'single') {
+    <div class="export-single">
+      <iframe #pdfIframe class="pdf-iframe"></iframe>
+    </div>
+    }
+  </div>
+
+  <!-- Action buttons -->
+  <div class="dialog-actions" [@fadeAnimation]>
+    <button mat-button (click)="closeDialog()">Close</button>
+    <button mat-flat-button class="action-button" (click)="downloadPdf()">
+      <mat-icon>print</mat-icon>
+      Download PDF
+    </button>
+  </div>
+  }
+</div>

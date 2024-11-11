@@ -1,0 +1,36 @@
+<div class="reports-main">
+  <div class="reports-content">
+    <router-outlet></router-outlet>
+  </div>
+  <mat-tab-group
+    animationDuration="250ms"
+    (selectedTabChange)="onTabChange($event)"
+    class="reports-tab"
+    headerPosition="below"
+  >
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <div class="tab-label">
+          <span mat-symbol="person"></span>
+          Faculty
+        </div>
+      </ng-template>
+    </mat-tab>
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <div class="tab-label">
+          <span mat-symbol="school"></span>
+          Programs
+        </div>
+      </ng-template>
+    </mat-tab>
+    <mat-tab>
+      <ng-template mat-tab-label>
+        <div class="tab-label">
+          <span mat-symbol="meeting_room"></span>
+          Rooms
+        </div>
+      </ng-template>
+    </mat-tab>
+  </mat-tab-group>
+</div>

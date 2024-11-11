@@ -1,0 +1,157 @@
+@import "../../../styles/mixins.scss";
+
+$day-colors: (
+  monday: (var(--primary-text), var(--primary-text-two)),
+  tuesday: (var(--secondary-text), var(--secondary-text-two)),
+  wednesday: (var(--blue-primary), var(--blue-text)),
+  thursday: (var(--aqua-primary), var(--aqua-text)),
+  friday: (var(--purple-primary), var(--purple-text)),
+  saturday: (var(--green-primary), var(--green-text)),
+  sunday: (var(--primary-text), var(--primary-text))
+);
+
+@each $day, $colors in $day-colors {
+  $primary-color: nth($colors, 1);
+  $text-color: nth($colors, 2);
+
+  .schedule-content.schedule-#{$day} .course {
+    color: #{$primary-color};
+  }
+
+  .schedule-content.schedule-#{$day} .time {
+    background-color: #{$primary-color};
+    color: #{$text-color};
+    padding: var(--spacing-xxs) var(--spacing-xs);
+    border-radius: var(--border-radius-xl);
+  }
+}
+
+.faculty-schedule-timetable-container {
+  @include hide-scrollbar;
+  height: 100%;
+  width: 100%;
+  overflow-y: auto;
+  border-radius: var(--border-radius-md);
+
+  .faculty-schedule-timetable-table {
+    @include default-transition;
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: var(--neutral-space);
+    position: relative;
+
+    th,
+    td {
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .faculty-schedule-timetable-table-header {
+      @include sticky;
+      background-color: var(--primary-one);
+      z-index: 2;
+
+      th {
+        color: white;
+        padding: var(--spacing-xs);
+        border-right: 1px solid var(--neutral-fade);
+        border-bottom: 1px solid var(--neutral-fade);
+      }
+    }
+
+    .faculty-schedule-timetable-table-body {
+      td {
+        padding: 0;
+        border-bottom: 1px solid var(--neutral-fade);
+        border-right: 1px solid var(--neutral-fade);
+        min-width: 5rem;
+        max-width: 5rem;
+        height: 1.5rem;
+        position: relative;
+      }
+
+      tr td:last-child {
+        border-right: none;
+      }
+
+      .time-slot {
+        @include default-transition;
+        font-weight: 500;
+        border-right: 1px solid var(--neutral-fade);
+        background-color: var(--neutral-space);
+        z-index: 1;
+        padding: var(--spacing-xxxs);
+      }
+
+      .schedule-cell {
+        max-width: 6rem;
+        min-width: 6rem;
+        position: relative;
+
+        &.schedule-block-start {
+          border-bottom: none;
+
+          & + .schedule-cell {
+            border-top: none;
+          }
+
+          .schedule-content {
+            @include hide-scrollbar;
+            @include flex-layout(
+              $direction: column,
+              $align: center,
+              $justify: flex-start,
+              $gap: var(--spacing-xs)
+            );
+
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1;
+            height: 100%;
+            overflow-y: auto;
+
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: var(--font-size-sm);
+            padding: var(--spacing-xs);
+
+            padding-bottom: var(--spacing-sm);
+
+            // Make content container take full width
+            > div {
+              width: 100%;
+              text-align: center;
+              min-height: fit-content;
+            }
+
+            .course-text {
+              font-weight: 600;
+            }
+
+            .time {
+              position: sticky;
+              bottom: 0;
+              margin-top: auto;
+              width: fit-content;
+              margin-left: auto;
+              margin-right: auto;
+              z-index: 2;
+            }
+          }
+        }
+
+        &[style*="background-color"] {
+          border-bottom: none;
+          border-top: none;
+
+          & + .schedule-cell[style*="background-color"] {
+            border-left: none;
+          }
+        }
+      }
+    }
+  }
+}

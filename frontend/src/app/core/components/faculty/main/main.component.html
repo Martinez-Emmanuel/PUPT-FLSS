@@ -1,0 +1,71 @@
+<div class="faculty-main-container">
+  <header class="faculty-main-header">
+    <!--System Name Header-->
+    <div class="header-name">
+      <img
+        src="assets/images/pup_taguig_logo.svg"
+        alt="University Logo"
+        class="university-logo"
+      />
+      <div class="header-text">
+        <div class="university-name">PUP – TAGUIG BRANCH</div>
+        <div class="system-name">FACULTY LOADING & SCHEDULING</div>
+      </div>
+    </div>
+
+    <!--Navigation Bar-->
+    <nav class="header-navbar">
+      <div class="slider"></div>
+      <a routerLink="home" routerLinkActive="active">
+        <span mat-symbol="home"></span><span class="nav-text">Home</span>
+      </a>
+      <a routerLink="preferences" routerLinkActive="active">
+        <span mat-symbol="settings"></span
+        ><span class="nav-text">Set Preferences</span>
+      </a>
+      <a routerLink="load-and-schedule" routerLinkActive="active">
+        <span mat-symbol="calendar_month"></span
+        ><span class="nav-text">Load and Schedule</span>
+      </a>
+    </nav>
+
+    <!--Account Info-->
+    <div class="header-account">
+      <div class="account-text">
+        <div class="account-name">{{ facultyName }}</div>
+        <div class="account-email">{{ facultyEmail }}</div>
+      </div>
+      <div class="profile-dropdown">
+        <img
+          src="assets/images/default_profile_icon.png"
+          alt="Profile Icon"
+          class="profile-icon"
+          (click)="toggleDropdown($event)"
+          matTooltip="Click to open settings"
+          matTooltipPosition="below"
+        />
+        @if (isDropdownOpen) {
+        <div class="dropdown-menu">
+          <span matRipple class="dropdown-item" (click)="toggleTheme()">
+            <span
+              [mat-symbol]="
+                (themeService.isDarkTheme$ | async) ? 'light_mode' : 'dark_mode'
+              "
+            ></span>
+
+            Switch Theme
+          </span>
+          <span matRipple class="dropdown-item logout" (click)="logout()">
+            <span mat-symbol="logout"></span>
+            Logout
+          </span>
+        </div>
+        }
+      </div>
+    </div>
+  </header>
+
+  <main class="faculty-main-content">
+    <router-outlet></router-outlet>
+  </main>
+</div>

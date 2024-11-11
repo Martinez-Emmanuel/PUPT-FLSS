@@ -1,0 +1,26 @@
+<div class="dialog-pref-success-container">
+  <!--Title-->
+  <h1 class="title">Preferences Submitted</h1>
+
+  <!--Content-->
+  <div class="content">
+
+    <!--Main Text-->
+    <div class="main-text">
+      <span mat-symbol="check_circle"></span>
+      <p class="success-text">Success!</p>
+    </div>
+
+    <!--Message-->
+    <p class="message">
+      Your load and schedule preferences for this semester have been submitted.
+      You can modify or update them anytime until the submission
+      deadline at <strong>{{ deadline | date : "longDate" }}  11:59 PM.</strong>
+    </p>
+  </div>
+
+  <!--Actions-->
+  <div class="actions">
+    <button mat-button (click)="onClose()">Close</button>
+  </div>
+</div>

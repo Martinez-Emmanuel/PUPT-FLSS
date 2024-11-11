@@ -1,0 +1,96 @@
+<div class="dialog-view-schedule-container">
+  <!-- Loading state -->
+  @if (isLoading) {
+    <div class="loading-wrapper">
+      <app-loading></app-loading>
+    </div>
+  } @else {
+    <!-- Schedule Title -->
+    <div class="entity-info" [@fadeAnimation]>
+      <!-- Schedule Title Container -->
+      <div class="schedule-title">
+        <h2 class="dialog-title">{{ title }}</h2>
+        <span class="dialog-subtitle">Official Schedule {{ subtitle }}</span>
+      </div>
+
+      <!-- View Option Toggle (Only show for single faculty view) -->
+      @if (data.exportType !== 'all') {
+        <div class="view-option">
+          <mat-button-toggle-group
+            name="viewOption"
+            [(ngModel)]="selectedView"
+            (ngModelChange)="onViewChange($event)"
+            aria-label="Select view option"
+          >
+            <!-- Table View Option -->
+            <mat-button-toggle value="table-view">
+              <mat-icon class="icon-spacing">table_chart</mat-icon>
+              <span>Table view</span>
+            </mat-button-toggle>
+            <!-- PDF View Option -->
+            <mat-button-toggle value="pdf-view">
+              <mat-icon class="icon-spacing">picture_as_pdf</mat-icon>
+              <span>PDF view</span>
+            </mat-button-toggle>
+          </mat-button-toggle-group>
+        </div>
+      }
+    </div>
+
+    <!-- Schedule Content (Only show table view for single schedule view) -->
+    @if (selectedView === 'table-view' && data.exportType !== 'all') {
+      <!-- Multiple Schedule -->
+      @if (scheduleGroups && scheduleGroups.length > 0) {
+        <div class="multiple-schedules-container">
+          @for (group of scheduleGroups; track group) {
+            <div class="schedule-group">
+              <h3 class="group-title">{{ group.title }}</h3>
+              <app-schedule-timeline
+                [scheduleData]="group.scheduleData"
+                [entity]="data.entity"
+                [@fadeAnimation]
+              ></app-schedule-timeline>
+            </div>
+          }
+        </div>
+      }
+
+      <!-- Single Schedule -->
+      @if (!scheduleGroups) {
+        <div class="single-schedule-container">
+          <app-schedule-timeline
+            [scheduleData]="scheduleData"
+            [entity]="data.entity"
+            [@fadeAnimation]
+          ></app-schedule-timeline>
+        </div>
+      }
+    }
+
+    <!-- PDF View (Always show for all exports and when selected for single) -->
+    @if (selectedView === 'pdf-view' || data.exportType === 'all') {
+      <div class="dialog-pref-pdf-container">
+        @if (pdfBlobUrl) {
+          <div class="pdf-container">
+            <iframe [src]="pdfBlobUrl" class="pdf-iframe"></iframe>
+          </div>
+        } @else {
+          <div class="pdf-container">
+            <span>No PDF available.</span>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- Action buttons -->
+    <div class="dialog-actions" [@fadeAnimation]>
+      <button mat-button class="close-button" (click)="closeDialog()">Close</button>
+      @if (selectedView === 'pdf-view' || data.exportType === 'all') {
+        <button mat-flat-button (click)="downloadPdf()">
+          <mat-icon>print</mat-icon>
+          Download PDF
+        </button>
+      }
+    </div>
+  }
+</div>

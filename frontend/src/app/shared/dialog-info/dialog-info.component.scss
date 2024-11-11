@@ -1,0 +1,55 @@
+@import "../../../styles/mixins.scss";
+
+.dialog-info-container {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-md)
+  );
+  padding: var(--spacing-lg);
+  width: var(--dialog-base);
+
+  .title {
+    @include flex-layout($direction: column, $gap: var(--spacing-xs));
+    margin-top: var(--spacing-sm);
+
+    span[mat-symbol] {
+      font-size: var(--font-size-3xl);
+      @include gradient-primary-text(315deg);
+
+      :host-context(.dark-theme) & {
+        -webkit-text-fill-color: var(--primary-text);
+        color: var(--primary-text);
+      }
+    }
+
+    .heading {
+      color: var(--primary-text);
+      margin: 0;
+      font-size: var(--font-size-lg);
+      font-weight: 600;
+    }
+  }
+
+  .content {
+    .message {
+      margin: 0;
+      text-align: center;
+      line-height: var(--line-height-md);
+    }
+
+    .checkbox {
+      text-align: center;
+      margin-top: var(--spacing-sm);
+    }
+  }
+
+  .actions {
+    @include flex-layout($align: stretch, $justify: flex-end);
+
+    button {
+      color: var(--primary-text);
+    }
+  }
+}

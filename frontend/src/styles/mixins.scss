@@ -1,0 +1,138 @@
+/* Truncate text with ellipsis */
+@mixin ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Flexbox (center by default) with customizable values */
+@mixin flex-layout($direction: row, $align: center, $justify: center, $gap: 0) {
+  display: flex;
+  flex-direction: $direction;
+  align-items: $align;
+  justify-content: $justify;
+  gap: $gap;
+}
+
+/* Reset margins, paddings, borders, and box-sizing */
+@mixin reset-styles {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  box-sizing: border-box;
+}
+
+/* Sticky Object */
+@mixin sticky($top: 0, $bottom: 0, $z-index: 2) {
+  position: sticky;
+  top: $top;
+  bottom: $bottom;
+  z-index: $z-index;
+}
+
+/* Default page transition. Add the true parameter (optional) to include text */
+@mixin default-transition($include-color: false) {
+  transition: background-color 0.3s ease;
+  @if $include-color {
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+}
+
+/* Primary gradient background */
+@mixin gradient-primary($degree: 90deg) {
+  background: linear-gradient(
+    $degree,
+    var(--gradient-light-start) 0%,
+    var(--gradient-light-end) 100%
+  );
+}
+
+/* Secondary gradient background */
+@mixin gradient-secondary($degree: 90deg) {
+  background: linear-gradient(
+    $degree,
+    var(--gradient-dark-start) 0%,
+    var(--gradient-dark-end) 100%
+  );
+}
+
+/* Soft secondary gradient background */
+@mixin gradient-soft-secondary($degree: 90deg) {
+  background: linear-gradient(
+    $degree,
+    var(--gradient-soft-gray-start) 0%,
+    var(--gradient-soft-gray-end) 100%
+  );
+}
+
+/* Primary Gradient for text */
+@mixin gradient-primary-text($degree: 90deg) {
+  @include gradient-primary($degree);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+}
+
+/* Primary Gradient for text */
+@mixin gradient-secondary-text($degree: 90deg) {
+  @include gradient-secondary($degree);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: "Inter Tight", "Helvetica Neue", sans-serif;
+}
+
+/* Primary Gradient for border */
+@mixin gradient-primary-border($width: 2px, $degree: 90deg) {
+  border: $width solid transparent;
+  background-clip: padding-box, border-box;
+  background-origin: padding-box, border-box;
+  background-image: 
+    linear-gradient(to bottom, var(--neutral-light), var(--neutral-light)), 
+    linear-gradient(
+      $degree,
+      var(--gradient-light-start) 0%,
+      var(--gradient-light-end) 100%
+    );
+}
+
+/* Custom-color material spinner */
+@mixin custom-spinner($color: var(--primary-text)) {
+  .custom-spinner {
+    --mdc-circular-progress-active-indicator-color: #{$color};
+  }
+}
+
+@mixin custom-spinner-two($color: var(--secondary-text)) {
+  .custom-spinner-two {
+    --mdc-circular-progress-active-indicator-color: #{$color};
+  }
+}
+
+/* Custom scrollbar styling */
+@mixin custom-scrollbar {
+  &::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: var(--neutral-bar);
+    border-radius: 3px;
+    cursor: pointer;
+  }
+}
+
+/* Hide the scrollbar */
+@mixin hide-scrollbar {
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}

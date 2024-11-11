@@ -1,0 +1,70 @@
+<mat-stepper
+  [linear]="true"
+  #stepper
+  class="dialog-stepper-container"
+  [animationDuration]="'750'"
+>
+  <!--Step 1: Review/Confirm-->
+  <mat-step
+    [completed]="isConfirmStepCompleted"
+    [editable]="!isConfirmStepCompleted"
+    class="dialog-stepper-step"
+  >
+    <ng-template matStepLabel>Confirm</ng-template>
+    <!--Step 1 Main Content-->
+    <div class="step-content">
+      <!--Icon-->
+      <span mat-symbol="info"></span>
+      <!--Title-->
+      <h2 class="step-title">Please review your submitted preferences</h2>
+      <!--Description-->
+      <p class="step-description confirm-desc">
+        Ensure your course selections and schedule preferences are final before
+        confirming. <strong>Once you click "Confirm", changes won't be allowed.</strong>
+      </p>
+    </div>
+    <!--Step 1 Buttons-->
+    <div class="dialog-stepper-button-container confirm">
+      <button mat-button class="review-button" (click)="onReview()">
+        Go Back & Review
+      </button>
+
+      <!-- Confirm Button with Spinner -->
+      <button
+        mat-flat-button
+        class="confirm-button"
+        (click)="onConfirmSubmission()"
+        [disabled]="isSubmitting"
+      >
+        <!-- Conditionally show spinner or "Confirm Submission" text -->
+        @if (isSubmitting) {
+          <mat-progress-spinner
+            [diameter]="25"
+            mode="indeterminate"
+            class="custom-spinner"
+          ></mat-progress-spinner>
+        } @else {
+          Confirm Submission
+        }
+      </button>
+    </div>
+  </mat-step>
+
+  <!--Step 2: Success-->
+  <mat-step [editable]="false" class="dialog-stepper-step">
+    <ng-template matStepLabel>Done</ng-template>
+    <!--Step 2 Main Content-->
+    <div class="step-content">
+      <span mat-symbol="check_circle"></span>
+      <h2 class="step-title">Success!</h2>
+      <p class="step-description done-desc">
+        Your preferences for the upcoming semester have been submitted.
+        <br />Wait for your official schedule soon.
+      </p>
+    </div>
+    <!--Step 2 Buttons-->
+    <div class="dialog-stepper-button-container done">
+      <button mat-button class="close-button" (click)="onClose()">Close</button>
+    </div>
+  </mat-step>
+</mat-stepper>

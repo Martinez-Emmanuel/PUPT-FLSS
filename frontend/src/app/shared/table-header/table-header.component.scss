@@ -1,0 +1,126 @@
+@import "../../../styles/mixins.scss";
+
+.header-container {
+  @include flex-layout($align: stretch, $justify: space-between);
+  @include default-transition;
+  // background-color: var(--main-bg);
+  padding-bottom: var(--spacing-sm);
+
+  .input-container {
+    @include flex-layout($gap: var(--spacing-md));
+
+    .search-field {
+      width: auto;
+      min-width: 20rem;
+      flex: 1;
+    }
+
+    .program-field {
+      width: auto;
+      flex: 2;
+    }
+
+    .year-level-field {
+      width: auto;
+      flex: 1;
+    }
+
+    .sections-field {
+      width: auto;
+      flex: 1;
+
+      mat-icon {
+        cursor: pointer;
+      }
+    }
+
+    .curriculum-field {
+      width: auto;
+    }
+
+    .academic-year-field {
+      min-width: 20rem;
+      flex: 1;
+    }
+  }
+
+  .object-container {
+    @include flex-layout($align: stretch);
+
+    .active-year-sem-container {
+      @include flex-layout(
+        $direction: column,
+        $align: flex-start,
+        $gap: var(--spacing-xxs)
+      );
+
+      @include gradient-primary(315deg);
+      padding: 0 var(--spacing-md);
+      border-radius: var(--border-radius-md);
+      color: white;
+      cursor: pointer;
+
+      .text,
+      .label {
+        @include reset-styles;
+      }
+
+      .text {
+        font-weight: 500;
+      }
+
+      .label {
+        opacity: var(--opacity-semi-opaque);
+      }
+    }
+  }
+
+  .button-container {
+    @include flex-layout($align: flex-end, $justify: space-between);
+    gap: var(--spacing-md);
+  }
+
+  .custom-mat-button {
+    color: white;
+  }
+
+  .export-button {
+    background-color: var(--neutral-button);
+  }
+}
+
+// ==============
+// MEDIA QUERIES
+// ==============
+
+@media screen and (max-width: 1275px) {
+  .header-container {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $justify: space-between,
+      $gap: var(--spacing-md)
+    );
+  }
+
+  .header-container .object-container {
+    @include flex-layout(
+      $direction: column,
+      $align: flex-end,
+      $justify: space-between,
+      $gap: var(--spacing-md)
+    );
+
+    .active-year-sem-container {
+      padding: var(--spacing-sm) !important;
+    }
+  }
+
+  .header-container .button-container {
+    @include flex-layout(
+      $align: stretch,
+      $justify: flex-end,
+      $gap: var(--spacing-md)
+    );
+  }
+}

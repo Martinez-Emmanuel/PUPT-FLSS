@@ -1,0 +1,65 @@
+<div class="schedule-timeline-container">
+  <table class="schedule-timeline-table">
+    <thead class="schedule-timeline-table-header">
+      <tr>
+        <th>Time</th>
+        @for (day of days; track day) {
+        <th>{{ day }}</th>
+        }
+      </tr>
+    </thead>
+    <tbody class="schedule-timeline-table-body">
+      @for (slot of timeSlots; track slot; let i = $index) {
+      <tr>
+        <td class="time-slot">{{ slot.time }}</td>
+        @for (day of days; track day) {
+        <td
+          class="schedule-cell"
+          [ngClass]="{ 'schedule-block-start': isScheduleBlockStart(day, i) }"
+          [ngStyle]="getScheduleBlockStyle(day, i)"
+        >
+          @if (isScheduleBlockStart(day, i)) {
+          <div
+            class="schedule-content"
+            [style.height.px]="getScheduleBlockHeight(day, i)"
+            [ngClass]="getDayClass(day)"
+          >
+            <!-- Course Code and Course Title (Visible for all entities) -->
+            <div class="course">
+              <span class="course-text">
+                {{ getBlockProperty(day, i, "courseCode") }}<br />
+                {{ getBlockProperty(day, i, "courseTitle") }}
+              </span>
+            </div>
+            <!-- Program Details (Visible for faculty and room) -->
+            @if (entity === 'faculty' || entity === 'room') {
+            <div>
+              ({{ getBlockProperty(day, i, "program") }}
+              {{ getBlockProperty(day, i, "yearLevel") }}-{{
+                getBlockProperty(day, i, "section")
+              }})
+            </div>
+            }
+            <!-- Faculty Name (Visible for program and room) -->
+            @if (entity === 'program' || entity === 'room') {
+            <div>
+              {{ getBlockProperty(day, i, "facultyName") }}
+            </div>
+            }
+            <!-- Room Code (Visible for faculty and program) -->
+            @if (entity === 'faculty' || entity === 'program') {
+            <div>
+              {{ getBlockProperty(day, i, "roomCode") }}
+            </div>
+            }
+            <!-- Time (Visible for all entities) -->
+            <div class="time">{{ getFormattedTime(day, i) }}</div>
+          </div>
+          }
+        </td>
+        }
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>

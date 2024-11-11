@@ -1,0 +1,74 @@
+<div class="dialog-schedule-history-container">
+  <!-- Dialog Header -->
+  <div class="dialog-header">
+    <div class="title-section">
+      <div class="title-and-icon">
+        <span mat-symbol="history"></span>
+        <h2>Schedule History</h2>
+      </div>
+      <p>View your past load and schedule from previous semesters</p>
+    </div>
+
+    @if (!hasNoScheduleHistory) {
+    <div class="field-section">
+      <mat-form-field appearance="fill" class="no-subscript">
+        <mat-label>Academic Year</mat-label>
+        <mat-select
+          [(ngModel)]="selectedYear"
+          (selectionChange)="onYearChange()"
+        >
+          @for (year of academicYears; track year.academic_year_id) {
+          <mat-option [value]="year.academic_year_id">
+            {{ year.academic_year }}
+          </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="fill" class="no-subscript">
+        <mat-label>Semester</mat-label>
+        <mat-select
+          [(ngModel)]="selectedSemester"
+          (selectionChange)="onSemesterChange()"
+          [disabled]="!selectedYear"
+        >
+          @for (semester of semesters; track semester.semester_id) {
+          <mat-option [value]="semester.semester_id">
+            {{ semester.semester_number }}
+          </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+    </div>
+    }
+  </div>
+
+  @if (isLoading$ | async) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
+  <!-- Empty Past Schedules -->
+  @if (hasNoScheduleHistory) {
+  <div class="no-schedule-message" [@fadeAnimation]>
+    <span mat-symbol="info"></span>
+    <p class="empty-state-message">No recorded schedule history available.</p>
+  </div>
+  } @else {
+  <!-- Dialog Content -->
+  <div class="dialog-content">
+    @if (facultySchedule) {
+    <app-faculty-schedule-timetable
+      [facultySchedule]="facultySchedule"
+    ></app-faculty-schedule-timetable>
+    }
+  </div>
+  } }
+
+  <!-- Dialog Footer -->
+  <div class="dialog-footer">
+    <button class="close-button" mat-button (click)="closeDialog()">
+      Close
+    </button>
+  </div>
+</div>

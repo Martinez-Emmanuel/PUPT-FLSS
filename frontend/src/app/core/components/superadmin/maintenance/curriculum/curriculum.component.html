@@ -1,0 +1,32 @@
+<div class="curriculum-container">
+  @if (isLoading) {
+    <div class="loading-wrapper">
+      <app-loading></app-loading>
+    </div>
+  } @else {
+    <!-- Table Header -->
+    <div class="curriculum-header-container" [@fadeAnimation]>
+      <app-table-header
+        [inputFields]="headerInputFields"
+        [addButtonLabel]="'Add Curriculum'"
+        [showExportButton]="false"
+        (inputChange)="onInputChange($event)"
+        (add)="openAddCurriculumDialog()"  
+      ></app-table-header>
+    </div>
+
+    <!-- Common Table -->
+    <div class="curriculum-table-container" [@fadeAnimation]>
+      <app-table-generic
+        [columns]="columns"
+        [data]="curricula"
+        [tableName]="'curriculum'"
+        [displayedColumns]="displayedColumns"
+        [showViewButton]="true"
+        (view)="onViewCurriculum($event)"
+        (edit)="openEditCurriculumDialog($event)"
+        (delete)="deleteCurriculum($event)"
+      ></app-table-generic>
+    </div>
+  }
+</div>

@@ -1,0 +1,63 @@
+@import "../../../styles/mixins.scss";
+
+.loading-container {
+  @include flex-layout($direction: column);
+  height: 100%;
+  align-items: center;
+}
+
+.custom-progress-bar {
+  width: 100%;
+  height: var(--font-size-tiny);
+  background-color: var(--neutral-light);
+  border-radius: var(--border-radius-sm);
+  overflow: hidden;
+  position: relative;
+}
+
+.progress-animation {
+  @include gradient-primary(90deg);
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: var(--border-radius-sm);
+  animation: primary-progress-animation 2.5s infinite
+    cubic-bezier(0.65, 0.815, 0.735, 0.395);
+
+  &.secondary {
+    animation: secondary-progress-animation 2.5s infinite
+      cubic-bezier(0.165, 0.84, 0.44, 1);
+    animation-delay: 1.25s;
+  }
+}
+
+@keyframes primary-progress-animation {
+  0% {
+    left: -35%;
+    right: 100%;
+  }
+  60% {
+    left: 100%;
+    right: -90%;
+  }
+  100% {
+    left: 100%;
+    right: -90%;
+  }
+}
+
+@keyframes secondary-progress-animation {
+  0% {
+    left: -200%;
+    right: 100%;
+  }
+  60% {
+    left: 107%;
+    right: -8%;
+  }
+  100% {
+    left: 107%;
+    right: -8%;
+  }
+}

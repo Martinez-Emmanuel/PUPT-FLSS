@@ -1,0 +1,32 @@
+<div class="rooms-container">
+  @if (isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
+  <!--Table Header-->
+  <div class="rooms-header-container" [@fadeAnimation]>
+    <app-table-header
+      [inputFields]="headerInputFields"
+      [addButtonLabel]="'Add Room'"
+      (inputChange)="onInputChange($event)"
+      (add)="openAddRoomDialog()"
+      (export)="onExport()"
+    ></app-table-header>
+  </div>
+
+  <!-- Common Table -->
+  <div class="rooms-table-container" [@fadeAnimation]>
+    @if (rooms$ | async; as rooms) {
+    <app-table-generic
+      [columns]="columns"
+      [data]="rooms"
+      [tableName]="'room/s'"
+      [displayedColumns]="displayedColumns"
+      (edit)="openEditRoomDialog($event)"
+      (delete)="deleteRoom($event)"
+    ></app-table-generic>
+    }
+  </div>
+  }
+</div>

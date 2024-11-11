@@ -1,0 +1,38 @@
+<div class="mat-dialog-container">
+  <!--Dialog Title-->
+  <h1 mat-dialog-title class="custom-dialog-title">{{ data.title }}</h1>
+
+  <!--Dialog Content-->
+  <div mat-dialog-content class="custom-dialog-content dialog-content">
+    <p>{{ data.content }}</p>
+
+    <!-- OPTIONAL: Show Progress Bar -->
+    @if (data.showProgressBar) {
+    <app-loading [showLoadingText]="false"></app-loading>
+    }
+  </div>
+
+  <!-- OPTIONAL: Show buttons ONLY if actionText or cancelText is provided -->
+  @if (data.actionText || data.cancelText) {
+  <div mat-dialog-actions class="custom-dialog-buttons">
+    @if (data.cancelText) {
+    <button mat-button (click)="onNoClick()" class="dialog-cancel">
+      {{ data.cancelText }}
+    </button>
+    } @if (data.actionText) {
+    <button
+      mat-button
+      (click)="onActionClick(data.action)"
+      class="dialog-action"
+      [ngStyle]="{
+        color: data.actionTextColor,
+        'background-color': data.actionBgColor
+      }"
+      cdkFocusInitial
+    >
+      {{ data.actionText }}
+    </button>
+    }
+  </div>
+  }
+</div>

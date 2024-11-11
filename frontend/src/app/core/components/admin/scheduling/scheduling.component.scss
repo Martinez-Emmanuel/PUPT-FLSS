@@ -1,0 +1,166 @@
+@import "../../../../../styles/mixins.scss";
+
+* {
+  @include reset-styles;
+}
+
+:host {
+  @include custom-spinner(var(--secondary-text));
+}
+
+.scheduling-container {
+  @include default-transition;
+  @include flex-layout(
+    $direction: column,
+    $align: none,
+    $justify: none,
+    $gap: var(--spacing-md)
+  );
+  height: 100%;
+}
+
+.scheduling-table-container {
+  @include flex-layout($direction: column, $align: none, $justify: none);
+  @include hide-scrollbar;
+  overflow: auto;
+  position: relative;
+  border-radius: var(--border-radius-md);
+  box-shadow: var(--shadow-level-1);
+
+  .table-container {
+    @include hide-scrollbar;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--neutral-light);
+    max-height: 50rem;
+
+    .custom-table {
+      @include default-transition;
+      background-color: var(--neutral-light);
+
+      .table-button {
+        color: var(--primary-text);
+      }
+
+      tr.has-copies {
+        background-color: var(--neutral-option);
+
+        &:not(.last-copy) {
+          td {
+            border-bottom: none;
+          }
+        }
+      }
+
+      td {
+        border-bottom: 1px solid var(--mat-table-row-item-outline-color);
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+    }
+
+    .index {
+      padding: 0 var(--spacing-md);
+    }
+
+    .custom-header {
+      text-wrap: nowrap;
+      background-color: var(--primary-one);
+      color: white;
+      font-weight: 500;
+      text-align: center;
+
+      position: sticky;
+      top: 0;
+      z-index: 2;
+
+      &.min {
+        min-width: var(--spacing-2xl);
+      }
+    }
+
+    .custom-cell {
+      padding: var(--spacing-xs);
+      text-align: center;
+
+      &.course-code-cell {
+        position: relative;
+
+        .course-code-wrapper {
+          @include flex-layout;
+        }
+
+        .copy-icon,
+        .remove-icon {
+          background: var(--neutral-option);
+          border-radius: var(--border-radius-base);
+          padding: var(--spacing-xxs);
+          font-size: var(--font-size-sm);
+          margin-left: var(--spacing-xs);
+          visibility: hidden;
+          opacity: var(--opacity-semi-opaque);
+          cursor: pointer;
+        }
+
+        .remove-icon {
+          background: var(--primary-fade);
+          color: var(--primary-text-lighter);
+        }
+
+        &:hover .copy-icon,
+        &:hover .remove-icon {
+          visibility: visible;
+        }
+      }
+
+      .not-set-badge {
+        background-color: var(--primary-fade);
+        color: var(--primary-text-lighter);
+        padding: var(--spacing-xxs) var(--spacing-xs);
+        border-radius: var(--border-radius-xs);
+        text-wrap: nowrap;
+      }
+
+      .action-button-container {
+        @include flex-layout($align: stretch);
+      }
+
+      .edit-button {
+        @include flex-layout;
+        color: var(--secondary-text);
+
+        .button-content {
+          @include flex-layout($gap: var(--spacing-xs));
+        }
+
+        .button-content mat-icon {
+          @include flex-layout;
+          font-size: var(--font-size-lg);
+        }
+
+        &:hover {
+          background-color: var(--secondary-hover);
+        }
+      }
+    }
+
+    .no-data-cell {
+      text-align: center;
+      padding: var(--spacing-lg);
+
+      .flex-cell {
+        @include flex-layout(
+          $align: center,
+          $justify: center,
+          $gap: var(--spacing-xs)
+        );
+
+        span {
+          opacity: var(--opacity-semi-opaque);
+        }
+      }
+    }
+  }
+}

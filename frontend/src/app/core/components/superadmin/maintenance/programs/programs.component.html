@@ -1,0 +1,29 @@
+<div class="programs-container">
+  @if (isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
+  <div class="programs-header-container" [@fadeAnimation]>
+    <app-table-header
+      [inputFields]="headerInputFields"
+      [addButtonLabel]="'Add Program'"
+      (inputChange)="onInputChange($event)"
+      (add)="openAddProgramDialog()"
+      (export)="onExport()"
+    ></app-table-header>
+  </div>
+  <div class="programs-table-container" [@fadeAnimation]>
+    @if (programs$ | async; as programs) {
+    <app-table-generic
+      [columns]="columns"
+      [data]="programs"
+      [tableName]="'programs'"
+      [displayedColumns]="displayedColumns"
+      (edit)="openEditProgramDialog($event)"
+      (delete)="deleteProgram($event)"
+    ></app-table-generic>
+    }
+  </div>
+  }
+</div>

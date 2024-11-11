@@ -1,0 +1,49 @@
+@import "../../../styles/mixins";
+
+:host {
+  @include custom-spinner(var(--primary-text));
+}
+
+.dialog-stepper-container {
+  padding: var(--spacing-lg);
+}
+
+.step-content {
+  text-align: center;
+  padding: var(--spacing-sm);
+
+  span[mat-symbol] {
+    font-size: var(--font-size-3xl);
+    @include gradient-primary-text(315deg);
+  }
+
+  .step-title {
+    @include reset-styles;
+    @include gradient-primary-text(315deg);
+  }
+
+  .step-description {
+    line-height: var(--line-height-md);
+  }
+}
+.dialog-stepper-button-container {
+  @include flex-layout($justify: flex-end, $gap: var(--spacing-md));
+  padding: var(--spacing-md) 0 var(--spacing-xs) 0;
+
+  &.done {
+    padding: 0 !important;
+
+    .close-button {
+      color: var(--primary-text) !important;
+    }
+  }
+
+  .review-button,
+  .confirm-button {
+    font-size: var(--font-size-smx);
+  }
+
+  .review-button {
+    color: var(--primary-text) !important;
+  }
+}

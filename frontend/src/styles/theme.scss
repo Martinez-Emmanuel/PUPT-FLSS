@@ -1,0 +1,153 @@
+:root {
+  /* Page background */
+  --blur-bg: #ffffffcc;
+  --main-bg: #ffffff;
+  --admin-bg: #ededed;
+  --blur-bg-strong: #ffffffe3;
+
+  /* Neutral colors for text, element backgrounds, etc. */
+  --neutral-base: #151515;
+  --neutral-fade: #1a1a1a26;
+  --neutral-light: #ebebeb;
+  --neutral-mid: #e9e9e9;
+  --neutral-hover: #2c2c2c30;
+  --neutral-option: #a2a2a230;
+  --neutral-bar: #d7d7d7;
+  --neutral-sidebar: #f0f0f0;
+  --neutral-button: #535353;
+  --neutral-button-lighter: #474747;
+  --neutral-space: #efefef;
+  --neutral-extra: #f1f1f1;
+  --neutral-extra-dark: #e4e4e4;
+
+  /* Primary colors variations */
+  --primary-one: #800000;
+  --primary-two: #a93232;
+  --primary-fade: #80000020;
+  --primary-text: #800000;
+  --primary-text-lighter: #710303;
+  --primary-hover: #e3d9d9;
+  --primary-warning: #bb1f1f;
+
+  --primary-one-fade: #98292947;
+  --primary-text-two: #f5cbcb;
+  --primary-text-reverse: #f08383;
+
+  --error-base: #800000;
+
+  --secondary-text: #826202;
+  --secondary-hover: #a47f1a0b;
+  --secondary-fade: #80631520;
+  --secondary-text-two: #f0e2b6;
+
+  /* Extra colors */
+  --blue-primary: #002f85;
+  --blue-fade: #0027702f;
+  --blue-fade-lighter: #011b4b1a;
+  --blue-text: #b8ccf3;
+
+  --purple-primary: #310085;
+  --purple-fade: #27006a31;
+  --purple-fade-lighter: #21035431;
+  --purple-text: #e3d4fd;
+
+  --aqua-primary: #004240;
+  --aqua-fade: #02575340;
+  --aqua-fade-lighter: #004c4831;
+  --aqua-text: #a1d8d6;
+
+  --green-primary: #005a09;
+  --green-fade: #00461933;
+  --green-text: #c8f1cc;
+
+  /* Gradient-speficic values */
+
+  // For gradient primary
+  --gradient-light-start: #740000;
+  --gradient-light-end: #ad0101;
+
+  // For gradient secondary
+  --gradient-dark-start: #232526;
+  --gradient-dark-end: #4c4d4e;
+
+  // For gradient soft-secondary
+  --gradient-soft-gray-start: #adadad;
+  --gradient-soft-gray-end: #e0e0e0;
+}
+
+.dark-theme {
+  /* Page background */
+  --blur-bg: #171717f1;
+  --main-bg: #111111;
+  --admin-bg: #181818;
+  --blur-bg-strong: #171717f1;
+
+  /* Neutral colors for text, element backgrounds, etc. */
+  --neutral-base: #dfdfdf;
+  --neutral-fade: #d4d4d42a;
+  --neutral-light: #1f1f1f;
+  --neutral-mid: #1f1f1f;
+  --neutral-hover: #6b6b6b9e;
+  --neutral-option: #34343481;
+  --neutral-bar: #323232;
+  --neutral-sidebar: #181818;
+  --neutral-button: #3a3a3a;
+  --neutral-button-lighter: #afafaf;
+  --neutral-space: #171717;
+  --neutral-extra: #252525;
+  --neutral-extra-dark: #363636;
+
+  /* Primary colors variations */
+  --primary-one: #a93232;
+  --primary-two: #9e2525;
+  --primary-fade: #a932321a;
+  --primary-text: #e15d5d;
+  --primary-text-lighter: #f08383;
+  --primary-hover: #2b2121;
+  --primary-warning: #ffb4ab;
+
+  --primary-one-fade: #ff3c3c38;
+  --primary-text-two: #3f0000;
+  --primary-text-reverse: #800000;
+
+  --error-base: #b43a3a;
+
+  --secondary-text: #cc9d1b;
+  --secondary-hover: #cc9d1b08;
+  --secondary-fade: #87691620;
+  --secondary-text-two: #423200;
+
+  /* Extra colors */
+  --blue-primary: #a5c1f5;
+  --blue-fade: #00277040;
+  --blue-fade-lighter: #1d35634d;
+  --blue-text: #021f57;
+
+  --purple-primary: #c4abf0;
+  --purple-fade: #1a004640;
+  --purple-fade-lighter: #5537864d;
+  --purple-text: #250064;
+
+  --aqua-primary: #97d3d1;
+  --aqua-fade: #02575340;
+  --aqua-fade-lighter: #2552504d;
+  --aqua-text: #003230;
+
+  --green-primary: #97d39d;
+  --green-fade: #00461940;
+  --green-text: #003d06;
+
+  /* Gradient-speficic values */
+
+  // For gradient primary
+  --gradient-light-start: #8d2828;
+  --gradient-light-end: #b54040;
+
+  // For gradient secondary
+  --gradient-dark-start: #252729;
+  --gradient-dark-end: #464849;
+
+  // For gradient soft-secondary
+  --gradient-soft-gray-start: #3a3a3a;
+  --gradient-soft-gray-end: #4a4a4a;
+}

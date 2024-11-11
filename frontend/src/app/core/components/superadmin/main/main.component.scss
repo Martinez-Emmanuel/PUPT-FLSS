@@ -1,0 +1,222 @@
+@import "../../../../../styles/mixins.scss";
+
+* {
+  @include reset-styles;
+}
+
+.sidenav-container {
+  height: 100%;
+  background-color: var(--main-bg);
+  @include default-transition;
+}
+
+.sidenav-bar {
+  width: 16rem;
+  background-color: var(--neutral-sidebar);
+  padding: var(--spacing-sm) var(--spacing-md);
+  @include default-transition;
+
+  .side-toolbar {
+    @include flex-layout($direction: column, $gap: var(--spacing-md));
+    padding: var(--spacing-lg) var(--spacing-md);
+
+    img {
+      width: 40%;
+    }
+
+    .header-name {
+      @include flex-layout($direction: column);
+      text-align: center;
+      line-height: var(--line-height-mdx);
+
+      .university-name,
+      .system-name {
+        font-family: var(--font-header);
+        font-size: var(--font-size-sm);
+        font-weight: 600;
+      }
+
+      .university-name {
+        color: var(--primary-text);
+      }
+    }
+  }
+
+  .navbar-list {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $justify: none,
+      $gap: var(--spacing-lg)
+    );
+
+    .list-subheader {
+      font-weight: 600;
+      color: var(--primary-one);
+      padding: 0 var(--spacing-md) var(--spacing-xs) var(--spacing-md);
+    }
+
+    .list-item {
+      transition: transform var(--duration-medium) ease;
+      width: calc(100% - 3px);
+
+      &:hover {
+        transform: translateX(3px);
+      }
+    }
+
+    .active-link {
+      background-color: var(--primary-one);
+      transition: background-color var(--duration-long) ease,
+        transform var(--duration-medium) ease;
+
+      span {
+        color: white;
+      }
+
+      &:hover {
+        transform: translateX(3px);
+      }
+    }
+
+    .mat-mdc-list-item.active-link,
+    .mdc-list-item.mdc-list-item--activated {
+      &:focus,
+      &:focus-visible,
+      &::before,
+      &::after {
+        background-color: var(--primary-one);
+      }
+    }
+  }
+}
+
+.sidenav-content {
+  @include flex-layout(
+    $direction: column,
+    $align: none,
+    $justify: none,
+    $gap: var(--spacing-xl)
+  );
+  padding: var(--spacing-2xl);
+  height: 100%;
+
+  .main-toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    background: none;
+    padding: 0;
+
+    .toggle-button-container {
+      padding: 0 var(--spacing-lg) 0 0;
+    }
+
+    .sidenav-header {
+      @include flex-layout($align: stretch, $justify: space-between);
+      width: inherit;
+
+      .title-container .page-title {
+        @include flex-layout;
+        @include gradient-primary-text($degree: 315deg);
+        height: 100%;
+        width: max-content;
+        font-size: var(--font-size-2xxl);
+        font-weight: 600;
+      }
+
+      .header-account {
+        @include flex-layout($direction: row-reverse, $gap: var(--spacing-sm));
+        font-size: var(--font-size-smx);
+        background-color: var(--neutral-option);
+        border-radius: var(--border-radius-xl);
+        padding: var(--spacing-xxs) var(--spacing-md) var(--spacing-xxs)
+          var(--spacing-xs);
+
+        .account-text {
+          text-align: left;
+          line-height: var(--line-height-sm);
+
+          .account-name {
+            font-weight: 500;
+          }
+
+          .account-role {
+            opacity: var(--opacity-semi-opaque);
+          }
+        }
+
+        .profile-dropdown {
+          @include flex-layout;
+          position: relative;
+
+          .profile-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0.1rem 0;
+
+            &:hover {
+              box-shadow: 0 0 0 3px var(--neutral-hover);
+            }
+          }
+
+          .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0%;
+            background-color: var(--neutral-light);
+            box-shadow: var(--shadow-level-1);
+            border-radius: var(--border-radius-md);
+
+            .dropdown-item {
+              @include ellipsis;
+              display: flex;
+              align-items: center;
+              gap: var(--spacing-xs);
+              padding: var(--spacing-md);
+              color: var(--neutral-base);
+              transition: background-color 0.3s ease;
+              border-radius: var(--border-radius-sm);
+              font-size: var(--font-size-md);
+              font-weight: 500;
+              cursor: pointer;
+              user-select: none;
+
+              &:hover {
+                background-color: var(--neutral-option);
+              }
+
+              &.logout {
+                color: var(--primary-text);
+
+                span.material-symbols-rounded {
+                  color: var(--primary-text);
+                }
+
+                &:hover {
+                  background-color: var(--primary-fade);
+                }
+              }
+
+              span.material-symbols-rounded {
+                display: flex;
+                align-items: center;
+                font-size: var(--font-size-lg);
+                font-weight: 500;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .sidenav-main {
+    @include hide-scrollbar;
+    height: inherit;
+    overflow: auto;
+  }
+}

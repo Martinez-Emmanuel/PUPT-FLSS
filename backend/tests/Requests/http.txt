@@ -1,0 +1,118 @@
+1. Get All Academic Years
+
+Endpoint: http://127.0.0.1:8000/api/academic-years-dropdown
+Method: GET
+
+------------------------------------------------------------------------
+
+2. Set Active Academic Year and Sem
+
+Endpoint: http://127.0.0.1:8000/api/set-active-ay-sem
+Method: POST 
+Body:
+
+{
+    "academic_year_id": 2,
+    "semester_id": 1
+}
+
+------------------------------------------------------------------------
+
+3. Get All Program-Year level and their curriculum used
+
+Endpoint: http://127.0.0.1:8000/api/active-year-levels-curricula
+Method: GET
+
+------------------------------------------------------------------------
+
+4. Fetch curriculum-based courses for each semester in a specific program-year level
+under a specific academic year and semester
+
+Endpoint: http://127.0.0.1:8000/api/get-assigned-courses
+Method: GET 
+
+------------------------------------------------------------------------
+
+5. Add New Academic Year
+
+Endpoint: http://127.0.0.1:8000/api/add-academic-year
+Method: POST
+Body:
+{
+    "year_start": 2026,
+    "year_end": 2027
+}
+
+------------------------------------------------------------------------
+
+6. Fetch Program Details of a specific academic year
+
+Endpoint: http://127.0.0.1:8000/api/fetch-ay-prog-details
+Method: POST
+Body:
+{
+    "academic_year_id": 2
+}
+
+------------------------------------------------------------------------
+
+7. Update Curriculum used by a year level
+Endpoint: http://127.0.0.1:8000/api/update-yr-lvl-curricula
+Method: POST 
+Body:
+{
+    "academic_year_id": 1,
+    "program_id": 1,
+    "year_levels": [
+        {
+            "year_level": 1,
+            "curriculum_id": 2
+        },
+        {
+            "year_level": 2,
+            "curriculum_id": 2
+        },
+        {
+            "year_level": 3,
+            "curriculum_id": 1
+        }
+    ]
+}
+
+------------------------------------------------------------------------
+
+8. Update number of sections for a program-year level in an academic year
+
+Endpoint: http://127.0.0.1:8000/api/update-sections
+Method: POST
+Body:
+{
+    "academic_year_id": 3,
+    "program_id": 1,
+    "year_level": 1,
+    "number_of_sections": 3
+}
+
+------------------------------------------------------------------------
+
+9. Remove a program from an academic year
+
+Endpoint: http://127.0.0.1:8000/api/remove-program
+Method: DELETE
+Body:
+{
+    "academic_year_id": 1,
+    "program_id": 1
+}
+
+------------------------------------------------------------------------
+
+10. Remove an academic year
+
+Endpoint: http://127.0.0.1:8000/api/delete-ay
+Method: DELETE 
+Body:
+{
+    "academic_year_id": 1
+}
+

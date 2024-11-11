@@ -1,0 +1,33 @@
+<div class="faculty-management-container">
+  @if (isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
+
+  <!-- Table Header -->
+  <div class="faculty-header-container" [@fadeAnimation]>
+    <app-table-header
+      [searchLabel]="'Search Faculty'"
+      [addButtonLabel]="'Add Faculty'"
+      [inputFields]="headerInputFields"
+      (search)="onSearch($event)"
+      (add)="openAddFacultyDialog()"
+    ></app-table-header>
+  </div>
+
+  <!-- Faculty Management Table -->
+  <div class="faculty-table-container" [@fadeAnimation]>
+    <app-table-generic
+      [columns]="columns"
+      [data]="faculty"
+      [tableName]="'faculty'"
+      [displayedColumns]="displayedColumns"
+      [showViewButton]="false"
+      (edit)="openEditFacultyDialog($event)"
+      (delete)="deleteFaculty($event)"
+    ></app-table-generic>
+  </div>
+
+  }
+</div>

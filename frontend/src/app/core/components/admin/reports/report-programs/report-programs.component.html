@@ -1,0 +1,176 @@
+<div class="report-container">
+  <!--Display while loading-->
+  @if (isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
+  <!-- Programs Report Header-->
+  <div class="report-header-container" [@fadeAnimation]>
+    <app-table-header
+      [inputFields]="inputFields"
+      [showExportButton]="true"
+      [showAddButton]="false"
+      (export)="onExportAll()"
+      (inputChange)="onInputChange($event)"
+      [buttonDisabled]="!hasAnySchedules"
+      [tooltipMessage]="
+        !hasAnySchedules ? 'No schedules available for export' : ''
+      "
+    >
+    </app-table-header>
+  </div>
+
+  <!-- Programs List Report Table -->
+  <div class="report-table-container" [@fadeAnimation]>
+    <div class="table-container">
+      <table mat-table [dataSource]="dataSource" class="custom-table">
+        <!-- Index Column -->
+        <ng-container matColumnDef="index">
+          <th mat-header-cell *matHeaderCellDef class="custom-header index">
+            #
+          </th>
+          <td mat-cell *matCellDef="let element; let i = index" class="index">
+            <span>{{ getRowIndex(i) }}</span>
+          </td>
+        </ng-container>
+
+        <!-- Program Code Column -->
+        <ng-container matColumnDef="programCode">
+          <th mat-header-cell *matHeaderCellDef class="custom-header">
+            Program Code
+          </th>
+          <td mat-cell *matCellDef="let element" class="custom-cell">
+            {{ element.program_code }}
+          </td>
+        </ng-container>
+
+        <!-- Program Name Column -->
+        <ng-container matColumnDef="programName">
+          <th mat-header-cell *matHeaderCellDef class="custom-header">
+            Program Name
+          </th>
+          <td mat-cell *matCellDef="let element" class="custom-cell">
+            {{ element.program_title }}
+          </td>
+        </ng-container>
+
+        <!-- Year Level Column -->
+        <ng-container matColumnDef="yearLevel">
+          <th mat-header-cell *matHeaderCellDef class="custom-header">
+            Year Levels
+          </th>
+          <td mat-cell *matCellDef="let element" class="custom-cell">
+            <button
+              mat-button
+              class="prim-button"
+              (click)="onOpenDialog(element, 'yearLevel')"
+            >
+              <mat-icon>school</mat-icon>
+              {{
+                element.year_levels_selected === "All"
+                  ? "All Year Levels"
+                  : "Year Level " + element.year_levels_selected
+              }}
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Section Column -->
+        <ng-container matColumnDef="section">
+          <th mat-header-cell *matHeaderCellDef class="custom-header">
+            Sections
+          </th>
+          <td mat-cell *matCellDef="let element" class="custom-cell">
+            <button
+              mat-button
+              class="prim-button"
+              (click)="onOpenDialog(element, 'section')"
+            >
+              <mat-icon>view_list</mat-icon>
+              {{
+                element.section_selected === "All"
+                  ? "All Sections"
+                  : "Section " + element.section_selected
+              }}
+            </button>
+          </td>
+        </ng-container>
+
+        <!-- Action Column -->
+        <ng-container matColumnDef="action">
+          <th mat-header-cell *matHeaderCellDef class="custom-header">
+            Action
+          </th>
+          <td mat-cell *matCellDef="let element" class="custom-cell">
+            <span
+              [matTooltip]="
+                !hasSchedules(element)
+                  ? element.program_code + ' has no schedules available'
+                  : ''
+              "
+              matTooltipDisabled="false"
+            >
+              <button
+                mat-button
+                class="sec-ripple view-button"
+                (click)="onView(element)"
+                [disabled]="!hasSchedules(element)"
+                [ngClass]="{ 'disabled-button': !hasSchedules(element) }"
+              >
+                <mat-icon>visibility</mat-icon>
+                <span>View Schedule</span>
+              </button>
+            </span>
+            <span
+              [matTooltip]="
+                !hasSchedules(element)
+                  ? element.program_code + ' has no schedules available'
+                  : ''
+              "
+              matTooltipDisabled="false"
+            >
+              <button
+                mat-button
+                class="sec-ripple export-button"
+                (click)="onExportSingle(element)"
+                [disabled]="!hasSchedules(element)"
+                [ngClass]="{ 'disabled-button': !hasSchedules(element) }"
+              >
+                <mat-icon>download</mat-icon>
+                <span>Download</span>
+              </button>
+            </span>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+        <!-- No Data Row -->
+        <tr *matNoDataRow>
+          <td class="no-data-cell" [attr.colspan]="displayedColumns.length">
+            <div class="flex-cell">
+              <div class="no-data-text">
+                <span mat-symbol="info"></span>
+                <span> No programs found.</span>
+              </div>
+            </div>
+          </td>
+        </tr>
+      </table>
+
+      <!-- Table Paginator -->
+      <mat-paginator
+        class="custom-paginator"
+        [length]="filteredData.length"
+        [pageSize]="10"
+        [pageSizeOptions]="[5, 10, 25, 50, 100]"
+        [showFirstLastButtons]="true"
+        aria-label="Select page"
+      >
+      </mat-paginator>
+    </div>
+  </div>
+  }
+</div>

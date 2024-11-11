@@ -1,0 +1,249 @@
+<div class="table-dialog-container">
+  <h2 mat-dialog-title class="table-dialog-title">
+    <span>{{ isExportDialog ? "Export to PDF" : data.title }}</span>
+  </h2>
+
+  <div mat-dialog-content class="table-dialog-content">
+    @if (data.isManageList) {
+    <div class="academic-year-list">
+      @for (year of data.academicYearList; track year) {
+      <div class="academic-year-item">
+        <span>{{ year }}</span>
+        <button
+          mat-button
+          class="delete-acad-item"
+          (click)="onDeleteYear(year)"
+        >
+          <mat-icon>delete</mat-icon>
+          <span>Delete</span>
+        </button>
+      </div>
+      }
+    </div>
+    } @if (isExportDialog) {
+    <form [formGroup]="form" class="dialog-form">
+      <mat-radio-group formControlName="exportOption">
+        <mat-radio-button value="all">
+          {{ customExportOptions ? customExportOptions.all : "Export all" }}
+        </mat-radio-button>
+        <mat-radio-button value="current">
+          {{
+            customExportOptions
+              ? customExportOptions.current
+              : "Export this item only"
+          }}
+        </mat-radio-button>
+      </mat-radio-group>
+    </form>
+    } @else {
+    <form [formGroup]="form" class="dialog-form">
+      @if (data.useHorizontalLayout) { @for (field of data.fields; track field;
+      let i = $index) { @if (i % 2 === 0) {
+      <div class="horizontal-field-container">
+        <mat-form-field class="form-field horizontal-field" appearance="fill">
+          <mat-label>{{ field.label }}</mat-label>
+          <ng-container [ngSwitch]="field.type">
+            <input
+              *ngSwitchCase="'text'"
+              matInput
+              [formControlName]="field.formControlName"
+              [attr.disabled]="field.disabled ? '' : null"
+              [maxlength]="field.maxLength ?? null"
+            />
+            <input
+              *ngSwitchCase="'number'"
+              matInput
+              type="number"
+              [formControlName]="field.formControlName"
+              [attr.disabled]="field.disabled ? '' : null"
+              [min]="field.min ?? null"
+              [max]="field.max ?? null"
+            />
+            <mat-select
+              *ngSwitchCase="'select'"
+              [formControlName]="field.formControlName"
+            >
+              @for (option of field.options; track option) {
+              <mat-option [value]="option">{{ option }}</mat-option>
+              }
+            </mat-select>
+          </ng-container>
+          <mat-error>{{
+            getErrorMessage(field.formControlName, field.label)
+          }}</mat-error>
+        </mat-form-field>
+
+        @if (i + 1 < data.fields.length) {
+        <mat-form-field class="form-field horizontal-field" appearance="fill">
+          <mat-label>{{ data.fields[i + 1].label }}</mat-label>
+          <ng-container [ngSwitch]="data.fields[i + 1].type">
+            <input
+              *ngSwitchCase="'text'"
+              matInput
+              [formControlName]="data.fields[i + 1].formControlName"
+              [attr.disabled]="data.fields[i + 1].disabled ? '' : null"
+              [maxlength]="data.fields[i + 1].maxLength ?? null"
+            />
+            <input
+              *ngSwitchCase="'number'"
+              matInput
+              type="number"
+              [formControlName]="data.fields[i + 1].formControlName"
+              [attr.disabled]="data.fields[i + 1].disabled ? '' : null"
+              [min]="data.fields[i + 1].min ?? null"
+              [max]="data.fields[i + 1].max ?? null"
+            />
+            <mat-select
+              *ngSwitchCase="'select'"
+              [formControlName]="data.fields[i + 1].formControlName"
+            >
+              @for (option of data.fields[i + 1].options; track option) {
+              <mat-option [value]="option">{{ option }}</mat-option>
+              }
+            </mat-select>
+          </ng-container>
+          <mat-error>{{
+            getErrorMessage(
+              data.fields[i + 1].formControlName,
+              data.fields[i + 1].label
+            )
+          }}</mat-error>
+        </mat-form-field>
+        }
+      </div>
+      } } } @else { @for (field of data.fields; track field) { @switch
+      (field.type) { @case ('checkbox') {
+      <mat-checkbox [formControlName]="field.formControlName" class="checkbox">
+        {{ field.label }}
+      </mat-checkbox>
+      } @case ('date') {
+      <mat-form-field class="form-field" appearance="fill">
+        <mat-label>{{ field.label }}</mat-label>
+        <input
+          matInput
+          [formControlName]="field.formControlName"
+          [matDatepicker]="picker"
+          [min]="
+            field.formControlName === 'endDate'
+              ? form.get('startDate')?.value
+              : null
+          "
+        />
+        <mat-hint>MM/DD/YYYY</mat-hint>
+        <mat-datepicker-toggle
+          matIconSuffix
+          [for]="picker"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+        <mat-error>{{
+          getErrorMessage(field.formControlName, field.label)
+        }}</mat-error>
+      </mat-form-field>
+      } @default {
+      <mat-form-field class="form-field" appearance="fill">
+        <mat-label>{{ field.label }}</mat-label>
+
+        @switch (field.type) { @case ('text') {
+        <input
+          matInput
+          [formControlName]="field.formControlName"
+          [maxlength]="field.maxLength ?? null"
+        />
+        } @case ('number') {
+        <input
+          matInput
+          type="number"
+          appTwoDigitInput
+          [formControlName]="field.formControlName"
+          [min]="field.min ?? null"
+          [max]="field.max ?? null"
+        />
+        } @case ('select') {
+        <mat-select [formControlName]="field.formControlName">
+          @for (option of field.options; track option) {
+          <mat-option [value]="option">
+            {{ option }}
+          </mat-option>
+          }
+        </mat-select>
+        } @case ('autocomplete') {
+        <input
+          type="text"
+          matInput
+          [formControlName]="field.formControlName"
+          [matAutocomplete]="auto"
+          (input)="filterOptions(field)"
+        />
+        <mat-autocomplete #auto="matAutocomplete">
+          @for (option of filteredOptions[field.formControlName]; track option)
+          {
+          <mat-option [value]="option">
+            {{ option }}
+          </mat-option>
+          }
+        </mat-autocomplete>
+        } }
+        <mat-error>{{
+          getErrorMessage(field.formControlName, field.label)
+        }}</mat-error>
+        @if (field.formControlName === 'academicYear') {
+        <mat-hint>
+          <span class="academic-year-hint" (click)="navigateToAcademicYear()"
+            >Click this to Manage Academic Years</span
+          >
+        </mat-hint>
+        } @if (field.hint) {
+        <mat-hint>{{ field.hint }}</mat-hint>
+        }
+      </mat-form-field>
+      } } } }
+    </form>
+    } @if (isEditDialog) {
+    <div class="schedule-validator">
+      <div
+        class="validation-message"
+        [ngClass]="{ conflict: isConflict, 'no-conflict': !isConflict }"
+      >
+        <mat-icon>{{ isConflict ? "error" : "check_circle" }}</mat-icon>
+        <span>{{
+          isConflict
+            ? "Warning: Schedule conflicts have been detected. "
+            : "No scheduling conflicts have been detected."
+        }}</span>
+      </div>
+    </div>
+    }
+  </div>
+
+  <div mat-dialog-actions class="table-dialog-button">
+    <button mat-button class="cancel-button" (click)="onCancel()">
+      Cancel
+    </button>
+    @if (isExportDialog) {
+    <button
+      mat-flat-button
+      class="action-button"
+      [disabled]="form.invalid"
+      (click)="onExport()"
+    >
+      Export
+    </button>
+    } @else {
+    <button
+      mat-flat-button
+      class="action-button"
+      [disabled]="form.invalid || !hasFormChanged() || isLoading"
+      (click)="onSave()"
+    >
+      @if (isLoading) {
+      <mat-spinner
+        [diameter]="25"
+        class="custom-spinner"
+      ></mat-spinner>
+      } @else {
+      <span>{{ data.isEdit ? "Update" : "Confirm" }}</span>
+      }
+    </button>
+    }
+  </div>
+</div>

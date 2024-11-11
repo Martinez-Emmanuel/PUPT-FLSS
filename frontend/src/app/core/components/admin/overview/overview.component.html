@@ -1,0 +1,262 @@
+@if(isLoading) {
+<div class="overview-loading-container">
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+</div>
+} @else {
+<div class="overview-container">
+  <!--Overview Header-->
+  <header class="overview-header-container" [@fadeAnimation]>
+    <div class="overview-greetings">
+      <h1 id="admin_name">Hello, Admin Marissa!</h1>
+      <p id="description">
+        Here's the key overview of the loading and scheduling this semester.
+      </p>
+    </div>
+    <div class="active-year-sem-container">
+      <p class="text">A.Y. {{ activeYear }}, {{ activeSemester }}</p>
+      <p class="label">Active Year & Semester</p>
+    </div>
+  </header>
+
+  <!--Overview Main-->
+  <main class="overview-main-container" [@fadeAnimation]>
+    <!--Cluster One-->
+    <div class="main-cluster-one">
+      <!--Quick Stats-->
+      <div class="quick-stats">
+        <!-- Content for Active Faculty -->
+        <div class="stats active-faculty card">
+          <img
+            src="../../../../../assets/images/faculty.svg"
+            alt="Faculty Icon"
+            class="stats-icon"
+          />
+          <div class="stats-info">
+            <h2 class="card-title">Active Faculty</h2>
+            <div class="card-content">{{ activeFacultyCount }}</div>
+          </div>
+        </div>
+        <!-- Content for Active Programs -->
+        <div class="stats programs card">
+          <img
+            src="../../../../../assets/images/schedule.svg"
+            alt="Programs Icon"
+            class="stats-icon"
+          />
+          <div class="stats-info">
+            <h2 class="card-title">Active Programs</h2>
+            <div class="card-content">{{ activeProgramsCount }}</div>
+          </div>
+        </div>
+        <!-- Content for Active Curricula -->
+        <div class="stats active-curricula card">
+          <img
+            src="../../../../../assets/images/curriculum.svg"
+            alt="Curriculum Icon"
+            class="stats-icon"
+          />
+          <div class="stats-info">
+            <h2 class="card-title">Active Curricula</h2>
+            <div class="card-content">
+              @for (curriculum of activeCurricula; track
+              curriculum.curriculum_year; let isLast = $last) {
+              {{ curriculum.curriculum_year }}@if (!isLast) {, } }
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Academic and Action -->
+      <div class="academic-and-action">
+        <!-- Academic Overview -->
+        <div class="academic-overview card">
+          <!-- SVG Definitions for Gradient -->
+          <svg
+            style="width: 0; height: 0; position: absolute"
+            aria-hidden="true"
+            focusable="false"
+          >
+            <defs>
+              <linearGradient id="gradient" gradientTransform="rotate(90)">
+                <stop offset="0%" stop-color="var(--gradient-light-start)" />
+                <stop offset="100%" stop-color="var(--gradient-light-end)" />
+              </linearGradient>
+            </defs>
+          </svg>
+
+          <!-- Overview Group One -->
+          <div class="overview-group-one">
+            <!-- Preferences Submitted Progress Bar -->
+            <div class="overview-item preferences-submitted">
+              <h3 class="item-title">Preferences Submitted</h3>
+              <div class="progress-container">
+                <svg class="circular-progress" viewBox="0 0 100 100">
+                  <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
+                  <circle
+                    class="progress-bar"
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    [style.strokeDashoffset]="
+                      getCircleOffset(preferencesProgress)
+                    "
+                    [style.opacity]="preferencesProgress > 0 ? 1 : 0"
+                  ></circle>
+                  <g transform="rotate(90 50 50)">
+                    <text x="50" y="50" class="progress-text">
+                      {{ preferencesProgress }}%
+                    </text>
+                  </g>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Scheduling Progress Progress Bar -->
+            <div class="overview-item scheduling-progress">
+              <h3 class="item-title">Scheduling Progress</h3>
+              <div class="progress-container">
+                <svg class="circular-progress" viewBox="0 0 100 100">
+                  <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
+                  <circle
+                    class="progress-bar"
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    [style.strokeDashoffset]="
+                      getCircleOffset(schedulingProgress)
+                    "
+                    [style.opacity]="schedulingProgress > 0 ? 1 : 0"
+                  ></circle>
+                  <g transform="rotate(90 50 50)">
+                    <text x="50" y="50" class="progress-text">
+                      {{ schedulingProgress }}%
+                    </text>
+                  </g>
+                </svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Overview Group Two -->
+          <div class="overview-group-two">
+            <!-- Room Utilization Progress Bar -->
+            <div class="overview-item rooms-utilized">
+              <h3 class="item-title">Rooms Utilization</h3>
+              <div class="progress-container">
+                <svg class="circular-progress" viewBox="0 0 100 100">
+                  <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
+                  <circle
+                    class="progress-bar"
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    [style.strokeDashoffset]="getCircleOffset(roomUtilization)"
+                    [style.opacity]="roomUtilization > 0 ? 1 : 0"
+                  ></circle>
+                  <g transform="rotate(90 50 50)">
+                    <text x="50" y="55" class="progress-text">
+                      {{ roomUtilization }}%
+                    </text>
+                  </g>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Published Schedules Progress Bar -->
+            <div class="overview-item publish-progress">
+              <h3 class="item-title">Published Schedules</h3>
+              <div class="progress-container">
+                <svg class="circular-progress" viewBox="0 0 100 100">
+                  <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
+                  <circle
+                    class="progress-bar"
+                    cx="50"
+                    cy="50"
+                    r="45"
+                    [style.strokeDashoffset]="getCircleOffset(publishProgress)"
+                    [style.opacity]="publishProgress > 0 ? 1 : 0"
+                  ></circle>
+                  <g transform="rotate(90 50 50)">
+                    <text x="50" y="55" class="progress-text">
+                      {{ publishProgress }}%
+                    </text>
+                  </g>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!--Action Center -->
+        <div class="action-center card">
+          <!--Title-->
+          <h2 class="card-title">
+            <span mat-symbol="page_info"></span>Action Center
+          </h2>
+          <!--Action Items-->
+          <div class="action-items">
+            <!--Item Group One-->
+            <div class="item-group one">
+              <!--Action: Toggle Faculty Preferences Submission-->
+              <div
+                class="item faculty-pref"
+                (click)="togglePreferencesSubmission()"
+              >
+                <span mat-symbol="groups"></span>
+                <span class="desc">
+                  {{
+                    preferencesEnabled
+                      ? "Disable Faculty Preferences Submission"
+                      : "Enable Faculty Preferences Submission"
+                  }}
+                </span>
+              </div>
+              <!--Action: Publish Schedule-->
+              <div
+                class="item publish-sched"
+                (click)="togglePublishSchedules()"
+              >
+                <span mat-symbol="schedule_send"></span>
+                <span class="desc">
+                  {{
+                    schedulesPublished
+                      ? "Unpublish Faculty Load and Schedule"
+                      : "Publish Faculty Load and Schedule"
+                  }}
+                </span>
+              </div>
+            </div>
+            <!--Item Group two-->
+            <div class="item-group two">
+              <!--Action: Email Faculty (Currently disabled)-->
+              <!-- <div class="item send-email" (click)="openSendEmailDialog()">
+                <span mat-symbol="email"></span>
+                <span class="desc">Send Email to Faculty Members</span>
+              </div> -->
+              <!--Action: Open Generate Report-->
+              <div class="item generate-report" (click)="generateReports()">
+                <span mat-symbol="assessment"></span>
+                <span class="desc">Generate the Schedule Reports</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!--Cluster Two-->
+    <div class="main-cluster-two">
+      <div class="notifications card">
+        <h2 class="card-title">
+          <span mat-symbol="notifications"></span>Notifications
+        </h2>
+        <div class="notifications-content">
+          <span>No notifications yet.</span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+}
