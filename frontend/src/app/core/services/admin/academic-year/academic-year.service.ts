@@ -49,7 +49,7 @@ export class AcademicYearService {
    */
   deleteAcademicYear(academicYearId: number): Observable<any> {
     return this.http
-      .request('DELETE', `${this.baseUrl}/delete-ay`, {
+      .request('DELETE', `${this.baseUrl}/delete-academic-year`, {
         body: { academic_year_id: academicYearId },
       })
       .pipe(catchError(this.handleError));

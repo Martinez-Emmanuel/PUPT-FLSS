@@ -186,7 +186,7 @@ export class PreferencesService {
       .set('faculty_id', facultyId)
       .set('active_semester_id', activeSemesterId.toString());
 
-    const url = `${this.baseUrl}/preferences/${preferenceId}`;
+    const url = `${this.baseUrl}/delete-preferences/${preferenceId}`;
     return this.http.delete(url, { params }).pipe(
       tap(() => this.clearCaches(facultyId)),
       catchError((error) => {
@@ -208,7 +208,7 @@ export class PreferencesService {
       .set('faculty_id', facultyId)
       .set('active_semester_id', activeSemesterId.toString());
 
-    const url = `${this.baseUrl}/preferences`;
+    const url = `${this.baseUrl}/delete-all-preferences`;
     return this.http.delete(url, { params }).pipe(
       tap(() => this.clearCaches(facultyId)),
       catchError((error) => {
@@ -230,7 +230,7 @@ export class PreferencesService {
     deadline: string | null
   ): Observable<any> {
     return this.http
-      .post(`${this.baseUrl}/toggle-preferences-all`, {
+      .post(`${this.baseUrl}/toggle-all-preferences`, {
         status,
         global_deadline: deadline,
       })
@@ -271,7 +271,7 @@ export class PreferencesService {
     individual_deadline: string | null
   ): Observable<any> {
     return this.http
-      .post(`${this.baseUrl}/toggle-preferences-single`, {
+      .post(`${this.baseUrl}/toggle-single-preferences`, {
         faculty_id,
         status,
         individual_deadline,

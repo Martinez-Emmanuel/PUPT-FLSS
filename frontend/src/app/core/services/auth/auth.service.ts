@@ -21,12 +21,7 @@ export class AuthService {
   }
 
   logout(): Observable<any> {
-    const token = this.cookieService.get('token');
-    const headers = new HttpHeaders({
-      Authorization: `Bearer ${token}`,
-    });
-
-    return this.http.post(`${this.baseUrl}/logout`, {}, { headers });
+    return this.http.post(`${this.baseUrl}/logout`, {});
   }
 
   setToken(token: string, expiresAt: string): void {
