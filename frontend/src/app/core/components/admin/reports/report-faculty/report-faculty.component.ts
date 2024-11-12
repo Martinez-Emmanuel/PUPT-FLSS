@@ -421,6 +421,7 @@ export class ReportFacultyComponent
     title: string, 
     subtitle: string
   ): number {
+    doc.setTextColor(0, 0, 0);
     const logoUrl = 
     'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
     const logoXPosition = pageWidth / 25 + 25; 
@@ -479,6 +480,21 @@ export class ReportFacultyComponent
     margin: number, 
     pageWidth: number
   ): void {
+    const hasSchedules = scheduleData && scheduleData.length > 0;
+  
+    if (!hasSchedules) {
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'italic'); 
+      doc.setTextColor(128, 128, 128); 
+      doc.text(
+        'No Assigned Schedule',
+        pageWidth / 2,
+        startY + 50,
+        { align: 'center' }
+      );
+      return; 
+    }
+
       const days = [
         'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
       ];
@@ -574,7 +590,7 @@ export class ReportFacultyComponent
             const courseContent = [
               item.course_details.course_code,
               item.course_details.course_title,
-              `${item.section_name} - ${item.program_code}`,
+              `${item.program_code} ${item.year_level} - ${item.section_name}`,
               item.room_code,
               `${startTime} - ${endTime}`
             ];
