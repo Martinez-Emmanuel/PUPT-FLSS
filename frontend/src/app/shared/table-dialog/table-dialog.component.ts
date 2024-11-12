@@ -42,7 +42,7 @@ import { TwoDigitInputDirective } from '../../core/imports/two-digit-input.direc
 export interface DialogFieldConfig {
   label: string;
   formControlName: string;
-  type: 'text' | 'number' | 'select' | 'checkbox' | 'autocomplete' | 'date';
+  type: 'text' | 'number' | 'select' | 'multiselect' | 'checkbox' | 'autocomplete' | 'date';
   options?: string[] | number[];
   maxLength?: number;
   required?: boolean;
@@ -52,6 +52,7 @@ export interface DialogFieldConfig {
   disabled?: boolean;
   filter?: (value: string) => string[];
   confirmPassword?: boolean; 
+  initialSelection?: string[];
 }
 
 export interface DialogConfig {
@@ -186,9 +187,22 @@ export class TableDialogComponent {
     const validators = this.getValidators(field);
     let initialValue = this.data.initialValue?.[field.formControlName] || '';
 
-    if (field.type === 'date' && initialValue) {
-      initialValue = new Date(initialValue);
+   // Modify this section to properly handle array values for multiselect
+   if (field.type === 'multiselect') {
+    // If initialValue is a string and not empty, convert to array
+    if (typeof initialValue === 'string' && initialValue) {
+        initialValue = initialValue.split(', ');
+    } else if (!Array.isArray(initialValue)) {
+        // If not an array and not a string, initialize as empty array
+        initialValue = [];
     }
+    // Use the provided initial selection if available
+    if (field.initialSelection) {
+        initialValue = field.initialSelection;
+    }
+} else if (field.type === 'date' && initialValue) {
+    initialValue = new Date(initialValue);
+}
 
     const control = this.fb.control(initialValue, { validators });
 
@@ -372,29 +386,29 @@ export class TableDialogComponent {
     if (this.form.valid) {
       this.isLoading = true;
       
-      // Enable the code control before saving if it was disabled
-      const codeControl = this.form.get('code');
-      if (codeControl?.disabled) {
-        codeControl.enable();
-      }
+    // Enable the code control before saving if it was disabled
+    const codeControl = this.form.get('code');
+    if (codeControl?.disabled) {
+      codeControl.enable();
+    }
 
-      const formValue = this.form.value;
+    const formValue = this.form.value;
       
-      const minimumSpinnerDuration = 500;
-      const startTime = Date.now();
+    const minimumSpinnerDuration = 500;
+    const startTime = Date.now();
 
-      this.dialogRef.disableClose = true;
+    this.dialogRef.disableClose = true;
 
-      const dialogClose = () => {
-        const elapsedTime = Date.now() - startTime;
-        const remainingTime = minimumSpinnerDuration - elapsedTime;
+    const dialogClose = () => {
+      const elapsedTime = Date.now() - startTime;
+      const remainingTime = minimumSpinnerDuration - elapsedTime;
 
-        setTimeout(() => {
-          this.isLoading = false;
-          this.dialogRef.disableClose = false;
-          this.dialogRef.close(formValue);
-        }, Math.max(remainingTime, 0));
-      };
+      setTimeout(() => {
+        this.isLoading = false;
+        this.dialogRef.disableClose = false;
+        this.dialogRef.close(formValue);
+      }, Math.max(remainingTime, 0));
+    };
 
       dialogClose();
     }
