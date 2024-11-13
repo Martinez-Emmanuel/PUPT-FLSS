@@ -1,0 +1,49 @@
+<div class="dialog-pref-success-container">
+  <!-- Content -->
+  <div class="content">
+    <!-- Main Text -->
+    <div class="main-text">
+      <span mat-symbol="recent_actors"></span>
+      <p class="success-text">Request for Submission Access</p>
+    </div>
+
+    <!--Status-->
+    @if (hasRequest) {
+    <div class="status-badge"><span>STATUS: PENDING</span></div>
+    }
+
+    <!-- Message -->
+    <p class="message" *ngIf="!hasRequest">
+      Request the administrator to re-enable your access to submit preferences
+      for the upcoming academic year and semester.
+    </p>
+    <p class="message" *ngIf="hasRequest">
+      You have requested the administrator to re-enable your access to submit
+      preferences for the upcoming academic year and semester.
+    </p>
+  </div>
+
+  <!-- Actions -->
+  <div class="actions">
+    <button mat-button class="cancel-button" (click)="closeDialog()">
+      {{ hasRequest ? "Close" : "Cancel" }}
+    </button>
+
+    <button
+      mat-flat-button
+      color="primary"
+      (click)="hasRequest ? cancelRequestAccess() : requestAccess()"
+      [disabled]="isLoading"
+    >
+      @if (isLoading) {
+      <mat-progress-spinner
+        class="custom-spinner"
+        diameter="25"
+        mode="indeterminate"
+      ></mat-progress-spinner>
+      } @else {
+      <span>{{ hasRequest ? "Cancel Request Access" : "Request Access" }}</span>
+      }
+    </button>
+  </div>
+</div>

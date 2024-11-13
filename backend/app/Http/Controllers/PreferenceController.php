@@ -139,6 +139,7 @@ class PreferenceController extends Controller
                 'faculty_code' => $facultyUser->code ?? 'N/A',
                 'faculty_type' => $faculty->faculty_type ?? 'N/A',
                 'faculty_units' => $faculty->faculty_units,
+                'has_request' => (int) ($preferenceSetting->has_request ?? 0),
                 'is_enabled' => (int) ($preferenceSetting->is_enabled ?? 0),
                 'active_semesters' => [
                     [
@@ -151,12 +152,14 @@ class PreferenceController extends Controller
                         'individual_deadline' => $preferenceSetting && $preferenceSetting->individual_deadline
                         ? Carbon::parse($preferenceSetting->individual_deadline)->toDateString()
                         : ($preferenceSetting && $preferenceSetting->global_deadline ? Carbon::parse($preferenceSetting->global_deadline)->toDateString() : null),
-
                         'courses' => $courses->toArray(),
                     ],
                 ],
             ];
-        })->values();
+        })
+            // Sort faculty with 'has_request' set to 1 at the top
+            ->sortByDesc('has_request')
+            ->values();
 
         return response()->json([
             'preferences' => $facultyPreferences,
@@ -218,6 +221,7 @@ class PreferenceController extends Controller
             'faculty_code' => $faculty->user->code ?? 'N/A',
             'faculty_type' => $faculty->faculty_type ?? 'N/A',
             'faculty_units' => $faculty->faculty_units,
+            'has_request' => (int) ($preferenceSetting->has_request ?? 0),
             'is_enabled' => (int) ($preferenceSetting->is_enabled ?? 0),
             'active_semesters' => [
                 [
@@ -332,6 +336,7 @@ class PreferenceController extends Controller
             $facultySettings = PreferencesSetting::all();
 
             foreach ($facultySettings as $setting) {
+                $setting->has_request = 0;
                 $setting->is_enabled = $status;
                 $setting->global_deadline = $global_deadline;
                 $setting->individual_deadline = null;
@@ -342,6 +347,7 @@ class PreferenceController extends Controller
             foreach ($facultyWithoutSettings as $faculty) {
                 PreferencesSetting::create([
                     'faculty_id' => $faculty->id,
+                    'has_request' => 0,
                     'is_enabled' => $status,
                     'global_deadline' => $global_deadline,
                     'individual_deadline' => null,
@@ -375,9 +381,15 @@ class PreferenceController extends Controller
 
             $preferenceSetting = PreferencesSetting::firstOrCreate(
                 ['faculty_id' => $faculty_id],
-                ['is_enabled' => 0, 'global_deadline' => null, 'individual_deadline' => null]
+                [
+                    'has_request' => 0,
+                    'is_enabled' => 0,
+                    'global_deadline' => null,
+                    'individual_deadline' => null,
+                ]
             );
 
+            $preferenceSetting->has_request = 0;
             $preferenceSetting->is_enabled = $status;
             $preferenceSetting->individual_deadline = $individual_deadline;
             $preferenceSetting->global_deadline = null;
@@ -390,6 +402,64 @@ class PreferenceController extends Controller
             'is_enabled' => $validated['status'],
             'individual_deadline' => $validated['individual_deadline'],
             'updated_preference' => PreferencesSetting::find($validated['faculty_id']),
+        ], 200);
+    }
+
+    /**
+     * Handles a faculty requesting access by setting has_request to 1.
+     */
+    public function requestAccess(Request $request)
+    {
+        $validated = $request->validate([
+            'faculty_id' => 'required|exists:faculty,id',
+        ]);
+
+        $facultyId = $validated['faculty_id'];
+
+        $preferenceSetting = PreferencesSetting::where('faculty_id', $facultyId)->first();
+
+        if (!$preferenceSetting) {
+            PreferencesSetting::create([
+                'faculty_id' => $facultyId,
+                'has_request' => 1,
+                'is_enabled' => 0,
+            ]);
+        } else {
+            $preferenceSetting->has_request = 1;
+            $preferenceSetting->save();
+        }
+
+        return response()->json([
+            'message' => 'Access request submitted successfully.',
+            'has_request' => 1,
+        ], 200);
+    }
+
+    /**
+     * Handles a faculty cancelling access request by setting has_request to 0.
+     */
+    public function cancelRequestAccess(Request $request)
+    {
+        $validated = $request->validate([
+            'faculty_id' => 'required|exists:faculty,id',
+        ]);
+
+        $facultyId = $validated['faculty_id'];
+
+        $preferenceSetting = PreferencesSetting::where('faculty_id', $facultyId)->first();
+
+        if (!$preferenceSetting) {
+            return response()->json([
+                'message' => 'No access request found to cancel.',
+            ], 404);
+        }
+
+        $preferenceSetting->has_request = 0;
+        $preferenceSetting->save();
+
+        return response()->json([
+            'message' => 'Access request cancelled successfully.',
+            'has_request' => 0,
         ], 200);
     }
 
