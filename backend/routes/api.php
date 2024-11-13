@@ -110,6 +110,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/delete-all-preferences', [PreferenceController::class, 'deleteAllPreferences']);
     Route::post('/toggle-all-preferences', [PreferenceController::class, 'toggleAllPreferences']);
     Route::post('/toggle-single-preferences', [PreferenceController::class, 'toggleSinglePreferences']);
+    Route::post('/request-access', [PreferenceController::class, 'requestAccess']);
+    Route::post('/cancel-request-access', [PreferenceController::class, 'cancelRequestAccess']);
 
     /**
      * Programs

@@ -1,0 +1,78 @@
+@import "../../../styles/mixins.scss";
+
+@include custom-spinner;
+
+.dialog-pref-success-container {
+  @include flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-xl)
+  );
+  padding: var(--spacing-lg);
+
+  .content {
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $justify: center,
+      $gap: var(--spacing-sm)
+    );
+
+    .status-badge {
+      @include flex-layout;
+      margin-bottom: var(--spacing-md);
+
+      span {
+        padding: var(--spacing-xs) var(--spacing-sm);
+        border-radius: var(--border-radius-xl);
+        text-align: center;
+        background: var(--secondary-fade);
+        color: var(--secondary-text);
+        font-weight: 600;
+        font-size: var(--font-size-sm);
+      }
+    }
+
+    .main-text {
+      @include flex-layout($direction: column, $gap: var(--spacing-xs));
+      margin-top: var(--spacing-sm);
+
+      span[mat-symbol] {
+        font-size: var(--font-size-4xl);
+        @include gradient-primary-text(315deg);
+
+        :host-context(.dark-theme) & {
+          -webkit-text-fill-color: var(--primary-text);
+          color: var(--primary-text);
+        }
+      }
+
+      .success-text {
+        color: var(--primary-text);
+        margin: 0;
+        font-size: var(--font-size-lg);
+        font-weight: 500;
+        text-align: center;
+      }
+    }
+
+    .message {
+      margin: 0;
+      text-align: center;
+      line-height: var(--line-height-md);
+    }
+  }
+
+  .actions {
+    @include flex-layout(
+      $align: stretch,
+      $justify: flex-end,
+      $gap: var(--spacing-xs)
+    );
+
+    .cancel-button {
+      color: var(--primary-text);
+    }
+  }
+}

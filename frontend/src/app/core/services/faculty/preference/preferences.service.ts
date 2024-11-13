@@ -312,6 +312,38 @@ export class PreferencesService {
   }
 
   /**
+   * Sends a request to enable access for the selected faculty.
+   */
+  requestAccess(facultyId: string): Observable<any> {
+    const url = `${this.baseUrl}/request-access`;
+    return this.http.post(url, { faculty_id: parseInt(facultyId, 10) }).pipe(
+      tap(() => {
+        this.updatePreferencesCache(facultyId);
+      }),
+      catchError((error) => {
+        console.error('Error requesting access:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Cancels the access request for the selected faculty.
+   */
+  cancelRequestAccess(facultyId: string): Observable<any> {
+    const url = `${this.baseUrl}/cancel-request-access`;
+    return this.http.post(url, { faculty_id: parseInt(facultyId, 10) }).pipe(
+      tap(() => {
+        this.updatePreferencesCache(facultyId);
+      }),
+      catchError((error) => {
+        console.error('Error cancelling access request:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
    * Updates the preferences cache by fetching the latest data for a specific faculty_id.
    */
   updatePreferencesCache(facultyId: string): void {
