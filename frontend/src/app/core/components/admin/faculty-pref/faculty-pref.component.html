@@ -158,7 +158,13 @@
           <td mat-cell *matCellDef="let element" class="custom-cell">
             @if (element.has_request) {
             <div class="request-badge">Requests for access</div>
-            } @else { None }
+            } @else {
+            <span
+              class="none"
+              [ngClass]="{ 'disabled-text': isToggleAllChecked }"
+              >None</span
+            >
+            }
           </td>
         </ng-container>
 
