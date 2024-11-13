@@ -409,7 +409,7 @@ export class TableDialogComponent {
     if (control.hasError('whitespace')) return `Your ${label} is invalid.`;
     if (control.hasError('endDateBeforeStartDate'))
       return `End Date cannot be earlier than Start Date.`;
-    if (control.hasError('yearEndLessThanYearStart')) return `Invalid Year End`;
+    if (control.hasError('yearEndLessThanYearStart')) return `Invalid Year End.`;
 
     if (control.hasError('passwordMismatch')) return 'Passwords do not match.';
 
