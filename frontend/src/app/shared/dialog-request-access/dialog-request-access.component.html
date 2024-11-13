@@ -12,14 +12,15 @@
     <div class="status-badge"><span>STATUS: PENDING</span></div>
     }
 
-    <!-- Message -->
-    <p class="message" *ngIf="!hasRequest">
-      Request the administrator to re-enable your access to submit preferences
-      for the upcoming academic year and semester.
-    </p>
-    <p class="message" *ngIf="hasRequest">
-      You have requested the administrator to re-enable your access to submit
-      preferences for the upcoming academic year and semester.
+    <p class="message">
+      @if (hasRequest) 
+      { You have requested the administrator to re-enable your
+        access to submit preferences for the upcoming academic year and semester.
+      }
+      @else { 
+        Request the administrator to re-enable your access to submit
+        preferences for the upcoming academic year and semester. 
+      }
     </p>
   </div>
 
