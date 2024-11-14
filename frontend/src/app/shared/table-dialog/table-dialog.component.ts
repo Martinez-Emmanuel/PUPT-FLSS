@@ -409,7 +409,8 @@ export class TableDialogComponent {
     if (control.hasError('whitespace')) return `Your ${label} is invalid.`;
     if (control.hasError('endDateBeforeStartDate'))
       return `End Date cannot be earlier than Start Date.`;
-    if (control.hasError('yearEndLessThanYearStart')) return `Invalid Year End.`;
+    if (control.hasError('yearEndLessThanYearStart'))
+      return `Invalid Year End.`;
 
     if (control.hasError('passwordMismatch')) return 'Passwords do not match.';
 
@@ -450,7 +451,7 @@ export class TableDialogComponent {
         codeControl.enable();
       }
 
-      const formValue = this.form.value;
+      const formValue = this.form.getRawValue();
 
       const minimumSpinnerDuration = 500;
       const startTime = Date.now();
