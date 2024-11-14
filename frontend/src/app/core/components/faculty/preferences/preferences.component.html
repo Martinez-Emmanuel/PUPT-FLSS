@@ -1506,7 +1506,10 @@
       <div class="closed-info">
         <div class="closed-text">
           <span mat-symbol="info"></span>
-          <span>Faculty preferences submission has been closed.</span>
+          <span> Faculty preferences submission has been closed.</span>
+          <a (click)="openRequestAccessDialog()" class="request-access-link">
+            Click here to request for access.
+          </a>
         </div>
         <div class="view-preferences">
           <button mat-flat-button (click)="openViewPreferencesDialog()">
