@@ -11,6 +11,7 @@ use App\Models\ProgramYearLevelCurricula;
 use App\Models\SectionsPerProgramYear;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class AcademicYearController extends Controller
 {
@@ -76,6 +77,47 @@ class AcademicYearController extends Controller
      */
     public function addAcademicYear(Request $request)
     {
+        // Validate basic input requirements
+        $validator = Validator::make($request->all(), [
+            'year_start' => 'required|numeric|min:1900|max:2100',
+            'year_end' => 'required|numeric|min:1900|max:2100',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Invalid year format. Years must be between 1900 and 2100.',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $yearStart = $request->input('year_start');
+        $yearEnd = $request->input('year_end');
+
+        // Validate year_end is greater than year_start
+        if ($yearEnd <= $yearStart) {
+            return response()->json([
+                'message' => 'End year must be greater than the start year.',
+            ], 422);
+        }
+
+        // Validate year difference is exactly 1
+        if ($yearEnd - $yearStart !== 1) {
+            return response()->json([
+                'message' => 'Invalid academic year range. The difference between start and end year must be exactly 1 year.',
+            ], 422);
+        }
+
+        // Check for existing academic year
+        $existingAcademicYear = AcademicYear::where('year_start', $yearStart)
+            ->where('year_end', $yearEnd)
+            ->first();
+
+        if ($existingAcademicYear) {
+            return response()->json([
+                'message' => "Academic Year {$yearStart}-{$yearEnd} already exists.",
+            ], 422);
+        }
+
         // Start a transaction to ensure atomicity
         DB::beginTransaction();
 
@@ -89,9 +131,9 @@ class AcademicYearController extends Controller
 
             // Step 2: Insert into academic_years table
             $academicYear = new AcademicYear();
-            $academicYear->year_start = $request->input('year_start');
-            $academicYear->year_end = $request->input('year_end');
-            $academicYear->is_active = 0; // Set default is_active as 0
+            $academicYear->year_start = $yearStart;
+            $academicYear->year_end = $yearEnd;
+            $academicYear->is_active = 0;
             $academicYear->save();
 
             // Get the newly created academic_year_id

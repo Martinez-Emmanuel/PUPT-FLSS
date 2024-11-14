@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FacultyController;
+use App\Http\Controllers\PreferenceController;
+use Carbon\Carbon;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,15 +16,57 @@ use App\Http\Controllers\FacultyController;
 |
 */
 
+// Test welcome blade
 Route::get('/', function () {
     return view('welcome');
 });
-Route::get('/test-email', [FacultyController::class, 'testEmail']);
-// routes/web.php
+
+// Test preferences submitted email
 Route::get('/test-preferences-submitted', function () {
     $data = [
         'faculty_name' => 'Juan Dela Cruz',
     ];
-
     return view('emails.preferences_submitted', $data);
+});
+
+
+Route::get('/test-preferences-all-open', function () {
+    $faculty_name = 'Juan Dela Cruz';
+    $global_deadline = '2024-11-23'; // Example deadline
+    $deadline_date = Carbon::parse($global_deadline);
+    $today = Carbon::now();
+    $days_left = $deadline_date->diffInDays($today);
+
+    $data = [
+        'faculty_name' => $faculty_name,
+        'global_deadline' => $deadline_date->format('M d, Y'),
+        'days_left' => $days_left,
+    ];
+
+    return view('emails.preferences_all_open', $data);
+});
+
+Route::get('/test-preferences-single-open', function () {
+    $faculty_name = 'Juan Dela Cruz';
+    $individual_deadline = '2024-11-23'; // Example deadline
+    $deadline_date = Carbon::parse($individual_deadline);
+    $today = Carbon::now();
+    $days_left = $deadline_date->diffInDays($today);
+
+    $data = [
+        'faculty_name' => $faculty_name,
+        'individual_deadline' => $deadline_date->format('M d, Y'), // Format the Carbon date here
+        'days_left' => $days_left,
+    ];
+
+    return view('emails.preferences_single_open', $data);
+});
+
+// Test load schedule published email
+Route::get('/test-load-schedule-published', function () {
+    $data = [
+        'faculty_name' => 'Juan Dela Cruz',
+        // Add more data if required by the template
+    ];
+    return view('emails.load_schedule_published', $data);
 });

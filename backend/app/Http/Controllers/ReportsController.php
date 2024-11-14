@@ -472,17 +472,7 @@ class ReportsController extends Controller
             return response()->json(['message' => 'No active semester found.'], 404);
         }
 
-        // Step 3: Determine if any schedules for the active semester are published
-        $isPublished = DB::table('faculty_schedule_publication')
-            ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
-            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
-            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
-            ->where('faculty_schedule_publication.faculty_id', $faculty_id)
-            ->where('course_assignments.semester_id', $activeSemester->semester_id)
-            ->where('faculty_schedule_publication.is_published', 1)
-            ->exists();
-
-        // Step 4: Get basic faculty info
+        // Step 3: Get basic faculty info
         $faculty = DB::table('faculty')
             ->join('users', 'faculty.user_id', '=', 'users.id')
             ->where('faculty.id', $faculty_id)
@@ -498,7 +488,7 @@ class ReportsController extends Controller
             return response()->json(['message' => 'Faculty not found.'], 404);
         }
 
-        // Prepare the base response
+        // Step 4: Prepare the base response
         $response = [
             'faculty_schedule' => [
                 'academic_year_id' => $activeSemester->academic_year_id,
@@ -514,75 +504,66 @@ class ReportsController extends Controller
                 'faculty_type' => $faculty->faculty_type,
                 'assigned_units' => 0,
                 'total_hours' => 0,
-                'is_published' => $isPublished ? 1 : 0,
+                'is_published' => 0,
                 'schedules' => [],
             ],
         ];
 
-        // Only fetch and include schedule details if the schedule is published
-        if ($isPublished) {
-            $schedulesSub = DB::table('schedules')
-                ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
-                ->join('course_assignments', 'course_assignments.course_assignment_id', '=', 'section_courses.course_assignment_id')
-                ->join('semesters as ca_semesters', 'ca_semesters.semester_id', '=', 'course_assignments.semester_id')
-                ->join('sections_per_program_year', 'sections_per_program_year.sections_per_program_year_id', '=', 'section_courses.sections_per_program_year_id')
-                ->where('ca_semesters.semester', '=', $activeSemester->semester)
-                ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id)
-                ->where('schedules.faculty_id', '=', $faculty->faculty_id)
-                ->select(
-                    'schedules.schedule_id',
-                    'schedules.faculty_id',
-                    'schedules.day',
-                    'schedules.start_time',
-                    'schedules.end_time',
-                    'schedules.room_id',
-                    'schedules.section_course_id',
-                    'section_courses.sections_per_program_year_id'
-                );
+        // Step 5: Fetch schedules with publication status
+        $facultySchedules = DB::table('schedules')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'course_assignments.course_assignment_id', '=', 'section_courses.course_assignment_id')
+            ->join('semesters as ca_semesters', 'ca_semesters.semester_id', '=', 'course_assignments.semester_id')
+            ->join('sections_per_program_year', 'sections_per_program_year.sections_per_program_year_id', '=', 'section_courses.sections_per_program_year_id')
+            ->leftJoin('courses', 'courses.course_id', '=', 'course_assignments.course_id')
+            ->leftJoin('rooms', 'rooms.room_id', '=', 'schedules.room_id')
+            ->leftJoin('programs', 'programs.program_id', '=', 'sections_per_program_year.program_id')
+            ->leftJoin('faculty_schedule_publication', function ($join) use ($faculty_id) {
+                $join->on('faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
+                    ->where('faculty_schedule_publication.faculty_id', '=', $faculty_id);
+            })
+            ->where('schedules.faculty_id', '=', $faculty->faculty_id)
+            ->where('ca_semesters.semester', '=', $activeSemester->semester)
+            ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id)
+            ->select(
+                'schedules.schedule_id',
+                'schedules.day',
+                'schedules.start_time',
+                'schedules.end_time',
+                'rooms.room_code',
+                'course_assignments.course_assignment_id',
+                'courses.course_title',
+                'courses.course_code',
+                'courses.lec_hours',
+                'courses.lab_hours',
+                'courses.units',
+                'courses.tuition_hours',
+                'programs.program_code',
+                'programs.program_title',
+                'sections_per_program_year.year_level',
+                'sections_per_program_year.section_name',
+                DB::raw('IFNULL(faculty_schedule_publication.is_published, 0) as is_published')
+            )
+            ->get();
 
-            $facultySchedules = DB::table('faculty')
-                ->where('faculty.id', $faculty->faculty_id)
-                ->join('users', 'faculty.user_id', '=', 'users.id')
-                ->leftJoinSub($schedulesSub, 'current_schedules', function ($join) {
-                    $join->on('current_schedules.faculty_id', '=', 'faculty.id');
-                })
-                ->leftJoin('section_courses', 'current_schedules.section_course_id', '=', 'section_courses.section_course_id')
-                ->leftJoin('sections_per_program_year', 'sections_per_program_year.sections_per_program_year_id', '=', 'section_courses.sections_per_program_year_id')
-                ->leftJoin('programs', 'programs.program_id', '=', 'sections_per_program_year.program_id')
-                ->leftJoin('course_assignments', 'course_assignments.course_assignment_id', '=', 'section_courses.course_assignment_id')
-                ->leftJoin('courses', 'courses.course_id', '=', 'course_assignments.course_id')
-                ->leftJoin('rooms', 'rooms.room_id', '=', 'current_schedules.room_id')
-                ->select(
-                    'current_schedules.schedule_id',
-                    'current_schedules.day',
-                    'current_schedules.start_time',
-                    'current_schedules.end_time',
-                    'rooms.room_code',
-                    'course_assignments.course_assignment_id',
-                    'courses.course_title',
-                    'courses.course_code',
-                    'courses.lec_hours',
-                    'courses.lab_hours',
-                    'courses.units',
-                    'courses.tuition_hours',
-                    'programs.program_code',
-                    'programs.program_title',
-                    'sections_per_program_year.year_level',
-                    'sections_per_program_year.section_name'
-                )
-                ->get();
+        $trackedCourses = [];
+        $isPublished = 0;
 
-            $trackedCourses = [];
+        foreach ($facultySchedules as $schedule) {
+            if ($schedule->is_published == 1) {
+                $isPublished = 1;
+            }
 
-            foreach ($facultySchedules as $schedule) {
-                if ($schedule->schedule_id) {
-                    // Only add units and hours if we haven't counted this course assignment before
-                    if (!in_array($schedule->course_assignment_id, $trackedCourses)) {
-                        $response['faculty_schedule']['assigned_units'] += $schedule->units;
-                        $response['faculty_schedule']['total_hours'] += $schedule->tuition_hours;
-                        $trackedCourses[] = $schedule->course_assignment_id;
-                    }
+            if ($schedule->schedule_id) {
+                // Only add units and hours if we haven't counted this course assignment before
+                if (!in_array($schedule->course_assignment_id, $trackedCourses)) {
+                    $response['faculty_schedule']['assigned_units'] += $schedule->units;
+                    $response['faculty_schedule']['total_hours'] += $schedule->tuition_hours;
+                    $trackedCourses[] = $schedule->course_assignment_id;
+                }
 
+                // Only add the schedule details if it is published
+                if ($schedule->is_published == 1) {
                     $response['faculty_schedule']['schedules'][] = [
                         'schedule_id' => $schedule->schedule_id,
                         'day' => $schedule->day,
@@ -605,6 +586,14 @@ class ReportsController extends Controller
                     ];
                 }
             }
+        }
+
+        // Update the overall publication status
+        $response['faculty_schedule']['is_published'] = $isPublished;
+
+        // Remove the schedules if not published
+        if ($isPublished == 0) {
+            $response['faculty_schedule']['schedules'] = [];
         }
 
         return response()->json($response);

@@ -20,7 +20,7 @@ class CourseController extends Controller
     public function addCourse(Request $request)
     {
         DB::beginTransaction();
-
+    
         try {
             // Validate the incoming request data
             $validatedData = $request->validate([
@@ -33,11 +33,11 @@ class CourseController extends Controller
                 'semester_id' => 'nullable|integer|exists:semesters,semester_id',
                 'year_level_id' => 'nullable|integer|exists:year_levels,year_level_id',
                 'curricula_program_id' => 'nullable|integer|exists:curricula_program,curricula_program_id',
-                'requirements' => 'array', // Expect an array of requirements
-                'requirements.*.requirement_type' => 'nullable|in:pre,co', // Pre or co-requisites
+                'requirements' => 'array',  // Expect an array of requirements
+                'requirements.*.requirement_type' => 'nullable|in:pre,co',  // Pre or co-requisites
                 'requirements.*.required_course_id' => 'nullable|integer|exists:courses,course_id',
             ]);
-
+    
             // Create the new course
             $course = Course::create([
                 'course_code' => $validatedData['course_code'],
@@ -47,7 +47,7 @@ class CourseController extends Controller
                 'units' => $validatedData['units'],
                 'tuition_hours' => $validatedData['tuition_hours'],
             ]);
-
+    
             // Assign the course to a curricula program and semester if provided
             if (!empty($validatedData['semester_id']) && !empty($validatedData['curricula_program_id'])) {
                 CourseAssignment::create([
@@ -56,32 +56,33 @@ class CourseController extends Controller
                     'course_id' => $course->course_id,
                 ]);
             }
-
+    
             // Handle multiple requirements (pre-requisites and co-requisites)
             if (isset($validatedData['requirements']) && is_array($validatedData['requirements'])) {
                 foreach ($validatedData['requirements'] as $requirement) {
                     if (!empty($requirement['requirement_type']) && !empty($requirement['required_course_id'])) {
                         CourseRequirement::create([
                             'course_id' => $course->course_id,
-                            'requirement_type' => $requirement['requirement_type'], // 'pre' or 'co'
+                            'requirement_type' => $requirement['requirement_type'],  // 'pre' or 'co'
                             'required_course_id' => $requirement['required_course_id'],
                         ]);
                     }
                 }
             }
-
+    
             DB::commit();
-
+    
             return response()->json([
                 'message' => 'Course added successfully',
                 'course' => $course,
             ], 201);
-
+    
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json(['message' => 'Failed to add course', 'error' => $e->getMessage()], 500);
         }
     }
+    
 
     public function updateCourse(Request $request, $id)
     {
@@ -172,7 +173,7 @@ class CourseController extends Controller
             return response()->json(['message' => 'Failed to update course', 'error' => $e->getMessage()], 500);
         }
     }
-
+    
     public function deleteCourse($id)
     {
         DB::beginTransaction();

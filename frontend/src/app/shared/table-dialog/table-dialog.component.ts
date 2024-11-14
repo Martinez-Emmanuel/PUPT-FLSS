@@ -42,7 +42,14 @@ import { TwoDigitInputDirective } from '../../core/imports/two-digit-input.direc
 export interface DialogFieldConfig {
   label: string;
   formControlName: string;
-  type: 'text' | 'number' | 'select' | 'checkbox' | 'autocomplete' | 'date';
+  type:
+    | 'text'
+    | 'number'
+    | 'select'
+    | 'multiselect'
+    | 'checkbox'
+    | 'autocomplete'
+    | 'date';
   options?: string[] | number[];
   maxLength?: number;
   required?: boolean;
@@ -51,7 +58,8 @@ export interface DialogFieldConfig {
   hint?: string;
   disabled?: boolean;
   filter?: (value: string) => string[];
-  confirmPassword?: boolean; 
+  confirmPassword?: boolean;
+  initialSelection?: string[];
 }
 
 export interface DialogConfig {
@@ -149,13 +157,14 @@ export class TableDialogComponent {
     this.form.reset();
     this.data.fields.forEach(this.addFormControl.bind(this));
     this.initialFormValues = this.form.getRawValue();
+
     // Add role change listener for admin code generation
     if (this.data.title === 'Admin' && !this.data.isEdit) {
       const roleControl = this.form.get('role');
       const codeControl = this.form.get('code');
-      
+
       if (roleControl && codeControl) {
-        roleControl.valueChanges.subscribe(role => {
+        roleControl.valueChanges.subscribe((role) => {
           if (role) {
             this.generateAdminCode(role);
           }
@@ -166,6 +175,8 @@ export class TableDialogComponent {
       }
     }
 
+    this.handleYearStartChanges();
+    this.addYearEndValidator();
     this.trackFormChanges();
   }
 
@@ -173,6 +184,48 @@ export class TableDialogComponent {
     this.form.valueChanges.subscribe(() => {
       this.cdr.markForCheck();
     });
+  }
+
+  private handleYearStartChanges(): void {
+    const yearStartControl = this.form.get('yearStart');
+    const yearEndControl = this.form.get('yearEnd');
+
+    if (yearStartControl && yearEndControl) {
+      yearStartControl.valueChanges.subscribe((yearStart) => {
+        if (yearStart && /^\d{4}$/.test(yearStart)) {
+          const yearEnd = parseInt(yearStart, 10) + 1;
+          yearEndControl.setValue(yearEnd.toString());
+          yearEndControl.updateValueAndValidity();
+        }
+      });
+    }
+  }
+
+  private addYearEndValidator(): void {
+    const yearEndControl = this.form.get('yearEnd');
+    if (yearEndControl) {
+      yearEndControl.setValidators([
+        Validators.required,
+        this.yearEndGreaterThanYearStartValidator.bind(this),
+      ]);
+    }
+  }
+
+  private yearEndGreaterThanYearStartValidator(
+    control: AbstractControl
+  ): ValidationErrors | null {
+    const yearStart = this.form.get('yearStart')?.value;
+    const yearEnd = control.value;
+
+    if (
+      yearStart &&
+      yearEnd &&
+      parseInt(yearEnd, 10) <= parseInt(yearStart, 10)
+    ) {
+      return { yearEndLessThanYearStart: true };
+    }
+
+    return null;
   }
 
   public hasFormChanged(): boolean {
@@ -186,7 +239,20 @@ export class TableDialogComponent {
     const validators = this.getValidators(field);
     let initialValue = this.data.initialValue?.[field.formControlName] || '';
 
-    if (field.type === 'date' && initialValue) {
+    // Modify this section to properly handle array values for multiselect
+    if (field.type === 'multiselect') {
+      // If initialValue is a string and not empty, convert to array
+      if (typeof initialValue === 'string' && initialValue) {
+        initialValue = initialValue.split(', ');
+      } else if (!Array.isArray(initialValue)) {
+        // If not an array and not a string, initialize as empty array
+        initialValue = [];
+      }
+      // Use the provided initial selection if available
+      if (field.initialSelection) {
+        initialValue = field.initialSelection;
+      }
+    } else if (field.type === 'date' && initialValue) {
       initialValue = new Date(initialValue);
     }
 
@@ -201,10 +267,13 @@ export class TableDialogComponent {
     if (field.type === 'autocomplete') {
       this.initAutocompleteOptions(field);
     }
-    
+
     if (field.confirmPassword) {
-      control.setValidators([...validators, this.passwordMatchValidator.bind(this)]);
-    } 
+      control.setValidators([
+        ...validators,
+        this.passwordMatchValidator.bind(this),
+      ]);
+    }
   }
 
   private generateAdminCode(role: string): void {
@@ -218,7 +287,7 @@ export class TableDialogComponent {
         error: (error) => {
           console.error('Error generating admin code:', error);
           // Optionally handle the error (e.g., show a message to the user)
-        }
+        },
       });
     }
   }
@@ -306,12 +375,14 @@ export class TableDialogComponent {
 
     return null;
   }
-  
-  private passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
+
+  private passwordMatchValidator(
+    control: AbstractControl
+  ): ValidationErrors | null {
     const password = this.form.get('password')?.value;
     const confirmPassword = control.value;
-    return password === confirmPassword ? null : {passwordMismatch: true};
-  } 
+    return password === confirmPassword ? null : { passwordMismatch: true };
+  }
 
   getErrorMessage(formControlName: string, label: string): string {
     const control = this.form.get(formControlName);
@@ -338,8 +409,9 @@ export class TableDialogComponent {
     if (control.hasError('whitespace')) return `Your ${label} is invalid.`;
     if (control.hasError('endDateBeforeStartDate'))
       return `End Date cannot be earlier than Start Date.`;
+    if (control.hasError('yearEndLessThanYearStart')) return `Invalid Year End.`;
 
-    if (control.hasError('passwordMismatch')) return 'Passwords do not match.'; //added
+    if (control.hasError('passwordMismatch')) return 'Passwords do not match.';
 
     return '';
   }
@@ -371,7 +443,7 @@ export class TableDialogComponent {
   onSave(): void {
     if (this.form.valid) {
       this.isLoading = true;
-      
+
       // Enable the code control before saving if it was disabled
       const codeControl = this.form.get('code');
       if (codeControl?.disabled) {
@@ -379,7 +451,7 @@ export class TableDialogComponent {
       }
 
       const formValue = this.form.value;
-      
+
       const minimumSpinnerDuration = 500;
       const startTime = Date.now();
 
