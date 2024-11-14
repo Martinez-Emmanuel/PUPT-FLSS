@@ -24,14 +24,21 @@
     </div>
 
     @if(isPreferencesEnabled) {
-    <div id="units_container" [class.disabled]="!isPreferencesEnabled">
+    <div id="total_container" [class.disabled]="!isPreferencesEnabled">
       <!-- <div class="units max" [@fadeAnimation]>
                 <h2>{{ maxUnits }}</h2>
                 <span>Max. Units Allowed</span>
               </div> -->
-      <div class="units total" [@fadeAnimation]>
-        <h2>{{ units }}</h2>
+      <!-- Total Units-->
+      <div class="total units" [@fadeAnimation]>
+        <h2>{{ totalUnits }}</h2>
         <span>Total Units Selected</span>
+      </div>
+
+      <!-- Total Hours -->
+      <div class="total hours" [@fadeAnimation]>
+        <h2>{{ totalHours }}</h2>
+        <span>Total Hours Selected</span>
       </div>
     </div>
     }
@@ -44,9 +51,7 @@
     <div id="courses_container" [@fadeAnimation]>
       <div id="courses_search">
         <mat-form-field appearance="fill" class="custom-mat-search">
-          <mat-label
-            >Search Courses</mat-label
-          >
+          <mat-label>Search Courses</mat-label>
           <input
             matInput
             maxlength="50"

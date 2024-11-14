@@ -85,13 +85,13 @@
     }
   }
 
-  #units_container {
+  #total_container {
     @include flex-layout;
     gap: var(--spacing-sm);
     height: 100%;
     text-align: center;
 
-    .units {
+    .total {
       @include flex-layout($direction: column);
       height: inherit;
       border-radius: var(--border-radius-md);
@@ -107,13 +107,12 @@
       }
     }
 
-    .max {
+    .units {
       @include gradient-primary(315deg);
     }
 
-    .total {
-      // @include gradient-secondary(315deg);
-      @include gradient-primary(315deg);
+    .hours {
+      @include gradient-secondary(315deg);
     }
   }
 }
@@ -141,7 +140,6 @@
 
       input::placeholder {
         color: var(--neutral-button-lighter);
-        
       }
 
       span[mat-symbol] {
@@ -453,8 +451,8 @@
       $gap: var(--spacing-lg)
     );
 
-    #units_container {
-      .units {
+    #total_container {
+      .total {
         flex: 1;
       }
     }
