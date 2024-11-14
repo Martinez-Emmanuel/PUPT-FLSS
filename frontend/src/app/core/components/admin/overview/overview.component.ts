@@ -165,6 +165,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
       type: 'all_preferences',
       academicYear: this.activeYear,
       semester: this.activeSemester,
+      hasSecondaryText: true,
       currentState: this.preferencesEnabled,
       global_deadline: deadlineDate,
     };
@@ -219,7 +220,6 @@ export class OverviewComponent implements OnInit, OnDestroy {
         type: 'reports',
         academicYear: this.activeYear,
         semester: this.activeSemester,
-        currentState: false,
       },
       disableClose: true,
     });

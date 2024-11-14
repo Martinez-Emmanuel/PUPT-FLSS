@@ -29,11 +29,23 @@
     </div>
     }
 
+    <!-- Seondary Text Section -->
+    @if (data.hasSecondaryText) {
+    <div class="secondary-text">
+      @if (!showReportOptions) { For specific faculty, go to } @else { For a
+      more specific view and download of reports, go to the }
+      <a class="link" [routerLink]="navigationLink" (click)="closeDialog()">
+        {{ linkText }}
+      </a>
+      <span> page.</span>
+    </div>
+    }
+
     <!-- Report Options Section -->
     @if (showReportOptions) {
     <div class="main-text">
       This will <strong>print and download</strong> an official copy of the
-      schedule reports for this semester. Check all that you want to download:
+      schedule reports for this semester. Select at least one from the following:
     </div>
 
     <div class="checkbox-container reports">
@@ -100,18 +112,6 @@
         </mat-hint>
         }
       </mat-form-field>
-    </div>
-    }
-
-    <!-- Navigation Link Section -->
-    @if (data.hasSecondaryText) {
-    <div class="secondary-text">
-      @if (!showReportOptions) { For specific faculty, go to } @else { For a
-      more specific view and download of reports, go to the }
-      <a class="link" [routerLink]="navigationLink" (click)="closeDialog()">
-        {{ linkText }}
-      </a>
-      <span> page.</span>
     </div>
     }
 
