@@ -5,9 +5,10 @@ namespace App\Http\Controllers;
 use App\Jobs\SendFacultyPreferenceEmailJob;
 use App\Jobs\SendFacultyScheduleEmailJob;
 use App\Models\Faculty;
+use App\Models\PreferencesSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
-
+use Carbon\Carbon;
 class FacultyController extends Controller
 {
     /**
@@ -54,23 +55,43 @@ class FacultyController extends Controller
     public function emailSingleFacultyPreferences(Request $request)
     {
         $facultyId = $request->input('faculty_id');
+        
+        // Retrieve the faculty details from the Faculty model
         $faculty = Faculty::find($facultyId);
-
         if (!$faculty) {
             return response()->json(['message' => 'Faculty not found'], 404);
         }
+        
+        // Retrieve preferences settings for the faculty to check for individual deadline
+        $settings = PreferencesSetting::where('faculty_id', $facultyId)->first();
+        if (!$settings || !$settings->individual_deadline) {
+            return response()->json(['message' => 'Individual deadline not set for this faculty'], 404);
+        }
 
+        // Parse the deadline and calculate the days left
+        $individualDeadline = Carbon::parse($settings->individual_deadline);
+        $daysLeft = $individualDeadline->diffInDays(Carbon::now());
+
+        // Prepare data for the email
         $data = [
             'faculty_name' => $faculty->user->name,
             'email' => $faculty->faculty_email,
+            'individual_deadline' => $individualDeadline->format('M d, Y'),
+            'days_left' => $daysLeft,
         ];
 
+        // Send the email
         Mail::send('emails.preferences_single_open', $data, function ($message) use ($data) {
             $message->to($data['email'])
                 ->subject('Load & Schedule Preferences Submission Update');
         });
 
-        return response()->json(['message' => 'Preference status notification sent successfully'], 200);
+        // Return response with individual deadline and days left
+        return response()->json([
+            'message' => 'Preference status notification sent successfully',
+            'individual_deadline' => $individualDeadline->format('M d, Y'),
+            'days_left' => $daysLeft
+        ], 200);
     }
 
     //========
