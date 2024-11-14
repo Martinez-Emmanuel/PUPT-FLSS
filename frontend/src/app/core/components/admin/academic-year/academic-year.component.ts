@@ -601,6 +601,8 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: dialogConfig,
       disableClose: true,
+      autoFocus: true,
+      panelClass: 'add-academic-year-dialog'
     });
 
     dialogRef.afterClosed().subscribe((result) => {

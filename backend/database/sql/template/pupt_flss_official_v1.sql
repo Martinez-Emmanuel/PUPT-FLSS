@@ -202,7 +202,8 @@ CREATE TABLE `preferences` (
 CREATE TABLE `preferences_settings` (
   `preferences_settings_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT,
   `faculty_id` bigint(20) UNSIGNED DEFAULT NULL,
-  `is_enabled` tinyint(1) NOT NULL DEFAULT '1' COMMENT '1 for enabled, 0 for disabled',
+  `has_request` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1 for request made, 0 for no request',
+  `is_enabled` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1 for enabled, 0 for disabled',
   `global_deadline` date DEFAULT NULL,
   `individual_deadline` date DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
