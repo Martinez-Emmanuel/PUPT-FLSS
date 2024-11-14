@@ -139,6 +139,11 @@
     .custom-mat-search {
       width: 100%;
 
+      input::placeholder {
+        color: var(--neutral-button-lighter);
+        
+      }
+
       span[mat-symbol] {
         padding: var(--spacing-sm);
       }
