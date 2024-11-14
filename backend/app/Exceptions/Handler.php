@@ -29,7 +29,7 @@ class Handler extends ExceptionHandler
         // 401 Error JSON response
         if ($exception instanceof AuthenticationException) {
             if ($request->expectsJson()) {
-                return response()->json(['message' => 'Unauthenticated'], 401);
+                return response()->json(['message' => 'Unauthorized'], 401);
             }
 
             // Custom 401 Error view response
