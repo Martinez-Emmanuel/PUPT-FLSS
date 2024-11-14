@@ -120,9 +120,9 @@ class PreferenceController extends Controller
                             'course_code' => $preference->course_code ?? null,
                             'course_title' => $preference->course_title ?? null,
                         ],
-                        'lec_hours' => $preference->lec_hours ?? 'N/A',
-                        'lab_hours' => $preference->lab_hours ?? 'N/A',
-                        'units' => $preference->units ?? 'N/A',
+                        'lec_hours' => is_numeric($preference->lec_hours) ? (int) $preference->lec_hours : 0,
+                        'lab_hours' => is_numeric($preference->lab_hours) ? (int) $preference->lab_hours : 0,
+                        'units' => $preference->units ?? 0,
                         'preferred_day' => $preference->preferred_day,
                         'preferred_start_time' => $preference->preferred_start_time,
                         'preferred_end_time' => $preference->preferred_end_time,
@@ -157,7 +157,7 @@ class PreferenceController extends Controller
                 ],
             ];
         })
-            // Sort faculty with 'has_request' set to 1 at the top
+        // Sort faculty with 'has_request' set to 1 at the top
             ->sortByDesc('has_request')
             ->values();
 
@@ -204,9 +204,9 @@ class PreferenceController extends Controller
                     'course_code' => $preference->courseAssignment->course->course_code ?? null,
                     'course_title' => $preference->courseAssignment->course->course_title ?? null,
                 ],
-                'lec_hours' => $preference->courseAssignment->course->lec_hours ?? 'N/A',
-                'lab_hours' => $preference->courseAssignment->course->lab_hours ?? 'N/A',
-                'units' => $preference->courseAssignment->course->units ?? 'N/A',
+                'lec_hours' => is_numeric($preference->courseAssignment->course->lec_hours) ? (int) $preference->courseAssignment->course->lec_hours : 0,
+                'lab_hours' => is_numeric($preference->courseAssignment->course->lab_hours) ? (int) $preference->courseAssignment->course->lab_hours : 0,
+                'units' => $preference->courseAssignment->course->units ?? 0,
                 'preferred_day' => $preference->preferred_day,
                 'preferred_start_time' => $preference->preferred_start_time,
                 'preferred_end_time' => $preference->preferred_end_time,

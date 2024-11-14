@@ -591,6 +591,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
           type: 'text',
           required: true,
           maxLength: 4,
+          disabled: true,
         },
       ],
       isEdit: false,
@@ -602,7 +603,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
       data: dialogConfig,
       disableClose: true,
       autoFocus: true,
-      panelClass: 'add-academic-year-dialog'
+      panelClass: 'add-academic-year-dialog',
     });
 
     dialogRef.afterClosed().subscribe((result) => {
