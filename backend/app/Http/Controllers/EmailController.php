@@ -7,11 +7,13 @@ use App\Jobs\SendFacultyScheduleEmailJob;
 use App\Models\Faculty;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use App\Models\PreferencesSetting;
+use Carbon\Carbon;
 
 class EmailController extends Controller
 {
 
-    /**
+       /**
      * Send email to all faculty members to submit their preferences.
      */
     public function emailAllFacultyPreferences()
@@ -32,38 +34,62 @@ class EmailController extends Controller
     public function emailSingleFacultyPreferences(Request $request)
     {
         $facultyId = $request->input('faculty_id');
+        
+        // Retrieve the faculty details from the Faculty model
         $faculty = Faculty::find($facultyId);
-
         if (!$faculty) {
             return response()->json(['message' => 'Faculty not found'], 404);
         }
+        
+        // Retrieve preferences settings for the faculty to check for individual deadline
+        $settings = PreferencesSetting::where('faculty_id', $facultyId)->first();
+        if (!$settings || !$settings->individual_deadline) {
+            return response()->json(['message' => 'Individual deadline not set for this faculty'], 404);
+        }
 
+        // Parse the deadline and calculate the days left
+        $individualDeadline = Carbon::parse($settings->individual_deadline);
+        $daysLeft = $individualDeadline->diffInDays(Carbon::now());
+
+        // Prepare data for the email
         $data = [
             'faculty_name' => $faculty->user->name,
             'email' => $faculty->faculty_email,
+            'individual_deadline' => $individualDeadline->format('M d, Y'),
+            'days_left' => $daysLeft,
         ];
 
+        // Send the email
         Mail::send('emails.preferences_single_open', $data, function ($message) use ($data) {
             $message->to($data['email'])
                 ->subject('Load & Schedule Preferences Submission Update');
         });
 
-        return response()->json(['message' => 'Preference status notification sent successfully'], 200);
+        // Return response with individual deadline and days left
+        return response()->json([
+            'message' => 'Preference status notification sent successfully',
+            'individual_deadline' => $individualDeadline->format('M d, Y'),
+            'days_left' => $daysLeft
+        ], 200);
     }
 
-    /**
-     * Send email to a specific faculty to notify that
-     * their preferences have been submitted and received.
-     */
+    //========
     public function emailPrefSubmitted(Request $request)
     {
         $facultyId = $request->input('faculty_id');
+
         $faculty = Faculty::find($facultyId);
 
-        if (!$faculty) {
+        if ($faculty) {
+            $this->sendPreferencesSubmittedNotification($faculty);
+            return response()->json(['message' => 'Preferences submission notification sent successfully'], 200);
+        } else {
             return response()->json(['message' => 'Faculty not found'], 404);
         }
+    }
 
+    protected function sendPreferencesSubmittedNotification($faculty)
+    {
         $data = [
             'faculty_name' => $faculty->user->name,
             'email' => $faculty->faculty_email,
@@ -73,12 +99,12 @@ class EmailController extends Controller
             $message->to($data['email'])
                 ->subject('Your Load & Schedule Preferences has been submitted successfully');
         });
-
-        return response()->json(['message' => 'Preferences submission notification sent successfully'], 200);
     }
 
+    //========
+
     /**
-     * Send email to all faculty to view their load and schedule.
+     * Send email to a specific faculty to view their load and schedule.
      */
     public function emailAllFacultySchedule()
     {
@@ -115,4 +141,5 @@ class EmailController extends Controller
 
         return response()->json(['message' => 'Faculty load and schedule email notification sent successfully'], 200);
     }
+
 }
