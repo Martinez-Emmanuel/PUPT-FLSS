@@ -70,15 +70,35 @@
 
   .active-year-sem-container {
     @include flex-layout(
-      $direction: column,
       $align: flex-start,
-      $gap: var(--spacing-xxs)
+      $justify: flex-start,
+      $gap: var(--spacing-xs)
     );
     @include gradient-primary(315deg);
     padding: var(--spacing-sm);
     border-radius: var(--border-radius-md);
     color: white;
     flex-shrink: 0;
+
+    .icon-container {
+      height: 100%;
+      @include flex-layout;
+
+      span[mat-symbol] {
+        font-size: var(--font-size-2xxl);
+      }
+    }
+
+    .text-container {
+      height: 100%;
+
+      @include flex-layout(
+        $direction: column,
+        $align: flex-start,
+        $justify: flex-start,
+        $gap: var(--spacing-xxxs)
+      );
+    }
 
     .text,
     .label {
@@ -89,6 +109,7 @@
     .text {
       @include flex-layout($gap: var(--spacing-xs));
       font-weight: 500;
+      font-size: var(--font-size-mdx);
     }
 
     .label {
