@@ -218,7 +218,28 @@ export class AdminComponent implements OnInit {
   
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        this.updateAdmin(admin.id, result);  // Use 'id' for updates
+        // Check if role has changed
+        if (result.role !== admin.role) {
+          // Get new admin code based on new role
+          this.adminService.getNextAdminCode(result.role).subscribe({
+            next: (newCode) => {
+              const updatedAdmin = {
+                ...result,
+                code: newCode // Update the code based on new role
+              };
+              this.updateAdmin(admin.id, updatedAdmin);
+            },
+            error: (error) => {
+              this.snackBar.open('Error generating new admin code. Please try again.', 'Close', {
+                duration: 3000,
+              });
+              console.error('Error generating admin code:', error);
+            }
+          });
+        } else {
+          // If role hasn't changed, proceed with normal update
+          this.updateAdmin(admin.id, result);
+        }
       }
     });
   }
