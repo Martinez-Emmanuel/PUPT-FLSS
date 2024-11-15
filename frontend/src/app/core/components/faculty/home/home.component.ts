@@ -14,7 +14,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 
-import { fadeAnimation } from '../../../animations/animations';
+import { fadeAnimation, cardEntranceSide } from '../../../animations/animations';
 
 @Component({
   selector: 'app-home',
@@ -22,7 +22,7 @@ import { fadeAnimation } from '../../../animations/animations';
   imports: [MatSymbolDirective, LoadingComponent, FullCalendarModule],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
-  animations: [fadeAnimation],
+  animations: [fadeAnimation, cardEntranceSide],
 })
 export class HomeComponent implements OnInit, AfterViewInit {
   @ViewChild('calendar') calendarComponent!: FullCalendarComponent;

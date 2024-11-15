@@ -43,18 +43,29 @@
       </h2>
       <!--Content-->
       <div class="notifications-content">
-        @if (notifications.length === 0) {
-        <span class="no-notifications">No notifications yet.</span>
-        } @else {
-        <div class="notifications-list">
-          @for (notification of notifications; track notification.id) {
-          <div class="notification-item">
-            <p class="notification-message">{{ notification.message }}</p>
-            <span class="notification-timestamp">{{
-              notification.timestamp
-            }}</span>
+        <!--No notifications-->
+        @if (!notifications.length) {
+        <div class="no-notifications">
+          <img src="../../../../../assets/images/empty.svg" />
+          <div class="no-text">
+            <span mat-symbol="info"></span>
+            <span>No notifications yet.</span>
           </div>
-          }
+        </div>
+        }
+        <!--Has notifications-->
+        @else {
+        <div [@cardEntranceSide]="notifications.length">
+          <div class="notifications-list">
+            @for (notification of notifications; track notification.id) {
+            <div class="notification-item">
+              <p class="notification-message">{{ notification.message }}</p>
+              <span class="notification-timestamp">{{
+                notification.timestamp
+              }}</span>
+            </div>
+            }
+          </div>
         </div>
         }
       </div>
