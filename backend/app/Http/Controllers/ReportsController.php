@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AcademicYear;
 use App\Models\ActiveSemester;
 use App\Models\Faculty;
-use App\Models\Notification;
+use App\Models\FacultyNotification;
 use App\Models\PreferencesSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -875,7 +875,7 @@ class ReportsController extends Controller
             ];
         })->toArray();
 
-        Notification::insert($notifications);
+        FacultyNotification::insert($notifications);
 
         // Step 10: Return a response
         return response()->json([
@@ -954,7 +954,7 @@ class ReportsController extends Controller
         : "Your schedule has been unpublished for A.Y. {$academicYear}.";
 
         // Step 8: Create notification for the specific faculty
-        Notification::create([
+        FacultyNotification::create([
             'faculty_id' => $facultyId,
             'message' => $message,
             'is_read' => 0,

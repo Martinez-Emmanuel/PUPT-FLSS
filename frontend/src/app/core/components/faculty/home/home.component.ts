@@ -1,21 +1,25 @@
 import { Component, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
+
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
+
 import { CookieService } from 'ngx-cookie-service';
 import { ReportsService } from '../../../services/admin/reports/reports.service';
 import { FacultyNotificationService, Notification } from '../../../services/faculty/faculty-notification/faculty-notification.service';
-import { fadeAnimation } from '../../../animations/animations';
+
 import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
 import { CalendarOptions, EventInput } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 
+import { fadeAnimation } from '../../../animations/animations';
+
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule, MatSymbolDirective, LoadingComponent, FullCalendarModule],
+  imports: [MatSymbolDirective, LoadingComponent, FullCalendarModule],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
   animations: [fadeAnimation],
@@ -48,7 +52,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     this.loadFacultyInfo();
     this.initializeCalendar();
     this.fetchFacultySchedule();
-    this.fetchNotifications(); // Fetch notifications on init
+    this.fetchNotifications();
   }
 
   ngAfterViewInit(): void {
@@ -124,9 +128,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
    * Fetch notifications from the back-end.
    */
   private fetchNotifications(): void {
-    this.facultyNotifService.getNotifications().subscribe({
+    this.facultyNotifService.getFacultyNotifications().subscribe({
       next: (response) => {
-        // Map 'created_at' to 'timestamp' for template compatibility
         this.notifications = response.notifications.map(notification => ({
           ...notification,
           timestamp: new Date(notification.created_at).toLocaleString(),

@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Notification;
+use App\Models\FacultyNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class NotificationController extends Controller
+class FacultyNotificationController extends Controller
 {
     /**
      * Retrieve notifications for the authenticated faculty.
      */
-    public function getNotifications(Request $request)
+    public function getFacultyNotifications(Request $request)
     {
         $user = Auth::user();
 
@@ -28,7 +28,7 @@ class NotificationController extends Controller
         }
 
         // Fetch notifications ordered by most recent
-        $notifications = Notification::where('faculty_id', $faculty->id)
+        $notifications = FacultyNotification::where('faculty_id', $faculty->id)
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -57,7 +57,7 @@ class NotificationController extends Controller
         }
 
         // Find the notification
-        $notification = Notification::where('id', $id)
+        $notification = FacultyNotification::where('id', $id)
             ->where('faculty_id', $faculty->id)
             ->first();
 

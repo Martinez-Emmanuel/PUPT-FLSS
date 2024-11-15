@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateNotificationsTable extends Migration
+class CreateFacultyNotificationsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class CreateNotificationsTable extends Migration
      */
     public function up()
     {
-        Schema::create('notifications', function (Blueprint $table) {
-            $table->bigIncrements('id');
+        Schema::create('faculty_notifications', function (Blueprint $table) {
+            $table->bigIncrements('faculty_notifications_id');
             $table->unsignedBigInteger('faculty_id');
             $table->text('message');
             $table->boolean('is_read')->default(false);
@@ -22,8 +22,8 @@ class CreateNotificationsTable extends Migration
 
             // Foreign Key Constraint
             $table->foreign('faculty_id')
-                  ->references('id')->on('faculty')
-                  ->onDelete('cascade');
+                ->references('id')->on('faculty')
+                ->onDelete('cascade');
         });
     }
 
@@ -34,6 +34,6 @@ class CreateNotificationsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('notifications');
+        Schema::dropIfExists('faculty_notifications');
     }
 }

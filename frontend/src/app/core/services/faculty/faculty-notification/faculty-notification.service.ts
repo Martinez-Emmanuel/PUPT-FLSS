@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+
 import { environment } from '../../../../../environments/environment.dev';
 
 export interface Notification {
@@ -11,7 +13,7 @@ export interface Notification {
   is_read: boolean;
   created_at: string;
   updated_at: string;
-  timestamp?: string; // Optional: mapped from created_at
+  timestamp?: string;
 }
 
 @Injectable({
@@ -25,9 +27,9 @@ export class FacultyNotificationService {
   /**
    * Fetch notifications for the authenticated faculty.
    */
-  getNotifications(): Observable<{ notifications: Notification[] }> {
+  getFacultyNotifications(): Observable<{ notifications: Notification[] }> {
     return this.http
-      .get<{ notifications: Notification[] }>(`${this.baseUrl}/notifications`)
+      .get<{ notifications: Notification[] }>(`${this.baseUrl}/faculty-notifications`)
       .pipe(catchError(this.handleError));
   }
 
@@ -37,7 +39,7 @@ export class FacultyNotificationService {
    */
   markAsRead(notificationId: number): Observable<any> {
     return this.http
-      .post(`${this.baseUrl}/notifications/${notificationId}/read`, {})
+      .post(`${this.baseUrl}/faculty-notifications/${notificationId}/read`, {})
       .pipe(catchError(this.handleError));
   }
 

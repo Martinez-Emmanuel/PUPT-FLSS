@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ActiveSemester;
 use App\Models\Faculty;
-use App\Models\Notification;
+use App\Models\FacultyNotification;
 use App\Models\Preference;
 use App\Models\PreferencesSetting;
 use Carbon\Carbon;
@@ -376,7 +376,7 @@ class PreferenceController extends Controller
                 ];
             })->toArray();
 
-            Notification::insert($notifications);
+            FacultyNotification::insert($notifications);
         });
 
         return response()->json([
@@ -429,7 +429,7 @@ class PreferenceController extends Controller
             : "Your preferences submission is now closed for A.Y. {$academicYear}.";
 
             // Create notification for the specific faculty
-            Notification::create([
+            FacultyNotification::create([
                 'faculty_id' => $faculty_id,
                 'message' => $message,
                 'is_read' => 0,
