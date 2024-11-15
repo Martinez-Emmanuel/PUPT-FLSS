@@ -301,10 +301,11 @@ CREATE TABLE `faculty_schedule_publication` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `faculty_notifications` (
-  `faculty_notifications_id` bigint UNSIGNED NOT NULL,
-  `faculty_id` bigint UNSIGNED NOT NULL,
-  `message` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  `is_read` tinyint(1) NOT NULL DEFAULT '0',
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL
+  `faculty_notifications_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `faculty_id` BIGINT UNSIGNED NOT NULL,
+  `message` TEXT COLLATE utf8mb4_unicode_ci NOT NULL,
+  `is_read` TINYINT(1) NOT NULL DEFAULT '0',
+  `created_at` TIMESTAMP NULL DEFAULT NULL,
+  `updated_at` TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (`faculty_notifications_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
