@@ -329,6 +329,7 @@
       .notifications-content {
         flex: 1;
         @include flex-layout;
+        opacity: var(--opacity-semi-opaque);
       }
     }
   }
