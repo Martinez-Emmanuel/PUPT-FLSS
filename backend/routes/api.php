@@ -8,6 +8,7 @@ use App\Http\Controllers\CurriculumController;
 use App\Http\Controllers\CurriculumDetailsController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\FacultyController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PreferenceController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\ReportsController;
@@ -51,6 +52,10 @@ Route::middleware(['auth:sanctum', 'super_admin'])->group(function () {
 |--------------------------
  */
 Route::middleware('auth:sanctum')->group(function () {
+
+    // Notification Routes
+    Route::get('/notifications', [NotificationController::class, 'getNotifications']);
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 
     /**
      * Academic Year

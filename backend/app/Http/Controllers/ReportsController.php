@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\AcademicYear;
 use App\Models\ActiveSemester;
+use App\Models\Faculty;
+use App\Models\Notification;
 use App\Models\PreferencesSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -853,7 +855,29 @@ class ReportsController extends Controller
                 'updated_at' => now(),
             ]);
 
-        // Step 6: Return a response
+        // Step 7: Prepare notification message
+        $academicYear = $this->getCurrentAcademicYear();
+        $message = $isPublished
+        ? "Schedules have been published for A.Y. {$academicYear}."
+        : "Schedules have been unpublished for A.Y. {$academicYear}.";
+
+        // Step 8: Fetch all faculty IDs
+        $facultyIds = Faculty::pluck('id');
+
+        // Step 9: Create notifications for all faculties
+        $notifications = $facultyIds->map(function ($facultyId) use ($message) {
+            return [
+                'faculty_id' => $facultyId,
+                'message' => $message,
+                'is_read' => 0,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        })->toArray();
+
+        Notification::insert($notifications);
+
+        // Step 10: Return a response
         return response()->json([
             'message' => 'Schedules and faculty schedule publications updated successfully',
             'updated_count' => $updatedCount,
@@ -868,7 +892,7 @@ class ReportsController extends Controller
     {
         // Step 1: Validate the input
         $request->validate([
-            'faculty_id' => 'required|integer|exists:faculty_schedule_publication,faculty_id',
+            'faculty_id' => 'required|integer|exists:faculty,id',
             'is_published' => 'required|boolean',
         ]);
 
@@ -888,7 +912,6 @@ class ReportsController extends Controller
         $activeSemesterId = $activeSemester->semester_id;
 
         // Step 3: Fetch all related schedule_ids from the faculty_schedule_publication table
-        // Only for schedules that match the active academic year and semester
         $facultySchedules = DB::table('faculty_schedule_publication')
             ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
             ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
@@ -896,8 +919,8 @@ class ReportsController extends Controller
             ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
             ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
             ->where('faculty_schedule_publication.faculty_id', $facultyId)
-            ->where('sections_per_program_year.academic_year_id', $activeAcademicYearId)
-            ->where('semesters.semester', $activeSemesterId)
+            ->where('sections_per_program_year.academic_year_id', '=', $activeAcademicYearId)
+            ->where('semesters.semester', '=', $activeSemesterId)
             ->pluck('schedules.schedule_id', 'faculty_schedule_publication.faculty_schedule_publication_id');
 
         if ($facultySchedules->isEmpty()) {
@@ -914,7 +937,7 @@ class ReportsController extends Controller
             ->whereIn('schedule_id', $facultySchedules->values())
             ->update(['is_published' => $isPublished, 'updated_at' => now()]);
 
-        // Step 6: Disable preferences for the individual faculty** by setting `is_enabled` to 0
+        // Step 6: Disable preferences for the individual faculty by setting `is_enabled` to 0
         DB::table('preferences_settings')
             ->where('faculty_id', $facultyId)
             ->update([
@@ -924,7 +947,20 @@ class ReportsController extends Controller
                 'updated_at' => now(),
             ]);
 
-        // Step 7: Return a success response
+        // Step 7: Prepare notification message
+        $academicYear = $this->getCurrentAcademicYear();
+        $message = $isPublished
+        ? "Your schedule has been published for A.Y. {$academicYear}."
+        : "Your schedule has been unpublished for A.Y. {$academicYear}.";
+
+        // Step 8: Create notification for the specific faculty
+        Notification::create([
+            'faculty_id' => $facultyId,
+            'message' => $message,
+            'is_read' => 0,
+        ]);
+
+        // Step 9: Return a success response
         return response()->json([
             'message' => 'Publication status updated successfully for the faculty',
             'faculty_id' => $facultyId,
@@ -1102,5 +1138,17 @@ class ReportsController extends Controller
             default:
                 return 'Unknown Semester';
         }
+    }
+
+    /**
+     * Get the current active academic year in 'YYYY-YYYY' format.
+     */
+    private function getCurrentAcademicYear()
+    {
+        $activeSemester = ActiveSemester::with('academicYear')->where('is_active', 1)->first();
+        if ($activeSemester && $activeSemester->academicYear) {
+            return $activeSemester->academicYear->year_start . '-' . $activeSemester->academicYear->year_end;
+        }
+        return 'N/A';
     }
 }

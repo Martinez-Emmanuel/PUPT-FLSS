@@ -66,7 +66,8 @@
     $align: stretch,
     $gap: var(--spacing-md)
   );
-  flex: 2;
+  flex: 3;
+  min-height: 0;
 
   .active-year-sem-container {
     @include flex-layout(
@@ -74,11 +75,11 @@
       $align: flex-start,
       $gap: var(--spacing-xxs)
     );
-
     @include gradient-primary(315deg);
     padding: var(--spacing-sm);
     border-radius: var(--border-radius-md);
     color: white;
+    flex-shrink: 0;
 
     .text,
     .label {
@@ -97,11 +98,64 @@
   }
 
   .faculty-announcement {
-    @include flex-layout($direction: column, $gap: var(--spacing-xs));
+    @include flex-layout(
+      $direction: column,
+      $align: stretch,
+      $justify: flex-start,
+      $gap: var(--spacing-md)
+    );
     flex: 1;
-    background-color: var(--neutral-space);
-    border-radius: (var(--border-radius-md));
+    min-height: 0;
+    background-color: var(--admin-bg);
+    border-radius: var(--border-radius-md);
     padding: var(--spacing-md);
-    user-select: none;
+
+    .card-title {
+      @include flex-layout($justify: flex-start, $gap: var(--spacing-xs));
+      font-size: var(--font-size-mdx);
+      font-weight: 500;
+      flex-shrink: 0;
+
+      span[mat-symbol] {
+        font-size: var(--font-size-lg);
+      }
+    }
+
+    .notifications-content {
+      flex: 1;
+      min-height: 0;
+      overflow-y: auto;
+
+      .notifications-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+
+        .notification-item {
+          padding: 1rem;
+          border-radius: 6px;
+          background-color: var(--main-bg);
+          border-left: 4px solid var(--primary-one);
+          transition: transform 0.2s ease;
+
+          &:hover {
+            transform: translateX(4px);
+          }
+
+          .notification-message {
+            margin: 0 0 0.5rem 0;
+            color: var(--neutral-base);
+            font-size: 0.95rem;
+          }
+
+          .notification-timestamp {
+            display: block;
+            color: var(--neutral-base);
+            font-size: 0.85rem;
+            opacity: var(--opacity-semi-opaque);
+          }
+        }
+      }
+    }
   }
 }
