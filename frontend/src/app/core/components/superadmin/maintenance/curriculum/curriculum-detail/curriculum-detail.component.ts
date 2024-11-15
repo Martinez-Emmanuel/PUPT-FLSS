@@ -205,27 +205,13 @@ export class CurriculumDetailComponent implements OnInit {
         if (yearLevel) {
           this.selectedSemesters = yearLevel.semesters.map((semester) => ({
             ...semester,
-            courses: semester.courses.map((course) => {
-              const pre_req = course.prerequisites?.length 
-                ? course.prerequisites.map(p => p.course_title).join(', ') 
-                : 'None';
-              const co_req = course.corequisites?.length 
-                ? course.corequisites.map(c => c.course_title).join(', ') 
-                : 'None';  
-              return {
-                ...course,
-                pre_req: pre_req,
-                co_req: co_req,
-              };
-            }),
+            courses: semester.courses.map((course) => this.populateCourseRequisites(course)),
           }));
-
-          this.cdr.detectChanges();
-
+  
+          this.cdr.detectChanges();  
         } else {
           this.selectedSemesters = [];
         }
-        this.cdr.detectChanges();
       } else {
         // console.log('Program not found:', this.selectedProgram);
       }
@@ -635,13 +621,14 @@ export class CurriculumDetailComponent implements OnInit {
 
   // Helper method to populate prerequisites and corequisites
   populateCourseRequisites(course: Course): Course {
-    const pre_req = course.prerequisites?.map(p => 
-      `${p.course_code} - ${p.course_title}`
-    ) || [];
-
-    const co_req = course.corequisites?.map(c => 
-      `${c.course_code} - ${c.course_title}`
-  ) || [];
+    const pre_req = course.prerequisites?.length 
+      ? course.prerequisites.map(p => `${p.course_code} - ${p.course_title}`)
+      : ['None'];
+  
+    const co_req = course.corequisites?.length 
+      ? course.corequisites.map(c => `${c.course_code} - ${c.course_title}`)
+      : ['None'];
+  
     return {
       ...course,
       pre_req,
