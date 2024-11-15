@@ -474,7 +474,7 @@ class PreferenceController extends Controller
             case 2:
                 return '2nd Semester';
             case 3:
-                return 'Summer';
+                return 'Summer Semester';
             default:
                 return 'Unknown Semester';
         }
