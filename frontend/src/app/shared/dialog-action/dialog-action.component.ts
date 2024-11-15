@@ -306,7 +306,7 @@ export class DialogActionComponent {
       const date = new Date(this.submissionDeadline);
       date.setHours(23, 59, 59, 999);
       formattedDate = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
-      console.log('Sending individual deadline to backend:', formattedDate);
+      // console.log('Sending individual deadline to backend:', formattedDate);
     }
 
     return this.preferencesService

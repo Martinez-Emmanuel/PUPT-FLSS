@@ -170,7 +170,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   private handleLoginSuccess(response: any): void {
-    console.log('Login successful', response);
+    // console.log('Login successful', response);
     this.authService.setToken(response.token, response.expires_at);
     this.authService.setUserInfo(response.user, response.expires_at);
 

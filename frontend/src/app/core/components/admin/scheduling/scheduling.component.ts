@@ -176,7 +176,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         this.activeSemester = activeSemester;
         this.startDate = startDate;
         this.endDate = endDate;
-        console.log('Active Semester Set:', this.activeSemester);
+        // console.log('Active Semester Set:', this.activeSemester);
       }),
       map(() => void 0),
       catchError((error) => {
@@ -304,7 +304,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     );
 
     if (!selectedProgram) {
-      console.log('No program found.');
+      // console.log('No program found.');
       this.schedules = [];
       return;
     }
@@ -332,7 +332,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     );
 
     if (!selectedYearLevelObj) {
-      console.log('No year level found.');
+      // console.log('No year level found.');
       this.schedules = [];
       return;
     }
@@ -360,7 +360,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     );
 
     if (!selectedSection) {
-      console.log('No section found.');
+      // console.log('No section found.');
       this.schedules = [];
       return;
     }
@@ -382,15 +382,15 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     yearLevel: number,
     sectionId: number
   ): Observable<Schedule[]> {
-    console.log(
-      `Fetching courses for Program ID: ${programId}, 
-      Year Level: ${yearLevel},
-      Section ID: ${sectionId}`
-    );
+    // console.log(
+    //   `Fetching courses for Program ID: ${programId}, 
+    //   Year Level: ${yearLevel},
+    //   Section ID: ${sectionId}`
+    // );
 
     return this.schedulingService.populateSchedules().pipe(
       tap((response: PopulateSchedulesResponse) => {
-        console.log('Response', response);
+        // console.log('Response', response);
 
         const program = response.programs.find(
           (p) => p.program_id === programId
@@ -473,7 +473,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         });
 
         this.cdr.detectChanges();
-        console.log('Final Schedules:', this.schedules);
+        // console.log('Final Schedules:', this.schedules);
       }),
       map(() => this.schedules),
       catchError((error) => {

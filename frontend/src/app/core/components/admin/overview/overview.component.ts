@@ -9,10 +9,16 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
-import { DialogActionComponent, DialogActionData } from '../../../../shared/dialog-action/dialog-action.component';
+import {
+  DialogActionComponent,
+  DialogActionData,
+} from '../../../../shared/dialog-action/dialog-action.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
-import { OverviewService, OverviewDetails } from '../../../services/admin/overview/overview.service';
+import {
+  OverviewService,
+  OverviewDetails,
+} from '../../../services/admin/overview/overview.service';
 
 import { fadeAnimation } from '../../../animations/animations';
 
@@ -225,7 +231,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
     });
 
     dialogRef.afterClosed().subscribe((result) => {
-      console.log('Export All dialog closed', result);
+      // console.log('Export All dialog closed', result);
     });
   }
 

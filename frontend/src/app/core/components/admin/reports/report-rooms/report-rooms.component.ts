@@ -1,4 +1,10 @@
-import { Component, OnInit, ViewChild, AfterViewInit, AfterViewChecked } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  AfterViewInit,
+  AfterViewChecked,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -10,7 +16,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSymbolDirective } from '../../../../imports/mat-symbol.directive';
 
-import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
+import {
+  TableHeaderComponent,
+  InputField,
+} from '../../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
 import { DialogViewScheduleComponent } from '../../../../../shared/dialog-view-schedule/dialog-view-schedule.component';
 
@@ -52,7 +61,9 @@ interface Room {
   styleUrls: ['./report-rooms.component.scss'],
   animations: [fadeAnimation],
 })
-export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChecked {
+export class ReportRoomsComponent
+  implements OnInit, AfterViewInit, AfterViewChecked
+{
   inputFields: InputField[] = [
     {
       type: 'text',
@@ -108,7 +119,9 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
           capacity: room.capacity,
           schedules: room.schedules,
           academicYear: `${response.room_schedule_reports.year_start}-${response.room_schedule_reports.year_end}`,
-          semester: this.getSemesterDisplay(response.room_schedule_reports.semester),
+          semester: this.getSemesterDisplay(
+            response.room_schedule_reports.semester
+          ),
         }));
 
         this.isLoading = false;
@@ -116,7 +129,9 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
         this.filteredData = [...rooms];
         this.dataSource.paginator = this.paginator;
 
-        this.hasAnySchedules = this.filteredData.some(room => this.hasSchedules(room));
+        this.hasAnySchedules = this.filteredData.some((room) =>
+          this.hasSchedules(room)
+        );
       },
       error: (error) => {
         this.isLoading = false;
@@ -208,11 +223,11 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(blobUrl); 
+    URL.revokeObjectURL(blobUrl);
   }
-  
+
   updateDisplayedData() {
-    console.log('Paginator updated');
+    // console.log('Paginator updated');
   }
 
   generateAllRoomsPdfBlob(): Blob {
@@ -263,37 +278,31 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
 
     if (room.schedules && room.schedules.length > 0) {
       let currentY = this.drawHeader(
-        doc, 
-        topMargin, 
-        pageWidth, 
+        doc,
+        topMargin,
+        pageWidth,
         margin,
-        logoSize, 
-        `Room ${room.roomCode}`, 
+        logoSize,
+        `Room ${room.roomCode}`,
         this.getAcademicYearSubtitle(room)
       );
-      this.drawScheduleTable(
-        doc,
-        room.schedules, 
-        currentY, 
-        margin, 
-        pageWidth
-      );
+      this.drawScheduleTable(doc, room.schedules, currentY, margin, pageWidth);
     }
 
     return doc.output('blob');
   }
 
   drawHeader(
-    doc: jsPDF, 
-    startY: number, 
-    pageWidth: number, 
-    margin: number, 
-    logoSize: number, 
-    title: string, 
+    doc: jsPDF,
+    startY: number,
+    pageWidth: number,
+    margin: number,
+    logoSize: number,
+    title: string,
     subtitle: string
   ): number {
     doc.setTextColor(0, 0, 0);
-    const logoUrl = 
+    const logoUrl =
       'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
     const logoXPosition = pageWidth / 25 + 25;
     doc.addImage(logoUrl, 'PNG', logoXPosition, startY - 5, logoSize, logoSize);
@@ -302,8 +311,8 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
     doc.setFont('helvetica', 'bold');
     doc.text(
       'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
-      pageWidth / 2, 
-      startY, 
+      pageWidth / 2,
+      startY,
       { align: 'center' }
     );
 
@@ -311,9 +320,9 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.text(
-      'Gen. Santos Ave. Upper Bicutan, Taguig City', 
-      pageWidth / 2, 
-      currentY, 
+      'Gen. Santos Ave. Upper Bicutan, Taguig City',
+      pageWidth / 2,
+      currentY,
       { align: 'center' }
     );
 
@@ -334,104 +343,103 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
     doc.setLineWidth(0.5);
     doc.line(margin, currentY, pageWidth - margin, currentY);
     currentY += 7;
-        
+
     return currentY;
   }
 
   drawScheduleTable(
-    doc: jsPDF, 
-    scheduleData: any[], 
-    startY: number, 
-    margin: number, 
+    doc: jsPDF,
+    scheduleData: any[],
+    startY: number,
+    margin: number,
     pageWidth: number
   ): void {
     const hasSchedules = scheduleData && scheduleData.length > 0;
-  
+
     if (!hasSchedules) {
       doc.setFontSize(20);
-      doc.setFont('helvetica', 'italic'); 
-      doc.setTextColor(128, 128, 128); 
-      doc.text(
-        'No Assigned Schedule',
-        pageWidth / 2,
-        startY + 50,
-        { align: 'center' }
-      );
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(128, 128, 128);
+      doc.text('No Assigned Schedule', pageWidth / 2, startY + 50, {
+        align: 'center',
+      });
       return;
     }
 
     const days = [
-      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
     ];
     const dayColumnWidth = (pageWidth - margin * 2) / days.length;
     const pageHeight = doc.internal.pageSize.height;
-    const maxContentHeight = pageHeight - margin; 
-    
+    const maxContentHeight = pageHeight - margin;
+
     let currentY = startY;
     let maxYPosition = currentY;
-  
+
     const startNewPage = () => {
-        doc.addPage();
-        currentY = this.drawHeader(
-          doc,
-          15, 
-          pageWidth,
-          margin,
-          22, 
-          doc.getNumberOfPages() > 1 ? 'Room Schedule (Continued)' : 'Room Schedule',
-          this.getAcademicYearSubtitle(scheduleData[0])
-        );
-        
-        days.forEach((day, index) => {
-            const xPosition = margin + index * dayColumnWidth;
-            doc.setFillColor(128, 0, 0);
-            doc.setTextColor(255, 255, 255);
-            doc.rect(xPosition, currentY, dayColumnWidth, 10, 'F');
-            doc.setFontSize(10);
-            doc.setFont('helvetica', 'bold');
-            doc.text(
-                day,
-                xPosition + dayColumnWidth / 2,
-                currentY + 7,
-                { align: 'center' }
-            );
-        });
-        
-        currentY += 12; 
-        return currentY;
-    };
-  
-    days.forEach((day, index) => {
+      doc.addPage();
+      currentY = this.drawHeader(
+        doc,
+        15,
+        pageWidth,
+        margin,
+        22,
+        doc.getNumberOfPages() > 1
+          ? 'Room Schedule (Continued)'
+          : 'Room Schedule',
+        this.getAcademicYearSubtitle(scheduleData[0])
+      );
+
+      days.forEach((day, index) => {
         const xPosition = margin + index * dayColumnWidth;
         doc.setFillColor(128, 0, 0);
         doc.setTextColor(255, 255, 255);
         doc.rect(xPosition, currentY, dayColumnWidth, 10, 'F');
         doc.setFontSize(10);
         doc.setFont('helvetica', 'bold');
-        doc.text(
-            day,
-            xPosition + dayColumnWidth / 2,
-            currentY + 7,
-            { align: 'center' }
-        );
+        doc.text(day, xPosition + dayColumnWidth / 2, currentY + 7, {
+          align: 'center',
+        });
+      });
+
+      currentY += 12;
+      return currentY;
+    };
+
+    days.forEach((day, index) => {
+      const xPosition = margin + index * dayColumnWidth;
+      doc.setFillColor(128, 0, 0);
+      doc.setTextColor(255, 255, 255);
+      doc.rect(xPosition, currentY, dayColumnWidth, 10, 'F');
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text(day, xPosition + dayColumnWidth / 2, currentY + 7, {
+        align: 'center',
+      });
     });
-  
-    currentY += 12; 
-  
+
+    currentY += 12;
+
     days.forEach((day, dayIndex) => {
       const xPosition = margin + dayIndex * dayColumnWidth;
       let yPosition = currentY;
-        
+
       const daySchedule = scheduleData
-      .filter((item: any) => item.day === day)
-      .sort((a: any, b: any) => 
-        this.timeToMinutes(a.start_time) - this.timeToMinutes(b.start_time)
-      );
-  
+        .filter((item: any) => item.day === day)
+        .sort(
+          (a: any, b: any) =>
+            this.timeToMinutes(a.start_time) - this.timeToMinutes(b.start_time)
+        );
+
       if (daySchedule.length > 0) {
         daySchedule.forEach((item: any) => {
           const boxHeight = 35;
-                  
+
           if (yPosition + boxHeight > maxContentHeight) {
             days.forEach((_, i) => {
               const lineX = margin + i * dayColumnWidth;
@@ -440,15 +448,16 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
               doc.line(lineX, startY, lineX, maxYPosition);
             });
             doc.line(
-              pageWidth - margin, 
-              startY, pageWidth - margin, 
+              pageWidth - margin,
+              startY,
+              pageWidth - margin,
               maxYPosition
             );
-                      
+
             yPosition = startNewPage();
             maxYPosition = yPosition;
           }
-    
+
           const startTime = this.formatTime(item.start_time);
           const endTime = this.formatTime(item.end_time);
           const courseContent = [
@@ -456,12 +465,12 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
             item.course_details.course_title,
             `${item.program_code} ${item.year_level} - ${item.section_name}`,
             item.faculty_name,
-            `${startTime} - ${endTime}`
+            `${startTime} - ${endTime}`,
           ];
-    
+
           doc.setFillColor(240, 240, 240);
           doc.rect(xPosition, yPosition, dayColumnWidth, boxHeight, 'F');
-    
+
           let textYPosition = yPosition + 5;
           courseContent.forEach((line: string, index) => {
             doc.setTextColor(0);
@@ -470,13 +479,13 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
               index <= 1 ? 'helvetica' : 'helvetica',
               index <= 1 ? 'bold' : 'normal'
             );
-                      
+
             const wrappedLines = doc.splitTextToSize(line, dayColumnWidth - 10);
             wrappedLines.forEach((wrappedLine: string) => {
               doc.text(wrappedLine, xPosition + 5, textYPosition);
               textYPosition += 5;
             });
-    
+
             if (index === courseContent.length - 1) {
               const timeTextWidth = doc.getTextWidth(line);
               doc.setDrawColor(0, 0, 0);
@@ -489,7 +498,7 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
               );
             }
           });
-  
+
           yPosition += boxHeight + 5;
           if (yPosition > maxYPosition) {
             maxYPosition = yPosition;
@@ -499,9 +508,9 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
     });
     days.forEach((_, i) => {
       const lineX = margin + i * dayColumnWidth;
-        doc.setDrawColor(200, 200, 200);
-        doc.setLineWidth(0.5);
-        doc.line(lineX, startY, lineX, maxYPosition);
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.5);
+      doc.line(lineX, startY, lineX, maxYPosition);
     });
     doc.line(pageWidth - margin, startY, pageWidth - margin, maxYPosition);
     doc.line(margin, maxYPosition, pageWidth - margin, maxYPosition);
@@ -522,7 +531,7 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
   getAcademicYearSubtitle(room: Room): string {
     return `For Academic Year ${room.academicYear}, ${room.semester}`;
   }
-  
+
   hasSchedules(room: Room): boolean {
     return room.schedules && room.schedules.length > 0;
   }

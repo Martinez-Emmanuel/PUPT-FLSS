@@ -1,4 +1,10 @@
-import { Component, OnInit, ViewChild, AfterViewInit, AfterViewChecked } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  ViewChild,
+  AfterViewInit,
+  AfterViewChecked,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -12,7 +18,10 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSymbolDirective } from '../../../../imports/mat-symbol.directive';
 
-import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
+import {
+  TableHeaderComponent,
+  InputField,
+} from '../../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
 import { DialogActionComponent } from '../../../../../shared/dialog-action/dialog-action.component';
 import { DialogViewScheduleComponent } from '../../../../../shared/dialog-view-schedule/dialog-view-schedule.component';
@@ -20,7 +29,6 @@ import { DialogViewScheduleComponent } from '../../../../../shared/dialog-view-s
 import { ReportsService } from '../../../../services/admin/reports/reports.service';
 
 import { fadeAnimation } from '../../../../animations/animations';
-
 
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -311,9 +319,9 @@ export class ReportFacultyComponent
 
   onToggleSingleSchedule(element: Faculty, event: any): void {
     const intendedState = event.checked;
-  
+
     event.source.checked = element.isEnabled;
-  
+
     const dialogRef = this.dialog.open(DialogActionComponent, {
       data: {
         type: 'single_publish',
@@ -325,11 +333,11 @@ export class ReportFacultyComponent
       },
       disableClose: true,
     });
-  
+
     dialogRef.afterClosed().subscribe((result) => {
       if (result === true) {
         element.isEnabled = intendedState;
-  
+
         this.isToggleAllChecked = this.dataSource.data.every(
           (faculty) => faculty.isEnabled
         );
@@ -340,7 +348,7 @@ export class ReportFacultyComponent
   }
 
   updateDisplayedData() {
-    console.log('Paginator updated');
+    // console.log('Paginator updated');
   }
 
   generateAllSchedulesPdfBlob(): Blob {
@@ -351,11 +359,10 @@ export class ReportFacultyComponent
     const logoSize = 22;
 
     if (this.filteredData.length === 0) {
-        this.snackBar.open(
-          'No data available to export.', 
-          'Close', { duration: 3000 }
-        );
-        return new Blob(); 
+      this.snackBar.open('No data available to export.', 'Close', {
+        duration: 3000,
+      });
+      return new Blob();
     }
 
     this.filteredData.forEach((faculty, index) => {
@@ -373,16 +380,16 @@ export class ReportFacultyComponent
         `${faculty.facultyName} Schedule`,
         this.getAcademicYearSubtitle(faculty)
       );
-      
+
       this.drawScheduleTable(
         doc,
-        faculty.schedules ?? [], 
+        faculty.schedules ?? [],
         currentY,
         margin,
         pageWidth
       );
     });
-    return doc.output('blob'); 
+    return doc.output('blob');
   }
 
   createPdfBlob(faculty: Faculty): Blob {
@@ -391,72 +398,75 @@ export class ReportFacultyComponent
     const margin = 10;
     const topMargin = 15;
     const logoSize = 22;
-  
+
     if (faculty.schedules && faculty.schedules.length > 0) {
       // Single schedule case
       let currentY = this.drawHeader(
-        doc, topMargin, 
-        pageWidth, margin,
-        logoSize, `${faculty.facultyName}`, 
+        doc,
+        topMargin,
+        pageWidth,
+        margin,
+        logoSize,
+        `${faculty.facultyName}`,
         this.getAcademicYearSubtitle(faculty)
       );
       this.drawScheduleTable(
         doc,
-        faculty.schedules, 
-        currentY, 
-        margin, 
+        faculty.schedules,
+        currentY,
+        margin,
         pageWidth
       );
     }
     return doc.output('blob');
   }
-  
+
   // Helper method to draw the header
   private drawHeader(
-    doc: jsPDF, 
-    startY: number, 
-    pageWidth: number, 
-    margin: number, 
-    logoSize: number, 
-    title: string, 
+    doc: jsPDF,
+    startY: number,
+    pageWidth: number,
+    margin: number,
+    logoSize: number,
+    title: string,
     subtitle: string
   ): number {
     doc.setTextColor(0, 0, 0);
-    const logoUrl = 
-    'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
-    const logoXPosition = pageWidth / 25 + 25; 
+    const logoUrl =
+      'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
+    const logoXPosition = pageWidth / 25 + 25;
     doc.addImage(logoUrl, 'PNG', logoXPosition, startY - 5, logoSize, logoSize);
-  
+
     // Add the university name
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.text(
       'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
-      pageWidth / 2, 
-      startY, 
+      pageWidth / 2,
+      startY,
       { align: 'center' }
     );
-  
+
     let currentY = startY + 5;
-  
+
     // Add the university address
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.text(
-      'Gen. Santos Ave. Upper Bicutan, Taguig City', 
-      pageWidth / 2, 
-      currentY, 
+      'Gen. Santos Ave. Upper Bicutan, Taguig City',
+      pageWidth / 2,
+      currentY,
       { align: 'center' }
     );
-  
+
     currentY += 10;
-  
-    // Add the title 
+
+    // Add the title
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.text(title, pageWidth / 2, currentY, { align: 'center' });
     currentY += 8;
-  
+
     if (subtitle) {
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
@@ -468,183 +478,182 @@ export class ReportFacultyComponent
     doc.setLineWidth(0.5);
     doc.line(margin, currentY, pageWidth - margin, currentY);
     currentY += 7;
-       
+
     return currentY;
   }
-  
+
   // Helper function to draw the schedule table
   private drawScheduleTable(
-    doc: jsPDF, 
-    scheduleData: any[], 
-    startY: number, 
-    margin: number, 
+    doc: jsPDF,
+    scheduleData: any[],
+    startY: number,
+    margin: number,
     pageWidth: number
   ): void {
     const hasSchedules = scheduleData && scheduleData.length > 0;
-  
+
     if (!hasSchedules) {
       doc.setFontSize(20);
-      doc.setFont('helvetica', 'italic'); 
-      doc.setTextColor(128, 128, 128); 
-      doc.text(
-        'No Assigned Schedule',
-        pageWidth / 2,
-        startY + 50,
-        { align: 'center' }
-      );
-      return; 
+      doc.setFont('helvetica', 'italic');
+      doc.setTextColor(128, 128, 128);
+      doc.text('No Assigned Schedule', pageWidth / 2, startY + 50, {
+        align: 'center',
+      });
+      return;
     }
 
-      const days = [
-        'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
-      ];
-      const dayColumnWidth = (pageWidth - margin * 2) / days.length;
-      const pageHeight = doc.internal.pageSize.height;
-      const maxContentHeight = pageHeight - margin; 
-      
-      let currentY = startY;
-      let maxYPosition = currentY;
-  
-      // Function to start a new page and draw the header
-      const startNewPage = () => {
-        doc.addPage();
-        currentY = this.drawHeader(
-          doc,
-          15, 
-          pageWidth,
-          margin,
-          22, 
-          doc.getNumberOfPages() > 1 ? 
-            'Faculty Schedule (Continued)' : 'Faculty Schedule',
-          this.getAcademicYearSubtitle(scheduleData[0])
-        );
-          
-        // Redraw day headers on new page
-        days.forEach((day, index) => {
-          const xPosition = margin + index * dayColumnWidth;
-          doc.setFillColor(128, 0, 0);
-          doc.setTextColor(255, 255, 255);
-          doc.rect(xPosition, currentY, dayColumnWidth, 10, 'F');
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'bold');
-          doc.text(
-            day,
-            xPosition + dayColumnWidth / 2,
-            currentY + 7,
-            { align: 'center' }
-          );
-        });   
-        currentY += 12; 
-        return currentY;
-      };
+    const days = [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+    ];
+    const dayColumnWidth = (pageWidth - margin * 2) / days.length;
+    const pageHeight = doc.internal.pageSize.height;
+    const maxContentHeight = pageHeight - margin;
 
-      // Draw initial day headers
+    let currentY = startY;
+    let maxYPosition = currentY;
+
+    // Function to start a new page and draw the header
+    const startNewPage = () => {
+      doc.addPage();
+      currentY = this.drawHeader(
+        doc,
+        15,
+        pageWidth,
+        margin,
+        22,
+        doc.getNumberOfPages() > 1
+          ? 'Faculty Schedule (Continued)'
+          : 'Faculty Schedule',
+        this.getAcademicYearSubtitle(scheduleData[0])
+      );
+
+      // Redraw day headers on new page
       days.forEach((day, index) => {
-          const xPosition = margin + index * dayColumnWidth;
-          doc.setFillColor(128, 0, 0);
-          doc.setTextColor(255, 255, 255);
-          doc.rect(xPosition, currentY, dayColumnWidth, 10, 'F');
-          doc.setFontSize(10);
-          doc.setFont('helvetica', 'bold');
-          doc.text(
-              day,
-              xPosition + dayColumnWidth / 2,
-              currentY + 7,
-              { align: 'center' }
-          );
+        const xPosition = margin + index * dayColumnWidth;
+        doc.setFillColor(128, 0, 0);
+        doc.setTextColor(255, 255, 255);
+        doc.rect(xPosition, currentY, dayColumnWidth, 10, 'F');
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text(day, xPosition + dayColumnWidth / 2, currentY + 7, {
+          align: 'center',
+        });
       });
-  
-      currentY += 12; // Space after headers
-  
-      // Process each day's schedule
-      days.forEach((day, dayIndex) => {
-        const xPosition = margin + dayIndex * dayColumnWidth;
-        let yPosition = currentY;
-          
-        const daySchedule = scheduleData
+      currentY += 12;
+      return currentY;
+    };
+
+    // Draw initial day headers
+    days.forEach((day, index) => {
+      const xPosition = margin + index * dayColumnWidth;
+      doc.setFillColor(128, 0, 0);
+      doc.setTextColor(255, 255, 255);
+      doc.rect(xPosition, currentY, dayColumnWidth, 10, 'F');
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.text(day, xPosition + dayColumnWidth / 2, currentY + 7, {
+        align: 'center',
+      });
+    });
+
+    currentY += 12; // Space after headers
+
+    // Process each day's schedule
+    days.forEach((day, dayIndex) => {
+      const xPosition = margin + dayIndex * dayColumnWidth;
+      let yPosition = currentY;
+
+      const daySchedule = scheduleData
         .filter((item: any) => item.day === day)
-        .sort((a: any, b: any) => 
-          this.timeToMinutes(a.start_time) - this.timeToMinutes(b.start_time)
+        .sort(
+          (a: any, b: any) =>
+            this.timeToMinutes(a.start_time) - this.timeToMinutes(b.start_time)
         );
-  
-        if (daySchedule.length > 0) {
-          daySchedule.forEach((item: any) => {
-            const boxHeight = 35;
-            if (yPosition + boxHeight > maxContentHeight) {
-              days.forEach((_, i) => {
-                const lineX = margin + i * dayColumnWidth;
-                doc.setDrawColor(200, 200, 200);
-                doc.setLineWidth(0.5);
-                doc.line(lineX, startY, lineX, maxYPosition);
-              });
-              doc.line(
-                pageWidth - margin, startY, pageWidth - margin, maxYPosition
-              );
-                        
-              yPosition = startNewPage();
-              maxYPosition = yPosition;
-            }
-    
-            const startTime = this.formatTime(item.start_time);
-            const endTime = this.formatTime(item.end_time);
-            const courseContent = [
-              item.course_details.course_code,
-              item.course_details.course_title,
-              `${item.program_code} ${item.year_level} - ${item.section_name}`,
-              item.room_code,
-              `${startTime} - ${endTime}`
-            ];
-    
-            // Draw course block
-            doc.setFillColor(240, 240, 240);
-            doc.rect(xPosition, yPosition, dayColumnWidth, boxHeight, 'F');
-    
-            let textYPosition = yPosition + 5;
-            courseContent.forEach((line: string, index) => {
-              doc.setTextColor(0);
-              doc.setFontSize(9);
-              doc.setFont(
-                index <= 1 ? 'helvetica' : 'helvetica',
-                index <= 1 ? 'bold' : 'normal'
-              );
-                          
-              const wrappedLines = doc.splitTextToSize(
-                line, dayColumnWidth - 10
-              );
-              wrappedLines.forEach((wrappedLine: string) => {
-                doc.text(wrappedLine, xPosition + 5, textYPosition);
-                textYPosition += 5;
-              });
-      
-              if (index === courseContent.length - 1) {
-                const timeTextWidth = doc.getTextWidth(line);
-                doc.setDrawColor(0, 0, 0);
-                doc.setLineWidth(0.2);
-                doc.line(
-                  xPosition + 5,
-                  textYPosition - 4,
-                  xPosition + 5 + timeTextWidth,
-                  textYPosition - 4
-                );
-              }
+
+      if (daySchedule.length > 0) {
+        daySchedule.forEach((item: any) => {
+          const boxHeight = 35;
+          if (yPosition + boxHeight > maxContentHeight) {
+            days.forEach((_, i) => {
+              const lineX = margin + i * dayColumnWidth;
+              doc.setDrawColor(200, 200, 200);
+              doc.setLineWidth(0.5);
+              doc.line(lineX, startY, lineX, maxYPosition);
             });
-    
-            yPosition += boxHeight + 5;
-            if (yPosition > maxYPosition) {
-              maxYPosition = yPosition;
+            doc.line(
+              pageWidth - margin,
+              startY,
+              pageWidth - margin,
+              maxYPosition
+            );
+
+            yPosition = startNewPage();
+            maxYPosition = yPosition;
+          }
+
+          const startTime = this.formatTime(item.start_time);
+          const endTime = this.formatTime(item.end_time);
+          const courseContent = [
+            item.course_details.course_code,
+            item.course_details.course_title,
+            `${item.program_code} ${item.year_level} - ${item.section_name}`,
+            item.room_code,
+            `${startTime} - ${endTime}`,
+          ];
+
+          // Draw course block
+          doc.setFillColor(240, 240, 240);
+          doc.rect(xPosition, yPosition, dayColumnWidth, boxHeight, 'F');
+
+          let textYPosition = yPosition + 5;
+          courseContent.forEach((line: string, index) => {
+            doc.setTextColor(0);
+            doc.setFontSize(9);
+            doc.setFont(
+              index <= 1 ? 'helvetica' : 'helvetica',
+              index <= 1 ? 'bold' : 'normal'
+            );
+
+            const wrappedLines = doc.splitTextToSize(line, dayColumnWidth - 10);
+            wrappedLines.forEach((wrappedLine: string) => {
+              doc.text(wrappedLine, xPosition + 5, textYPosition);
+              textYPosition += 5;
+            });
+
+            if (index === courseContent.length - 1) {
+              const timeTextWidth = doc.getTextWidth(line);
+              doc.setDrawColor(0, 0, 0);
+              doc.setLineWidth(0.2);
+              doc.line(
+                xPosition + 5,
+                textYPosition - 4,
+                xPosition + 5 + timeTextWidth,
+                textYPosition - 4
+              );
             }
           });
-        }
-      });
-  
-      days.forEach((_, i) => {
-        const lineX = margin + i * dayColumnWidth;
-        doc.setDrawColor(200, 200, 200);
-        doc.setLineWidth(0.5);
-        doc.line(lineX, startY, lineX, maxYPosition);
-      });
-      doc.line(pageWidth - margin, startY, pageWidth - margin, maxYPosition);
-      doc.line(margin, maxYPosition, pageWidth - margin, maxYPosition);
+
+          yPosition += boxHeight + 5;
+          if (yPosition > maxYPosition) {
+            maxYPosition = yPosition;
+          }
+        });
+      }
+    });
+
+    days.forEach((_, i) => {
+      const lineX = margin + i * dayColumnWidth;
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.5);
+      doc.line(lineX, startY, lineX, maxYPosition);
+    });
+    doc.line(pageWidth - margin, startY, pageWidth - margin, maxYPosition);
+    doc.line(margin, maxYPosition, pageWidth - margin, maxYPosition);
   }
 
   private formatTime(time: string): string {

@@ -234,17 +234,17 @@ export class SchedulingService {
     year_level: number,
     section_id: number
   ): Observable<{ isValid: boolean; message: string }> {
-    console.log(`Received parameters:`, {
-      schedule_id,
-      faculty_id,
-      room_id,
-      day,
-      start_time,
-      end_time,
-      program_id,
-      year_level,
-      section_id,
-    });
+    // console.log(`Received parameters:`, {
+    //   schedule_id,
+    //   faculty_id,
+    //   room_id,
+    //   day,
+    //   start_time,
+    //   end_time,
+    //   program_id,
+    //   year_level,
+    //   section_id,
+    // });
 
     return forkJoin([
       this.populateSchedules(),
@@ -612,14 +612,14 @@ export class SchedulingService {
     const start2Minutes = this.timeToMinutes(start2);
     const end2Minutes = this.timeToMinutes(end2);
 
-    console.log('Time overlap check:', {
-      time1: `${start1}-${end1}`,
-      time2: `${start2}-${end2}`,
-      start1Minutes,
-      end1Minutes,
-      start2Minutes,
-      end2Minutes,
-    });
+    // console.log('Time overlap check:', {
+    //   time1: `${start1}-${end1}`,
+    //   time2: `${start2}-${end2}`,
+    //   start1Minutes,
+    //   end1Minutes,
+    //   start2Minutes,
+    //   end2Minutes,
+    // });
 
     return start1Minutes < end2Minutes && end1Minutes > start2Minutes;
   }

@@ -198,7 +198,7 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     confirmDialogRef.afterClosed().subscribe((result) => {
-      console.log('Dialog result:', result);
+      // console.log('Dialog result:', result);
       if (result === 'Log Out') {
         const loadingDialogRef = this.dialog.open(DialogGenericComponent, {
           data: {
@@ -211,7 +211,7 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
 
         this.authService.logout().subscribe({
           next: (response) => {
-            console.log('Logout successful', response);
+            // console.log('Logout successful', response);
 
             this.authService.clearCookies();
 

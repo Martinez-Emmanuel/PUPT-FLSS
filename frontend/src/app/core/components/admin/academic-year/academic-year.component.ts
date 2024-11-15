@@ -256,10 +256,10 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
   onManageYearLevels(program: Program) {
     const fields: DialogFieldConfig[] = [];
 
-    console.log('Fetched Program ID:', program.program_id);
+    // console.log('Fetched Program ID:', program.program_id);
 
     this.curriculumService.getCurricula().subscribe((curricula) => {
-      console.log(curricula);
+      // console.log(curricula);
 
       const curriculumOptions = curricula.map((curriculum) => ({
         year: curriculum.curriculum_year,
@@ -471,9 +471,9 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
                 )
                 .subscribe(
                   (response) => {
-                    console.log(
-                      `Year Level ${yearLevelObj.year_level} updated successfully.`
-                    );
+                    // console.log(
+                    //   `Year Level ${yearLevelObj.year_level} updated successfully.`
+                    // );
                   },
                   (error) => {
                     console.error(

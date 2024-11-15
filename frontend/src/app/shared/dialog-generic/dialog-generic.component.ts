@@ -41,7 +41,7 @@ export class DialogGenericComponent {
   }
 
   onActionClick(action: string | undefined): void {
-    console.log('Action clicked:', action);
+    // console.log('Action clicked:', action);
     this.dialogRef.close(action);
   }
 }

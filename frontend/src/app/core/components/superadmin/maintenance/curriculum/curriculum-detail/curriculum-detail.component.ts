@@ -134,7 +134,7 @@ export class CurriculumDetailComponent implements OnInit {
     this.curriculumService.getCurriculumByYear(year).subscribe({
       next: (curriculum) => {
         if (curriculum) {
-          console.log('Full Curriculum Object:', curriculum);
+          // console.log('Full Curriculum Object:', curriculum);
           this.curriculum = curriculum;
            // Restore selected program and year, or set defaults
            this.selectedProgram = selectedProgram || curriculum.programs[0]?.name || ''; 
@@ -227,7 +227,7 @@ export class CurriculumDetailComponent implements OnInit {
         }
         this.cdr.detectChanges();
       } else {
-        console.log('Program not found:', this.selectedProgram);
+        // console.log('Program not found:', this.selectedProgram);
       }
     }
   }

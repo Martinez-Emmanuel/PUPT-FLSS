@@ -157,7 +157,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     if (facultySchedule.is_published === 1) {
       this.events = this.createEventsFromSchedule(facultySchedule);
     } else {
-      console.log('Schedule is not published yet.');
+      // console.log('Schedule is not published yet.');
       this.events = [];
     }
   }

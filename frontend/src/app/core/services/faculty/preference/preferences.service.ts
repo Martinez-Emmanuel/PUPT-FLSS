@@ -252,7 +252,7 @@ export class PreferencesService {
     const url = `${this.baseUrl}/email-all-faculty-preferences`;
     return this.http.post(url, {}).pipe(
       tap(() => {
-        console.log('Preference-related email sent to all faculty.');
+        // console.log('Preference-related email sent to all faculty.');
       }),
       catchError((error) => {
         console.error('Error sending email to all faculty:', error);
@@ -298,7 +298,7 @@ export class PreferencesService {
     return this.http.post(url, { faculty_id }).pipe(
       tap(() => {
         console.log(
-          `Preference-related email sent to faculty ID ${faculty_id}.`
+          // `Preference-related email sent to faculty ID ${faculty_id}.`
         );
       }),
       catchError((error) => {
@@ -350,7 +350,7 @@ export class PreferencesService {
     this.preferencesCache.delete(facultyId);
     this.getPreferencesByFacultyId(facultyId).subscribe({
       next: () => {
-        console.log(`Preferences cache updated for faculty ID ${facultyId}.`);
+        // console.log(`Preferences cache updated for faculty ID ${facultyId}.`);
       },
       error: (error) => {
         console.error(

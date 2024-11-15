@@ -1,4 +1,10 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  AfterViewInit,
+  ViewChild,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -6,7 +12,10 @@ import { BehaviorSubject } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
-import { MatSlideToggleModule, MatSlideToggleChange } from '@angular/material/slide-toggle';
+import {
+  MatSlideToggleModule,
+  MatSlideToggleChange,
+} from '@angular/material/slide-toggle';
 import { MatPaginatorModule, MatPaginator } from '@angular/material/paginator';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -15,13 +24,22 @@ import { MatSnackBarModule, MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
-import { TableHeaderComponent, InputField } from '../../../../shared/table-header/table-header.component';
+import {
+  TableHeaderComponent,
+  InputField,
+} from '../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 import { DialogPrefComponent } from '../../../../shared/dialog-pref/dialog-pref.component';
 import { DialogExportComponent } from '../../../../shared/dialog-export/dialog-export.component';
-import { DialogActionComponent, DialogActionData } from '../../../../shared/dialog-action/dialog-action.component';
+import {
+  DialogActionComponent,
+  DialogActionData,
+} from '../../../../shared/dialog-action/dialog-action.component';
 
-import { PreferencesService, ActiveSemester } from '../../../services/faculty/preference/preferences.service';
+import {
+  PreferencesService,
+  ActiveSemester,
+} from '../../../services/faculty/preference/preferences.service';
 
 import { fadeAnimation } from '../../../animations/animations';
 
@@ -459,7 +477,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     });
 
     dialogRef.afterClosed().subscribe((result) => {
-      console.log('Export All dialog closed', result);
+      // console.log('Export All dialog closed', result);
     });
   }
 
