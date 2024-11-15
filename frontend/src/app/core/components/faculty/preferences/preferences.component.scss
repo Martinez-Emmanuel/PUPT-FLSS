@@ -19,24 +19,6 @@
   @include default-transition;
   height: 100%;
   position: relative;
-
-  .disabled {
-    opacity: 0.5;
-    user-select: none;
-    transition: opacity 0.3s ease-in-out;
-  }
-
-  .overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: #ffffff00;
-    z-index: 10;
-    pointer-events: auto;
-    cursor: not-allowed;
-  }
 }
 
 /* First row - Header & Units Cards */
