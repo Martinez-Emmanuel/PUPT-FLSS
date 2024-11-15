@@ -6,11 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin, of, Observable } from 'rxjs';
 import { switchMap, finalize, tap } from 'rxjs/operators';
 
-import {
-  MAT_DIALOG_DATA,
-  MatDialogRef,
-  MatDialogModule,
-} from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -19,13 +15,7 @@ import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import {
-  MatNativeDateModule,
-  DateAdapter,
-  MAT_DATE_FORMATS,
-  MAT_DATE_LOCALE,
-  NativeDateAdapter,
-} from '@angular/material/core';
+import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE, NativeDateAdapter } from '@angular/material/core';
 
 import { ReportGenerationService } from '../../core/services/admin/report-generation/report-generation.service';
 import { PreferencesService } from '../../core/services/faculty/preference/preferences.service';

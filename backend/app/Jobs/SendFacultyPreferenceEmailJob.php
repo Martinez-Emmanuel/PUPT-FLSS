@@ -8,16 +8,19 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Mail;
+use App\Models\PreferencesSetting; 
+use Carbon\Carbon;
 
 class SendFacultyPreferenceEmailJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $faculty;
+    protected $global_deadline;
+    protected $days_left;
 
     public $tries = 5;
     public $timeout = 120;
-
     /**
      * Create a new job instance.
      *
@@ -26,8 +29,20 @@ class SendFacultyPreferenceEmailJob implements ShouldQueue
     public function __construct($faculty)
     {
         $this->faculty = $faculty;
-    }
+        
+        // Retrieve the global deadline for the faculty member
+        $settings = PreferencesSetting::where('faculty_id', $faculty->id)->first();
+        $this->global_deadline = $settings->global_deadline ?? null;
 
+        if ($this->global_deadline) {
+            // Calculate days left
+            $deadline = Carbon::parse($this->global_deadline);
+            $today = Carbon::now();
+            $this->days_left = $deadline->diffInDays($today);
+        } else {
+            $this->days_left = null;
+        }
+    }
     /**
      * Execute the job.
      *
@@ -39,6 +54,8 @@ class SendFacultyPreferenceEmailJob implements ShouldQueue
             'faculty_name' => $this->faculty->user->name,
             'email' => $this->faculty->faculty_email,
             'faculty_units' => $this->faculty->faculty_units,
+            'global_deadline' => $this->global_deadline ? $this->global_deadline->format('M d, Y') : 'No deadline set',
+            'days_left' => $this->days_left,
         ];
 
         Mail::send('emails.preferences_all_open', $dataPreference, function ($message) use ($dataPreference) {

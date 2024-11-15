@@ -19,11 +19,11 @@ import { MatRippleModule } from '@angular/material/core';
 import { TimeFormatPipe } from '../../../pipes/time-format/time-format.pipe';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
-import { TableDialogComponent } from '../../../../shared/table-dialog/table-dialog.component';
 import { DialogDayTimeComponent } from '../../../../shared/dialog-day-time/dialog-day-time.component';
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
 import { DialogPrefSuccessComponent } from '../../../../shared/dialog-pref-success/dialog-pref-success.component';
 import { DialogPrefComponent } from '../../../../shared/dialog-pref/dialog-pref.component';
+import { DialogRequestAccessComponent } from '../../../../shared/dialog-request-access/dialog-request-access.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { ThemeService } from '../../../services/theme/theme.service';
@@ -71,6 +71,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   isLoading = true;
   isSubmitting = false;
   isRemovingAll = false;
+  hasRequest = false;
 
   academicYear: string = '';
   semesterLabel: string = '';
@@ -178,6 +179,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
               this.facultyName = facultyPreference.faculty_name;
 
               this.isPreferencesEnabled = facultyPreference.is_enabled === 1;
+              this.hasRequest = facultyPreference.has_request === 1;
 
               const activeSemester = facultyPreference.active_semesters[0];
               this.academicYear = activeSemester.academic_year;
@@ -647,6 +649,22 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       },
       disableClose: true,
     });
+  }
+
+  openRequestAccessDialog(): void {
+    this.dialog
+      .open(DialogRequestAccessComponent, {
+        width: '25rem',
+        disableClose: true,
+        data: {
+          has_request: this.hasRequest,
+          facultyId: this.facultyId,
+        },
+      })
+      .afterClosed()
+      .subscribe(() => {
+        this.loadAllData();
+      });
   }
 
   // ====================

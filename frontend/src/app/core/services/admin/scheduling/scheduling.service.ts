@@ -82,7 +82,7 @@ export class SchedulingService {
   getAllRooms(): Observable<{ rooms: Room[] }> {
     if (!this.roomsCache$) {
       this.roomsCache$ = this.http
-        .get<{ rooms: Room[] }>(`${this.baseUrl}/get-rooms`)
+        .get<{ rooms: Room[] }>(`${this.baseUrl}/get-available-rooms`)
         .pipe(shareReplay(1), catchError(this.handleError));
     }
     return this.roomsCache$;
@@ -92,7 +92,7 @@ export class SchedulingService {
   getFacultyDetails(): Observable<{ faculty: Faculty[] }> {
     if (!this.facultyCache$) {
       this.facultyCache$ = this.http
-        .get<{ faculty: Faculty[] }>(`${this.baseUrl}/get-faculty`)
+        .get<{ faculty: Faculty[] }>(`${this.baseUrl}/get-active-faculty`)
         .pipe(shareReplay(1), catchError(this.handleError));
     }
     return this.facultyCache$;

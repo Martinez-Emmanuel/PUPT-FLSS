@@ -26,7 +26,7 @@ export class AcademicYearService {
   }
 
   /**
-   * Add a new academic year.
+   * Add a new academic year with improved error handling
    */
   addAcademicYear(yearStart: string, yearEnd: string): Observable<any> {
     return this.http
@@ -35,11 +35,19 @@ export class AcademicYearService {
         year_end: yearEnd,
       })
       .pipe(
-        catchError((error) => {
+        catchError((error: HttpErrorResponse) => {
+          let errorMessage = 'An unexpected error occurred.';
+
           if (error.error && error.error.message) {
-            return throwError(() => new Error(error.error.message));
+            errorMessage = error.error.message;
           }
-          return throwError(() => new Error('An unexpected error occurred.'));
+
+          // Handle 422 Unprocessable Entity responses specifically
+          if (error.status === 422) {
+            errorMessage = error.error.message;
+          }
+
+          return throwError(() => new Error(errorMessage));
         })
       );
   }
@@ -49,7 +57,7 @@ export class AcademicYearService {
    */
   deleteAcademicYear(academicYearId: number): Observable<any> {
     return this.http
-      .request('DELETE', `${this.baseUrl}/delete-ay`, {
+      .request('DELETE', `${this.baseUrl}/delete-academic-year`, {
         body: { academic_year_id: academicYearId },
       })
       .pipe(catchError(this.handleError));
@@ -126,7 +134,7 @@ export class AcademicYearService {
   }
 
   /**
-   * Updates the number of sections for a specific year level 
+   * Updates the number of sections for a specific year level
    * within a program and academic year.
    */
   updateSections(

@@ -35,6 +35,7 @@ interface Faculty {
   facultyType: string;
   facultyUnits: number;
   is_enabled: boolean;
+  has_request: number;
   active_semesters?: ActiveSemester[];
 }
 
@@ -75,6 +76,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     'facultyType',
     // 'facultyUnits',
     'action',
+    'requests',
     'toggle',
   ];
 
@@ -152,6 +154,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
             facultyCode: faculty.faculty_code,
             facultyType: faculty.faculty_type,
             facultyUnits: faculty.faculty_units,
+            has_request: faculty.has_request,
             is_enabled: faculty.is_enabled === 1,
             active_semesters: faculty.active_semesters,
           }));
