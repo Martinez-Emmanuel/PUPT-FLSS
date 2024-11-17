@@ -16,7 +16,6 @@ import { FacultyService, Faculty } from '../../../../services/superadmin/managem
 
 import { fadeAnimation } from '../../../../animations/animations';
 
-
 @Component({
   selector: 'app-faculty',
   standalone: true,
@@ -34,10 +33,16 @@ import { fadeAnimation } from '../../../../animations/animations';
 })
 export class FacultyComponent implements OnInit {
   facultyStatuses = ['Active', 'Inactive'];
-  facultyTypes = ['Full-time (Permanent)', 'Full-time (Temporary)', 'Full-time (Designee)', 'Part-time'];
+  facultyTypes = [
+    'Full-time (Permanent)',
+    'Full-time (Temporary)',
+    'Full-time (Designee)',
+    'Part-time',
+  ];
   selectedFacultyIndex: number | null = null;
 
   faculty: Faculty[] = [];
+  filteredFaculty: Faculty[] = [];
   isLoading = true;
 
   columns = [
@@ -50,7 +55,16 @@ export class FacultyComponent implements OnInit {
     { key: 'status', label: 'Status' },
   ];
 
-  displayedColumns: string[] = ['index', 'code', 'name', 'faculty_email', 'faculty_type', 'faculty_units', 'status', 'action'];
+  displayedColumns: string[] = [
+    'index',
+    'code',
+    'name',
+    'faculty_email',
+    'faculty_type',
+    'faculty_units',
+    'status',
+    'action',
+  ];
 
   headerInputFields: InputField[] = [
     {
@@ -71,50 +85,75 @@ export class FacultyComponent implements OnInit {
     this.fetchFaculty();
   }
 
-fetchFaculty() {
+  /**
+   * Fetches the list of faculty members from the service.
+   * Initializes both faculty and filteredFaculty arrays.
+   */
+  fetchFaculty() {
     this.isLoading = true;
-    this.facultyService.getFaculty().pipe(
-      catchError((error) => {
-        console.error('Error fetching faculty:', error);
-        this.snackBar.open('Error fetching faculty. Please try again.', 'Close', { duration: 3000 });
+    this.facultyService
+      .getFaculty()
+      .pipe(
+        catchError((error) => {
+          console.error('Error fetching faculty:', error);
+          this.snackBar.open(
+            'Error fetching faculty. Please try again.',
+            'Close',
+            { duration: 3000 }
+          );
+          this.isLoading = false;
+          this.cdr.markForCheck();
+          return of([]);
+        })
+      )
+      .subscribe((faculty) => {
+        this.faculty = faculty.map((user, index) => ({
+          id: user.id,
+          code: user.code,
+          name: user.name,
+          faculty_email: user.faculty_email || '',
+          faculty_type: user.faculty_type || '',
+          faculty_units: user.faculty_units || 0,
+          status: user.status || 'Active',
+          role: user.role,
+        }));
+        this.filteredFaculty = [...this.faculty];
         this.isLoading = false;
-        return of([]);
-      })
-    ).subscribe((faculty) => {
-      this.faculty = faculty.map((user, index) => ({
-        id: user.id,
-        code: user.code,
-        name: user.name,
-        faculty_email: user.faculty_email || '',
-        faculty_type: user.faculty_type || '',
-        faculty_units: user.faculty_units || 0,
-        status: user.status || 'Active',
-        role: user.role,
-      }));
-      this.isLoading = false;
-      this.cdr.markForCheck();
-    });
+        this.cdr.markForCheck();
+      });
   }
 
-
+  /**
+   * Handles the search input and filters the faculty accordingly.
+   * @param searchTerm The term entered by the user in the search field.
+   */
   onSearch(searchTerm: string) {
-    this.facultyService.getFaculty().pipe(
-      catchError((error) => {
-        console.error('Error fetching faculty for search:', error);
-        return of([]); // Return empty array on error
-      })
-    ).subscribe((faculty) => {
-      this.faculty = faculty.filter(
-        (facultyMember) =>
-          facultyMember.code.includes(searchTerm) ||
-          facultyMember.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          facultyMember.faculty_type.toLowerCase().includes(searchTerm.toLowerCase())
+    console.log('Search term:', searchTerm); // Debugging line
+    if (!searchTerm) {
+      // If search term is empty, display all faculty
+      this.filteredFaculty = [...this.faculty];
+    } else {
+      const lowerSearch = searchTerm.toLowerCase();
+      this.filteredFaculty = this.faculty.filter(
+        (faculty) =>
+          faculty.code.toLowerCase().includes(lowerSearch) ||
+          faculty.name.toLowerCase().includes(lowerSearch) ||
+          faculty.faculty_email.toLowerCase().includes(lowerSearch) ||
+          faculty.faculty_type.toLowerCase().includes(lowerSearch) ||
+          faculty.status.toLowerCase().includes(lowerSearch) ||
+          faculty.faculty_units.toString().includes(lowerSearch)
       );
-      this.cdr.markForCheck();
-    });
+    }
+    console.log('Filtered Faculty:', this.filteredFaculty);
+    this.cdr.markForCheck();
   }
 
-  private getDialogConfig(faculty?: Faculty): DialogConfig {    
+  /**
+   * Configures the dialog for adding or editing faculty.
+   * @param faculty Optional Faculty object for editing.
+   * @returns DialogConfig object.
+   */
+  private getDialogConfig(faculty?: Faculty): DialogConfig {
     return {
       title: 'Faculty',
       isEdit: !!faculty,
@@ -125,7 +164,7 @@ fetchFaculty() {
           type: 'text',
           maxLength: 12,
           required: true,
-          disabled: !!faculty,  // Disable when editing
+          disabled: !!faculty,
         },
         {
           label: 'Name',
@@ -148,7 +187,7 @@ fetchFaculty() {
           maxLength: 100,
           required: false,
           confirmPassword: true,
-        }, 
+        },
         {
           label: 'Email',
           formControlName: 'faculty_email',
@@ -170,17 +209,20 @@ fetchFaculty() {
           required: true,
         },
         {
-          label: 'Status',  // Status is now required in both add and edit
+          label: 'Status',
           formControlName: 'status',
           type: 'select',
           options: this.facultyStatuses,
-          required: true,  // Make status required
+          required: true, // Make status required
         },
       ],
-      initialValue: faculty || {},  // No default status, user must pick
+      initialValue: faculty || {},
     };
   }
 
+  /**
+   * Opens the dialog to add a new faculty member.
+   */
   openAddFacultyDialog() {
     const config = this.getDialogConfig();
     const dialogRef = this.dialog.open(TableDialogComponent, {
@@ -190,24 +232,36 @@ fetchFaculty() {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        result.role = 'faculty';  // Ensure the role is 'faculty'
-        this.facultyService.addFaculty(result).pipe(
-          catchError((error) => {
-            console.error('Error adding faculty:', error);
-            return of(null); // Handle error case
-          })
-        ).subscribe((newFaculty) => {
-          if (newFaculty) {
-            this.faculty.push(newFaculty);  // Add new faculty to the list
-            this.snackBar.open('Faculty added successfully', 'Close', { duration: 3000 });
-            this.fetchFaculty();  // Refresh the data after addition
-            this.cdr.markForCheck();
-          }
-        });
+        result.role = 'faculty';
+        this.facultyService
+          .addFaculty(result)
+          .pipe(
+            catchError((error) => {
+              console.error('Error adding faculty:', error);
+              this.snackBar.open(
+                'Error adding faculty. Please try again.',
+                'Close',
+                { duration: 3000 }
+              );
+              return of(null);
+            })
+          )
+          .subscribe((newFaculty) => {
+            if (newFaculty) {
+              this.snackBar.open('Faculty added successfully', 'Close', {
+                duration: 3000,
+              });
+              this.fetchFaculty();
+            }
+          });
       }
     });
   }
 
+  /**
+   * Opens the dialog to edit an existing faculty member.
+   * @param faculty The faculty member to edit.
+   */
   openEditFacultyDialog(faculty: Faculty) {
     this.selectedFacultyIndex = this.faculty.indexOf(faculty);
     const config = this.getDialogConfig(faculty);
@@ -219,54 +273,87 @@ fetchFaculty() {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result && this.selectedFacultyIndex !== null) {
-        this.updateFaculty(result);  // Call the update method
+        this.updateFaculty(result);
       }
     });
   }
 
+  /**
+   * Updates an existing faculty member.
+   * @param updatedFaculty The updated faculty data.
+   */
   updateFaculty(updatedFaculty: Faculty) {
-    if (this.selectedFacultyIndex !== null && this.selectedFacultyIndex !== undefined) {
+    if (
+      this.selectedFacultyIndex !== null &&
+      this.selectedFacultyIndex !== undefined
+    ) {
       const selectedFaculty = this.faculty[this.selectedFacultyIndex];
-
       if (selectedFaculty && selectedFaculty.id) {
         const facultyId = selectedFaculty.id;
-        updatedFaculty.role = 'faculty';  // Ensure role is 'faculty'
+        updatedFaculty.role = 'faculty';
 
         // Check if the password field contains the masked value ('********') or is empty.
         // If so, do not include it in the update payload.
-        if (updatedFaculty.password === '********' || !updatedFaculty.password) {
+        if (
+          updatedFaculty.password === '********' ||
+          !updatedFaculty.password
+        ) {
           delete updatedFaculty.password;
         }
 
-        this.facultyService.updateFaculty(facultyId, updatedFaculty).pipe(
-          catchError((error) => {
-            console.error('Error updating faculty:', error);
-            return of(null);
-          })
-        ).subscribe((updatedFacultyResponse) => {
-          if (updatedFacultyResponse) {
-            this.faculty[this.selectedFacultyIndex!] = updatedFacultyResponse;
-            this.snackBar.open('Faculty updated successfully', 'Close', { duration: 3000 });
-            this.fetchFaculty();  // Refresh the data after update
-            this.cdr.markForCheck();
-          }
-        });
+        this.facultyService
+          .updateFaculty(facultyId, updatedFaculty)
+          .pipe(
+            catchError((error) => {
+              console.error('Error updating faculty:', error);
+              this.snackBar.open(
+                'Error updating faculty. Please try again.',
+                'Close',
+                { duration: 3000 }
+              );
+              return of(null);
+            })
+          )
+          .subscribe((updatedFacultyResponse) => {
+            if (updatedFacultyResponse) {
+              this.snackBar.open('Faculty updated successfully', 'Close', {
+                duration: 3000,
+              });
+              this.fetchFaculty();
+            }
+          });
       }
     }
   }
 
+  /**
+   * Deletes a faculty member.
+   * @param faculty The faculty member to delete.
+   */
   deleteFaculty(faculty: Faculty) {
     const facultyId = faculty.id;
 
-    this.facultyService.deleteFaculty(facultyId).pipe(
-      catchError((error) => {
-        console.error('Error deleting faculty:', error);
-        return of(null); // Handle error case
-      })
-    ).subscribe(() => {
-      this.faculty = this.faculty.filter(f => f.id !== facultyId);  // Remove from the list
-      this.snackBar.open('Faculty deleted successfully', 'Close', { duration: 3000 });
-      this.cdr.markForCheck();
-    });
+    this.facultyService
+      .deleteFaculty(facultyId)
+      .pipe(
+        catchError((error) => {
+          console.error('Error deleting faculty:', error);
+          this.snackBar.open(
+            'Error deleting faculty. Please try again.',
+            'Close',
+            { duration: 3000 }
+          );
+          return of(null);
+        })
+      )
+      .subscribe((result) => {
+        if (result !== null) {
+          this.faculty = this.faculty.filter((f) => f.id !== facultyId);
+          this.snackBar.open('Faculty deleted successfully', 'Close', {
+            duration: 3000,
+          });
+          this.cdr.markForCheck();
+        }
+      });
   }
 }

@@ -98,6 +98,10 @@ export class TableHeaderComponent implements OnInit, OnChanges {
     });
 
     this.form.valueChanges.subscribe((value) => {
+      if ('search' in value) {
+        this.search.emit(value['search']);
+      }
+
       if ('academicYear' in value) {
         const currentValue = value['academicYear'];
         if (currentValue === '__add__') {
@@ -159,5 +163,8 @@ export class TableHeaderComponent implements OnInit, OnChanges {
   onClearSearch(key: string): void {
     this.form.get(key)?.setValue('');
     this.inputChange.emit(this.form.value);
+    if (key === 'search') {
+      this.search.emit('');
+    }
   }
 }
