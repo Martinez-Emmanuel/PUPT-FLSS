@@ -2,21 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Cookie; // Add this import
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    // Login function
+
     public function login(Request $request)
     {
         $loginUserData = $request->validate([
             'code' => 'required|string',
-            'password' => 'required|string'
+            'password' => 'required|string',
         ]);
 
         // Check if the user exists and the password is correct
@@ -30,7 +29,7 @@ class AuthController extends Controller
         $token = $tokenResult->plainTextToken;
         $expiration = Carbon::now()->addHours(24);
 
-        $faculty = $user->faculty;  
+        $faculty = $user->faculty;
 
         // Prepare user data to be stored in the cookie
         $userData = json_encode([
@@ -39,7 +38,7 @@ class AuthController extends Controller
             'code' => $user->code,
             'role' => $user->role,
             'faculty' => $faculty ? [
-                'faculty_id' => $faculty->id, 
+                'faculty_id' => $faculty->id,
                 'faculty_email' => $faculty->faculty_email,
                 'faculty_type' => $faculty->faculty_type,
                 'faculty_units' => $faculty->faculty_units,
@@ -47,18 +46,17 @@ class AuthController extends Controller
         ]);
 
         // Store the token and user info in cookies
-        Cookie::queue(Cookie::make('user_token', $token, 1440, null, null, true, true)); 
-        Cookie::queue(Cookie::make('user_info', $userData, 1440)); 
+        Cookie::queue(Cookie::make('user_token', $token, 1440, null, null, true, true));
+        Cookie::queue(Cookie::make('user_info', $userData, 1440));
 
         return response()->json([
             'message' => 'Login successful',
             'token' => $token,
             'expires_at' => $expiration,
-            'user' => json_decode($userData, true)
+            'user' => json_decode($userData, true),
         ]);
     }
 
-    // Logout function
     public function logout(Request $request)
     {
         $user = $request->user();
@@ -66,7 +64,7 @@ class AuthController extends Controller
         if ($user) {
             // Revoke the token that was used to authenticate the current request
             $request->user()->currentAccessToken()->delete();
-            
+
             // Clear the cookies
             Cookie::queue(Cookie::forget('user_token'));
             Cookie::queue(Cookie::forget('user_info'));

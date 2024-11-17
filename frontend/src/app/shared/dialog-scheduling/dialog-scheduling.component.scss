@@ -1,5 +1,9 @@
 @import "../../../styles/mixins.scss";
 
+:host {
+  @include custom-spinner(var(--primary-text));
+}
+
 .scheduling-dialog-container {
   @include flex-layout($align: stretch);
 
@@ -75,8 +79,71 @@
         $gap: var(--spacing-xs)
       );
 
+      /* ------ Day Picker Styles ------ */
+      .day-buttons-container {
+        @include flex-layout(
+          $justify: space-between,
+          $align: stretch,
+          $gap: var(--spacing-sm)
+        );
+        padding: var(--spacing-xs);
+        margin-bottom: var(--spacing-mdx);
+        background: var(--neutral-light);
+        border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
+        border-bottom: 1px solid var(--neutral-base);
+      }
+
+      .day-button {
+        @include flex-layout;
+        font-size: var(--font-size-sm);
+        width: var(--font-size-md);
+        aspect-ratio: 1 / 1;
+        padding: var(--spacing-sm);
+        margin: 1px;
+        border-radius: 50%;
+        user-select: none;
+        cursor: pointer;
+        border: 1px solid transparent;
+
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+
+        &::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          border-radius: 50%;
+          @include gradient-primary(315deg);
+          opacity: 0;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          z-index: -1;
+        }
+
+        &.selected {
+          color: white;
+
+          &::before {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        &.original-day {
+          border-color: var(--primary-text);
+          border-style: dashed;
+        }
+
+        &:hover:not(.selected) {
+          background-color: var(--neutral-fade);
+        }
+      }
+
       .date-fields {
-        @include flex-layout($gap: var(--spacing-sm));
+        @include flex-layout($gap: var(--spacing-md));
       }
 
       /* Icon color when the field is focused */
@@ -106,10 +173,6 @@
       border-radius: var(--border-radius-sm);
       width: fit-content;
 
-      span[mat-symbol] {
-        font-size: var(--font-size-mdx);
-      }
-
       &.no-conflict {
         background-color: var(--secondary-fade);
         color: var(--secondary-text);
@@ -126,6 +189,7 @@
     @include reset-styles;
     @include flex-layout($align: stretch, $justify: space-between);
     padding: var(--spacing-lg) 0;
+    user-select: none;
 
     .clear-all-button {
       color: var(--neutral-base);
@@ -149,9 +213,10 @@
         color: var(--primary-text) !important;
       }
       .action-button {
-        transition: all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        @include gradient-primary(315deg);
 
         &:disabled {
+          background: var(--neutral-fade);
           color: var(--neutral-base) !important;
           opacity: var(--opacity-semi-opaque);
         }

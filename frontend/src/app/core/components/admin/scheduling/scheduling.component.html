@@ -45,8 +45,36 @@
           <th mat-header-cell *matHeaderCellDef class="custom-header">
             Course Code
           </th>
-          <td mat-cell *matCellDef="let element" class="custom-cell">
-            {{ element.course_code }}
+          <td
+            mat-cell
+            *matCellDef="let element"
+            class="custom-cell course-code-cell"
+          >
+            <div class="course-code-wrapper">
+              {{ element.course_code }}
+              <!-- Add Icon for Original Courses -->
+              @if (!element.is_copy) {
+              <span
+                mat-symbol="content_copy"
+                class="copy-icon"
+                (click)="addCourseCopy(element)"
+                matTooltip="Add {{
+                  getOrdinalSuffix(getScheduleCount(element) + 1)
+                }} schedule for {{ element.course_code }}"
+              ></span>
+              }
+              <!-- Remove Icon for Copied Courses -->
+              @if (element.is_copy) {
+              <span
+                mat-symbol="do_not_disturb_on"
+                class="remove-icon"
+                (click)="removeCourseCopy(element)"
+                matTooltip="Remove {{
+                  getOrdinalSuffix(getScheduleIndex(element))
+                }} schedule for {{ element.course_code }}"
+              ></span>
+              }
+            </div>
           </td>
         </ng-container>
 
@@ -62,7 +90,9 @@
 
         <!-- Lec Hours Column -->
         <ng-container matColumnDef="lec_hours">
-          <th mat-header-cell *matHeaderCellDef class="custom-header">Lec</th>
+          <th mat-header-cell *matHeaderCellDef class="custom-header min">
+            Lec
+          </th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
             {{ element.lec_hours }}
           </td>
@@ -70,7 +100,9 @@
 
         <!-- Lab Hours Column -->
         <ng-container matColumnDef="lab_hours">
-          <th mat-header-cell *matHeaderCellDef class="custom-header">Lab</th>
+          <th mat-header-cell *matHeaderCellDef class="custom-header min">
+            Lab
+          </th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
             {{ element.lab_hours }}
           </td>
@@ -78,29 +110,31 @@
 
         <!-- Units Column -->
         <ng-container matColumnDef="units">
-          <th mat-header-cell *matHeaderCellDef class="custom-header">Units</th>
+          <th mat-header-cell *matHeaderCellDef class="custom-header min">
+            Units
+          </th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
             {{ element.units }}
           </td>
         </ng-container>
 
         <!-- Tuition Hours Column -->
-        <ng-container matColumnDef="tuition_hours">
+        <!-- <ng-container matColumnDef="tuition_hours">
           <th mat-header-cell *matHeaderCellDef class="custom-header">
-            Tuition Hours
+            Tuition<br />Hours
           </th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
             {{ element.tuition_hours }}
           </td>
-        </ng-container>
+        </ng-container> -->
 
         <!-- Day Column -->
         <ng-container matColumnDef="day">
           <th mat-header-cell *matHeaderCellDef class="custom-header">Day</th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
-            <span [class.not-set-badge]="element.day === 'Not set'">{{
-              element.day
-            }}</span>
+            <span [class.not-set-badge]="element.day === 'Not set'">
+              {{ element.day }}
+            </span>
           </td>
         </ng-container>
 
@@ -108,9 +142,9 @@
         <ng-container matColumnDef="time">
           <th mat-header-cell *matHeaderCellDef class="custom-header">Time</th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
-            <span [class.not-set-badge]="element.time === 'Not set'">{{
-              element.time
-            }}</span>
+            <span [class.not-set-badge]="element.time === 'Not set'">
+              {{ element.time }}
+            </span>
           </td>
         </ng-container>
 
@@ -120,9 +154,9 @@
             Professor
           </th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
-            <span [class.not-set-badge]="element.professor === 'Not set'">{{
-              element.professor
-            }}</span>
+            <span [class.not-set-badge]="element.professor === 'Not set'">
+              {{ element.professor }}
+            </span>
           </td>
         </ng-container>
 
@@ -130,9 +164,9 @@
         <ng-container matColumnDef="room">
           <th mat-header-cell *matHeaderCellDef class="custom-header">Room</th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
-            <span [class.not-set-badge]="element.room === 'Not set'">{{
-              element.room
-            }}</span>
+            <span [class.not-set-badge]="element.room === 'Not set'">
+              {{ element.room }}
+            </span>
           </td>
         </ng-container>
 
@@ -146,19 +180,25 @@
               <button
                 mat-button
                 class="sec-ripple edit-button"
-                (click)="openEditDialog(element)"
+                (click)="openEditScheduleDialog(element)"
                 [disabled]="loadingScheduleId === element.schedule_id"
               >
                 <div class="button-content">
-                  @if (loadingScheduleId === element.schedule_id) {
-                  <mat-spinner
-                    class="custom-spinner sec-spinner"
-                    diameter="24"
-                  ></mat-spinner>
-                  } @else {
-                  <mat-icon>edit</mat-icon>
-                  <span>Edit</span>
-                  }
+                  <ng-container
+                    *ngIf="
+                      loadingScheduleId === element.schedule_id;
+                      else editIcon
+                    "
+                  >
+                    <mat-spinner
+                      class="custom-spinner"
+                      diameter="25"
+                    ></mat-spinner>
+                  </ng-container>
+                  <ng-template #editIcon>
+                    <mat-icon>edit</mat-icon>
+                    <span>Edit</span>
+                  </ng-template>
                 </div>
               </button>
             </div>
@@ -166,7 +206,24 @@
         </ng-container>
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedColumns; let i = index"
+          [class.has-copies]="hasCopies(row)"
+          [class.last-copy]="isLastCopy(row, i)"
+        ></tr>
+
+        <!-- No Data Row -->
+        <tr *matNoDataRow>
+          <td class="no-data-cell" [attr.colspan]="displayedColumns.length">
+            <div class="flex-cell">
+              <div class="no-data-text">
+                <span mat-symbol="info"></span>
+                <span> No schedules found.</span>
+              </div>
+            </div>
+          </td>
+        </tr>
       </table>
     </div>
   </div>

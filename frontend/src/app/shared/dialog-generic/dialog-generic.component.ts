@@ -3,7 +3,7 @@ import { Component, Inject } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
-import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { LoadingComponent } from '../loading/loading.component';
 
 import { CommonModule } from '@angular/common';
 
@@ -25,7 +25,7 @@ export interface DialogData {
     CommonModule,
     MatDialogModule,
     MatButtonModule,
-    MatProgressBarModule,
+    LoadingComponent,
   ],
   templateUrl: './dialog-generic.component.html',
   styleUrls: ['./dialog-generic.component.scss'],

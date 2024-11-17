@@ -1,4 +1,5 @@
 @import "../../../styles/mixins";
+
 *,
 *::before {
   @include default-transition;
@@ -10,7 +11,7 @@
 
 .login-container {
   display: flex;
-  height: 100vh;
+  height: 100%;
   background-size: cover;
   background-position: center;
   position: relative;
@@ -54,13 +55,13 @@
 /* ------- LOGIN FORM SECTION STYLING ------- */
 
 .login-form-section {
-  padding: var(--spacing-3xl);
+  padding: var(--spacing-2xl);
   flex: 40%;
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--spacing-xl);
+  gap: var(--spacing-lg);
   overflow: scroll;
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -70,11 +71,9 @@
   }
 
   #login_header {
+    @include flex-layout($gap: var(--spacing-lg));
     width: inherit;
-    display: flex;
-    align-items: center;
     text-align: left;
-    gap: var(--spacing-lg);
 
     .university-logo {
       width: 4.5rem;
@@ -134,13 +133,9 @@
     }
 
     .custom-mat-button {
-      display: flex;
-      flex-direction: row-reverse;
-      align-items: center;
-      justify-content: center;
-      gap: var(--spacing-sm);
+      @include flex-layout($direction: row-reverse, $gap: var(--spacing-sm));
+      @include gradient-primary(315deg);
       font-weight: 600;
-      background-color: var(--primary-one);
 
       span {
         color: white;
@@ -159,8 +154,31 @@
       flex-direction: column;
       gap: var(--spacing-xl);
 
+      .input-group {
+        position: relative;
+
+        &.has-error .input-container .login-input {
+          border-color: var(--primary-one);
+        }
+      }
+
       .input-container {
         position: relative;
+
+        .password-visibility-toggle {
+          position: absolute;
+          right: var(--spacing-xs);
+          top: 50%;
+          transform: translateY(-50%);
+          border-radius: var(--border-radius-xl);
+          padding: var(--spacing-xs);
+          opacity: var(--opacity-semi-opaque);
+          cursor: pointer;
+
+          &:hover {
+            background-color: var(--neutral-fade);
+          }
+        }
 
         .input-icon {
           position: absolute;
@@ -187,7 +205,11 @@
 
           &:focus {
             outline: none;
-            border: 2px solid var(--primary-one);
+            border-color: var(--primary-one);
+          }
+
+          &.ng-invalid.ng-touched {
+            border-color: var(--primary-one);
           }
         }
       }
@@ -233,12 +255,11 @@
   }
 
   .error-message {
+    @include flex-layout;
     position: absolute;
-    display: flex;
-    align-items: center;
     min-height: var(--spacing-lg);
     margin-top: var(--spacing-xxs);
-    margin-left: var(--spacing-sm);
+    left: var(--spacing-sm);
     visibility: hidden;
     overflow: hidden;
     gap: var(--spacing-xxs);
@@ -283,8 +304,24 @@
   }
 }
 
-// Media queries for different screen sizes
-@media (max-width: 768px) {
+// =============
+// Media Queries
+// =============
+
+@media screen and (max-width: 1500px) {
+  .login-form-section {
+    #login_header {
+      @include flex-layout($direction: column, $gap: var(--spacing-sm));
+
+      .university-name,
+      .system-name {
+        text-align: center;
+      }
+    }
+  }
+}
+
+@media screen and (max-width: 768px) {
   #login-container {
     padding: var(--spacing-md);
   }
@@ -379,7 +416,7 @@
   }
 }
 
-@media (max-width: 480px) {
+@media screen and (max-width: 480px) {
   #login-container {
     padding: var(--spacing-sm);
   }
@@ -465,7 +502,7 @@
   }
 }
 
-@media (max-width: 320px) {
+@media screen and (max-width: 320px) {
   #login-container {
     padding: var(--spacing-xs);
   }

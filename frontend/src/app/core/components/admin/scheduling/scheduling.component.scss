@@ -41,6 +41,24 @@
       .table-button {
         color: var(--primary-text);
       }
+
+      tr.has-copies {
+        background-color: var(--neutral-option);
+
+        &:not(.last-copy) {
+          td {
+            border-bottom: none;
+          }
+        }
+      }
+
+      td {
+        border-bottom: 1px solid var(--mat-table-row-item-outline-color);
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
     }
 
     .index {
@@ -57,11 +75,45 @@
       position: sticky;
       top: 0;
       z-index: 2;
+
+      &.min {
+        min-width: var(--spacing-2xl);
+      }
     }
 
     .custom-cell {
       padding: var(--spacing-xs);
       text-align: center;
+
+      &.course-code-cell {
+        position: relative;
+
+        .course-code-wrapper {
+          @include flex-layout;
+        }
+
+        .copy-icon,
+        .remove-icon {
+          background: var(--neutral-option);
+          border-radius: var(--border-radius-base);
+          padding: var(--spacing-xxs);
+          font-size: var(--font-size-sm);
+          margin-left: var(--spacing-xs);
+          visibility: hidden;
+          opacity: var(--opacity-semi-opaque);
+          cursor: pointer;
+        }
+
+        .remove-icon {
+          background: var(--primary-fade);
+          color: var(--primary-text-lighter);
+        }
+
+        &:hover .copy-icon,
+        &:hover .remove-icon {
+          visibility: visible;
+        }
+      }
 
       .not-set-badge {
         background-color: var(--primary-fade);
@@ -90,6 +142,23 @@
 
         &:hover {
           background-color: var(--secondary-hover);
+        }
+      }
+    }
+
+    .no-data-cell {
+      text-align: center;
+      padding: var(--spacing-lg);
+
+      .flex-cell {
+        @include flex-layout(
+          $align: center,
+          $justify: center,
+          $gap: var(--spacing-xs)
+        );
+
+        span {
+          opacity: var(--opacity-semi-opaque);
         }
       }
     }

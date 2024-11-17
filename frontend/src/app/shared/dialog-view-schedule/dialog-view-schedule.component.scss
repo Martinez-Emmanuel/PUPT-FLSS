@@ -77,7 +77,7 @@ iframe {
 }
 
 .dialog-actions {
-  @include flex-layout($justify: flex-end);
+  @include flex-layout($justify: flex-end, $gap: var(--spacing-sm));
   .close-button {
     color: var(--primary-text);
   }

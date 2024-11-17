@@ -70,14 +70,22 @@
         <div class="action-buttons">
           <!-- Optionally shows 'View' button-->
           @if (showViewButton) {
-          <button mat-button class="ter-ripple view-button" (click)="onView(element)">
+          <button
+            mat-button
+            class="ter-ripple view-button"
+            (click)="onView(element)"
+          >
             <mat-icon>visibility</mat-icon>
             <span>View</span>
           </button>
           }
 
           <!-- Edit Button -->
-          <button mat-button class="sec-ripple edit-button" (click)="onEdit(element)">
+          <button
+            mat-button
+            class="sec-ripple edit-button"
+            (click)="onEdit(element)"
+          >
             <mat-icon>edit</mat-icon>
             <span>Edit</span>
           </button>
@@ -94,7 +102,10 @@
     <!-- Display "No course added yet" when data is empty -->
     <tr *matNoDataRow>
       <td class="no-data-row" [attr.colspan]="displayedColumns.length">
-        No {{ tableName }} added yet.
+        <div class="no-data-text">
+          <span mat-symbol="info"></span>
+          <span> No {{ tableName }} found.</span>
+        </div>
       </td>
     </tr>
 

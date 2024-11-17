@@ -1,3 +1,5 @@
+@import "../../../styles/mixins.scss";
+
 :host {
   .mat-dialog-container {
     max-width: var(--dialog-base);
@@ -8,7 +10,7 @@
 .custom-dialog-title {
   font-size: var(--font-size-xl);
   color: var(--primary-text);
-  font-weight: 600;
+  font-weight: 500;
   font-family: "Inter Tight", sans-serif;
 }
 
@@ -16,16 +18,22 @@
 .custom-dialog-content {
   font-size: var(--font-size-md);
   margin: var(--spacing-md) 0;
+  line-height: var(--line-height-md);
+  text-align: justify;
 }
 
-/* Cancel action button */
-.custom-dialog-buttons .dialog-cancel {
-  color: var(--primary-text);
-}
+.custom-dialog-buttons {
+  padding-bottom: var(--spacing-lg);
 
-/* Proceed action button */
-.custom-dialog-buttons .dialog-action {
-  background-color: var(--primary-one);
-  color: white;
-  font-weight: 500;
+  /* Cancel action button */
+  &.custom-dialog-buttons .dialog-cancel {
+    color: var(--primary-text);
+  }
+
+  /* Proceed action button */
+  &.custom-dialog-buttons .dialog-action {
+    @include gradient-primary(315deg);
+    color: white;
+    font-weight: 500;
+  }
 }

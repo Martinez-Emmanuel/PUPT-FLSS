@@ -4,6 +4,10 @@ import {
   OnInit,
   ViewChild,
   AfterViewInit,
+  OnDestroy,
+  ElementRef,
+  Renderer2,
+  NgZone,
 } from '@angular/core';
 import { CommonModule, AsyncPipe } from '@angular/common';
 import {
@@ -55,10 +59,11 @@ import { CookieService } from 'ngx-cookie-service';
   ],
   animations: [fadeAnimation, slideInAnimation],
 })
-export class MainComponent implements OnInit, AfterViewInit {
+export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('drawer') drawer!: MatSidenav;
 
   private breakpointObserver = inject(BreakpointObserver);
+  private documentClickListener!: () => void;
   public showSidenav = false;
   public isDropdownOpen = false;
   public pageTitle = 'Dashboard';
@@ -88,7 +93,10 @@ export class MainComponent implements OnInit, AfterViewInit {
     private route: ActivatedRoute,
     private authService: AuthService,
     private dialog: MatDialog,
-    private cookieService: CookieService
+    private cookieService: CookieService,
+    private el: ElementRef,
+    private renderer: Renderer2,
+    private ngZone: NgZone
   ) {
     this.accountName = this.cookieService.get('user_name');
     this.accountRole = this.toTitleCase(this.cookieService.get('user_role'));
@@ -108,14 +116,52 @@ export class MainComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     setTimeout(() => (this.showSidenav = true), 0);
+    this.setupDocumentClickListener();
+  }
+
+  ngOnDestroy() {
+    this.removeDocumentClickListener();
   }
 
   toggleTheme() {
     this.themeService.toggleTheme();
   }
 
-  toggleDropdown() {
+  toggleDropdown(event: Event) {
+    event.stopPropagation();
     this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  closeDropdown() {
+    this.isDropdownOpen = false;
+  }
+
+  private setupDocumentClickListener() {
+    this.documentClickListener = this.renderer.listen(
+      'document',
+      'click',
+      (event: Event) => {
+        const dropdownElement =
+          this.el.nativeElement.querySelector('.dropdown-menu');
+        const profileIconElement =
+          this.el.nativeElement.querySelector('.profile-icon');
+
+        if (
+          !dropdownElement?.contains(event.target as Node) &&
+          !profileIconElement?.contains(event.target as Node)
+        ) {
+          this.ngZone.run(() => {
+            this.closeDropdown();
+          });
+        }
+      }
+    );
+  }
+
+  private removeDocumentClickListener() {
+    if (this.documentClickListener) {
+      this.documentClickListener();
+    }
   }
 
   private toTitleCase(str: string): string {

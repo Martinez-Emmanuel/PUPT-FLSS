@@ -98,8 +98,14 @@
 }
 
 /* Custom-color material spinner */
-@mixin custom-spinner($color: var(--primary-one)) {
+@mixin custom-spinner($color: var(--primary-text)) {
   .custom-spinner {
+    --mdc-circular-progress-active-indicator-color: #{$color};
+  }
+}
+
+@mixin custom-spinner-two($color: var(--secondary-text)) {
+  .custom-spinner-two {
     --mdc-circular-progress-active-indicator-color: #{$color};
   }
 }

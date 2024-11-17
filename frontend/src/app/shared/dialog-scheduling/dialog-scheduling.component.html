@@ -52,16 +52,23 @@
 
     <mat-dialog-content class="content forms-list">
       <form [formGroup]="scheduleForm" class="scheduling-form-group">
-        <!-- Day Field -->
-        <mat-form-field class="scheduling-forms">
-          <mat-label>Day</mat-label>
-          <mat-icon matPrefix>calendar_today</mat-icon>
-          <mat-select formControlName="day">
-            @for (day of data.dayOptions; track day) {
-            <mat-option [value]="day">{{ day }}</mat-option>
-            }
-          </mat-select>
-        </mat-form-field>
+        <!-- Day Picker -->
+        <div class="day-buttons-container">
+          @for (day of dayButtons; track day.name) {
+          <div
+            class="day-button pop-small"
+            [class.selected]="day.name === selectedDay"
+            [class.original-day]="
+              day.name === originalDay && day.name !== selectedDay
+            "
+            (click)="selectDay(day.name)"
+            matRipple
+            [matRippleColor]="'rgba(255, 255, 255, 0.1)'"
+          >
+            {{ day.shortName }}
+          </div>
+          }
+        </div>
 
         <!-- Start and End Time Fields -->
         <div class="date-fields">
@@ -125,10 +132,10 @@
 
       <!-- Schedule Validator (if applicable) -->
       <div class="schedule-validator">
-        @if (hasConflicts) {
+        @if (conflictMessage) {
         <div class="validation-message conflict">
           <span mat-symbol="error"></span>
-          <span>Warning: Scheduling conflicts have been detected.</span>
+          <span>{{ conflictMessage }}</span>
         </div>
         }
       </div>
@@ -149,17 +156,13 @@
           Cancel
         </button>
         <button
-          class="action-button pop"
+          class="action-button"
           mat-flat-button
-          [disabled]="hasConflicts || isLoading"
+          [disabled]="hasConflicts || isLoading || scheduleForm.invalid"
           (click)="onAssign()"
         >
           @if (isLoading) {
-          <mat-spinner
-            [diameter]="23"
-            strokeWidth="2.25"
-            class="custom-spinner"
-          ></mat-spinner>
+          <mat-spinner [diameter]="25" class="custom-spinner"></mat-spinner>
           } @else { Assign Schedule }
         </button>
       </div>

@@ -29,13 +29,20 @@
     background-color: var(--neutral-light);
     max-height: 50rem;
 
-
     .custom-table {
       @include default-transition;
       background-color: var(--neutral-light);
 
       .table-button {
         color: var(--primary-text);
+      }
+
+      td {
+        border-bottom: 1px solid var(--mat-table-row-item-outline-color);
+      }
+
+      tr:last-child td {
+        border-bottom: none;
       }
     }
 
@@ -62,10 +69,12 @@
 
       .faculty-type {
         width: fit-content;
-        padding: var(--spacing-xxs) var(--spacing-xs);
-        border-radius: var(--border-radius-xs);
+        padding: var(--spacing-xxs) var(--spacing-sm);
+        border-radius: var(--border-radius-xl);
         font-size: var(--font-size-xsx);
         font-weight: 500;
+        margin: 0 auto;
+        display: inline-block;
 
         &.full-time {
           background-color: var(--blue-fade-lighter);
@@ -81,6 +90,23 @@
           background-color: var(--purple-fade-lighter);
           color: var(--purple-primary);
         }
+      }
+
+      .request-badge {
+        width: fit-content;
+        padding: var(--spacing-xxs) var(--spacing-sm);
+        border-radius: var(--border-radius-xl);
+        font-size: var(--font-size-xsx);
+        font-weight: 500;
+        margin: 0 auto;
+        display: inline-block;
+        background-color: var(--green-fade);
+        color: var(--green-primary);
+      }
+
+      .disabled-text {
+        opacity: 0.5;
+        pointer-events: none;
       }
 
       .view-button {

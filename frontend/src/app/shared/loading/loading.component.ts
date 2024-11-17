@@ -1,13 +1,12 @@
-import { Component } from '@angular/core';
-import { MatProgressBar } from '@angular/material/progress-bar';
+import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-loading',
   standalone: true,
-  imports: [MatProgressBar],
+  imports: [],
   templateUrl: './loading.component.html',
   styleUrl: './loading.component.scss'
 })
 export class LoadingComponent {
-
+  @Input() showLoadingText = true;
 }

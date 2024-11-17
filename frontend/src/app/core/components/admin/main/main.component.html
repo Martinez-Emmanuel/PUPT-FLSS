@@ -35,15 +35,25 @@
         <span mat-symbol="dashboard" matListItemIcon></span>
         <span matListItemTitle>Overview</span>
       </a>
-      <!--Faculty-->
+      <!--Faculty Preferences-->
       <a
         mat-list-item
         class="list-item"
-        routerLink="/admin/faculty"
+        routerLink="/admin/faculty-preferences"
         routerLinkActive="active-link"
       >
         <span mat-symbol="groups" matListItemIcon></span>
         <span matListItemTitle>Faculty Preferences</span>
+      </a>
+      <!--Academic Years-->
+      <a
+        mat-list-item
+        class="list-item"
+        routerLink="/admin/academic-years"
+        routerLinkActive="active-link"
+      >
+        <span mat-symbol="date_range" matListItemIcon></span>
+        <span matListItemTitle>Academic Years</span>
       </a>
       <!--Scheduling-->
       <a
@@ -66,7 +76,7 @@
         <span matListItemTitle>Official Reports</span>
       </a>
       <!--Help-->
-      <a
+      <!-- <a
         mat-list-item
         class="list-item"
         routerLink="/admin/help"
@@ -74,7 +84,7 @@
       >
         <span mat-symbol="help" matListItemIcon></span>
         <span matListItemTitle>Help</span>
-      </a>
+      </a> -->
     </mat-nav-list>
   </mat-sidenav>
   }
@@ -135,9 +145,9 @@
             </div>
 
             <!-- Settings Button -->
-            <div class="panel-button settings" matTooltip="Settings" matRipple>
+            <!-- <div class="panel-button settings" matTooltip="Settings" matRipple>
               <span mat-symbol="settings"></span>
-            </div>
+            </div> -->
 
             <!-- Logout Button -->
             <div
@@ -154,7 +164,7 @@
           <div class="admin-account">
             <div class="account-text">
               <div class="account-name">{{ accountName }}</div>
-              <div class="account-role">FLSS {{ accountRole }}istrator</div>
+              <div class="account-role">{{ accountRole }}istrator</div>
             </div>
             <div class="profile-dropdown">
               <img

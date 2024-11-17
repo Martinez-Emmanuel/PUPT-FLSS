@@ -34,8 +34,6 @@ import { CurriculumService, Curriculum, Program } from '../../../../services/sup
 })
 export class CurriculumComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
-  private selectedCurriculumIndex: number | null = null;
-
   curriculumStatuses = ['Active', 'Inactive'];
   curricula: Curriculum[] = [];
   programs: Program[] = [];
@@ -68,8 +66,6 @@ export class CurriculumComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.fetchCurricula();
-    // this.fetchPredefinedPrograms(); // Commented out until necessary
-    // this.fetchAvailableCurriculumYears(); // Commented out until necessary
   }
 
   ngOnDestroy() {
@@ -77,18 +73,11 @@ export class CurriculumComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  // Commented out fetchAvailableCurriculumYears until necessary
-  // private fetchAvailableCurriculumYears() {
-  //   this.curriculumService
-  //     .getAvailableCurriculumYears()
-  //     .pipe(takeUntil(this.destroy$))
-  //     .subscribe((years) => {
-  //       this.availableCurriculumYears = years;
-  //       this.cdr.markForCheck();
-  //     });
-  // }
+  // ===========================
+  // Data Fetching Methods
+  // ===========================
 
-  private fetchCurricula() {
+  fetchCurricula() {
     this.isLoading = true;
     this.curriculumService
       .getCurricula()
@@ -105,14 +94,11 @@ export class CurriculumComponent implements OnInit, OnDestroy {
       });
   }
 
-  // Commented out fetchPredefinedPrograms until necessary
-  // private fetchPredefinedPrograms() {
-  //   this.curriculumService.getPredefinedPrograms().subscribe((programs) => {
-  //     this.programs = programs;
-  //   });
-  // }
+  // ===========================
+  // Event Handlers
+  // ===========================
 
-  private onSearch(searchTerm: string) {
+  onSearch(searchTerm: string) {
     this.curriculumService
       .getCurricula()
       .pipe(takeUntil(this.destroy$))
@@ -130,7 +116,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
       });
   }
 
-  public onInputChange(values: { [key: string]: any }) {
+  onInputChange(values: { [key: string]: any }) {
     if (values['search'] !== undefined) {
       this.onSearch(values['search']);
     }
@@ -143,39 +129,181 @@ export class CurriculumComponent implements OnInit, OnDestroy {
     ]);
   }
 
-  openAddCurriculumDialog() {
-    this.curriculumService.getCurricula().subscribe({
-      next: (availableCurricula) => {
-        const dialogConfig = this.getDialogConfig(availableCurricula); // Populate the dialog with available curricula
+  // ===========================
+  // CRUD Operations
+  // ===========================
 
-        const dialogRef = this.dialog.open(TableDialogComponent, {
-          data: dialogConfig,
-          disableClose: true,
-        });
+  // Add Curriculum
+  addCurriculum(newCurriculum: Curriculum) {
+    const curriculumData = {
+      curriculum_year: newCurriculum.curriculum_year,
+      status: newCurriculum.status,
+    };
 
-        dialogRef.afterClosed().subscribe((result) => {
-          if (result) {
-            if (result.copy_from && result.copy_from !== 'None') {
-              this.copyCurriculum(result); // Copy the curriculum if a source is selected
-            } else {
-              this.addCurriculum(result); // Add a new curriculum if no source is selected
-            }
-          }
-        });
+    this.curriculumService.addCurriculum(curriculumData).subscribe({
+      next: (response) => {
+        this.showSuccessMessage(response.message);
+        this.fetchCurricula();
       },
-      error: () => {
-        this.showErrorMessage(
-          'Error fetching available curricula. Please try again.'
-        );
+      error: (errorResponse) => {
+        if (errorResponse.error?.message?.includes('already exists')) {
+          this.showErrorMessage(
+            `${newCurriculum.curriculum_year} Curriculum already exists.`
+          );
+        } else {
+          this.showErrorMessage('Error adding curriculum. Please try again.');
+        }
       },
     });
   }
 
-  private copyCurriculum(copyData: any) {
-    const curriculumYearToCopyFrom = copyData.copy_from.split(' ')[0]; // Extract the curriculum year to copy from
-    const newCurriculumYear = copyData.curriculum_year; // Get the new curriculum year
+  // Update Curriculum
+  updateCurriculum(updatedCurriculum: Curriculum) {
+    const curriculumData = {
+      curriculum_year: updatedCurriculum.curriculum_year,
+      status: updatedCurriculum.status,
+    };
 
-    // Find the curriculum_id for the selected curriculum year to copy from
+    this.curriculumService
+      .updateCurriculum(updatedCurriculum.curriculum_id, curriculumData)
+      .subscribe({
+        next: (response) => {
+          this.showSuccessMessage(response.message);
+          this.fetchCurricula();
+        },
+        error: () =>
+          this.showErrorMessage('Error updating curriculum. Please try again.'),
+      });
+  }
+
+  // Delete Curriculum
+  deleteCurriculum(curriculum: Curriculum) {
+    this.curriculumService
+      .deleteCurriculum(curriculum.curriculum_year)
+      .subscribe({
+        next: (response) => {
+          if (response.status === 'fail') {
+            this.showErrorMessage(response.message);
+          } else {
+            this.showSuccessMessage(response.message);
+            this.curricula = this.curricula.filter(
+              (c) => c.curriculum_id !== curriculum.curriculum_id
+            );
+            this.updateCurriculaList(this.curricula);
+          }
+        },
+        error: (error) => {
+          this.showErrorMessage(
+            'Error during the deletion process. Please try again.'
+          );
+          console.error('Error:', error);
+        },
+      });
+  }
+
+  // ===========================
+  // Dialog Handling
+  // ===========================
+
+  // Open Add Curriculum Dialog
+  openAddCurriculumDialog() {
+    this.curriculumService
+      .getAllPrograms()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (programs) => {
+          // Check if no programs exist or all programs are inactive
+          const activePrograms = programs.filter(
+            (program) => program.status === 'Active'
+          );
+
+          if (
+            !programs ||
+            programs.length === 0 ||
+            activePrograms.length === 0
+          ) {
+            this.showErrorMessage(
+              'No programs found. Add at least one active program to create a curriculum.'
+            );
+            return;
+          }
+
+          // If active programs exist, proceed to fetch available curricula
+          this.curriculumService
+            .getCurricula()
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: (availableCurricula) => {
+                const dialogConfig = this.getDialogConfig(availableCurricula);
+
+                const dialogRef = this.dialog.open(TableDialogComponent, {
+                  data: dialogConfig,
+                  disableClose: true,
+                });
+
+                dialogRef.afterClosed().subscribe((result) => {
+                  if (result) {
+                    if (result.copy_from && result.copy_from !== 'None') {
+                      this.copyCurriculum(result);
+                    } else {
+                      this.addCurriculum(result);
+                    }
+                  }
+                });
+              },
+              error: () => {
+                this.showErrorMessage(
+                  'Error fetching available curricula. Please try again.'
+                );
+              },
+            });
+        },
+        error: () => {
+          this.showErrorMessage('Error fetching programs. Please try again.');
+        },
+      });
+  }
+
+  // Open Edit Curriculum Dialog
+  openEditCurriculumDialog(curriculum: Curriculum) {
+    this.openCurriculumDialog(curriculum);
+  }
+
+  // Open Curriculum Dialog (Add/Edit)
+  openCurriculumDialog(curriculum?: Curriculum) {
+    const availableCurricula = curriculum
+      ? this.curricula.filter(
+          (c) => c.curriculum_id !== curriculum.curriculum_id
+        )
+      : this.curricula;
+    const config = this.getDialogConfig(availableCurricula, curriculum);
+
+    const dialogRef = this.dialog.open(TableDialogComponent, {
+      data: config,
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        if (config.isEdit) {
+          this.updateCurriculum({ ...curriculum!, ...result });
+        } else if (result.copy_from && result.copy_from !== 'None') {
+          this.copyCurriculum(result);
+        } else {
+          this.addCurriculum(result);
+        }
+      }
+    });
+  }
+
+  // ===========================
+  // Copy Curriculum
+  // ===========================
+
+  copyCurriculum(copyData: any) {
+    const curriculumYearToCopyFrom = copyData.copy_from.split(' ')[0];
+    const newCurriculumYear = copyData.curriculum_year;
+
     const curriculumToCopy = this.curricula.find(
       (curriculum) => curriculum.curriculum_year === curriculumYearToCopyFrom
     );
@@ -183,15 +311,14 @@ export class CurriculumComponent implements OnInit, OnDestroy {
     if (curriculumToCopy && curriculumToCopy.curriculum_id) {
       const curriculumId = curriculumToCopy.curriculum_id;
 
-      // Call the curriculumService to copy the curriculum
       this.curriculumService
         .copyCurriculum(curriculumId, newCurriculumYear)
         .subscribe({
-          next: (response) => {
+          next: () => {
             this.showSuccessMessage(
               'Curriculum copied successfully with new curriculum ID.'
             );
-            this.fetchCurricula(); // Refresh the list to show the new curriculum
+            this.fetchCurricula();
           },
           error: (error) => {
             this.showErrorMessage(
@@ -205,30 +332,11 @@ export class CurriculumComponent implements OnInit, OnDestroy {
     }
   }
 
-  private addCurriculum(newCurriculum: Curriculum) {
-    const curriculumData = {
-      curriculum_year: newCurriculum.curriculum_year,
-      status: newCurriculum.status,
-    };
+  // ===========================
+  // Dialog Configuration
+  // ===========================
 
-    this.curriculumService.addCurriculum(curriculumData).subscribe({
-      next: (response) => {
-        this.showSuccessMessage(response.message);
-
-        // Fetch the updated curricula list after adding the new curriculum
-        this.fetchCurricula();
-      },
-      error: () =>
-        this.showErrorMessage('Error adding curriculum. Please try again.'),
-    });
-  }
-
-  openEditCurriculumDialog(curriculum: Curriculum) {
-    this.selectedCurriculumIndex = this.curricula.indexOf(curriculum);
-    this.openCurriculumDialog(curriculum);
-  }
-
-  private getDialogConfig(
+  getDialogConfig(
     availableCurricula: Curriculum[],
     existingCurriculum?: Curriculum
   ): DialogConfig {
@@ -280,82 +388,9 @@ export class CurriculumComponent implements OnInit, OnDestroy {
     };
   }
 
-  private openCurriculumDialog(curriculum?: Curriculum) {
-    const availableCurricula = curriculum
-      ? this.curricula.filter(
-          (c) => c.curriculum_id !== curriculum.curriculum_id
-        )
-      : this.curricula;
-    const config = this.getDialogConfig(availableCurricula, curriculum);
-
-    const dialogRef = this.dialog.open(TableDialogComponent, {
-      data: config,
-      disableClose: true,
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        if (config.isEdit) {
-          this.updateCurriculum({ ...curriculum!, ...result });
-        } else if (result.copy_from && result.copy_from !== 'None') {
-          this.copyCurriculum(result);
-        } else {
-          this.addCurriculum(result);
-        }
-      }
-    });
-  }
-
-  //   dialogRef.afterClosed().subscribe((result) => {
-  //     if (result) {
-  //       curriculum ? this.updateCurriculum(result) : this.addCurriculum(result);
-  //     }
-  //   });
-  // }
-
-  private updateCurriculum(updatedCurriculum: Curriculum) {
-    const curriculumData = {
-      curriculum_year: updatedCurriculum.curriculum_year,
-      status: updatedCurriculum.status,
-    };
-
-    this.curriculumService
-      .updateCurriculum(updatedCurriculum.curriculum_id, curriculumData)
-      .subscribe({
-        next: (response) => {
-          this.showSuccessMessage(response.message);
-
-          // Fetch the updated curricula list after the curriculum is updated
-          this.fetchCurricula();
-        },
-        error: () =>
-          this.showErrorMessage('Error updating curriculum. Please try again.'),
-      });
-  }
-
-  deleteCurriculum(curriculum: Curriculum) {
-    this.curriculumService
-      .deleteCurriculum(curriculum.curriculum_year)
-      .subscribe({
-        next: (response) => {
-          if (response.status === 'fail') {
-            this.showErrorMessage(response.message);
-          } else {
-            this.showSuccessMessage(response.message);
-            this.curricula = this.curricula.filter(
-              (c) => c.curriculum_id !== curriculum.curriculum_id
-            );
-            this.updateCurriculaList(this.curricula);
-          }
-        },
-        error: (error) => {
-          this.showErrorMessage(
-            'Error during the deletion process. Please try again.'
-          );
-          console.error('Error:', error);
-        },
-      });
-  }
+  // ===========================
+  // Utility Methods
+  // ===========================
 
   private updateCurriculaList(curricula: Curriculum[]) {
     this.curricula = curricula;

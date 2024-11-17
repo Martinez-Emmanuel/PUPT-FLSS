@@ -11,6 +11,7 @@ return new class extends Migration {
             $table->bigIncrements('section_course_id');
             $table->unsignedBigInteger('sections_per_program_year_id');
             $table->unsignedInteger('course_assignment_id');
+            $table->tinyInteger('is_copy')->default(0);
             $table->timestamps();
         
             $table->foreign('sections_per_program_year_id')

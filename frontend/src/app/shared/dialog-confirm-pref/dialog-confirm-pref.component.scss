@@ -1,5 +1,9 @@
 @import "../../../styles/mixins";
 
+:host {
+  @include custom-spinner(var(--primary-text));
+}
+
 .dialog-stepper-container {
   padding: var(--spacing-lg);
 }
@@ -14,10 +18,10 @@
   }
 
   .step-title {
-    border: 1px solid purple;
     @include reset-styles;
     @include gradient-primary-text(315deg);
   }
+
   .step-description {
     line-height: var(--line-height-md);
   }

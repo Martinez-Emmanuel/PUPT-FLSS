@@ -34,6 +34,7 @@
   --font-size-3xl: 3rem;
   --font-size-3xxl: 3.5rem;
   --font-size-4xl: 4rem;
+  --font-size-5xl: 5rem;
 
   // Line heights
   --line-height-sm: 1.25;
@@ -48,7 +49,9 @@
   --spacing-sm: 0.75rem;
   --spacing-smx: 0.85rem;
   --spacing-md: 1rem;
+  --spacing-mdx: 1.25rem;
   --spacing-lg: 1.5rem;
+  --spacing-lgx: 1.75rem;
   --spacing-xl: 2rem;
   --spacing-2xl: 2.5rem;
   --spacing-3xl: 3rem;
@@ -126,6 +129,27 @@ body {
 
 /* Custom Styling applied globally */
 
+.disabled-button {
+  opacity: var(--opacity-half);
+  cursor: not-allowed !important;
+}
+
+.no-data-text {
+  @include flex-layout($gap: var(--spacing-xs));
+  width: 100%;
+  text-align: center;
+  font-size: var(--font-size-md);
+  padding: var(--spacing-xs) 0;
+
+  span {
+    opacity: var(--opacity-semi-opaque);
+  }
+
+  span[mat-symbol] {
+    font-size: 100%;
+  }
+}
+
 .pdf-iframe {
   width: 100%;
   height: var(--dialog-base-height);
@@ -156,16 +180,20 @@ body {
   }
 }
 
+.pop-small {
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+
+  &:active {
+    transform: scale(0.85);
+  }
+}
+
 .sec-ripple .mat-ripple-element {
   background-color: var(--secondary-fade) !important;
 }
 
 .ter-ripple .mat-ripple-element {
   background-color: rgba(84, 84, 84, 0.3) !important;
-}
-
-.sec-spinner .mat-spinner circle {
-  stroke: var(--secondary-text) !important;
 }
 
 span[mat-symbol] {
@@ -175,6 +203,8 @@ span[mat-symbol] {
 
 .loading-wrapper {
   height: 100%;
+  width: 50%;
+  align-self: center;
 }
 
 .dialog-base {
@@ -185,6 +215,13 @@ span[mat-symbol] {
   @include default-transition;
   padding: var(--spacing-sm) 0 !important;
   background-color: var(--neutral-light) !important;
+}
+
+.add-academic-year-dialog {
+  .mat-mdc-dialog-container 
+  .mat-mdc-dialog-title + .mat-mdc-dialog-content {
+    padding-bottom: var(--spacing-sm);
+  }
 }
 
 // .mat-mdc-header-cell {
@@ -205,6 +242,10 @@ span[mat-symbol] {
   }
 }
 
+.mdc-text-field--filled:not(.mdc-text-field--disabled) {
+  @include default-transition;
+}
+
 .mdc-checkbox__checkmark {
   color: white !important;
 }
@@ -223,6 +264,10 @@ span[mat-symbol] {
   // when appearance="fill"
   border-top-left-radius: 10px !important;
   border-top-right-radius: 10px !important;
+}
+
+.no-subscript .mat-mdc-form-field-subscript-wrapper {
+  display: none;
 }
 
 .mdc-list-item__primary-text {
@@ -250,6 +295,16 @@ span[mat-symbol] {
 .mat-button-toggle-group-appearance-standard {
   border: 1px solid
     var(--mat-standard-button-toggle-divider-color, var(--mat-app-outline)) !important;
+}
+
+.mat-mdc-snack-bar-container
+  .mat-mdc-button.mat-mdc-snack-bar-action:not(:disabled) {
+  color: var(--primary-text-reverse) !important;
+}
+
+.mdc-checkbox__native-control:enabled:checked ~ .mdc-checkbox__background {
+  border-color: var(--primary-text) !important;
+  background-color: var(--primary-text) !important;
 }
 
 [mat-flat-button] {
@@ -288,6 +343,23 @@ span[mat-symbol] {
 .fc-scrollgrid {
   border-radius: var(--border-radius-md);
   background-color: var(--neutral-space);
+}
+
+.fc-daygrid-event-dot {
+  border: calc(var(--fc-daygrid-event-dot-width) / 2) solid var(--primary-text);
+}
+
+.fc .fc-highlight {
+  background: var(--neutral-fade);
+}
+
+.fc .fc-scrollgrid-liquid {
+  @include default-transition;
+}
+
+.fc-v-event {
+  background-color: var(--primary-one);
+  border: none;
 }
 
 .fc {

@@ -32,10 +32,19 @@
       </div>
 
       <!-- Form Fields -->
-      <form id="form_fields" [formGroup]="loginForm" (ngSubmit)="onSubmit()" (keydown.enter)="onEnterPressed()">
+      <form
+        id="form_fields"
+        [formGroup]="loginForm"
+        (ngSubmit)="onSubmit()"
+        (keydown.enter)="onEnterPressed()"
+      >
         <div class="input-group">
           <div class="input-container">
-            <span mat-symbol="person" class="input-icon"></span>
+            <span
+              mat-symbol="person"
+              class="input-icon"
+              [matTooltip]="'Account Code'"
+            ></span>
             <input
               type="text"
               placeholder="Account Code"
@@ -56,7 +65,7 @@
             @if (code.errors?.['required']) {
             <span>Account Code is required.</span>
             } @if (code.errors?.['minlength'] || code.errors?.['maxlength']) {
-            <span>Account Code must be exactly 12 characters.</span>
+            <span>Account Code is invalid.</span>
             }
           </div>
           }
@@ -64,9 +73,13 @@
 
         <div class="input-group">
           <div class="input-container">
-            <span mat-symbol="lock" class="input-icon"></span>
+            <span
+              mat-symbol="lock"
+              class="input-icon"
+              [matTooltip]="'Account Password'"
+            ></span>
             <input
-              type="password"
+              [type]="showPassword ? 'text' : 'password'"
               placeholder="Password"
               class="login-input"
               id="password"
@@ -75,6 +88,15 @@
               minlength="8"
               maxlength="40"
             />
+            @if (passwordHasValue) {
+            <mat-icon
+              matRipple
+              class="password-visibility-toggle"
+              (click)="togglePasswordVisibility()"
+            >
+              {{ showPassword ? "visibility_off" : "visibility" }}
+            </mat-icon>
+            }
           </div>
 
           @if (password && password.invalid && (password.dirty ||
@@ -85,7 +107,7 @@
           >
             <span mat-symbol="error"></span>
             @if (password.errors?.['required']) {
-            <span>Password is required.</span>
+            <span>Account Password is required.</span>
             } @if (password.errors?.['minlength']) {
             <span>Password must be at least 8 characters.</span>
             } @if (password.errors?.['maxlength']) {
@@ -126,7 +148,7 @@
     <div id="login_misc">
       <div id="terms_text">
         <span>
-          By using this service, you understood and agree to the PUP Taguig
+          By using this service, you understand and agree to the PUP Taguig
           Faculty Loading & Scheduling System
         </span>
         <a>Terms of Use</a> and <a>Privacy Statement</a>.

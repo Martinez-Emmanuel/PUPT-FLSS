@@ -1,14 +1,12 @@
 import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { forkJoin, Subscription } from 'rxjs';
+import { of, Subscription, switchMap, tap } from 'rxjs';
 
 import { MatTableModule } from '@angular/material/table';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSelectModule } from '@angular/material/select';
-import { MatOptionModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -21,10 +19,11 @@ import { MatRippleModule } from '@angular/material/core';
 import { TimeFormatPipe } from '../../../pipes/time-format/time-format.pipe';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
-import { TableDialogComponent } from '../../../../shared/table-dialog/table-dialog.component';
-import { DialogTimeComponent } from '../../../../shared/dialog-time/dialog-time.component';
+import { DialogDayTimeComponent } from '../../../../shared/dialog-day-time/dialog-day-time.component';
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
-import { DialogConfirmPrefComponent } from '../../../../shared/dialog-confirm-pref/dialog-confirm-pref.component';
+import { DialogPrefSuccessComponent } from '../../../../shared/dialog-pref-success/dialog-pref-success.component';
+import { DialogPrefComponent } from '../../../../shared/dialog-pref/dialog-pref.component';
+import { DialogRequestAccessComponent } from '../../../../shared/dialog-request-access/dialog-request-access.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { ThemeService } from '../../../services/theme/theme.service';
@@ -45,17 +44,12 @@ interface TableData extends Course {
   imports: [
     CommonModule,
     FormsModule,
-    TableDialogComponent,
-    DialogTimeComponent,
-    DialogConfirmPrefComponent,
     LoadingComponent,
     TimeFormatPipe,
     MatSymbolDirective,
     MatTableModule,
     MatButtonModule,
     MatIconModule,
-    MatSelectModule,
-    MatOptionModule,
     MatFormFieldModule,
     MatInputModule,
     MatTooltipModule,
@@ -68,7 +62,6 @@ interface TableData extends Course {
   templateUrl: './preferences.component.html',
   styleUrls: ['./preferences.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [PreferencesService],
   animations: [fadeAnimation, cardEntranceAnimation, rowAdditionAnimation],
 })
 export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
@@ -76,7 +69,12 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   showProgramSelection = true;
   isDarkMode = false;
   isLoading = true;
+  isSubmitting = false;
+  isRemovingAll = false;
+  hasRequest = false;
 
+  academicYear: string = '';
+  semesterLabel: string = '';
   programs: Program[] = [];
   courses: Course[] = [];
   filteredCourses: Course[] = [];
@@ -87,18 +85,18 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   dataSource = new MatTableDataSource<TableData>([]);
   subscriptions = new Subscription();
 
-  units = 0;
+  totalUnits = 0;
+  totalHours = 0;
   maxUnits = 0;
   readonly displayedColumns: string[] = [
     'action',
-    'num',
+    // 'num',
     'course_code',
     'course_title',
     'lec_hours',
     'lab_hours',
     'units',
-    'preferredDay',
-    'preferredTime',
+    'availableDayTime',
   ];
   readonly daysOfWeek = [
     'Monday',
@@ -116,6 +114,13 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
 
   isPreferencesEnabled: boolean = true;
   activeSemesterId: number | null = null;
+  deadline: string | null = null;
+
+  facultyId: string = '';
+  facultyName: string = '';
+
+  submissionDeadline: Date | null = null;
+  daysLeft: string | number = 0;
 
   constructor(
     private readonly themeService: ThemeService,
@@ -161,141 +166,109 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   private loadAllData() {
     this.isLoading = true;
 
-    const programs$ = this.preferencesService.getPrograms();
-    const preferences$ = this.preferencesService.getPreferences();
+    const facultyId = this.cookieService.get('faculty_id');
 
     this.subscriptions.add(
-      forkJoin([programs$, preferences$]).subscribe({
-        next: ([programsResponse, preferencesResponse]) => {
-          // Process Programs
-          this.programs = programsResponse.programs;
-          this.activeSemesterId = programsResponse.active_semester_id;
+      this.preferencesService
+        .getPreferencesByFacultyId(facultyId)
+        .pipe(
+          tap((preferencesResponse) => {
+            const facultyPreference = preferencesResponse.preferences;
 
-          // Process Preferences
-          const facultyId = this.cookieService.get('faculty_id');
-          const facultyPreference = preferencesResponse.preferences.find(
-            (pref: any) => pref.faculty_id == facultyId
-          );
+            if (facultyPreference) {
+              this.facultyId = facultyPreference.faculty_id.toString();
+              this.facultyName = facultyPreference.faculty_name;
 
-          if (facultyPreference) {
-            this.isPreferencesEnabled = facultyPreference.is_enabled === 1;
+              this.isPreferencesEnabled = facultyPreference.is_enabled === 1;
+              this.hasRequest = facultyPreference.has_request === 1;
 
-            const preferences = facultyPreference.active_semesters.flatMap(
-              (semester: any) => {
-                this.activeSemesterId = semester.active_semester_id;
-                return semester.courses;
+              const activeSemester = facultyPreference.active_semesters[0];
+              this.academicYear = activeSemester.academic_year;
+              this.semesterLabel = activeSemester.semester_label;
+              this.deadline =
+                activeSemester.individual_deadline ||
+                activeSemester.global_deadline;
+
+              if (this.deadline) {
+                this.submissionDeadline = new Date(this.deadline);
+                const today = new Date();
+                const deadlineDate = new Date(this.deadline);
+
+                deadlineDate.setHours(0, 0, 0, 0);
+                today.setHours(0, 0, 0, 0);
+
+                const diffTime = deadlineDate.getTime() - today.getTime();
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+                this.daysLeft =
+                  diffDays < 1 ? 'Today' : `${diffDays} days left`;
+              } else {
+                this.submissionDeadline = null;
+                this.daysLeft = 'N/A';
               }
-            );
 
-            this.allSelectedCourses = preferences.map((course: any) => ({
-              course_id: course.course_details.course_id,
-              course_assignment_id: course.course_assignment_id,
-              course_code: course.course_details.course_code,
-              course_title: course.course_details.course_title,
-              lec_hours: course.lec_hours,
-              lab_hours: course.lab_hours,
-              units: course.units,
-              preferredDay: course.preferred_day,
-              preferredTime:
-                course.preferred_start_time === '00:00:00' &&
-                course.preferred_end_time === '23:59:59'
-                  ? 'Whole Day'
-                  : course.preferred_start_time && course.preferred_end_time
-                  ? `${this.convertTo12HourFormat(course.preferred_start_time)} 
-                    - ${this.convertTo12HourFormat(course.preferred_end_time)}`
-                  : '',
-              isSubmitted: true,
-            }));
+              const preferences = activeSemester.courses.map((course: any) => ({
+                course_id: course.course_details.course_id,
+                course_assignment_id: course.course_assignment_id,
+                course_code: course.course_details.course_code,
+                course_title: course.course_details.course_title,
+                lec_hours: course.lec_hours,
+                lab_hours: course.lab_hours,
+                units: course.units,
+                preferredDay: course.preferred_day,
+                preferredTime:
+                  course.preferred_start_time === '07:00 AM - 09:00 PM'
+                    ? 'Whole Day'
+                    : course.preferred_start_time && course.preferred_end_time
+                    ? `${this.convertTo12HourFormat(
+                        course.preferred_start_time
+                      )} - ${this.convertTo12HourFormat(
+                        course.preferred_end_time
+                      )}`
+                    : '',
+                isSubmitted: true,
+              }));
 
-            this.updateDataSource();
-            this.updateTotalUnits();
-          } else {
-            this.isPreferencesEnabled = true;
-          }
-
-          this.isLoading = false;
-          this.cdr.markForCheck();
-        },
-        error: (error) => {
-          console.error('Error loading data:', error);
-          this.showSnackBar('Error loading data.');
-          this.isLoading = false;
-          this.cdr.markForCheck();
-        },
-      })
+              this.allSelectedCourses = preferences;
+              this.updateDataSource();
+              this.updateTotalUnits();
+              this.updateTotalHours(); // Update total hours after data load
+            } else {
+              this.isPreferencesEnabled = true;
+            }
+          }),
+          switchMap((preferencesResponse) => {
+            if (preferencesResponse.preferences.is_enabled === 1) {
+              return this.preferencesService.getPrograms();
+            } else {
+              return of(null);
+            }
+          })
+        )
+        .subscribe({
+          next: (programsResponse) => {
+            if (programsResponse) {
+              this.programs = programsResponse.programs;
+              this.activeSemesterId = programsResponse.active_semester_id;
+            }
+            this.isLoading = false;
+            this.cdr.markForCheck();
+          },
+          error: (error) => {
+            console.error('Error loading data:', error);
+            if (error.url.includes('/offered-courses-sem')) {
+              this.showSnackBar('Error loading programs.');
+            } else if (error.url.includes(`/get-preferences/${facultyId}`)) {
+              this.showSnackBar('Error loading preferences.');
+            } else {
+              this.showSnackBar('An unexpected error occurred.');
+            }
+            this.isLoading = false;
+            this.cdr.markForCheck();
+          },
+        })
     );
   }
-
-  // private loadPrograms() {
-  //   this.preferencesService.getPrograms().subscribe({
-  //     next: (response) => {
-  //       this.programs = response.programs;
-  //       this.activeSemesterId = response.active_semester_id;
-
-  //       this.isLoading = false;
-  //       this.cdr.markForCheck();
-  //     },
-  //     error: (error) => {
-  //       console.error('Error loading programs:', error);
-  //       this.programsLoading = false;
-  //       this.showSnackBar('Error loading programs.');
-  //       this.isLoading = false;
-  //       this.cdr.markForCheck();
-  //     },
-  //   });
-  // }
-
-  // private loadFacultyPreferences() {
-  //   this.preferencesService.getPreferences().subscribe({
-  //     next: (response) => {
-  //       const facultyId = this.cookieService.get('faculty_id');
-  //       const facultyPreference = response.preferences.find(
-  //         (pref: any) => pref.faculty_id == facultyId
-  //       );
-  //       if (facultyPreference) {
-  //         this.isPreferencesEnabled = facultyPreference.is_enabled === 1;
-
-  //         const preferences = facultyPreference.active_semesters.flatMap(
-  //           (semester: any) => {
-  //             this.activeSemesterId = semester.active_semester_id;
-  //             return semester.courses;
-  //           }
-  //         );
-
-  //         this.allSelectedCourses = preferences.map((course: any) => ({
-  //           course_id: course.course_details.course_id,
-  //           course_assignment_id: course.course_assignment_id,
-  //           course_code: course.course_details.course_code,
-  //           course_title: course.course_details.course_title,
-  //           lec_hours: course.lec_hours,
-  //           lab_hours: course.lab_hours,
-  //           units: course.units,
-  //           preferredDay: course.preferred_day,
-  //           preferredTime:
-  //             course.preferred_start_time === '00:00:00' &&
-  //             course.preferred_end_time === '23:59:59'
-  //               ? 'Whole Day'
-  //               : course.preferred_start_time && course.preferred_end_time
-  //               ? `${this.convertTo12HourFormat(course.preferred_start_time)}
-  //                 - ${this.convertTo12HourFormat(course.preferred_end_time)}`
-  //               : '',
-  //           isSubmitted: true,
-  //         }));
-
-  //         this.updateDataSource();
-  //         this.updateTotalUnits();
-  //       } else {
-  //         this.isPreferencesEnabled = true;
-  //       }
-  //       this.cdr.markForCheck();
-  //     },
-  //     error: (error) => {
-  //       console.error('Error loading preferences:', error);
-  //       this.showSnackBar('Error loading preferences.');
-  //       this.isLoading = false;
-  //     },
-  //   });
-  // }
 
   private subscribeToThemeChanges() {
     this.subscriptions.add(
@@ -311,11 +284,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   // =========================
 
   selectProgram(program: Program): void {
-    if (!this.isPreferencesEnabled) {
-      this.showSnackBar('You have already submitted your preferences.');
-      return;
-    }
-
     this.selectedProgram = program;
     this.showProgramSelection = false;
 
@@ -338,26 +306,17 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectedYearLevel = null;
     this.updateDataSource();
     this.updateTotalUnits();
+    this.updateTotalHours(); // Update total hours after selecting program
     this.cdr.markForCheck();
   }
 
   filterByYear(year: number | null): void {
-    if (!this.isPreferencesEnabled) {
-      this.showSnackBar('You have already submitted your preferences.');
-      return;
-    }
-
     this.selectedYearLevel = year;
     this.applyYearLevelFilter();
     this.cdr.markForCheck();
   }
 
   backToProgramSelection(): void {
-    if (!this.isPreferencesEnabled) {
-      this.showSnackBar('You have already submitted your preferences.');
-      return;
-    }
-
     this.showProgramSelection = true;
     this.selectedProgram = undefined;
     this.courses = [];
@@ -365,6 +324,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectedYearLevel = null;
     this.updateDataSource();
     this.updateTotalUnits();
+    this.updateTotalHours();
     this.cdr.markForCheck();
   }
 
@@ -413,12 +373,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   // =========================
 
   addCourseToTable(course: Course): void {
-    if (!this.isPreferencesEnabled) {
-      this.showSnackBar('You have already submitted your preferences.');
-      return;
-    }
-
-    if (this.isCourseAlreadyAdded(course) || this.isMaxUnitsExceeded(course)) {
+    if (this.isCourseAlreadyAdded(course)) {
       return;
     }
 
@@ -431,23 +386,19 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.allSelectedCourses.push(newCourse);
     this.updateDataSource();
     this.updateTotalUnits();
+    this.updateTotalHours();
   }
 
   removeCourse(course: TableData): void {
-    if (!this.isPreferencesEnabled) {
-      this.showSnackBar('You have already submitted your preferences.');
+    const facultyId = this.cookieService.get('faculty_id');
+    const activeSemesterId = this.activeSemesterId;
+
+    if (!facultyId || !activeSemesterId) {
+      this.showSnackBar('Error: Missing faculty or semester information.');
       return;
     }
 
     if (course.isSubmitted) {
-      const facultyId = this.cookieService.get('faculty_id');
-      const activeSemesterId = this.activeSemesterId;
-
-      if (!facultyId || !activeSemesterId) {
-        this.showSnackBar('Error: Missing faculty or semester information.');
-        return;
-      }
-
       this.preferencesService
         .deletePreference(
           course.course_assignment_id,
@@ -459,34 +410,47 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
             this.allSelectedCourses = this.allSelectedCourses.filter(
               (c) => c.course_code !== course.course_code
             );
+
             this.updateDataSource();
             this.updateTotalUnits();
+            this.updateTotalHours();
             this.showSnackBar('Course preference removed successfully.');
           },
           error: (error) => {
-            console.error('Error deleting preference:', error);
-            this.showSnackBar('Error removing course preference.');
+            if (error.status === 403) {
+              this.showSnackBar(
+                'Submission is now closed. You cannot modify your preferences anymore.'
+              );
+            } else {
+              this.showSnackBar('Error removing course preference.');
+            }
           },
         });
     } else {
       this.allSelectedCourses = this.allSelectedCourses.filter(
         (c) => c.course_code !== course.course_code
       );
+
       this.updateDataSource();
       this.updateTotalUnits();
+      this.updateTotalHours();
+      this.showSnackBar('Course preference removed successfully.');
     }
   }
 
   removeAllCourses(): void {
-    if (!this.isPreferencesEnabled) {
-      this.showSnackBar('You have already submitted your preferences.');
+    const facultyId = this.cookieService.get('faculty_id');
+    const activeSemesterId = this.activeSemesterId;
+
+    if (!facultyId || !activeSemesterId) {
+      this.showSnackBar('Error: Missing faculty or semester information.');
       return;
     }
 
     const dialogData: DialogData = {
       title: 'Remove All Courses',
       content: 'Are you sure you want to remove all your selected courses?',
-      actionText: 'Remove All',
+      actionText: 'Confirm',
       cancelText: 'Cancel',
       action: 'remove',
     };
@@ -500,46 +464,35 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       .afterClosed()
       .subscribe((result) => {
         if (result === 'remove') {
-          const facultyId = this.cookieService.get('faculty_id');
-          const activeSemesterId = this.activeSemesterId;
+          this.isRemovingAll = true;
+          this.cdr.markForCheck();
 
-          if (!facultyId || !activeSemesterId) {
-            this.showSnackBar(
-              'Error: Missing faculty or semester information.'
-            );
-            return;
-          }
-
-          const submittedCourses = this.allSelectedCourses.filter(
-            (c) => c.isSubmitted
-          );
-          const nonSubmittedCourses = this.allSelectedCourses.filter(
-            (c) => !c.isSubmitted
-          );
-
-          if (submittedCourses.length > 0) {
-            this.preferencesService
-              .deleteAllPreferences(facultyId, activeSemesterId)
-              .subscribe({
-                next: () => {
-                  this.allSelectedCourses = nonSubmittedCourses;
-                  this.updateDataSource();
-                  this.updateTotalUnits();
+          this.preferencesService
+            .deleteAllPreferences(facultyId, activeSemesterId)
+            .subscribe({
+              next: () => {
+                this.allSelectedCourses = [];
+                this.updateDataSource();
+                this.updateTotalUnits();
+                this.updateTotalHours();
+                this.showSnackBar(
+                  'All course preferences removed successfully.'
+                );
+                this.isRemovingAll = false;
+                this.cdr.markForCheck();
+              },
+              error: (error) => {
+                if (error.status === 403) {
                   this.showSnackBar(
-                    'All submitted course preferences removed successfully.'
+                    'Submission is now closed. You cannot modify your preferences anymore.'
                   );
-                },
-                error: (error) => {
-                  console.error('Error deleting preferences:', error);
-                  this.showSnackBar('Error removing course preferences.');
-                },
-              });
-          } else {
-            this.allSelectedCourses = [];
-            this.updateDataSource();
-            this.updateTotalUnits();
-            this.showSnackBar('All course preferences removed successfully.');
-          }
+                } else {
+                  this.showSnackBar('Error removing all course preferences.');
+                }
+                this.isRemovingAll = false;
+                this.cdr.markForCheck();
+              },
+            });
         }
       });
   }
@@ -549,7 +502,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   // ====================
 
   submitPreferences(): void {
-    if (!this.isPreferencesEnabled) {
+    if (!this.isPreferencesEnabled || this.isSubmitting) {
       this.showSnackBar('You have already submitted your preferences.');
       return;
     }
@@ -574,56 +527,56 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     }
 
-    const dialogRef = this.dialog.open(DialogConfirmPrefComponent, {
-      disableClose: true,
-    });
+    this.isSubmitting = true;
+    this.cdr.markForCheck();
 
-    const dialogInstance = dialogRef.componentInstance;
-    dialogInstance.confirmSubmission.subscribe(() => {
-      this.performSubmission(facultyId, this.activeSemesterId!, dialogInstance);
-    });
-
-    dialogRef.afterClosed().subscribe(() => {
-      // Dialog closed
-    });
-  }
-
-  private performSubmission(
-    facultyId: string,
-    activeSemesterId: number,
-    dialogInstance: DialogConfirmPrefComponent
-  ): void {
     const submittedData = this.prepareSubmissionData(
       facultyId,
-      activeSemesterId
+      this.activeSemesterId
     );
 
     this.preferencesService.submitPreferences(submittedData).subscribe({
       next: () => {
-        this.allSelectedCourses = this.allSelectedCourses.map((course) => ({
-          ...course,
-          isSubmitted: true,
-        }));
-        this.isPreferencesEnabled = false;
-        this.updateTotalUnits();
+        this.allSelectedCourses.forEach((course) => {
+          if (
+            this.dataSource.data.some(
+              (c) => c.course_code === course.course_code
+            )
+          ) {
+            course.isSubmitted = true;
+          }
+        });
+
+        this.isSubmitting = false;
+
+        this.dialog.open(DialogPrefSuccessComponent, {
+          width: '30rem',
+          disableClose: true,
+          data: { deadline: this.deadline },
+        });
+
         this.cdr.markForCheck();
-        dialogInstance.onSubmissionComplete(true);
       },
       error: (error) => {
-        console.error('Error submitting preferences:', error);
-        this.showSnackBar('Error submitting preferences.');
-        dialogInstance.onSubmissionComplete(false);
+        if (error.status === 403 && error.error && error.error.message) {
+          this.showSnackBar(error.error.message);
+        } else {
+          this.showSnackBar('Error submitting preferences.');
+        }
+        this.isSubmitting = false;
+        this.cdr.markForCheck();
       },
     });
   }
+
   private prepareSubmissionData(facultyId: string, activeSemesterId: number) {
     return {
       faculty_id: parseInt(facultyId),
       active_semester_id: activeSemesterId,
       preferences: this.dataSource.data.map(
         ({ course_assignment_id, preferredDay, preferredTime }) => {
-          let preferred_start_time = '00:00:00';
-          let preferred_end_time = '23:59:59';
+          let preferred_start_time = '07:00:00';
+          let preferred_end_time = '21:00:00';
 
           if (preferredTime && preferredTime !== 'Whole Day') {
             const times = preferredTime.split(' - ');
@@ -666,92 +619,60 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   // Dialog Methods
   // ====================
 
-  openTimeDialog(element: TableData): void {
-    if (!this.isPreferencesEnabled) {
-      this.showSnackBar('You have already submitted your preferences.');
-      return;
-    }
-
-    let startTime = '';
-    let endTime = '';
-    let isWholeDay = false;
-
-    if (element.preferredTime === 'Whole Day') {
-      isWholeDay = true;
-    } else if (element.preferredTime) {
-      const [start, end] = element.preferredTime.split(' - ');
-      startTime = start.trim();
-      endTime = end.trim();
-    }
-
+  openDayTimeDialog(element: TableData): void {
     this.dialog
-      .open(DialogTimeComponent, {
-        data: { startTime, endTime, isWholeDay },
+      .open(DialogDayTimeComponent, {
+        data: {
+          selectedDay: element.preferredDay,
+          selectedTime: element.preferredTime,
+          daysOfWeek: this.daysOfWeek,
+          courseCode: element.course_code,
+          courseTitle: element.course_title,
+        },
+        disableClose: true,
+        autoFocus: false,
       })
       .afterClosed()
       .subscribe((result) => {
         if (result) {
-          element.preferredTime = result;
-          this.showSnackBar('Preferred time successfully updated.');
+          const { day, time } = result;
+          element.preferredDay = day;
+          element.preferredTime = time;
+          this.showSnackBar('Available day and time successfully updated.');
           this.updateTotalUnits();
+          this.updateTotalHours();
           this.cdr.markForCheck();
         }
       });
   }
 
-  openDayDialog(element: TableData): void {
-    if (!this.isPreferencesEnabled) {
-      this.showSnackBar('You have already submitted your preferences.');
-      return;
-    }
-
-    const dialogRef = this.dialog.open(TableDialogComponent, {
-      width: '20rem',
+  openViewPreferencesDialog(): void {
+    this.dialog.open(DialogPrefComponent, {
+      maxWidth: '70rem',
+      width: '100%',
       data: {
-        title: 'Select Day',
-        fields: [
-          {
-            label: 'Preferred Day',
-            formControlName: 'preferredDay',
-            type: 'select',
-            options: this.daysOfWeek,
-            required: true,
-          },
-        ],
-        isEdit: false,
-        initialValue: { preferredDay: element.preferredDay },
+        facultyName: this.facultyName,
+        faculty_id: parseInt(this.facultyId, 10),
+        viewOnlyTable: true,
       },
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result && result.preferredDay) {
-        element.preferredDay = result.preferredDay;
-        this.showSnackBar('Preferred day successfully added.');
-        this.updateTotalUnits();
-        this.cdr.markForCheck();
-      }
+      disableClose: true,
     });
   }
 
-  onDisabledSectionClick(event: Event): void {
-    if (!this.isPreferencesEnabled) {
-      event.stopPropagation();
-
-      const dialogData: DialogData = {
-        title: 'Action Not Allowed',
-        content: `You cannot edit your preferences at this time. 
-          Please contact the administrator if you need assistance.`,
-        actionText: 'Close',
-        cancelText: '',
-        action: 'close',
-      };
-
-      this.dialog.open(DialogGenericComponent, {
-        data: dialogData,
+  openRequestAccessDialog(): void {
+    this.dialog
+      .open(DialogRequestAccessComponent, {
+        width: '25rem',
         disableClose: true,
-        panelClass: 'dialog-base',
+        data: {
+          has_request: this.hasRequest,
+          facultyId: this.facultyId,
+        },
+      })
+      .afterClosed()
+      .subscribe(() => {
+        this.loadAllData();
       });
-    }
   }
 
   // ====================
@@ -783,21 +704,30 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     return false;
   }
 
-  private isMaxUnitsExceeded(course: Course): boolean {
-    if (this.units + course.units > this.maxUnits) {
-      this.showSnackBar('Maximum units have been reached.');
-      return true;
-    }
-    return false;
-  }
+  // private isMaxUnitsExceeded(course: Course): boolean {
+  //   if (this.units + course.units > this.maxUnits) {
+  //     this.showSnackBar('Maximum units have been reached.');
+  //     return true;
+  //   }
+  //   return false;
+  // }
 
   private updateDataSource(): void {
     this.dataSource.data = [...this.allSelectedCourses];
   }
 
   private updateTotalUnits(): void {
-    this.units = this.dataSource.data.reduce(
+    this.totalUnits = this.dataSource.data.reduce(
       (total, course) => total + course.units,
+      0
+    );
+    this.cdr.markForCheck();
+  }
+
+  private updateTotalHours(): void {
+    this.totalHours = this.dataSource.data.reduce(
+      (total, course) =>
+        total + (course.lec_hours || 0) + (course.lab_hours || 0),
       0
     );
     this.cdr.markForCheck();
@@ -826,6 +756,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   get isSubmitDisabled(): boolean {
     return (
       this.isRemoveDisabled ||
+      this.isSubmitting ||
       this.dataSource.data.some(
         (course) => !course.preferredDay || !course.preferredTime
       )

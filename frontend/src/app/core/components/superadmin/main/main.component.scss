@@ -126,16 +126,19 @@
       }
 
       .header-account {
-        @include flex-layout;
-        font-size: var(--font-size-md);
-        gap: var(--spacing-lg);
+        @include flex-layout($direction: row-reverse, $gap: var(--spacing-sm));
+        font-size: var(--font-size-smx);
+        background-color: var(--neutral-option);
+        border-radius: var(--border-radius-xl);
+        padding: var(--spacing-xxs) var(--spacing-md) var(--spacing-xxs)
+          var(--spacing-xs);
 
         .account-text {
-          text-align: right;
-          line-height: var(--line-height-md);
+          text-align: left;
+          line-height: var(--line-height-sm);
 
           .account-name {
-            font-weight: 600;
+            font-weight: 500;
           }
 
           .account-role {
@@ -148,11 +151,12 @@
           position: relative;
 
           .profile-icon {
-            width: 3rem;
-            height: 3rem;
+            width: 2.5rem;
+            height: 2.5rem;
             border-radius: 50%;
             cursor: pointer;
             transition: all 0.3s ease;
+            margin: 0.1rem 0;
             @include gradient-border-primary(3px);
 
             &:hover {
@@ -163,7 +167,7 @@
           .dropdown-menu {
             position: absolute;
             top: 100%;
-            right: 0;
+            left: 0%;
             background-color: var(--neutral-light);
             box-shadow: var(--shadow-level-1);
             border-radius: var(--border-radius-md);
@@ -177,8 +181,10 @@
               color: var(--neutral-base);
               transition: background-color 0.3s ease;
               border-radius: var(--border-radius-sm);
+              font-size: var(--font-size-md);
               font-weight: 500;
               cursor: pointer;
+              user-select: none;
 
               &:hover {
                 background-color: var(--neutral-option);

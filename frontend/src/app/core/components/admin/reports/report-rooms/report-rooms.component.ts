@@ -8,12 +8,16 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSymbolDirective } from '../../../../imports/mat-symbol.directive';
 
 import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
 import { DialogViewScheduleComponent } from '../../../../../shared/dialog-view-schedule/dialog-view-schedule.component';
 
 import { ReportsService } from '../../../../services/admin/reports/reports.service';
+
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 import { fadeAnimation } from '../../../../animations/animations';
 
@@ -42,6 +46,7 @@ interface Room {
     MatTooltipModule,
     FormsModule,
     MatDialogModule,
+    MatSymbolDirective,
   ],
   templateUrl: './report-rooms.component.html',
   styleUrls: ['./report-rooms.component.scss'],
@@ -68,6 +73,7 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
   dataSource = new MatTableDataSource<Room>();
   filteredData: Room[] = [];
   isLoading = true;
+  hasAnySchedules = false;
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -109,6 +115,8 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
         this.dataSource.data = rooms;
         this.filteredData = [...rooms];
         this.dataSource.paginator = this.paginator;
+
+        this.hasAnySchedules = this.filteredData.some(room => this.hasSchedules(room));
       },
       error: (error) => {
         this.isLoading = false;
@@ -154,7 +162,7 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
     }
   }
 
-  onView(element: Room) {
+  onView(element: Room): void {
     this.dialog.open(DialogViewScheduleComponent, {
       maxWidth: '90vw',
       width: '100%',
@@ -165,23 +173,357 @@ export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChe
         customTitle: `Room ${element.roomCode}`,
         academicYear: element.academicYear,
         semester: element.semester,
+        generatePdfFunction: (preview: boolean) => this.createPdfBlob(element),
       },
       disableClose: true,
     });
   }
 
   onExportAll() {
-    console.log('Export All clicked');
-    // Implement export all functionality here
+    const generatePdfFunction = (preview: boolean): Blob | void => {
+      return this.generateAllRoomsPdfBlob();
+    };
+
+    this.dialog.open(DialogViewScheduleComponent, {
+      maxWidth: '90vw',
+      width: '100%',
+      data: {
+        exportType: 'all',
+        entity: 'room',
+        entityData: this.filteredData,
+        customTitle: 'All Room Schedules',
+        generatePdfFunction: generatePdfFunction,
+        showViewToggle: false,
+      },
+      disableClose: true,
+    });
   }
 
-  onExportSingle(element: Room) {
-    console.log('Export clicked for:', element);
-    // Implement export single functionality here
+  onExportSingle(element: Room): void {
+    const pdfBlob = this.createPdfBlob(element);
+    const blobUrl = URL.createObjectURL(pdfBlob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = `${element.roomCode.replace(/\s+/g, '_')}_schedule_report.pdf`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl); 
   }
-
+  
   updateDisplayedData() {
     console.log('Paginator updated');
-    // Additional paginator-related logic can be added here
+  }
+
+  generateAllRoomsPdfBlob(): Blob {
+    const doc = new jsPDF('landscape', 'mm', 'a4');
+    const pageWidth = doc.internal.pageSize.width;
+    const margin = 10;
+    const topMargin = 15;
+    const logoSize = 22;
+
+    if (this.filteredData.length === 0) {
+      console.error('No data available to export.');
+      return new Blob();
+    }
+
+    this.filteredData.forEach((room, index) => {
+      if (index > 0) {
+        doc.addPage();
+      }
+
+      let currentY = this.drawHeader(
+        doc,
+        topMargin,
+        pageWidth,
+        margin,
+        logoSize,
+        `Room ${room.roomCode} Schedule`,
+        this.getAcademicYearSubtitle(room)
+      );
+
+      this.drawScheduleTable(
+        doc,
+        room.schedules ?? [],
+        currentY,
+        margin,
+        pageWidth
+      );
+    });
+
+    return doc.output('blob');
+  }
+
+  createPdfBlob(room: Room): Blob {
+    const doc = new jsPDF('landscape', 'mm', 'a4');
+    const pageWidth = doc.internal.pageSize.width;
+    const margin = 10;
+    const topMargin = 15;
+    const logoSize = 22;
+
+    if (room.schedules && room.schedules.length > 0) {
+      let currentY = this.drawHeader(
+        doc, 
+        topMargin, 
+        pageWidth, 
+        margin,
+        logoSize, 
+        `Room ${room.roomCode}`, 
+        this.getAcademicYearSubtitle(room)
+      );
+      this.drawScheduleTable(
+        doc,
+        room.schedules, 
+        currentY, 
+        margin, 
+        pageWidth
+      );
+    }
+
+    return doc.output('blob');
+  }
+
+  drawHeader(
+    doc: jsPDF, 
+    startY: number, 
+    pageWidth: number, 
+    margin: number, 
+    logoSize: number, 
+    title: string, 
+    subtitle: string
+  ): number {
+    doc.setTextColor(0, 0, 0);
+    const logoUrl = 
+      'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
+    const logoXPosition = pageWidth / 25 + 25;
+    doc.addImage(logoUrl, 'PNG', logoXPosition, startY - 5, logoSize, logoSize);
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(
+      'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
+      pageWidth / 2, 
+      startY, 
+      { align: 'center' }
+    );
+
+    let currentY = startY + 5;
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(
+      'Gen. Santos Ave. Upper Bicutan, Taguig City', 
+      pageWidth / 2, 
+      currentY, 
+      { align: 'center' }
+    );
+
+    currentY += 10;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(title, pageWidth / 2, currentY, { align: 'center' });
+    currentY += 8;
+
+    if (subtitle) {
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(subtitle, pageWidth / 2, currentY, { align: 'center' });
+      currentY += 8;
+    }
+
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.line(margin, currentY, pageWidth - margin, currentY);
+    currentY += 7;
+        
+    return currentY;
+  }
+
+  drawScheduleTable(
+    doc: jsPDF, 
+    scheduleData: any[], 
+    startY: number, 
+    margin: number, 
+    pageWidth: number
+  ): void {
+    const hasSchedules = scheduleData && scheduleData.length > 0;
+  
+    if (!hasSchedules) {
+      doc.setFontSize(20);
+      doc.setFont('helvetica', 'italic'); 
+      doc.setTextColor(128, 128, 128); 
+      doc.text(
+        'No Assigned Schedule',
+        pageWidth / 2,
+        startY + 50,
+        { align: 'center' }
+      );
+      return;
+    }
+
+    const days = [
+      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
+    ];
+    const dayColumnWidth = (pageWidth - margin * 2) / days.length;
+    const pageHeight = doc.internal.pageSize.height;
+    const maxContentHeight = pageHeight - margin; 
+    
+    let currentY = startY;
+    let maxYPosition = currentY;
+  
+    const startNewPage = () => {
+        doc.addPage();
+        currentY = this.drawHeader(
+          doc,
+          15, 
+          pageWidth,
+          margin,
+          22, 
+          doc.getNumberOfPages() > 1 ? 'Room Schedule (Continued)' : 'Room Schedule',
+          this.getAcademicYearSubtitle(scheduleData[0])
+        );
+        
+        days.forEach((day, index) => {
+            const xPosition = margin + index * dayColumnWidth;
+            doc.setFillColor(128, 0, 0);
+            doc.setTextColor(255, 255, 255);
+            doc.rect(xPosition, currentY, dayColumnWidth, 10, 'F');
+            doc.setFontSize(10);
+            doc.setFont('helvetica', 'bold');
+            doc.text(
+                day,
+                xPosition + dayColumnWidth / 2,
+                currentY + 7,
+                { align: 'center' }
+            );
+        });
+        
+        currentY += 12; 
+        return currentY;
+    };
+  
+    days.forEach((day, index) => {
+        const xPosition = margin + index * dayColumnWidth;
+        doc.setFillColor(128, 0, 0);
+        doc.setTextColor(255, 255, 255);
+        doc.rect(xPosition, currentY, dayColumnWidth, 10, 'F');
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text(
+            day,
+            xPosition + dayColumnWidth / 2,
+            currentY + 7,
+            { align: 'center' }
+        );
+    });
+  
+    currentY += 12; 
+  
+    days.forEach((day, dayIndex) => {
+      const xPosition = margin + dayIndex * dayColumnWidth;
+      let yPosition = currentY;
+        
+      const daySchedule = scheduleData
+      .filter((item: any) => item.day === day)
+      .sort((a: any, b: any) => 
+        this.timeToMinutes(a.start_time) - this.timeToMinutes(b.start_time)
+      );
+  
+      if (daySchedule.length > 0) {
+        daySchedule.forEach((item: any) => {
+          const boxHeight = 35;
+                  
+          if (yPosition + boxHeight > maxContentHeight) {
+            days.forEach((_, i) => {
+              const lineX = margin + i * dayColumnWidth;
+              doc.setDrawColor(200, 200, 200);
+              doc.setLineWidth(0.5);
+              doc.line(lineX, startY, lineX, maxYPosition);
+            });
+            doc.line(
+              pageWidth - margin, 
+              startY, pageWidth - margin, 
+              maxYPosition
+            );
+                      
+            yPosition = startNewPage();
+            maxYPosition = yPosition;
+          }
+    
+          const startTime = this.formatTime(item.start_time);
+          const endTime = this.formatTime(item.end_time);
+          const courseContent = [
+            item.course_details.course_code,
+            item.course_details.course_title,
+            `${item.program_code} ${item.year_level} - ${item.section_name}`,
+            item.faculty_name,
+            `${startTime} - ${endTime}`
+          ];
+    
+          doc.setFillColor(240, 240, 240);
+          doc.rect(xPosition, yPosition, dayColumnWidth, boxHeight, 'F');
+    
+          let textYPosition = yPosition + 5;
+          courseContent.forEach((line: string, index) => {
+            doc.setTextColor(0);
+            doc.setFontSize(9);
+            doc.setFont(
+              index <= 1 ? 'helvetica' : 'helvetica',
+              index <= 1 ? 'bold' : 'normal'
+            );
+                      
+            const wrappedLines = doc.splitTextToSize(line, dayColumnWidth - 10);
+            wrappedLines.forEach((wrappedLine: string) => {
+              doc.text(wrappedLine, xPosition + 5, textYPosition);
+              textYPosition += 5;
+            });
+    
+            if (index === courseContent.length - 1) {
+              const timeTextWidth = doc.getTextWidth(line);
+              doc.setDrawColor(0, 0, 0);
+              doc.setLineWidth(0.2);
+              doc.line(
+                xPosition + 5,
+                textYPosition - 4,
+                xPosition + 5 + timeTextWidth,
+                textYPosition - 4
+              );
+            }
+          });
+  
+          yPosition += boxHeight + 5;
+          if (yPosition > maxYPosition) {
+            maxYPosition = yPosition;
+          }
+        });
+      }
+    });
+    days.forEach((_, i) => {
+      const lineX = margin + i * dayColumnWidth;
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.5);
+        doc.line(lineX, startY, lineX, maxYPosition);
+    });
+    doc.line(pageWidth - margin, startY, pageWidth - margin, maxYPosition);
+    doc.line(margin, maxYPosition, pageWidth - margin, maxYPosition);
+  }
+
+  private formatTime(time: string): string {
+    const [hours, minutes] = time.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12;
+    return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+  }
+
+  private timeToMinutes(time: string): number {
+    const [hours, minutes] = time.split(':').map(Number);
+    return hours * 60 + minutes;
+  }
+
+  getAcademicYearSubtitle(room: Room): string {
+    return `For Academic Year ${room.academicYear}, ${room.semester}`;
+  }
+  
+  hasSchedules(room: Room): boolean {
+    return room.schedules && room.schedules.length > 0;
   }
 }

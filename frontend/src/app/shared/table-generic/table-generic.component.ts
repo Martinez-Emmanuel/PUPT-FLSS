@@ -6,6 +6,7 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 import { DialogGenericComponent } from '../dialog-generic/dialog-generic.component';
 
@@ -18,6 +19,7 @@ import { DialogGenericComponent } from '../dialog-generic/dialog-generic.compone
     MatPaginatorModule,
     MatIconModule,
     MatButtonModule,
+    MatSymbolDirective,
   ],
   templateUrl: './table-generic.component.html',
   styleUrls: ['./table-generic.component.scss'],
