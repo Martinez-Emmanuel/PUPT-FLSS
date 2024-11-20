@@ -5,8 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
@@ -15,6 +15,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'code',
+        'email',
         'password',
         'role',
         'status',
@@ -28,14 +29,9 @@ class User extends Authenticatable
         $this->attributes['password'] = Hash::make($value);
     }
 
-    // public function faculty()
-    // {
-    //     return $this->hasOne(Faculty::class);
-    // }
-
     public function faculty()
     {
-        return $this->hasOne(Faculty::class, 'user_id'); // Link by user_id in Faculty table
+        return $this->hasOne(Faculty::class, 'user_id');
     }
 
 }

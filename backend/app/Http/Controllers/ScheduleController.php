@@ -321,7 +321,7 @@ class ScheduleController extends Controller
                     'faculty' => $schedule->faculty ? [
                         'faculty_id' => $schedule->faculty->id,
                         'name' => $schedule->faculty->user->name,
-                        'email' => $schedule->faculty->faculty_email,
+                        'email' => $schedule->faculty->user->email,
                     ] : null,
                     'room' => $schedule->room ? [
                         'room_id' => $schedule->room->room_id,
@@ -399,7 +399,7 @@ class ScheduleController extends Controller
                 $faculty = $existingSchedule->faculty_id ? DB::table('faculty')
                     ->join('users', 'faculty.user_id', '=', 'users.id')
                     ->where('faculty.id', $existingSchedule->faculty_id)
-                    ->select('faculty.id', 'users.name as professor', 'faculty.faculty_email')
+                    ->select('faculty.id', 'users.name as professor', 'users.email as faculty_email')
                     ->first() : null;
 
                 $room = $existingSchedule->room_id ? DB::table('rooms')

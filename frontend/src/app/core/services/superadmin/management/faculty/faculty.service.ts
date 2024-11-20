@@ -11,8 +11,8 @@ export interface User {
   name: string;
   code: string;
   role: string;
+  email: string;
   faculty?: {
-    faculty_email: string;
     faculty_type: string;
     faculty_units: number;
   };
@@ -23,7 +23,7 @@ export interface Faculty {
   id: string;
   name: string;
   code: string;
-  faculty_email: string;
+  email: string;
   faculty_type: string;
   faculty_units: number;
   status: string;
@@ -52,7 +52,7 @@ export class FacultyService {
             id: user.id.toString(),
             name: user.name,
             code: user.code,
-            faculty_email: user.faculty?.faculty_email || '',
+            email: user.email || '',
             faculty_type: user.faculty?.faculty_type || '',
             faculty_units: user.faculty?.faculty_units ?? 0,
             status: user.status || 'Active',

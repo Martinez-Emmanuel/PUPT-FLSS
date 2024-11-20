@@ -20,7 +20,7 @@ class FacultyController extends Controller
                 'faculty_id' => $faculty->id,
                 'name' => $faculty->user->name ?? 'N/A',
                 'code' => $faculty->user->code ?? 'N/A',
-                'faculty_email' => $faculty->faculty_email ?? 'N/A',
+                'faculty_email' => $faculty->user->email ?? 'N/A',
                 'faculty_type' => $faculty->faculty_type ?? 'N/A',
                 'faculty_units' => $faculty->faculty_units ?? 'N/A',
             ];

@@ -39,7 +39,7 @@ class SendFacultyScheduleEmailJob implements ShouldQueue
     {
         $dataSchedule = [
             'faculty_name' => $this->faculty->user->name,
-            'email' => $this->faculty->faculty_email,
+            'email' => $this->faculty->user->email,
         ];
 
         Mail::send('emails.load_schedule_published', $dataSchedule, function ($message) use ($dataSchedule) {

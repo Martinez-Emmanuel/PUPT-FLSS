@@ -5,15 +5,15 @@ namespace App\Http\Controllers;
 use App\Jobs\SendFacultyPreferenceEmailJob;
 use App\Jobs\SendFacultyScheduleEmailJob;
 use App\Models\Faculty;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Mail;
 use App\Models\PreferencesSetting;
 use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
 
 class EmailController extends Controller
 {
 
-       /**
+    /**
      * Send email to all faculty members to submit their preferences.
      */
     public function emailAllFacultyPreferences()
@@ -34,13 +34,13 @@ class EmailController extends Controller
     public function emailSingleFacultyPreferences(Request $request)
     {
         $facultyId = $request->input('faculty_id');
-        
+
         // Retrieve the faculty details from the Faculty model
         $faculty = Faculty::find($facultyId);
         if (!$faculty) {
             return response()->json(['message' => 'Faculty not found'], 404);
         }
-        
+
         // Retrieve preferences settings for the faculty to check for individual deadline
         $settings = PreferencesSetting::where('faculty_id', $facultyId)->first();
         if (!$settings || !$settings->individual_deadline) {
@@ -54,7 +54,7 @@ class EmailController extends Controller
         // Prepare data for the email
         $data = [
             'faculty_name' => $faculty->user->name,
-            'email' => $faculty->faculty_email,
+            'email' => $faculty->user->email,
             'individual_deadline' => $individualDeadline->format('M d, Y'),
             'days_left' => $daysLeft,
         ];
@@ -69,7 +69,7 @@ class EmailController extends Controller
         return response()->json([
             'message' => 'Preference status notification sent successfully',
             'individual_deadline' => $individualDeadline->format('M d, Y'),
-            'days_left' => $daysLeft
+            'days_left' => $daysLeft,
         ], 200);
     }
 
@@ -92,7 +92,7 @@ class EmailController extends Controller
     {
         $data = [
             'faculty_name' => $faculty->user->name,
-            'email' => $faculty->faculty_email,
+            'email' => $faculty->user->email,
         ];
 
         Mail::send('emails.preferences_submitted', $data, function ($message) use ($data) {
@@ -131,7 +131,7 @@ class EmailController extends Controller
 
         $data = [
             'faculty_name' => $faculty->user->name,
-            'email' => $faculty->faculty_email,
+            'email' => $faculty->user->email,
         ];
 
         Mail::send('emails.load_schedule_published', $data, function ($message) use ($data) {

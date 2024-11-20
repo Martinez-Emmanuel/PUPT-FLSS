@@ -14,7 +14,6 @@ return new class extends Migration
         Schema::create('faculty', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->string('faculty_email', 50)->unique();
             $table->string('faculty_type', 50);
             $table->string('faculty_units');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
