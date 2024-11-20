@@ -11,7 +11,7 @@
     <div class="day-buttons-container">
       @for (day of dayButtons; track day.name) {
       <div
-        class="day-button pop-small"
+        class="day-button"
         [class.selected]="day.name === selectedDay"
         [class.original-day]="
           day.name === originalDay && day.name !== selectedDay
