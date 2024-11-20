@@ -14,23 +14,25 @@
   .content {
     @include mixins.flex-layout(
       $direction: column,
-      $align: stretch,
+      $align: center,
       $justify: center,
       $gap: var(--spacing-sm)
     );
 
     .status-badge {
-      @include mixins.flex-layout;
+      @include mixins.flex-layout($gap: var(--spacing-xs));
       margin-bottom: var(--spacing-md);
+      width: fit-content;
+      padding: var(--spacing-xs) var(--spacing-sm);
+      border-radius: var(--border-radius-xl);
+      text-align: center;
+      background: var(--secondary-fade);
+      color: var(--secondary-text);
+      font-weight: 600;
+      font-size: var(--font-size-sm);
 
-      span {
-        padding: var(--spacing-xs) var(--spacing-sm);
-        border-radius: var(--border-radius-xl);
-        text-align: center;
-        background: var(--secondary-fade);
-        color: var(--secondary-text);
-        font-weight: 600;
-        font-size: var(--font-size-sm);
+      span[mat-symbol] {
+        font-size: larger;
       }
     }
 

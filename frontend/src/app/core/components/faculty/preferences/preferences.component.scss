@@ -151,7 +151,10 @@
       }
 
       .cards-label {
-        @include mixins.flex-layout($justify: flex-start, $gap: var(--spacing-sm));
+        @include mixins.flex-layout(
+          $justify: flex-start,
+          $gap: var(--spacing-sm)
+        );
         font-weight: 500;
         margin-bottom: 1rem;
 
@@ -318,7 +321,10 @@
 
   .table-footer {
     @include mixins.default-transition;
-    @include mixins.flex-layout($justify: space-between, $gap: var(--spacing-xs));
+    @include mixins.flex-layout(
+      $justify: space-between,
+      $gap: var(--spacing-xs)
+    );
     @include mixins.sticky;
     margin-top: auto;
     background-color: var(--neutral-bar);
@@ -357,7 +363,11 @@
 }
 
 .preferences-closed {
-  @include mixins.flex-layout($direction: column, $align: center, $justify: center);
+  @include mixins.flex-layout(
+    $direction: column,
+    $align: center,
+    $justify: center
+  );
   opacity: var(--opacity-semi-opaque);
   height: 100%;
 
@@ -411,8 +421,18 @@
     }
   }
 
-  .view-preferences button {
-    font-size: var(--font-size-md);
+  .button-options {
+    @include mixins.flex-layout($gap: var(--spacing-sm));
+
+    .preferences-btn {
+      @include mixins.gradient-primary(315deg);
+      font-size: var(--font-size-md);
+    }
+
+    .request-btn {
+      @include mixins.gradient-secondary(315deg);
+      font-size: var(--font-size-md);
+    }
   }
 }
 
