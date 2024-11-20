@@ -1,4 +1,4 @@
-@use "../../../../../styles/mixins.scss";
+@use "../../../../../styles/mixins";
 
 * {
   @include mixins.reset-styles;
@@ -126,7 +126,10 @@
       }
 
       .header-account {
-        @include mixins.flex-layout($direction: row-reverse, $gap: var(--spacing-sm));
+        @include mixins.flex-layout(
+          $direction: row-reverse,
+          $gap: var(--spacing-sm)
+        );
         font-size: var(--font-size-smx);
         background-color: var(--neutral-option);
         border-radius: var(--border-radius-xl);

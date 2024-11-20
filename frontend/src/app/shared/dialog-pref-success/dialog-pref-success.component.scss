@@ -1,4 +1,4 @@
-@use "../../../styles/mixins.scss";
+@use "../../../styles/mixins";
 
 .dialog-pref-success-container {
   @include mixins.flex-layout(

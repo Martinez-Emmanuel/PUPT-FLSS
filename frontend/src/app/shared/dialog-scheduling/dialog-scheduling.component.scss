@@ -1,4 +1,4 @@
-@use "../../../styles/mixins.scss";
+@use "../../../styles/mixins";
 
 :host {
   @include mixins.custom-spinner(var(--primary-text));
@@ -28,7 +28,10 @@
     }
 
     .dialog-title {
-      @include mixins.flex-layout($justify: flex-start, $gap: var(--spacing-xs));
+      @include mixins.flex-layout(
+        $justify: flex-start,
+        $gap: var(--spacing-xs)
+      );
       font-weight: 500;
 
       &.scheduling {

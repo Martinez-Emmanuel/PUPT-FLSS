@@ -1,4 +1,4 @@
-@use "../../../../../styles/mixins.scss";
+@use "../../../../../styles/mixins";
 
 * {
   @include mixins.reset-styles;
@@ -260,11 +260,17 @@
 
             &.one,
             &.two {
-              @include mixins.flex-layout($align: stretch, $gap: var(--spacing-sm));
+              @include mixins.flex-layout(
+                $align: stretch,
+                $gap: var(--spacing-sm)
+              );
             }
 
             .item {
-              @include mixins.flex-layout($direction: column, $gap: var(--spacing-xs));
+              @include mixins.flex-layout(
+                $direction: column,
+                $gap: var(--spacing-xs)
+              );
               flex: 1;
               padding: var(--spacing-sm);
               border-radius: var(--border-radius-sm);
