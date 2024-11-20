@@ -196,8 +196,20 @@ body {
   background-color: var(--secondary-fade) !important;
 }
 
+.sec-ripple {
+  &.mat-mdc-button .mat-mdc-button-persistent-ripple::before {
+    background-color: rgba(93, 71, 0, 0.78) !important;
+  }
+}
+
 .ter-ripple .mat-ripple-element {
   background-color: rgba(84, 84, 84, 0.3) !important;
+}
+
+.ter-ripple {
+  &.mat-mdc-unelevated-button .mat-mdc-button-persistent-ripple::before {
+    background-color: rgb(0, 0, 0) !important;
+  }
 }
 
 span[mat-symbol] {
