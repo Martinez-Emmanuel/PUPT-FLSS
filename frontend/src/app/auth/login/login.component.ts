@@ -20,22 +20,21 @@ import { AuthService } from '../../core/services/auth/auth.service';
 import { RoleService } from '../../core/services/role/role.service';
 
 @Component({
-  selector: 'app-login',
-  templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss'],
-  standalone: true,
-  imports: [
-    CommonModule,
-    SlideshowComponent,
-    ReactiveFormsModule,
-    MatSymbolDirective,
-    MatIcon,
-    MatButton,
-    MatProgressSpinner,
-    MatRippleModule,
-    MatTooltipModule,
-  ],
-  providers: [AuthService],
+    selector: 'app-login',
+    templateUrl: './login.component.html',
+    styleUrls: ['./login.component.scss'],
+    imports: [
+        CommonModule,
+        SlideshowComponent,
+        ReactiveFormsModule,
+        MatSymbolDirective,
+        MatIcon,
+        MatButton,
+        MatProgressSpinner,
+        MatRippleModule,
+        MatTooltipModule,
+    ],
+    providers: [AuthService]
 })
 export class LoginComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();

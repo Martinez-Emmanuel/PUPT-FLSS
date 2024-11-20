@@ -18,19 +18,18 @@ import { fadeAnimation } from '../../../../animations/animations';
 import { CurriculumService, Curriculum, Program } from '../../../../services/superadmin/curriculum/curriculum.service';
 
 @Component({
-  selector: 'app-curriculum',
-  standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    TableGenericComponent,
-    TableHeaderComponent,
-    LoadingComponent,
-  ],
-  templateUrl: './curriculum.component.html',
-  styleUrls: ['./curriculum.component.scss'],
-  animations: [fadeAnimation],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-curriculum',
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        TableGenericComponent,
+        TableHeaderComponent,
+        LoadingComponent,
+    ],
+    templateUrl: './curriculum.component.html',
+    styleUrls: ['./curriculum.component.scss'],
+    animations: [fadeAnimation],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CurriculumComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();

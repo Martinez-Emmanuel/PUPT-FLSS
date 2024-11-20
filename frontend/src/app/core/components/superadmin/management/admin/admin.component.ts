@@ -17,19 +17,18 @@ import { AdminService, User } from '../../../../services/superadmin/management/a
 import { fadeAnimation } from '../../../../animations/animations';
 
 @Component({
-  selector: 'app-admin',
-  standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    TableGenericComponent,
-    TableHeaderComponent,
-    LoadingComponent,
-  ],
-  templateUrl: './admin.component.html',
-  styleUrls: ['./admin.component.scss'],
-  animations: [fadeAnimation],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-admin',
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        TableGenericComponent,
+        TableHeaderComponent,
+        LoadingComponent,
+    ],
+    templateUrl: './admin.component.html',
+    styleUrls: ['./admin.component.scss'],
+    animations: [fadeAnimation],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AdminComponent implements OnInit {
   adminStatuses = ['Active', 'Inactive'];

@@ -1,7 +1,7 @@
-@import "../../../styles/mixins.scss";
+@use "../../../styles/mixins.scss";
 
 .loading-container {
-  @include flex-layout($direction: column);
+  @include mixins.flex-layout($direction: column);
   height: 100%;
   align-items: center;
 }
@@ -16,7 +16,7 @@
 }
 
 .progress-animation {
-  @include gradient-primary(90deg);
+  @include mixins.gradient-primary(90deg);
   height: 100%;
   position: absolute;
   top: 0;

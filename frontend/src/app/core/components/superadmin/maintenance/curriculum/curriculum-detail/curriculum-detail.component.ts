@@ -27,17 +27,16 @@ import {
 } from '../../../../../services/superadmin/curriculum/curriculum.service';
 
 @Component({
-  selector: 'app-curriculum-detail',
-  standalone: true,
-  imports: [
-    CommonModule,
-    TableGenericComponent, 
-    TableHeaderComponent,  
-    LoadingComponent
-  ],
-  templateUrl: './curriculum-detail.component.html',
-  styleUrls: ['./curriculum-detail.component.scss'],
-  animations: [fadeAnimation, pageFloatUpAnimation], 
+    selector: 'app-curriculum-detail',
+    imports: [
+        CommonModule,
+        TableGenericComponent,
+        TableHeaderComponent,
+        LoadingComponent
+    ],
+    templateUrl: './curriculum-detail.component.html',
+    styleUrls: ['./curriculum-detail.component.scss'],
+    animations: [fadeAnimation, pageFloatUpAnimation]
 })
 export class CurriculumDetailComponent implements OnInit {
   public selectedPrograms: string[] = [];

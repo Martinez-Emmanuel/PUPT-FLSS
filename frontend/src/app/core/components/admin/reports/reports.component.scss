@@ -1,8 +1,8 @@
-@import "../../../../../styles/mixins.scss";
+@use "../../../../../styles/mixins.scss";
 
 .reports-main {
   height: 100%;
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
     $justify: flex-start,
@@ -14,7 +14,7 @@
   height: inherit;
 
   .report-container {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: stretch,
       $justify: flex-start,
@@ -24,12 +24,12 @@
   }
 
   .report-table-container {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: stretch,
       $justify: flex-start
     );
-    @include hide-scrollbar;
+    @include mixins.hide-scrollbar;
     overflow: auto;
     position: relative;
     border-radius: var(--border-radius-md);
@@ -37,13 +37,13 @@
     max-height: 57vh;
 
     .table-container {
-      @include hide-scrollbar;
+      @include mixins.hide-scrollbar;
       display: flex;
       flex-direction: column;
       background-color: var(--neutral-light);
 
       .custom-table {
-        @include default-transition;
+        @include mixins.default-transition;
         background-color: var(--neutral-light);
 
         .table-button {
@@ -79,7 +79,7 @@
           font-size: var(--font-size-xsx);
           font-weight: 500;
           margin: 0 auto;
-          display: inline-block;  
+          display: inline-block;
 
           &.full-time {
             background-color: var(--blue-fade-lighter);
@@ -124,7 +124,7 @@
         padding: var(--spacing-lg);
 
         .flex-cell {
-          @include flex-layout(
+          @include mixins.flex-layout(
             $align: center,
             $justify: center,
             $gap: var(--spacing-xs)
@@ -141,6 +141,6 @@
 
 .reports-tab {
   .tab-label {
-    @include flex-layout($gap: var(--spacing-xs));
+    @include mixins.flex-layout($gap: var(--spacing-xs));
   }
 }

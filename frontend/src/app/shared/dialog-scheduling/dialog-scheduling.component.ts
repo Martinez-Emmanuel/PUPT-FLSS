@@ -46,26 +46,25 @@ interface DialogData {
 }
 
 @Component({
-  selector: 'app-dialog-scheduling',
-  standalone: true,
-  imports: [
-    CommonModule,
-    MatFormFieldModule,
-    MatDialogModule,
-    MatIconModule,
-    MatInputModule,
-    MatButtonModule,
-    ReactiveFormsModule,
-    MatSelectModule,
-    MatAutocompleteModule,
-    MatRippleModule,
-    MatSnackBarModule,
-    MatProgressSpinnerModule,
-    MatSymbolDirective,
-  ],
-  templateUrl: './dialog-scheduling.component.html',
-  styleUrls: ['./dialog-scheduling.component.scss'],
-  animations: [cardEntranceSide],
+    selector: 'app-dialog-scheduling',
+    imports: [
+        CommonModule,
+        MatFormFieldModule,
+        MatDialogModule,
+        MatIconModule,
+        MatInputModule,
+        MatButtonModule,
+        ReactiveFormsModule,
+        MatSelectModule,
+        MatAutocompleteModule,
+        MatRippleModule,
+        MatSnackBarModule,
+        MatProgressSpinnerModule,
+        MatSymbolDirective,
+    ],
+    templateUrl: './dialog-scheduling.component.html',
+    styleUrls: ['./dialog-scheduling.component.scss'],
+    animations: [cardEntranceSide]
 })
 export class DialogSchedulingComponent implements OnInit, OnDestroy {
   scheduleForm!: FormGroup;

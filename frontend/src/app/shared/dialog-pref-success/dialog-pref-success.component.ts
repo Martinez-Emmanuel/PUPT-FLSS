@@ -6,11 +6,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 @Component({
-  selector: 'app-dialog-pref-success',
-  standalone: true,
-  imports: [CommonModule, MatDialogModule, MatButtonModule, MatSymbolDirective],
-  templateUrl: './dialog-pref-success.component.html',
-  styleUrl: './dialog-pref-success.component.scss',
+    selector: 'app-dialog-pref-success',
+    imports: [CommonModule, MatDialogModule, MatButtonModule, MatSymbolDirective],
+    templateUrl: './dialog-pref-success.component.html',
+    styleUrl: './dialog-pref-success.component.scss'
 })
 export class DialogPrefSuccessComponent {
   deadline: string;

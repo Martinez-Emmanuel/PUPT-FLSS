@@ -33,24 +33,23 @@ interface Room {
 }
 
 @Component({
-  selector: 'app-report-rooms',
-  standalone: true,
-  imports: [
-    CommonModule,
-    TableHeaderComponent,
-    LoadingComponent,
-    MatTableModule,
-    MatPaginatorModule,
-    MatIconModule,
-    MatButtonModule,
-    MatTooltipModule,
-    FormsModule,
-    MatDialogModule,
-    MatSymbolDirective,
-  ],
-  templateUrl: './report-rooms.component.html',
-  styleUrls: ['./report-rooms.component.scss'],
-  animations: [fadeAnimation],
+    selector: 'app-report-rooms',
+    imports: [
+        CommonModule,
+        TableHeaderComponent,
+        LoadingComponent,
+        MatTableModule,
+        MatPaginatorModule,
+        MatIconModule,
+        MatButtonModule,
+        MatTooltipModule,
+        FormsModule,
+        MatDialogModule,
+        MatSymbolDirective,
+    ],
+    templateUrl: './report-rooms.component.html',
+    styleUrls: ['./report-rooms.component.scss'],
+    animations: [fadeAnimation]
 })
 export class ReportRoomsComponent implements OnInit, AfterViewInit, AfterViewChecked {
   inputFields: InputField[] = [

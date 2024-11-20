@@ -1,14 +1,14 @@
-@import "../../../styles/mixins.scss";
+@use "../../../styles/mixins.scss";
 
 :host {
-  @include custom-spinner(var(--primary-text));
+  @include mixins.custom-spinner(var(--primary-text));
 }
 
 .scheduling-dialog-container {
-  @include flex-layout($align: stretch);
+  @include mixins.flex-layout($align: stretch);
 
   .title {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $justify: flex-start,
       $align: flex-start,
@@ -28,7 +28,7 @@
     }
 
     .dialog-title {
-      @include flex-layout($justify: flex-start, $gap: var(--spacing-xs));
+      @include mixins.flex-layout($justify: flex-start, $gap: var(--spacing-xs));
       font-weight: 500;
 
       &.scheduling {
@@ -48,14 +48,14 @@
   }
 
   .content {
-    @include reset-styles;
+    @include mixins.reset-styles;
   }
 }
 
 /* ------ Edit Schedule Section ------ */
 .edit-schedule-details {
   flex: 5;
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
     $justify: flex-start
@@ -63,17 +63,17 @@
   overflow: hidden;
 
   .content.forms-list {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: stretch,
       $justify: flex-start,
       $gap: var(--spacing-sm)
     );
-    @include hide-scrollbar;
+    @include mixins.hide-scrollbar;
     width: 100%;
 
     .scheduling-form-group {
-      @include flex-layout(
+      @include mixins.flex-layout(
         $direction: column,
         $align: stretch,
         $gap: var(--spacing-xs)
@@ -81,7 +81,7 @@
 
       /* ------ Day Picker Styles ------ */
       .day-buttons-container {
-        @include flex-layout(
+        @include mixins.flex-layout(
           $justify: space-between,
           $align: stretch,
           $gap: var(--spacing-sm)
@@ -94,7 +94,7 @@
       }
 
       .day-button {
-        @include flex-layout;
+        @include mixins.flex-layout;
         font-size: var(--font-size-sm);
         width: var(--font-size-md);
         aspect-ratio: 1 / 1;
@@ -117,7 +117,7 @@
           right: 0;
           bottom: 0;
           border-radius: 50%;
-          @include gradient-primary(315deg);
+          @include mixins.gradient-primary(315deg);
           opacity: 0;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
           z-index: -1;
@@ -143,7 +143,7 @@
       }
 
       .date-fields {
-        @include flex-layout($gap: var(--spacing-md));
+        @include mixins.flex-layout($gap: var(--spacing-md));
       }
 
       /* Icon color when the field is focused */
@@ -165,10 +165,10 @@
 
   /* Schedule Validator Styles */
   .schedule-validator {
-    @include flex-layout;
+    @include mixins.flex-layout;
 
     .validation-message {
-      @include flex-layout($align: center, $gap: var(--spacing-xs));
+      @include mixins.flex-layout($align: center, $gap: var(--spacing-xs));
       padding: var(--spacing-xs);
       border-radius: var(--border-radius-sm);
       width: fit-content;
@@ -186,8 +186,8 @@
   }
 
   .scheduling-dialog-actions {
-    @include reset-styles;
-    @include flex-layout($align: stretch, $justify: space-between);
+    @include mixins.reset-styles;
+    @include mixins.flex-layout($align: stretch, $justify: space-between);
     padding: var(--spacing-lg) 0;
     user-select: none;
 
@@ -213,7 +213,7 @@
         color: var(--primary-text) !important;
       }
       .action-button {
-        @include gradient-primary(315deg);
+        @include mixins.gradient-primary(315deg);
 
         &:disabled {
           background: var(--neutral-fade);
@@ -231,13 +231,13 @@
   background-color: var(--neutral-extra);
 
   .content.faculty-list {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: stretch,
       $justify: flex-start,
       $gap: var(--spacing-sm)
     );
-    @include hide-scrollbar;
+    @include mixins.hide-scrollbar;
     margin-bottom: var(--spacing-lg);
     border-radius: var(--border-radius-sm);
     overflow: visible;

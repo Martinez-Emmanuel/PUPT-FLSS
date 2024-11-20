@@ -1,7 +1,7 @@
-@import "../../../../../../../styles/mixins";
+@use "../../../../../../../styles/mixins";
 
 .curriculum-detail-container {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
     $justify: flex-start
@@ -17,10 +17,10 @@
 }
 
 .curriculum-semesters-container {
-  @include default-transition;
+  @include mixins.default-transition;
   height: 100%;
   overflow: hidden;
-  position: relative; 
+  position: relative;
 
   .scrollable-content {
     position: absolute;
@@ -29,13 +29,18 @@
     right: 0;
     bottom: 0;
     overflow: auto;
-    @include flex-layout($direction: column, $align: stretch, $justify: flex-start, $gap: var(--spacing-md));
-    @include hide-scrollbar;
+    @include mixins.flex-layout(
+      $direction: column,
+      $align: stretch,
+      $justify: flex-start,
+      $gap: var(--spacing-md)
+    );
+    @include mixins.hide-scrollbar;
   }
 
   .semester-container {
-    @include flex-layout($direction: column, $align: none, $justify: none);
-    @include hide-scrollbar;
+    @include mixins.flex-layout($direction: column, $align: none, $justify: none);
+    @include mixins.hide-scrollbar;
     flex: 1;
     position: relative;
     border-radius: var(--border-radius-md);

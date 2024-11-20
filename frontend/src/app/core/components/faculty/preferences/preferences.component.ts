@@ -39,30 +39,29 @@ interface TableData extends Course {
 }
 
 @Component({
-  selector: 'app-preferences',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    LoadingComponent,
-    TimeFormatPipe,
-    MatSymbolDirective,
-    MatTableModule,
-    MatButtonModule,
-    MatIconModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatTooltipModule,
-    MatSnackBarModule,
-    MatDialogModule,
-    MatProgressSpinnerModule,
-    MatMenuModule,
-    MatRippleModule,
-  ],
-  templateUrl: './preferences.component.html',
-  styleUrls: ['./preferences.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  animations: [fadeAnimation, cardEntranceAnimation, rowAdditionAnimation],
+    selector: 'app-preferences',
+    imports: [
+        CommonModule,
+        FormsModule,
+        LoadingComponent,
+        TimeFormatPipe,
+        MatSymbolDirective,
+        MatTableModule,
+        MatButtonModule,
+        MatIconModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatTooltipModule,
+        MatSnackBarModule,
+        MatDialogModule,
+        MatProgressSpinnerModule,
+        MatMenuModule,
+        MatRippleModule,
+    ],
+    templateUrl: './preferences.component.html',
+    styleUrls: ['./preferences.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    animations: [fadeAnimation, cardEntranceAnimation, rowAdditionAnimation]
 })
 export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   showSidenav = false;

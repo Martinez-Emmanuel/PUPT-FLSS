@@ -1,12 +1,12 @@
-@import "../../../styles/mixins";
+@use "../../../styles/mixins";
 
 *,
 *::before {
-  @include default-transition;
+  @include mixins.default-transition;
 }
 
 :host {
-  @include custom-spinner(white);
+  @include mixins.custom-spinner(white);
 }
 
 .login-container {
@@ -71,7 +71,7 @@
   }
 
   #login_header {
-    @include flex-layout($gap: var(--spacing-lg));
+    @include mixins.flex-layout($gap: var(--spacing-lg));
     width: inherit;
     text-align: left;
 
@@ -113,7 +113,7 @@
       gap: var(--spacing-xs);
 
       h1 {
-        @include gradient-primary-text(315deg);
+        @include mixins.gradient-primary-text(315deg);
         width: fit-content;
         font-size: var(--font-size-2xxl);
         margin: 0;
@@ -133,8 +133,8 @@
     }
 
     .custom-mat-button {
-      @include flex-layout($direction: row-reverse, $gap: var(--spacing-sm));
-      @include gradient-primary(315deg);
+      @include mixins.flex-layout($direction: row-reverse, $gap: var(--spacing-sm));
+      @include mixins.gradient-primary(315deg);
       font-weight: 600;
 
       span {
@@ -190,7 +190,7 @@
         }
 
         .login-input {
-          @include default-transition;
+          @include mixins.default-transition;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -255,7 +255,7 @@
   }
 
   .error-message {
-    @include flex-layout;
+    @include mixins.flex-layout;
     position: absolute;
     min-height: var(--spacing-lg);
     margin-top: var(--spacing-xxs);
@@ -311,7 +311,7 @@
 @media screen and (max-width: 1500px) {
   .login-form-section {
     #login_header {
-      @include flex-layout($direction: column, $gap: var(--spacing-sm));
+      @include mixins.flex-layout($direction: column, $gap: var(--spacing-sm));
 
       .university-name,
       .system-name {

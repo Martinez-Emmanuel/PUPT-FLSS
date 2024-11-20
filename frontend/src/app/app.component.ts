@@ -5,12 +5,11 @@ import { ThemeService } from './core/services/theme/theme.service';
 import { fadeAnimation } from './core/animations/animations';
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [RouterOutlet],
-  templateUrl: './app.component.html',
-  styleUrl: './app.component.scss',
-  animations: [fadeAnimation],
+    selector: 'app-root',
+    imports: [RouterOutlet],
+    templateUrl: './app.component.html',
+    styleUrl: './app.component.scss',
+    animations: [fadeAnimation]
 })
 export class AppComponent {
   title = 'PUPT-FLSS';

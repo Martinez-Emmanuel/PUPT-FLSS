@@ -18,22 +18,21 @@ interface DayButton {
 }
 
 @Component({
-  selector: 'app-dialog-time',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatOptionModule,
-    MatButtonModule,
-    MatIconModule,
-    MatCheckboxModule,
-    MatRippleModule,
-  ],
-  templateUrl: './dialog-day-time.component.html',
-  styleUrls: ['./dialog-day-time.component.scss'],
+    selector: 'app-dialog-time',
+    imports: [
+        CommonModule,
+        FormsModule,
+        MatDialogModule,
+        MatFormFieldModule,
+        MatSelectModule,
+        MatOptionModule,
+        MatButtonModule,
+        MatIconModule,
+        MatCheckboxModule,
+        MatRippleModule,
+    ],
+    templateUrl: './dialog-day-time.component.html',
+    styleUrls: ['./dialog-day-time.component.scss']
 })
 export class DialogDayTimeComponent {
   selectedDay: string = '';

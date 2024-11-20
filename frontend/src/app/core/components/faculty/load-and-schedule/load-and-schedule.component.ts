@@ -15,19 +15,18 @@ import { CookieService } from 'ngx-cookie-service';
 import { fadeAnimation } from '../../../animations/animations';
 
 @Component({
-  selector: 'app-load-and-schedule',
-  standalone: true,
-  imports: [
-    CommonModule,
-    MatDialogModule,
-    MatTooltipModule,
-    FacultyScheduleTimetableComponent,
-    LoadingComponent,
-    MatSymbolDirective,
-  ],
-  templateUrl: './load-and-schedule.component.html',
-  styleUrl: './load-and-schedule.component.scss',
-  animations: [fadeAnimation],
+    selector: 'app-load-and-schedule',
+    imports: [
+        CommonModule,
+        MatDialogModule,
+        MatTooltipModule,
+        FacultyScheduleTimetableComponent,
+        LoadingComponent,
+        MatSymbolDirective,
+    ],
+    templateUrl: './load-and-schedule.component.html',
+    styleUrl: './load-and-schedule.component.scss',
+    animations: [fadeAnimation]
 })
 export class LoadAndScheduleComponent implements OnInit {
   facultySchedule: any;

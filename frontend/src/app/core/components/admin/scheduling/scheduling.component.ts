@@ -37,22 +37,21 @@ import {
 import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
 
 @Component({
-  selector: 'app-scheduling',
-  standalone: true,
-  imports: [
-    CommonModule,
-    TableHeaderComponent,
-    LoadingComponent,
-    MatTableModule,
-    MatButtonModule,
-    MatIconModule,
-    MatTooltipModule,
-    MatProgressSpinnerModule,
-    MatSymbolDirective,
-  ],
-  templateUrl: './scheduling.component.html',
-  styleUrls: ['./scheduling.component.scss'],
-  animations: [fadeAnimation, pageFloatUpAnimation],
+    selector: 'app-scheduling',
+    imports: [
+        CommonModule,
+        TableHeaderComponent,
+        LoadingComponent,
+        MatTableModule,
+        MatButtonModule,
+        MatIconModule,
+        MatTooltipModule,
+        MatProgressSpinnerModule,
+        MatSymbolDirective,
+    ],
+    templateUrl: './scheduling.component.html',
+    styleUrls: ['./scheduling.component.scss'],
+    animations: [fadeAnimation, pageFloatUpAnimation]
 })
 export class SchedulingComponent implements OnInit, OnDestroy {
   schedules: Schedule[] = [];

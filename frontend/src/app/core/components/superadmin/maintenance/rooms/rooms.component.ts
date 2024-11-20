@@ -22,19 +22,18 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
 @Component({
-  selector: 'app-rooms',
-  standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    TableGenericComponent,
-    TableHeaderComponent,
-    LoadingComponent,
-  ],
-  templateUrl: './rooms.component.html',
-  styleUrls: ['./rooms.component.scss'],
-  animations: [fadeAnimation],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-rooms',
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        TableGenericComponent,
+        TableHeaderComponent,
+        LoadingComponent,
+    ],
+    templateUrl: './rooms.component.html',
+    styleUrls: ['./rooms.component.scss'],
+    animations: [fadeAnimation],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RoomsComponent implements OnInit, OnDestroy {
   roomTypes = ['Lecture', 'Laboratory', 'Office'];

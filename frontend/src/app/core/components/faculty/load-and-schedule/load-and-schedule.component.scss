@@ -1,12 +1,12 @@
-@import "../../../../../styles/mixins";
+@use "../../../../../styles/mixins";
 * {
-  @include reset-styles;
-  @include default-transition;
-  @include hide-scrollbar;
+  @include mixins.reset-styles;
+  @include mixins.default-transition;
+  @include mixins.hide-scrollbar;
 }
 
 .faculty-load-schedule-container {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
     $justify: flex-start,
@@ -16,32 +16,32 @@
 }
 
 .row-one {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $align: stretch,
     $justify: space-between,
     $gap: var(--spacing-md)
   );
 
   .page-header {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: flex-start,
       $gap: var(--spacing-xxs)
     );
 
     h1 {
-      @include reset-styles;
+      @include mixins.reset-styles;
       font-size: var(--font-size-2xxl);
       font-weight: 700;
 
-      @include gradient-primary(315deg);
+      @include mixins.gradient-primary(315deg);
       background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     p {
-      @include reset-styles;
+      @include mixins.reset-styles;
       font-size: var(--font-size-mdx);
 
       .highlight {
@@ -51,7 +51,7 @@
   }
 
   .schedule-overview {
-    @include flex-layout($align: stretch, $gap: var(--spacing-md));
+    @include mixins.flex-layout($align: stretch, $gap: var(--spacing-md));
     width: min(25rem, 100%);
 
     .schedule-summary,
@@ -61,7 +61,7 @@
       border-radius: var(--border-radius-md);
 
       .mini-heading {
-        @include flex-layout($justify: flex-start, $gap: var(--spacing-xxs));
+        @include mixins.flex-layout($justify: flex-start, $gap: var(--spacing-xxs));
         font-weight: 600;
         max-width: max-content;
 
@@ -73,12 +73,12 @@
 
     .schedule-summary {
       flex: 1;
-      @include gradient-primary(315deg);
+      @include mixins.gradient-primary(315deg);
     }
 
     .schedule-history {
       flex: 1;
-      @include gradient-secondary(315deg);
+      @include mixins.gradient-secondary(315deg);
       cursor: pointer;
 
       p {
@@ -93,7 +93,7 @@
   overflow: hidden;
 
   .unpublished-container {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: center,
       $justify: center,
@@ -108,7 +108,7 @@
     }
 
     .unpublished-text {
-      @include flex-layout($gap: var(--spacing-xs));
+      @include mixins.flex-layout($gap: var(--spacing-xs));
       font-size: var(--font-size-md);
       text-align: center;
 
@@ -121,7 +121,7 @@
 
 @media screen and (max-width: 1024px) {
   .row-one {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: stretch,
       $gap: var(--spacing-md)

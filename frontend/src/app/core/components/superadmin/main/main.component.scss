@@ -1,23 +1,23 @@
-@import "../../../../../styles/mixins.scss";
+@use "../../../../../styles/mixins.scss";
 
 * {
-  @include reset-styles;
+  @include mixins.reset-styles;
 }
 
 .sidenav-container {
   height: 100%;
   background-color: var(--main-bg);
-  @include default-transition;
+  @include mixins.default-transition;
 }
 
 .sidenav-bar {
   width: 16rem;
   background-color: var(--neutral-sidebar);
   padding: var(--spacing-sm) var(--spacing-md);
-  @include default-transition;
+  @include mixins.default-transition;
 
   .side-toolbar {
-    @include flex-layout($direction: column, $gap: var(--spacing-md));
+    @include mixins.flex-layout($direction: column, $gap: var(--spacing-md));
     padding: var(--spacing-lg) var(--spacing-md);
 
     img {
@@ -25,7 +25,7 @@
     }
 
     .header-name {
-      @include flex-layout($direction: column);
+      @include mixins.flex-layout($direction: column);
       text-align: center;
       line-height: var(--line-height-mdx);
 
@@ -43,7 +43,7 @@
   }
 
   .navbar-list {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: stretch,
       $justify: none,
@@ -92,7 +92,7 @@
 }
 
 .sidenav-content {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: none,
     $justify: none,
@@ -113,12 +113,12 @@
     }
 
     .sidenav-header {
-      @include flex-layout($align: stretch, $justify: space-between);
+      @include mixins.flex-layout($align: stretch, $justify: space-between);
       width: inherit;
 
       .title-container .page-title {
-        @include flex-layout;
-        @include gradient-primary-text($degree: 315deg);
+        @include mixins.flex-layout;
+        @include mixins.gradient-primary-text($degree: 315deg);
         height: 100%;
         width: max-content;
         font-size: var(--font-size-2xxl);
@@ -126,7 +126,7 @@
       }
 
       .header-account {
-        @include flex-layout($direction: row-reverse, $gap: var(--spacing-sm));
+        @include mixins.flex-layout($direction: row-reverse, $gap: var(--spacing-sm));
         font-size: var(--font-size-smx);
         background-color: var(--neutral-option);
         border-radius: var(--border-radius-xl);
@@ -147,7 +147,7 @@
         }
 
         .profile-dropdown {
-          @include flex-layout;
+          @include mixins.flex-layout;
           position: relative;
 
           .profile-icon {
@@ -172,7 +172,7 @@
             border-radius: var(--border-radius-md);
 
             .dropdown-item {
-              @include ellipsis;
+              @include mixins.ellipsis;
               display: flex;
               align-items: center;
               gap: var(--spacing-xs);
@@ -215,7 +215,7 @@
   }
 
   .sidenav-main {
-    @include hide-scrollbar;
+    @include mixins.hide-scrollbar;
     height: inherit;
     overflow: auto;
   }

@@ -15,17 +15,16 @@ interface DialogRequestAccessData {
 }
 
 @Component({
-  selector: 'app-dialog-request-access',
-  standalone: true,
-  imports: [
-    CommonModule,
-    MatDialogModule,
-    MatButtonModule,
-    MatProgressSpinnerModule,
-    MatSymbolDirective,
-  ],
-  templateUrl: './dialog-request-access.component.html',
-  styleUrls: ['./dialog-request-access.component.scss'],
+    selector: 'app-dialog-request-access',
+    imports: [
+        CommonModule,
+        MatDialogModule,
+        MatButtonModule,
+        MatProgressSpinnerModule,
+        MatSymbolDirective,
+    ],
+    templateUrl: './dialog-request-access.component.html',
+    styleUrls: ['./dialog-request-access.component.scss']
 })
 export class DialogRequestAccessComponent {
   hasRequest: boolean;

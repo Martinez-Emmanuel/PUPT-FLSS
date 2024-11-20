@@ -1,12 +1,12 @@
-@import "../../../../../styles/mixins.scss";
+@use "../../../../../styles/mixins.scss";
 
 * {
-  @include reset-styles;
+  @include mixins.reset-styles;
 }
 
 .academic-year-container {
-  @include default-transition;
-  @include flex-layout(
+  @include mixins.default-transition;
+  @include mixins.flex-layout(
     $direction: column,
     $align: none,
     $justify: none,
@@ -16,21 +16,21 @@
 }
 
 .academic-year-table-container {
-  @include flex-layout($direction: column, $align: none, $justify: none);
-  @include hide-scrollbar;
+  @include mixins.flex-layout($direction: column, $align: none, $justify: none);
+  @include mixins.hide-scrollbar;
   overflow: auto;
   position: relative;
   border-radius: var(--border-radius-md);
 
   .table-container {
-    @include hide-scrollbar;
+    @include mixins.hide-scrollbar;
     display: flex;
     flex-direction: column;
     background-color: var(--neutral-light);
     max-height: 50rem;
 
     .custom-table {
-      @include default-transition;
+      @include mixins.default-transition;
       background-color: var(--neutral-light);
 
       .table-button {
@@ -88,7 +88,7 @@
       padding: var(--spacing-lg);
 
       .flex-cell {
-        @include flex-layout(
+        @include mixins.flex-layout(
           $align: center,
           $justify: center,
           $gap: var(--spacing-xs)

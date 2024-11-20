@@ -1,13 +1,13 @@
-@import "../../../styles/mixins.scss";
+@use "../../../styles/mixins.scss";
 
 .header-container {
-  @include flex-layout($align: stretch, $justify: space-between);
-  @include default-transition;
+  @include mixins.flex-layout($align: stretch, $justify: space-between);
+  @include mixins.default-transition;
   // background-color: var(--main-bg);
   padding-bottom: var(--spacing-sm);
 
   .input-container {
-    @include flex-layout($gap: var(--spacing-md));
+    @include mixins.flex-layout($gap: var(--spacing-md));
 
     .search-field {
       width: auto;
@@ -45,16 +45,16 @@
   }
 
   .object-container {
-    @include flex-layout($align: stretch);
+    @include mixins.flex-layout($align: stretch);
 
     .active-year-sem-container {
-      @include flex-layout(
+      @include mixins.flex-layout(
         $direction: column,
         $align: flex-start,
         $gap: var(--spacing-xxs)
       );
 
-      @include gradient-primary(315deg);
+      @include mixins.gradient-primary(315deg);
       padding: 0 var(--spacing-md);
       border-radius: var(--border-radius-md);
       color: white;
@@ -62,7 +62,7 @@
 
       .text,
       .label {
-        @include reset-styles;
+        @include mixins.reset-styles;
       }
 
       .text {
@@ -76,7 +76,7 @@
   }
 
   .button-container {
-    @include flex-layout($align: flex-end, $justify: space-between);
+    @include mixins.flex-layout($align: flex-end, $justify: space-between);
     gap: var(--spacing-md);
   }
 
@@ -95,7 +95,7 @@
 
 @media screen and (max-width: 1275px) {
   .header-container {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: stretch,
       $justify: space-between,
@@ -104,7 +104,7 @@
   }
 
   .header-container .object-container {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: flex-end,
       $justify: space-between,
@@ -117,7 +117,7 @@
   }
 
   .header-container .button-container {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $align: stretch,
       $justify: flex-end,
       $gap: var(--spacing-md)

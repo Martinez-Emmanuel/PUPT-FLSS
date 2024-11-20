@@ -1,7 +1,7 @@
-@import "../../../../../styles/mixins.scss";
+@use "../../../../../styles/mixins.scss";
 
 * {
-  @include reset-styles;
+  @include mixins.reset-styles;
 }
 
 .sidenav-container {
@@ -9,27 +9,26 @@
   flex-direction: column;
   height: 100%;
   background-color: var(--admin-bg);
-  @include default-transition;
+  @include mixins.default-transition;
 }
 
 .sidenav-bar {
-  @include default-transition;
+  @include mixins.default-transition;
   width: 16rem;
   background-color: var(--admin-bg);
   padding: var(--spacing-sm) var(--spacing-md);
   user-select: none;
 
   .side-toolbar {
-    @include flex-layout($direction: column, $gap: var(--spacing-md));
+    @include mixins.flex-layout($direction: column, $gap: var(--spacing-md));
     padding: var(--spacing-lg) var(--spacing-md);
-    
 
     img {
       width: 40%;
     }
 
     .header-name {
-      @include flex-layout($direction: column);
+      @include mixins.flex-layout($direction: column);
       text-align: center;
       line-height: var(--line-height-mdx);
 
@@ -47,7 +46,7 @@
   }
 
   .navbar-list {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: stretch,
       $justify: none,
@@ -96,7 +95,7 @@
 }
 
 .sidenav-content {
-  @include flex-layout($direction: column, $gap: var(--spacing-md));
+  @include mixins.flex-layout($direction: column, $gap: var(--spacing-md));
   min-height: 100%;
   padding: var(--spacing-lg);
   box-sizing: border-box;
@@ -113,12 +112,12 @@
     }
 
     .sidenav-header {
-      @include flex-layout($align: stretch, $justify: space-between);
+      @include mixins.flex-layout($align: stretch, $justify: space-between);
       width: inherit;
 
       .title-container .page-title {
-        @include flex-layout;
-        @include gradient-primary-text($degree: 315deg);
+        @include mixins.flex-layout;
+        @include mixins.gradient-primary-text($degree: 315deg);
         height: 100%;
         width: max-content;
         font-size: var(--font-size-2xxl);
@@ -126,13 +125,13 @@
       }
 
       .admin-panel {
-        @include flex-layout($align: stretch, $gap: var(--spacing-sm));
+        @include mixins.flex-layout($align: stretch, $gap: var(--spacing-sm));
 
         .admin-settings {
-          @include flex-layout($gap: var(--spacing-sm));
+          @include mixins.flex-layout($gap: var(--spacing-sm));
 
           .panel-button {
-            @include flex-layout;
+            @include mixins.flex-layout;
             background-color: var(--neutral-option);
             border-radius: 50%;
             padding: var(--spacing-smx);
@@ -155,7 +154,7 @@
         }
 
         .admin-account {
-          @include flex-layout(
+          @include mixins.flex-layout(
             $direction: row-reverse,
             $gap: var(--spacing-sm)
           );
@@ -178,7 +177,7 @@
           }
 
           .profile-dropdown {
-            @include flex-layout;
+            @include mixins.flex-layout;
             position: relative;
 
             .profile-icon {
@@ -194,8 +193,8 @@
   }
 
   .sidenav-main {
-    @include default-transition;
-    @include hide-scrollbar;
+    @include mixins.default-transition;
+    @include mixins.hide-scrollbar;
     flex: 1;
     background-color: var(--main-bg);
     border-radius: var(--border-radius-lg);

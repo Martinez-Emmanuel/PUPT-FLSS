@@ -1,7 +1,7 @@
-@import "../../../styles/mixins.scss";
+@use "../../../styles/mixins.scss";
 
 .dialog-pref-success-container {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
     $justify: flex-start,
@@ -17,7 +17,7 @@
   }
 
   .content {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: stretch,
       $justify: center,
@@ -25,12 +25,12 @@
     );
 
     .main-text {
-      @include flex-layout($direction: column, $gap: var(--spacing-xs));
+      @include mixins.flex-layout($direction: column, $gap: var(--spacing-xs));
       margin-top: var(--spacing-sm);
 
       span[mat-symbol] {
         font-size: var(--font-size-4xl);
-        @include gradient-primary-text(315deg);
+        @include mixins.gradient-primary-text(315deg);
 
         :host-context(.dark-theme) & {
           -webkit-text-fill-color: var(--primary-text);
@@ -54,7 +54,7 @@
   }
 
   .actions {
-    @include flex-layout($align: stretch, $justify: flex-end);
+    @include mixins.flex-layout($align: stretch, $justify: flex-end);
 
     button {
       color: var(--primary-text);

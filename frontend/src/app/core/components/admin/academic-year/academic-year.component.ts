@@ -21,20 +21,19 @@ import { AcademicYear, Program, YearLevel } from '../../../models/scheduling.mod
 import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
 
 @Component({
-  selector: 'app-academic-year',
-  standalone: true,
-  imports: [
-    CommonModule,
-    TableHeaderComponent,
-    MatTableModule,
-    MatButtonModule,
-    MatIconModule,
-    LoadingComponent,
-    MatSymbolDirective,
-  ],
-  templateUrl: './academic-year.component.html',
-  styleUrls: ['./academic-year.component.scss'],
-  animations: [fadeAnimation, pageFloatUpAnimation],
+    selector: 'app-academic-year',
+    imports: [
+        CommonModule,
+        TableHeaderComponent,
+        MatTableModule,
+        MatButtonModule,
+        MatIconModule,
+        LoadingComponent,
+        MatSymbolDirective,
+    ],
+    templateUrl: './academic-year.component.html',
+    styleUrls: ['./academic-year.component.scss'],
+    animations: [fadeAnimation, pageFloatUpAnimation]
 })
 export class AcademicYearComponent implements OnInit, OnDestroy {
   programs: Program[] = [];

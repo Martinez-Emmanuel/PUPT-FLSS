@@ -17,19 +17,18 @@ import { FacultyService, Faculty } from '../../../../services/superadmin/managem
 import { fadeAnimation } from '../../../../animations/animations';
 
 @Component({
-  selector: 'app-faculty',
-  standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    TableGenericComponent,
-    TableHeaderComponent,
-    LoadingComponent,
-  ],
-  templateUrl: './faculty.component.html',
-  styleUrls: ['./faculty.component.scss'],
-  animations: [fadeAnimation],
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-faculty',
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        TableGenericComponent,
+        TableHeaderComponent,
+        LoadingComponent,
+    ],
+    templateUrl: './faculty.component.html',
+    styleUrls: ['./faculty.component.scss'],
+    animations: [fadeAnimation],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FacultyComponent implements OnInit {
   facultyStatuses = ['Active', 'Inactive'];

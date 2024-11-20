@@ -9,19 +9,18 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 @Component({
-  selector: 'app-dialog-confirm-pref',
-  standalone: true,
-  imports: [
-    CommonModule,
-    MatDialogModule,
-    MatStepperModule,
-    MatButtonModule,
-    MatIconModule,
-    MatProgressSpinnerModule,
-    MatSymbolDirective,
-  ],
-  templateUrl: './dialog-confirm-pref.component.html',
-  styleUrls: ['./dialog-confirm-pref.component.scss'],
+    selector: 'app-dialog-confirm-pref',
+    imports: [
+        CommonModule,
+        MatDialogModule,
+        MatStepperModule,
+        MatButtonModule,
+        MatIconModule,
+        MatProgressSpinnerModule,
+        MatSymbolDirective,
+    ],
+    templateUrl: './dialog-confirm-pref.component.html',
+    styleUrls: ['./dialog-confirm-pref.component.scss']
 })
 export class DialogConfirmPrefComponent {
   @ViewChild('stepper') stepper!: MatStepper;

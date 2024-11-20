@@ -1,12 +1,12 @@
-@import "../../../../../styles/mixins";
+@use "../../../../../styles/mixins";
 
 * {
   color: var(--neutral-base);
-  @include default-transition(true);
+  @include mixins.default-transition(true);
 }
 
 .faculty-main-container {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: none,
     $justify: none,
@@ -19,7 +19,7 @@
 }
 
 .faculty-main-header {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $align: stretch,
     $justify: space-between,
     $gap: var(--spacing-lg)
@@ -29,7 +29,7 @@
   .header-name,
   .header-navbar,
   .header-account {
-    @include flex-layout;
+    @include mixins.flex-layout;
     max-width: fit-content;
   }
 
@@ -54,7 +54,7 @@
 
     .university-name,
     .system-name {
-      @include ellipsis;
+      @include mixins.ellipsis;
       font-family: var(--font-header);
       font-size: var(--font-size-md);
       font-weight: 600;
@@ -81,7 +81,7 @@
       top: 0;
       left: 0;
       height: 100%;
-      @include gradient-primary(315deg);
+      @include mixins.gradient-primary(315deg);
       border-radius: var(--border-radius-xl);
       transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1);
       opacity: 0;
@@ -104,7 +104,7 @@
       cursor: pointer;
 
       .nav-text {
-        @include ellipsis;
+        @include mixins.ellipsis;
       }
 
       &.active {
@@ -149,7 +149,7 @@
 
       .account-name,
       .account-email {
-        @include ellipsis;
+        @include mixins.ellipsis;
       }
 
       .account-name {
@@ -162,7 +162,7 @@
     }
 
     .profile-dropdown {
-      @include flex-layout;
+      @include mixins.flex-layout;
       position: relative;
       // flex-shrink: 0;
 
@@ -172,7 +172,7 @@
         border-radius: 50%;
         cursor: pointer;
         transition: all 0.3s ease;
-        @include gradient-primary-border;
+        @include mixins.gradient-primary-border;
 
         &:hover {
           box-shadow: 0 0 0 3px var(--neutral-hover);
@@ -189,7 +189,7 @@
         z-index: 15;
 
         .dropdown-item {
-          @include ellipsis;
+          @include mixins.ellipsis;
           display: flex;
           align-items: center;
           gap: var(--spacing-xs);
@@ -230,7 +230,7 @@
 }
 
 .faculty-main-content {
-  @include hide-scrollbar;
+  @include mixins.hide-scrollbar;
   height: 100%;
   overflow-y: auto;
 }

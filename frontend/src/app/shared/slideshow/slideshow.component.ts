@@ -2,11 +2,10 @@ import { Component, Input, OnInit, OnDestroy, Output, EventEmitter } from '@angu
 import { CommonModule } from '@angular/common';
 
 @Component({
-  selector: 'app-slideshow',
-  templateUrl: './slideshow.component.html',
-  styleUrls: ['./slideshow.component.scss'],
-  standalone: true,
-  imports: [CommonModule],
+    selector: 'app-slideshow',
+    templateUrl: './slideshow.component.html',
+    styleUrls: ['./slideshow.component.scss'],
+    imports: [CommonModule]
 })
 export class SlideshowComponent implements OnInit, OnDestroy {
   @Input() images: string[] = [];

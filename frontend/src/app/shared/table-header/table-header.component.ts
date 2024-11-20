@@ -23,21 +23,20 @@ export interface InputField {
 }
 
 @Component({
-  selector: 'app-table-header',
-  standalone: true,
-  imports: [
-    CommonModule,
-    MatIconModule,
-    MatButtonModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatRippleModule,
-    ReactiveFormsModule,
-    MatSelectModule,
-    MatTooltipModule,
-  ],
-  templateUrl: './table-header.component.html',
-  styleUrls: ['./table-header.component.scss'],
+    selector: 'app-table-header',
+    imports: [
+        CommonModule,
+        MatIconModule,
+        MatButtonModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatRippleModule,
+        ReactiveFormsModule,
+        MatSelectModule,
+        MatTooltipModule,
+    ],
+    templateUrl: './table-header.component.html',
+    styleUrls: ['./table-header.component.scss']
 })
 export class TableHeaderComponent implements OnInit, OnChanges {
   @Input() inputFields: InputField[] = [];

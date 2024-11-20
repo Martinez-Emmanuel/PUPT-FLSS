@@ -29,11 +29,10 @@ type Day =
   | 'Sunday';
 
 @Component({
-  selector: 'app-schedule-timeline',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './schedule-timeline.component.html',
-  styleUrls: ['./schedule-timeline.component.scss'],
+    selector: 'app-schedule-timeline',
+    imports: [CommonModule],
+    templateUrl: './schedule-timeline.component.html',
+    styleUrls: ['./schedule-timeline.component.scss']
 })
 export class ScheduleTimelineComponent implements OnInit {
   @Input() scheduleData: any;

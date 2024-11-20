@@ -1,7 +1,7 @@
-@import "../../../../../../styles/mixins";
+@use "../../../../../../styles/mixins";
 
 .curriculum-container {
-  @include default-transition;
+  @include mixins.default-transition;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-xs);
@@ -9,8 +9,8 @@
 }
 
 .curriculum-table-container {
-  @include flex-layout($direction: column, $align: none, $justify: none);
-  @include hide-scrollbar;
+  @include mixins.flex-layout($direction: column, $align: none, $justify: none);
+  @include mixins.hide-scrollbar;
   flex: 1;
   overflow: auto;
   position: relative;

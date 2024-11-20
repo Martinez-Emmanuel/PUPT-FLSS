@@ -75,30 +75,28 @@ export interface DialogConfig {
 }
 
 @Component({
-  selector: 'app-table-dialog',
-  standalone: true,
-  templateUrl: './table-dialog.component.html',
-  styleUrls: ['./table-dialog.component.scss'],
-  providers: [provideNativeDateAdapter()],
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatTooltipModule,
-    MatDialogModule,
-    MatRadioModule,
-    MatCheckboxModule,
-    MatAutocompleteModule,
-    MatProgressSpinnerModule,
-    MatIconModule,
-    MatDatepickerModule,
-    TwoDigitInputDirective,
-  ],
-
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-table-dialog',
+    templateUrl: './table-dialog.component.html',
+    styleUrls: ['./table-dialog.component.scss'],
+    providers: [provideNativeDateAdapter()],
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MatButtonModule,
+        MatTooltipModule,
+        MatDialogModule,
+        MatRadioModule,
+        MatCheckboxModule,
+        MatAutocompleteModule,
+        MatProgressSpinnerModule,
+        MatIconModule,
+        MatDatepickerModule,
+        TwoDigitInputDirective,
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableDialogComponent {
   form!: FormGroup;

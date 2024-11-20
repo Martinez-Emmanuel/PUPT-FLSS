@@ -17,12 +17,11 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import { fadeAnimation, cardEntranceSide } from '../../../animations/animations';
 
 @Component({
-  selector: 'app-home',
-  standalone: true,
-  imports: [MatSymbolDirective, LoadingComponent, FullCalendarModule],
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss'],
-  animations: [fadeAnimation, cardEntranceSide],
+    selector: 'app-home',
+    imports: [MatSymbolDirective, LoadingComponent, FullCalendarModule],
+    templateUrl: './home.component.html',
+    styleUrls: ['./home.component.scss'],
+    animations: [fadeAnimation, cardEntranceSide]
 })
 export class HomeComponent implements OnInit, AfterViewInit {
   @ViewChild('calendar') calendarComponent!: FullCalendarComponent;

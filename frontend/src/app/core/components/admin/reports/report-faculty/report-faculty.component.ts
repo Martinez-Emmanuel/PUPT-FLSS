@@ -38,25 +38,24 @@ interface Faculty {
 }
 
 @Component({
-  selector: 'app-report-faculty',
-  standalone: true,
-  imports: [
-    CommonModule,
-    TableHeaderComponent,
-    LoadingComponent,
-    MatTableModule,
-    MatPaginatorModule,
-    MatIconModule,
-    MatSlideToggleModule,
-    MatButtonModule,
-    MatTooltipModule,
-    FormsModule,
-    MatDialogModule,
-    MatSymbolDirective,
-  ],
-  templateUrl: './report-faculty.component.html',
-  styleUrl: './report-faculty.component.scss',
-  animations: [fadeAnimation],
+    selector: 'app-report-faculty',
+    imports: [
+        CommonModule,
+        TableHeaderComponent,
+        LoadingComponent,
+        MatTableModule,
+        MatPaginatorModule,
+        MatIconModule,
+        MatSlideToggleModule,
+        MatButtonModule,
+        MatTooltipModule,
+        FormsModule,
+        MatDialogModule,
+        MatSymbolDirective,
+    ],
+    templateUrl: './report-faculty.component.html',
+    styleUrl: './report-faculty.component.scss',
+    animations: [fadeAnimation]
 })
 export class ReportFacultyComponent
   implements OnInit, AfterViewInit, AfterViewChecked

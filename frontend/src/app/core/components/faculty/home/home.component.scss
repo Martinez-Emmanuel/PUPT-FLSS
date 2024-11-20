@@ -1,12 +1,12 @@
-@import "../../../../../styles/mixins";
+@use "../../../../../styles/mixins";
 * {
-  @include reset-styles;
-  @include default-transition;
-  @include hide-scrollbar;
+  @include mixins.reset-styles;
+  @include mixins.default-transition;
+  @include mixins.hide-scrollbar;
 }
 
 .faculty-home-container {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $align: stretch,
     $justify: center,
     $gap: var(--spacing-lg)
@@ -15,7 +15,7 @@
 }
 
 .home-row-one {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: flex-start,
     $justify: flex-start,
@@ -29,19 +29,19 @@
     gap: var(--spacing-xxs);
 
     h1 {
-      @include reset-styles;
+      @include mixins.reset-styles;
       width: max-content;
       font-size: var(--font-size-2xxl);
       font-weight: 700;
 
-      @include gradient-primary(315deg);
+      @include mixins.gradient-primary(315deg);
       background-clip: text;
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
 
     p {
-      @include reset-styles;
+      @include mixins.reset-styles;
       width: max-content;
       font-size: var(--font-size-mdx);
     }
@@ -60,7 +60,7 @@
 }
 
 .home-row-two {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
     $gap: var(--spacing-md)
@@ -69,12 +69,12 @@
   min-height: 0;
 
   .active-year-sem-container {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $align: flex-start,
       $justify: flex-start,
       $gap: var(--spacing-xs)
     );
-    @include gradient-primary(315deg);
+    @include mixins.gradient-primary(315deg);
     padding: var(--spacing-sm);
     border-radius: var(--border-radius-md);
     color: white;
@@ -82,7 +82,7 @@
 
     .icon-container {
       height: 100%;
-      @include flex-layout;
+      @include mixins.flex-layout;
 
       span[mat-symbol] {
         font-size: var(--font-size-2xxl);
@@ -92,7 +92,7 @@
     .text-container {
       height: 100%;
 
-      @include flex-layout(
+      @include mixins.flex-layout(
         $direction: column,
         $align: flex-start,
         $justify: flex-start,
@@ -102,12 +102,12 @@
 
     .text,
     .label {
-      @include reset-styles;
-      @include ellipsis;
+      @include mixins.reset-styles;
+      @include mixins.ellipsis;
     }
 
     .text {
-      @include flex-layout($gap: var(--spacing-xs));
+      @include mixins.flex-layout($gap: var(--spacing-xs));
       font-weight: 500;
       font-size: var(--font-size-mdx);
     }
@@ -118,7 +118,7 @@
   }
 
   .faculty-announcement {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: stretch,
       $justify: flex-start,
@@ -131,7 +131,7 @@
     padding: var(--spacing-md);
 
     .card-title {
-      @include flex-layout($justify: flex-start, $gap: var(--spacing-xs));
+      @include mixins.flex-layout($justify: flex-start, $gap: var(--spacing-xs));
       font-size: var(--font-size-mdx);
       font-weight: 500;
       flex-shrink: 0;
@@ -146,7 +146,7 @@
       min-height: 0;
       overflow-y: auto;
       padding: 0 2px;
-      @include flex-layout($align: stretch);
+      @include mixins.flex-layout($align: stretch);
 
       .loading-notifications {
         height: 100%;
@@ -155,11 +155,11 @@
 
       .no-notifications {
         height: 100%;
-        @include flex-layout($direction: column);
+        @include mixins.flex-layout($direction: column);
         opacity: var(--opacity-semi-opaque);
 
         .no-text {
-          @include flex-layout($gap: var(--spacing-xs));
+          @include mixins.flex-layout($gap: var(--spacing-xs));
           font-size: var(--font-size-md);
           text-align: center;
 
@@ -174,7 +174,7 @@
       }
 
       .notifications-list {
-        @include flex-layout(
+        @include mixins.flex-layout(
           $direction: column,
           $align: stretch,
           $justify: flex-start,

@@ -123,6 +123,8 @@ $_palettes: (
   ),
 );
 
+$m3-palettes: $_palettes !default;
+
 $_rest: (
   secondary: map.get($_palettes, secondary),
   neutral: map.get($_palettes, neutral),
@@ -147,4 +149,4 @@ $dark-theme: mat.define-theme((
   ),
 ));
 
-@forward "@angular/material" show $light-theme, $dark-theme, all-component-themes, core;
+@forward "@angular/material" show $light-theme, $dark-theme, all-component-themes, core, $m3-palettes;
