@@ -700,7 +700,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     }
     return `${
       faculty.is_enabled ? 'Disable' : 'Enable'
-    } preferences submission for ${faculty.facultyName}`;
+    } preferences submission for ${faculty.facultyName} only`;
   }
 
   /**
@@ -713,6 +713,6 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     }
     return `${
       isEnabled ? 'Disable' : 'Enable'
-    } preferences submission for all faculty`;
+    } preferences submission for ALL faculty`;
   }
 }

@@ -56,6 +56,20 @@
         text-align: center;
       }
 
+      .helper-container {
+        @include mixins.flex-layout($gap: var(--spacing-xxs));
+  
+        .help-button {
+          opacity: var(--opacity-semi-opaque);
+          font-size: var(--font-size-md);
+          cursor: pointer;
+        }
+  
+        .single-toggle {
+          padding-right: var(--spacing-mdx);
+        }
+      }
+
       .custom-header {
         text-wrap: nowrap;
         background-color: var(--primary-one);
