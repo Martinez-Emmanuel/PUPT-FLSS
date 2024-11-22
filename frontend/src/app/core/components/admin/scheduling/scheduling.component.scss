@@ -118,8 +118,8 @@
       .not-set-badge {
         background-color: var(--primary-fade);
         color: var(--primary-text-lighter);
-        padding: var(--spacing-xxs) var(--spacing-xs);
-        border-radius: var(--border-radius-xs);
+        padding: var(--spacing-xxs) var(--spacing-sm);
+        border-radius: var(--border-radius-lg);
         text-wrap: nowrap;
       }
 
