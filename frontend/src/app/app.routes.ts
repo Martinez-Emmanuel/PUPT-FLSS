@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { AuthGuard } from './core/guards/auth.guard';
+import { UnauthGuard } from './core/guards/unauth.guard';
 
 const authenticatedRoutes: Routes = [
   {
@@ -33,7 +34,7 @@ export const routes: Routes = [
     path: 'login',
     loadComponent: () =>
       import('./auth/login/login.component').then((m) => m.LoginComponent),
-    canActivate: [AuthGuard],
+    canActivate: [UnauthGuard],
   },
   ...authenticatedRoutes.map((route) => ({
     ...route,
