@@ -399,7 +399,8 @@ class ScheduleController extends Controller
                 $faculty = $existingSchedule->faculty_id ? DB::table('faculty')
                     ->join('users', 'faculty.user_id', '=', 'users.id')
                     ->where('faculty.id', $existingSchedule->faculty_id)
-                    ->select('faculty.id', 'users.name as professor', 'users.email as faculty_email')
+                    ->select('faculty.id', DB::raw("CONCAT_WS(' ', users.first_name, users.middle_name, users.last_name, users.suffix_name) as professor"),
+                    'users.email as faculty_email',)
                     ->first() : null;
 
                 $room = $existingSchedule->room_id ? DB::table('rooms')

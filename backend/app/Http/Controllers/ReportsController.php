@@ -70,7 +70,7 @@ class ReportsController extends Controller
             })
             ->select(
                 'faculty.id as faculty_id',
-                'users.name as faculty_name',
+                DB::raw("CONCAT_WS(' ', users.first_name, users.middle_name, users.last_name, users.suffix_name) as faculty_name"),
                 'users.code as faculty_code',
                 'faculty.faculty_type',
                 'current_schedules.schedule_id',
@@ -220,7 +220,7 @@ class ReportsController extends Controller
                 'current_schedules.day',
                 'current_schedules.start_time',
                 'current_schedules.end_time',
-                'users.name as faculty_name',
+                DB::raw("CONCAT_WS(' ', users.first_name, users.middle_name, users.last_name, users.suffix_name) as faculty_name"),
                 'users.code as faculty_code',
                 'programs.program_code',
                 'programs.program_title',
@@ -356,7 +356,7 @@ class ReportsController extends Controller
                 'current_schedules.day',
                 'current_schedules.start_time',
                 'current_schedules.end_time',
-                'users.name as faculty_name',
+                DB::raw("CONCAT_WS(' ', users.first_name, users.middle_name, users.last_name, users.suffix_name) as faculty_name"),
                 'users.code as faculty_code',
                 'rooms.room_code',
                 'current_schedules.course_assignment_id',
@@ -480,7 +480,7 @@ class ReportsController extends Controller
             ->where('faculty.id', $faculty_id)
             ->select(
                 'faculty.id as faculty_id',
-                'users.name as faculty_name',
+                DB::raw("CONCAT_WS(' ', users.first_name, users.middle_name, users.last_name, users.suffix_name) as faculty_name"),
                 'users.code as faculty_code',
                 'faculty.faculty_type'
             )
