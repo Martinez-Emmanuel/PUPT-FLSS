@@ -25,7 +25,7 @@ class User extends Authenticatable
     ];
 
     /**
-     * Accessor to get the full name.
+     * Default accessor to get the full name.
      */
     public function getNameAttribute()
     {
@@ -38,6 +38,26 @@ class User extends Authenticatable
             $fullName .= ' ' . $this->suffix_name;
         }
         return $fullName;
+    }
+
+    /**
+     * New accessor to get the formatted name 
+     * Format: last_name, first_name middle_name suffix_name
+     */
+    public function getFormattedNameAttribute()
+    {
+        $formattedName = $this->last_name;
+        $formattedName .= ', ' . $this->first_name;
+        
+        if ($this->middle_name) {
+            $formattedName .= ' ' . $this->middle_name;
+        }
+        
+        if ($this->suffix_name) {
+            $formattedName .= ' ' . $this->suffix_name;
+        }
+        
+        return $formattedName;
     }
 
     /**

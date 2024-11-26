@@ -136,7 +136,7 @@ class PreferenceController extends Controller
 
             return [
                 'faculty_id' => $faculty->id,
-                'faculty_name' => $facultyUser->name ?? 'N/A',
+                'faculty_name' => $facultyUser->formatted_name ?? 'N/A',
                 'faculty_code' => $facultyUser->code ?? 'N/A',
                 'faculty_type' => $faculty->faculty_type ?? 'N/A',
                 'faculty_units' => $faculty->faculty_units,
@@ -160,6 +160,7 @@ class PreferenceController extends Controller
         })
         // Sort faculty with 'has_request' set to 1 at the top
             ->sortByDesc('has_request')
+            ->sortBy('faculty_name')
             ->values();
 
         return response()->json([
