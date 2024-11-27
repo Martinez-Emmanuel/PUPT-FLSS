@@ -111,7 +111,8 @@ Route::middleware('auth:sanctum')->group(function () {
      * Preferences
      */
     Route::post('/submit-preferences', [PreferenceController::class, 'submitPreferences']);
-    Route::get('/get-preferences', [PreferenceController::class, 'getAllFacultyPreferences']);
+    Route::get('/get-unique-preferences', [PreferenceController::class, 'getUniqueFacultyPreferences']);
+    Route::get('/get-all-preferences', [PreferenceController::class, 'getAllFacultyPreferences']);
     Route::get('/get-preferences/{faculty_id}', [PreferenceController::class, 'getFacultyPreferencesById']);
     Route::delete('/delete-preferences/{preference_id}', [PreferenceController::class, 'deletePreferences']);
     Route::delete('/delete-all-preferences', [PreferenceController::class, 'deleteAllPreferences']);

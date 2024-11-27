@@ -104,7 +104,7 @@ export class SchedulingService {
   ): Observable<SubmittedPrefResponse> {
     if (forceRefresh || !this.submittedPreferences$) {
       this.submittedPreferences$ = this.http
-        .get<SubmittedPrefResponse>(`${this.baseUrl}/get-preferences`)
+        .get<SubmittedPrefResponse>(`${this.baseUrl}/get-all-preferences`)
         .pipe(
           shareReplay(1),
           catchError((error) => {
