@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
 import { Observable, Subject, forkJoin } from 'rxjs';
 import { map, startWith, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -21,6 +21,14 @@ import { SchedulingService } from '../../core/services/admin/scheduling/scheduli
 import { Faculty, Room } from '../../core/models/scheduling.model';
 
 import { cardEntranceSide } from '../../core/animations/animations';
+
+function mustMatchOption(validOptions: string[]): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    if (!control.value) return null;
+    const isValid = validOptions.includes(control.value);
+    return isValid ? null : { invalidOption: true };
+  };
+}
 
 interface DialogData {
   dayOptions: string[];
@@ -103,6 +111,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     this.handleStartTimeChanges();
     this.populateExistingSchedule();
     this.setupConflictDetection();
+    this.setupCustomValidators();
 
     this.selectedDay = this.scheduleForm.get('day')!.value || '';
     this.originalDay = this.selectedDay;
@@ -288,6 +297,20 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     });
   }
 
+  private setupCustomValidators(): void {
+    this.scheduleForm.get('professor')?.setValidators([
+      // Validators.required,
+      mustMatchOption(this.data.professorOptions),
+    ]);
+    this.scheduleForm.get('room')?.setValidators([
+      // Validators.required,
+      mustMatchOption(this.data.roomOptions),
+    ]);
+
+    this.scheduleForm.get('professor')?.updateValueAndValidity();
+    this.scheduleForm.get('room')?.updateValueAndValidity();
+  }
+
   private populateExistingSchedule(): void {
     if (!this.data.existingSchedule) return;
 
@@ -331,6 +354,11 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
           duration: 3000,
         }
       );
+      return;
+    }
+
+    if (this.scheduleForm.invalid) {
+      this.scheduleForm.markAllAsTouched();
       return;
     }
 

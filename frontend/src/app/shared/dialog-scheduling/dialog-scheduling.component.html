@@ -107,9 +107,17 @@
           />
           <mat-autocomplete #professorAuto="matAutocomplete">
             @for (professor of filteredProfessors$ | async; track professor) {
-            <mat-option [value]="professor">{{ professor }}</mat-option>
+            <mat-option [value]="professor">
+              {{ professor }}
+            </mat-option>
             }
           </mat-autocomplete>
+          @if (scheduleForm.get('professor')?.hasError('invalidOption')) {
+          <mat-error
+            >This professor does not exist. Select from the provided
+            options.</mat-error
+          >
+          }
         </mat-form-field>
 
         <!-- Room Field -->
@@ -124,9 +132,17 @@
           />
           <mat-autocomplete #roomAuto="matAutocomplete">
             @for (room of filteredRooms$ | async; track room) {
-            <mat-option [value]="room">{{ room }}</mat-option>
+            <mat-option [value]="room">
+              {{ room }}
+            </mat-option>
             }
           </mat-autocomplete>
+          @if (scheduleForm.get('room')?.hasError('invalidOption')) {
+          <mat-error
+            >This room does not exist. Select from the provided
+            options.</mat-error
+          >
+          }
         </mat-form-field>
       </form>
 
