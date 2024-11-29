@@ -1512,13 +1512,23 @@
         <div class="closed-text">
           <span mat-symbol="info"></span>
           <span> Faculty preferences submission has been closed.</span>
-          <a (click)="openRequestAccessDialog()" class="request-access-link">
-            Click here to request for access.
-          </a>
         </div>
-        <div class="view-preferences">
-          <button mat-flat-button (click)="openViewPreferencesDialog()">
-            View my submitted preferences
+        <div class="button-options">
+          <!--View Preferences-->
+          <button
+            mat-flat-button
+            class="preferences-btn"
+            (click)="openViewPreferencesDialog()"
+          >
+            View my preferences
+          </button>
+          <!--Request for access-->
+          <button
+            mat-flat-button
+            class="request-btn ter-ripple"
+            (click)="openRequestAccessDialog()"
+          >
+            Request for access
           </button>
         </div>
       </div>

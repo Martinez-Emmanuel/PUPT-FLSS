@@ -7,12 +7,16 @@ use App\Models\ActiveSemester;
 use App\Models\Faculty;
 use App\Models\FacultyNotification;
 use App\Models\PreferencesSetting;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
 class ReportsController extends Controller
 {
+    /**
+     * Get ALL Faculty Schedules Report
+     */
     public function getFacultySchedulesReport()
     {
         // Step 1: Retrieve the current active semester with academic year details
@@ -70,7 +74,7 @@ class ReportsController extends Controller
             })
             ->select(
                 'faculty.id as faculty_id',
-                'users.name as faculty_name',
+                'users.id as user_id',
                 'users.code as faculty_code',
                 'faculty.faculty_type',
                 'current_schedules.schedule_id',
@@ -93,6 +97,12 @@ class ReportsController extends Controller
             )
             ->get();
 
+        // Step 3.1: Collect unique user_ids to fetch User models
+        $userIds = $facultySchedules->pluck('user_id')->unique()->toArray();
+
+        // Step 3.2: Fetch User models
+        $users = User::whereIn('id', $userIds)->get()->keyBy('id');
+
         // Step 4: Group the data by faculty and structure schedules
         $faculties = [];
 
@@ -100,7 +110,7 @@ class ReportsController extends Controller
             if (!isset($faculties[$schedule->faculty_id])) {
                 $faculties[$schedule->faculty_id] = [
                     'faculty_id' => $schedule->faculty_id,
-                    'faculty_name' => $schedule->faculty_name,
+                    'faculty_name' => $users[$schedule->user_id]->formatted_name ?? 'N/A',
                     'faculty_code' => $schedule->faculty_code,
                     'faculty_type' => $schedule->faculty_type,
                     'assigned_units' => 0,
@@ -146,7 +156,10 @@ class ReportsController extends Controller
             unset($faculty['tracked_courses']);
         }
 
-        // Step 5: Structure the response (remains the same)
+        // Step 4.1: Sort the faculties by faculty_name
+        $faculties = collect($faculties)->sortBy('faculty_name')->values()->all();
+
+        // Step 5: Structure the response
         return response()->json([
             'faculty_schedule_reports' => [
                 'academic_year_id' => $activeSemester->academic_year_id,
@@ -159,6 +172,9 @@ class ReportsController extends Controller
         ]);
     }
 
+    /**
+     * Get Room Schedules Report
+     */
     public function getRoomSchedulesReport()
     {
         // Step 1: Retrieve the current active semester with academic year details
@@ -220,7 +236,7 @@ class ReportsController extends Controller
                 'current_schedules.day',
                 'current_schedules.start_time',
                 'current_schedules.end_time',
-                'users.name as faculty_name',
+                'faculty.user_id',
                 'users.code as faculty_code',
                 'programs.program_code',
                 'programs.program_title',
@@ -235,6 +251,12 @@ class ReportsController extends Controller
                 'courses.tuition_hours'
             )
             ->get();
+
+        // Step 3.1: Collect unique user_ids to fetch User models
+        $userIds = $roomSchedules->pluck('user_id')->unique()->filter()->toArray();
+
+        // Step 3.2: Fetch User models
+        $users = User::whereIn('id', $userIds)->get()->keyBy('id');
 
         // Step 4: Group the data by room and structure schedules
         $rooms = [];
@@ -252,12 +274,14 @@ class ReportsController extends Controller
             }
 
             if ($schedule->schedule_id) {
+                $facultyName = isset($users[$schedule->user_id]) ? $users[$schedule->user_id]->formatted_name : 'N/A';
+
                 $rooms[$schedule->room_id]['schedules'][] = [
                     'schedule_id' => $schedule->schedule_id,
                     'day' => $schedule->day,
                     'start_time' => $schedule->start_time,
                     'end_time' => $schedule->end_time,
-                    'faculty_name' => $schedule->faculty_name,
+                    'faculty_name' => $facultyName,
                     'faculty_code' => $schedule->faculty_code,
                     'program_code' => $schedule->program_code,
                     'program_title' => $schedule->program_title,
@@ -289,6 +313,9 @@ class ReportsController extends Controller
         ]);
     }
 
+    /**
+     * Get Program Schedules Report
+     */
     public function getProgramSchedulesReport()
     {
         // Step 1: Retrieve the current active semester with academic year details
@@ -356,7 +383,7 @@ class ReportsController extends Controller
                 'current_schedules.day',
                 'current_schedules.start_time',
                 'current_schedules.end_time',
-                'users.name as faculty_name',
+                'faculty.user_id',
                 'users.code as faculty_code',
                 'rooms.room_code',
                 'current_schedules.course_assignment_id',
@@ -368,6 +395,12 @@ class ReportsController extends Controller
                 'current_schedules.tuition_hours'
             )
             ->get();
+
+        // Step 3.1: Collect unique user_ids to fetch User models
+        $userIds = $programSchedules->pluck('user_id')->unique()->filter()->toArray();
+
+        // Step 3.2: Fetch User models
+        $users = User::whereIn('id', $userIds)->get()->keyBy('id');
 
         // Step 4: Group the data by program, year level, and section
         $programs = [];
@@ -398,14 +431,16 @@ class ReportsController extends Controller
                 ];
             }
 
-            // Check if the schedule has at least one non-null value among the specified fields
-            if ($this->isScheduleValid($schedule)) {
+            // Check if the schedule has a valid schedule_id
+            if ($schedule->schedule_id) {
+                $facultyName = isset($users[$schedule->user_id]) ? $users[$schedule->user_id]->formatted_name : 'N/A';
+
                 $programs[$schedule->program_id]['year_levels'][$schedule->year_level]['sections'][$schedule->section_name]['schedules'][] = [
                     'schedule_id' => $schedule->schedule_id,
                     'day' => $schedule->day,
                     'start_time' => $schedule->start_time,
                     'end_time' => $schedule->end_time,
-                    'faculty_name' => $schedule->faculty_name,
+                    'faculty_name' => $facultyName,
                     'faculty_code' => $schedule->faculty_code,
                     'room_code' => $schedule->room_code,
                     'course_details' => [
@@ -442,6 +477,9 @@ class ReportsController extends Controller
         ]);
     }
 
+    /**
+     * Get Single Faculty Schedule
+     */
     public function getSingleFacultySchedule($faculty_id)
     {
         // Step 1: Validate the faculty_id
@@ -480,7 +518,7 @@ class ReportsController extends Controller
             ->where('faculty.id', $faculty_id)
             ->select(
                 'faculty.id as faculty_id',
-                'users.name as faculty_name',
+                'users.id as user_id',
                 'users.code as faculty_code',
                 'faculty.faculty_type'
             )
@@ -501,7 +539,7 @@ class ReportsController extends Controller
                 'start_date' => $activeSemester->start_date,
                 'end_date' => $activeSemester->end_date,
                 'faculty_id' => $faculty->faculty_id,
-                'faculty_name' => $faculty->faculty_name,
+                'faculty_name' => 'N/A',
                 'faculty_code' => $faculty->faculty_code,
                 'faculty_type' => $faculty->faculty_type,
                 'assigned_units' => 0,
@@ -511,7 +549,13 @@ class ReportsController extends Controller
             ],
         ];
 
-        // Step 5: Fetch schedules with publication status
+        // Step 5: Fetch User model for the faculty
+        $user = User::find($faculty->user_id);
+        if ($user) {
+            $response['faculty_schedule']['faculty_name'] = $user->formatted_name;
+        }
+
+        // Step 6: Fetch schedules with publication status
         $facultySchedules = DB::table('schedules')
             ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
             ->join('course_assignments', 'course_assignments.course_assignment_id', '=', 'section_courses.course_assignment_id')
@@ -548,53 +592,46 @@ class ReportsController extends Controller
             )
             ->get();
 
+        // Step 7: Collect unique course_assignment_ids to calculate assigned_units and total_hours
         $trackedCourses = [];
-        $isPublished = 0;
-
         foreach ($facultySchedules as $schedule) {
             if ($schedule->is_published == 1) {
-                $isPublished = 1;
+                $response['faculty_schedule']['is_published'] = 1;
             }
 
-            if ($schedule->schedule_id) {
-                // Only add units and hours if we haven't counted this course assignment before
-                if (!in_array($schedule->course_assignment_id, $trackedCourses)) {
-                    $response['faculty_schedule']['assigned_units'] += $schedule->units;
-                    $response['faculty_schedule']['total_hours'] += $schedule->tuition_hours;
-                    $trackedCourses[] = $schedule->course_assignment_id;
-                }
+            if ($schedule->course_assignment_id && !in_array($schedule->course_assignment_id, $trackedCourses)) {
+                $response['faculty_schedule']['assigned_units'] += $schedule->units;
+                $response['faculty_schedule']['total_hours'] += $schedule->tuition_hours;
+                $trackedCourses[] = $schedule->course_assignment_id;
+            }
 
-                // Only add the schedule details if it is published
-                if ($schedule->is_published == 1) {
-                    $response['faculty_schedule']['schedules'][] = [
-                        'schedule_id' => $schedule->schedule_id,
-                        'day' => $schedule->day,
-                        'start_time' => $schedule->start_time,
-                        'end_time' => $schedule->end_time,
-                        'room_code' => $schedule->room_code,
-                        'program_code' => $schedule->program_code,
-                        'program_title' => $schedule->program_title,
-                        'year_level' => $schedule->year_level,
-                        'section_name' => $schedule->section_name,
-                        'course_details' => [
-                            'course_assignment_id' => $schedule->course_assignment_id,
-                            'course_title' => $schedule->course_title,
-                            'course_code' => $schedule->course_code,
-                            'lec' => $schedule->lec_hours,
-                            'lab' => $schedule->lab_hours,
-                            'units' => $schedule->units,
-                            'tuition_hours' => $schedule->tuition_hours,
-                        ],
-                    ];
-                }
+            // Only add the schedule details if it is published
+            if ($schedule->is_published == 1) {
+                $response['faculty_schedule']['schedules'][] = [
+                    'schedule_id' => $schedule->schedule_id,
+                    'day' => $schedule->day,
+                    'start_time' => $schedule->start_time,
+                    'end_time' => $schedule->end_time,
+                    'room_code' => $schedule->room_code,
+                    'program_code' => $schedule->program_code,
+                    'program_title' => $schedule->program_title,
+                    'year_level' => $schedule->year_level,
+                    'section_name' => $schedule->section_name,
+                    'course_details' => [
+                        'course_assignment_id' => $schedule->course_assignment_id,
+                        'course_title' => $schedule->course_title,
+                        'course_code' => $schedule->course_code,
+                        'lec' => $schedule->lec_hours,
+                        'lab' => $schedule->lab_hours,
+                        'units' => $schedule->units,
+                        'tuition_hours' => $schedule->tuition_hours,
+                    ],
+                ];
             }
         }
 
         // Update the overall publication status
-        $response['faculty_schedule']['is_published'] = $isPublished;
-
-        // Remove the schedules if not published
-        if ($isPublished == 0) {
+        if ($response['faculty_schedule']['is_published'] == 0) {
             $response['faculty_schedule']['schedules'] = [];
         }
 

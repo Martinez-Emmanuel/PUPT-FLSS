@@ -17,18 +17,18 @@ import { FacultyService, Faculty } from '../../../../services/superadmin/managem
 import { fadeAnimation } from '../../../../animations/animations';
 
 @Component({
-    selector: 'app-faculty',
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        TableGenericComponent,
-        TableHeaderComponent,
-        LoadingComponent,
-    ],
-    templateUrl: './faculty.component.html',
-    styleUrls: ['./faculty.component.scss'],
-    animations: [fadeAnimation],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-faculty',
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TableGenericComponent,
+    TableHeaderComponent,
+    LoadingComponent,
+  ],
+  templateUrl: './faculty.component.html',
+  styleUrls: ['./faculty.component.scss'],
+  animations: [fadeAnimation],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FacultyComponent implements OnInit {
   facultyStatuses = ['Active', 'Inactive'];
@@ -48,7 +48,7 @@ export class FacultyComponent implements OnInit {
     { key: 'index', label: '#' },
     { key: 'code', label: 'Faculty Code' },
     { key: 'name', label: 'Name' },
-    { key: 'faculty_email', label: 'Email' },
+    { key: 'email', label: 'Email' },
     { key: 'faculty_type', label: 'Type' },
     { key: 'faculty_units', label: 'Units Assigned' },
     { key: 'status', label: 'Status' },
@@ -58,7 +58,7 @@ export class FacultyComponent implements OnInit {
     'index',
     'code',
     'name',
-    'faculty_email',
+    'email',
     'faculty_type',
     'faculty_units',
     'status',
@@ -107,12 +107,12 @@ export class FacultyComponent implements OnInit {
       )
       .subscribe((faculty) => {
         this.faculty = faculty.map((user, index) => ({
-          id: user.id,
+          id: user.id.toString(),
           code: user.code,
           name: user.name,
-          faculty_email: user.faculty_email || '',
+          email: user.email || '',
           faculty_type: user.faculty_type || '',
-          faculty_units: user.faculty_units || 0,
+          faculty_units: user.faculty_units ?? 0,
           status: user.status || 'Active',
           role: user.role,
         }));
@@ -137,7 +137,7 @@ export class FacultyComponent implements OnInit {
         (faculty) =>
           faculty.code.toLowerCase().includes(lowerSearch) ||
           faculty.name.toLowerCase().includes(lowerSearch) ||
-          faculty.faculty_email.toLowerCase().includes(lowerSearch) ||
+          faculty.email.toLowerCase().includes(lowerSearch) ||
           faculty.faculty_type.toLowerCase().includes(lowerSearch) ||
           faculty.status.toLowerCase().includes(lowerSearch) ||
           faculty.faculty_units.toString().includes(lowerSearch)
@@ -189,7 +189,7 @@ export class FacultyComponent implements OnInit {
         },
         {
           label: 'Email',
-          formControlName: 'faculty_email',
+          formControlName: 'email',
           type: 'text',
           maxLength: 100,
           required: true,
@@ -212,7 +212,7 @@ export class FacultyComponent implements OnInit {
           formControlName: 'status',
           type: 'select',
           options: this.facultyStatuses,
-          required: true, // Make status required
+          required: true,
         },
       ],
       initialValue: faculty || {},

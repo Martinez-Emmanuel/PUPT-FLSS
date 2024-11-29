@@ -2,14 +2,14 @@
 
 namespace App\Jobs;
 
+use App\Models\PreferencesSetting;
+use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Mail;
-use App\Models\PreferencesSetting; 
-use Carbon\Carbon;
 
 class SendFacultyPreferenceEmailJob implements ShouldQueue
 {
@@ -29,7 +29,7 @@ class SendFacultyPreferenceEmailJob implements ShouldQueue
     public function __construct($faculty)
     {
         $this->faculty = $faculty;
-        
+
         // Retrieve the global deadline for the faculty member
         $settings = PreferencesSetting::where('faculty_id', $faculty->id)->first();
         $this->global_deadline = $settings->global_deadline ?? null;
@@ -52,7 +52,7 @@ class SendFacultyPreferenceEmailJob implements ShouldQueue
     {
         $dataPreference = [
             'faculty_name' => $this->faculty->user->name,
-            'email' => $this->faculty->faculty_email,
+            'email' => $this->faculty->user->email,
             'faculty_units' => $this->faculty->faculty_units,
             'global_deadline' => $this->global_deadline ? $this->global_deadline->format('M d, Y') : 'No deadline set',
             'days_left' => $this->days_left,

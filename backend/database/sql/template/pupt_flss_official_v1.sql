@@ -1,13 +1,19 @@
--- PUPT-FLSS 2025 Official Database Schema (Version 1.6)
+-- PUPT-FLSS 2025 Official Database Schema (Version 1.7)
 -- Key Changes from the previous version:
--- (+) Add `faculty_notifications` table
+-- (+) Add `email` column on `users` table
+-- (+) Add separate `*_name` columns on `users` table
+-- (-) Remove `faculty_email` column on `faculty` table
 
 
 -- Table structure for table `users`
 CREATE TABLE `users` (
-  `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `last_name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `first_name` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `middle_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `suffix_name` varchar(191) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `code` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
   `password` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
   `role` enum('faculty','admin','superadmin') COLLATE utf8mb4_unicode_ci NOT NULL,
   `status` enum('Active','Inactive') COLLATE utf8mb4_unicode_ci NOT NULL,

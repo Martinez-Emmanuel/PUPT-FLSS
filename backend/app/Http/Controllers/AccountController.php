@@ -6,7 +6,6 @@ use App\Models\Faculty;
 use App\Models\PreferencesSetting;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class AccountController extends Controller
 {
@@ -30,8 +29,8 @@ class AccountController extends Controller
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
                 'code' => 'required|string|max:255|unique:users',
+                'email' => 'required|email|unique:users',
                 'role' => 'required|in:super_admin,admin,faculty',
-                'faculty_email' => 'required_if:role,faculty|email|unique:faculty,faculty_email',
                 'faculty_type' => 'required_if:role,faculty',
                 'faculty_units' => 'required_if:role,faculty',
                 'password' => 'required|string|min:8',
@@ -42,6 +41,7 @@ class AccountController extends Controller
             $user = User::create([
                 'name' => $validatedData['name'],
                 'code' => $validatedData['code'],
+                'email' => $validatedData['email'],
                 'role' => $validatedData['role'],
                 'password' => $validatedData['password'], // No bcrypt
                 'status' => $validatedData['status'],
@@ -51,7 +51,6 @@ class AccountController extends Controller
             if ($validatedData['role'] === 'faculty') {
                 $faculty = Faculty::create([
                     'user_id' => $user->id,
-                    'faculty_email' => $validatedData['faculty_email'],
                     'faculty_type' => $validatedData['faculty_type'],
                     'faculty_units' => $validatedData['faculty_units'],
                 ]);
@@ -90,12 +89,8 @@ class AccountController extends Controller
     {
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
             'role' => 'required|in:super_admin,admin,faculty',
-            'faculty_email' => [
-                'required_if:role,faculty',
-                // Ignore current faculty's email to avoid 'unique' conflict
-                Rule::unique('faculty', 'faculty_email')->ignore($user->faculty ? $user->faculty->id : null),
-            ],
             'faculty_type' => 'required_if:role,faculty',
             'faculty_units' => 'required_if:role,faculty',
             'password' => 'sometimes|string|min:8',
@@ -105,6 +100,7 @@ class AccountController extends Controller
         // Update user details
         $user->update([
             'name' => $validatedData['name'],
+            'email' => $validatedData['email'],
             'role' => $validatedData['role'],
             'status' => $validatedData['status'],
         ]);
@@ -114,7 +110,6 @@ class AccountController extends Controller
             $user->faculty()->updateOrCreate(
                 ['user_id' => $user->id],
                 [
-                    'faculty_email' => $validatedData['faculty_email'],
                     'faculty_type' => $validatedData['faculty_type'],
                     'faculty_units' => $validatedData['faculty_units'],
                 ]
@@ -158,6 +153,7 @@ class AccountController extends Controller
         $validatedData = $request->validate([
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:255|unique:users',
+            'email' => 'required|email|unique:users',
             'password' => 'required|string|min:8',
             'role' => 'required|in:admin,superadmin', // Restrict role to admin or super_admin
             'status' => 'required|in:Active,Inactive',
@@ -167,6 +163,7 @@ class AccountController extends Controller
         $admin = User::create([
             'name' => $validatedData['name'],
             'code' => $validatedData['code'],
+            'email' => $validatedData['email'],
             'role' => $validatedData['role'], // Role comes from the request
             'password' => $validatedData['password'], // Hash the password
             'status' => $validatedData['status'], // Set status
@@ -181,6 +178,7 @@ class AccountController extends Controller
         $validatedData = $request->validate([
             'name' => 'sometimes|required|string|max:255',
             'code' => 'sometimes|required|string|max:255|unique:users,code,' . $admin->id,
+            'email' => 'sometimes|required|email|unique:users,email,' . $admin->id,
             'password' => 'sometimes|string|min:8',
             'role' => 'sometimes|required|in:admin,superadmin',
             'status' => 'sometimes|required|in:Active,Inactive',
@@ -198,6 +196,11 @@ class AccountController extends Controller
         if (isset($validatedData['code']) && $admin->code != $validatedData['code']) {
             $admin->code = $validatedData['code'];
             $changedFields[] = 'code';
+        }
+
+        if (isset($validatedData['email']) && $admin->email != $validatedData['email']) {
+            $admin->email = $validatedData['email'];
+            $changedFields[] = 'email';
         }
 
         if (isset($validatedData['role']) && $admin->role != $validatedData['role']) {

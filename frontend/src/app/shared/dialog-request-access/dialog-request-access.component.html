@@ -9,7 +9,10 @@
 
     <!--Status-->
     @if (hasRequest) {
-    <div class="status-badge"><span>STATUS: PENDING</span></div>
+    <div class="status-badge">
+      <span mat-symbol="clock_loader_40"></span>
+      <span class="status-text">STATUS: PENDING</span>
+    </div>
     }
 
     <p class="message">

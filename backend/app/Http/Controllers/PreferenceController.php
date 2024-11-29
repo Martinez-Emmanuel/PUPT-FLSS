@@ -85,9 +85,11 @@ class PreferenceController extends Controller
     }
 
     /**
-     * Retrieves all faculty preferences for the active year and semester.
+     * Retrieves all unique faculty preferences for the active year and semester.
+     * In this context, 'unique' means it returns only one instance of a course,
+     * a.k.a. the actual selected preference of the faculty
      */
-    public function getAllFacultyPreferences()
+    public function getUniqueFacultyPreferences()
     {
         $activeSemester = ActiveSemester::with(['academicYear', 'semester'])
             ->where('is_active', 1)
@@ -136,7 +138,7 @@ class PreferenceController extends Controller
 
             return [
                 'faculty_id' => $faculty->id,
-                'faculty_name' => $facultyUser->name ?? 'N/A',
+                'faculty_name' => $facultyUser->formatted_name ?? 'N/A',
                 'faculty_code' => $facultyUser->code ?? 'N/A',
                 'faculty_type' => $faculty->faculty_type ?? 'N/A',
                 'faculty_units' => $faculty->faculty_units,
@@ -158,8 +160,114 @@ class PreferenceController extends Controller
                 ],
             ];
         })
+        // Sort by 'has_request' first (descending),
+        // and then by 'faculty_name' alphabetically
+            ->sort(function ($a, $b) {
+                if ($a['has_request'] !== $b['has_request']) {
+                    return $b['has_request'] <=> $a['has_request'];
+                }
+                return strcmp($a['faculty_name'], $b['faculty_name']);
+            })
+            ->values();
+
+        return response()->json([
+            'preferences' => $facultyPreferences,
+        ], 200, [], JSON_PRETTY_PRINT);
+    }
+
+    /**
+     * Retrieves all faculty preferences for the active year and semester.
+     * This returns ALL the instances of a selected course across all programs
+     * in all active curricula.
+     */
+    public function getAllFacultyPreferences()
+    {
+        $activeSemester = ActiveSemester::with(['academicYear', 'semester'])
+            ->where('is_active', 1)
+            ->first();
+
+        if (!$activeSemester) {
+            return response()->json(['error' => 'No active semester found'], 404);
+        }
+
+        $faculty = Faculty::with(['user', 'preferenceSetting'])
+            ->leftJoin('preferences', function ($join) use ($activeSemester) {
+                $join->on('faculty.id', '=', 'preferences.faculty_id')
+                    ->where('preferences.active_semester_id', $activeSemester->active_semester_id);
+            })
+            ->leftJoin('course_assignments', 'preferences.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->leftJoin('courses', 'course_assignments.course_id', '=', 'courses.course_id')
+            ->select('faculty.*', 'preferences.*', 'course_assignments.*', 'courses.*')
+            ->get();
+
+        $facultyPreferences = $faculty->groupBy('id')->map(function ($facultyGroup) use ($activeSemester) {
+            $faculty = $facultyGroup->first();
+            $facultyUser = $faculty->user;
+            $preferenceSetting = $faculty->preferenceSetting;
+
+            $courses = $facultyGroup->flatMap(function ($preference) use ($activeSemester) {
+                if ($preference->course_assignment_id) {
+                    // Fetch all courses with the same course code that are active
+                    $relatedCourses = DB::table('courses')
+                        ->join('course_assignments', 'courses.course_id', '=', 'course_assignments.course_id')
+                        ->where('courses.course_code', $preference->course_code)
+                        ->whereIn('course_assignments.curricula_program_id', function ($query) {
+                            $query->select('curricula_program_id')
+                                ->from('curricula_program')
+                                ->join('curricula', 'curricula_program.curriculum_id', '=', 'curricula.curriculum_id')
+                                ->where('curricula.status', 'Active');
+                        })
+                        ->get();
+
+                    return $relatedCourses->map(function ($course) use ($preference) {
+                        return [
+                            'course_assignment_id' => $course->course_assignment_id ?? 'N/A',
+                            'course_details' => [
+                                'course_id' => $course->course_id ?? 'N/A',
+                                'course_code' => $course->course_code ?? null,
+                                'course_title' => $course->course_title ?? null,
+                            ],
+                            'lec_hours' => is_numeric($course->lec_hours) ? (int) $course->lec_hours : 0,
+                            'lab_hours' => is_numeric($course->lab_hours) ? (int) $course->lab_hours : 0,
+                            'units' => $course->units ?? 0,
+                            'preferred_day' => $preference->preferred_day,
+                            'preferred_start_time' => $preference->preferred_start_time,
+                            'preferred_end_time' => $preference->preferred_end_time,
+                            'created_at' => $preference->created_at ? Carbon::parse($preference->created_at)->toDateTimeString() : 'N/A',
+                            'updated_at' => $preference->updated_at ? Carbon::parse($preference->updated_at)->toDateTimeString() : 'N/A',
+                        ];
+                    });
+                }
+                return collect();
+            })->filter();
+
+            return [
+                'faculty_id' => $faculty->id,
+                'faculty_name' => $facultyUser->formatted_name ?? 'N/A',
+                'faculty_code' => $facultyUser->code ?? 'N/A',
+                'faculty_type' => $faculty->faculty_type ?? 'N/A',
+                'faculty_units' => $faculty->faculty_units,
+                'has_request' => (int) ($preferenceSetting->has_request ?? 0),
+                'is_enabled' => (int) ($preferenceSetting->is_enabled ?? 0),
+                'active_semesters' => [
+                    [
+                        'active_semester_id' => $activeSemester->active_semester_id,
+                        'academic_year_id' => $activeSemester->academic_year_id,
+                        'academic_year' => $activeSemester->academicYear->year_start . '-' . $activeSemester->academicYear->year_end,
+                        'semester_id' => $activeSemester->semester_id,
+                        'semester_label' => $this->getSemesterLabel($activeSemester->semester_id),
+                        'global_deadline' => $preferenceSetting && $preferenceSetting->global_deadline ? Carbon::parse($preferenceSetting->global_deadline)->toDateString() : null,
+                        'individual_deadline' => $preferenceSetting && $preferenceSetting->individual_deadline
+                        ? Carbon::parse($preferenceSetting->individual_deadline)->toDateString()
+                        : ($preferenceSetting && $preferenceSetting->global_deadline ? Carbon::parse($preferenceSetting->global_deadline)->toDateString() : null),
+                        'courses' => $courses->values()->toArray(),
+                    ],
+                ],
+            ];
+        })
         // Sort faculty with 'has_request' set to 1 at the top
             ->sortByDesc('has_request')
+            ->sortBy('faculty_name')
             ->values();
 
         return response()->json([

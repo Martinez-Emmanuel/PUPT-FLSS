@@ -5,8 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Facades\Hash;
+use Laravel\Sanctum\HasApiTokens;
 
 class Faculty extends Authenticatable
 {
@@ -16,7 +16,6 @@ class Faculty extends Authenticatable
 
     protected $fillable = [
         'user_id',
-        'faculty_email',
         'faculty_type',
         'faculty_units',
         'faculty_password',
