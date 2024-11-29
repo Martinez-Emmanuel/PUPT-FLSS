@@ -1,16 +1,16 @@
-@import "../../../../../styles/mixins.scss";
+@use "../../../../../styles/mixins";
 
 * {
-  @include reset-styles;
+  @include mixins.reset-styles;
 }
 
 :host {
-  @include custom-spinner(var(--secondary-text));
+  @include mixins.custom-spinner(var(--secondary-text));
 }
 
 .scheduling-container {
-  @include default-transition;
-  @include flex-layout(
+  @include mixins.default-transition;
+  @include mixins.flex-layout(
     $direction: column,
     $align: none,
     $justify: none,
@@ -20,22 +20,22 @@
 }
 
 .scheduling-table-container {
-  @include flex-layout($direction: column, $align: none, $justify: none);
-  @include hide-scrollbar;
+  @include mixins.flex-layout($direction: column, $align: none, $justify: none);
+  @include mixins.hide-scrollbar;
   overflow: auto;
   position: relative;
   border-radius: var(--border-radius-md);
   box-shadow: var(--shadow-level-1);
 
   .table-container {
-    @include hide-scrollbar;
+    @include mixins.hide-scrollbar;
     display: flex;
     flex-direction: column;
     background-color: var(--neutral-light);
     max-height: 50rem;
 
     .custom-table {
-      @include default-transition;
+      @include mixins.default-transition;
       background-color: var(--neutral-light);
 
       .table-button {
@@ -89,7 +89,7 @@
         position: relative;
 
         .course-code-wrapper {
-          @include flex-layout;
+          @include mixins.flex-layout;
         }
 
         .copy-icon,
@@ -124,19 +124,19 @@
       }
 
       .action-button-container {
-        @include flex-layout($align: stretch);
+        @include mixins.flex-layout($align: stretch);
       }
 
       .edit-button {
-        @include flex-layout;
+        @include mixins.flex-layout;
         color: var(--secondary-text);
 
         .button-content {
-          @include flex-layout($gap: var(--spacing-xs));
+          @include mixins.flex-layout($gap: var(--spacing-xs));
         }
 
         .button-content mat-icon {
-          @include flex-layout;
+          @include mixins.flex-layout;
           font-size: var(--font-size-lg);
         }
 
@@ -151,7 +151,7 @@
       padding: var(--spacing-lg);
 
       .flex-cell {
-        @include flex-layout(
+        @include mixins.flex-layout(
           $align: center,
           $justify: center,
           $gap: var(--spacing-xs)

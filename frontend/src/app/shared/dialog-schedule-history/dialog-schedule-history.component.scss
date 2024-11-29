@@ -1,7 +1,7 @@
-@import "../../../styles/mixins.scss";
+@use "../../../styles/mixins";
 
 .dialog-schedule-history-container {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
     $justify: space-between,
@@ -15,11 +15,11 @@
 }
 
 .dialog-header {
-  @include flex-layout($align: stretch, $justify: space-between);
+  @include mixins.flex-layout($align: stretch, $justify: space-between);
 
   .title-section {
     .title-and-icon {
-      @include flex-layout(
+      @include mixins.flex-layout(
         $align: center,
         $justify: flex-start,
         $gap: var(--spacing-xxs)
@@ -61,7 +61,7 @@
 
 .no-schedule-message {
   height: 60vh;
-  @include flex-layout($gap: var(--spacing-xs));
+  @include mixins.flex-layout($gap: var(--spacing-xs));
 
   span[mat-symbol] {
     font-size: 100%;
@@ -69,7 +69,7 @@
 }
 
 .dialog-footer {
-  @include flex-layout($align: stretch, $justify: flex-end);
+  @include mixins.flex-layout($align: stretch, $justify: flex-end);
 
   .close-button {
     color: var(--primary-text);

@@ -11,18 +11,17 @@ import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 import { DialogGenericComponent } from '../dialog-generic/dialog-generic.component';
 
 @Component({
-  selector: 'app-table-generic',
-  standalone: true,
-  imports: [
-    CommonModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatIconModule,
-    MatButtonModule,
-    MatSymbolDirective,
-  ],
-  templateUrl: './table-generic.component.html',
-  styleUrls: ['./table-generic.component.scss'],
+    selector: 'app-table-generic',
+    imports: [
+        CommonModule,
+        MatTableModule,
+        MatPaginatorModule,
+        MatIconModule,
+        MatButtonModule,
+        MatSymbolDirective,
+    ],
+    templateUrl: './table-generic.component.html',
+    styleUrls: ['./table-generic.component.scss']
 })
 export class TableGenericComponent<T> implements OnInit, AfterViewInit {
   @Input() columns: {

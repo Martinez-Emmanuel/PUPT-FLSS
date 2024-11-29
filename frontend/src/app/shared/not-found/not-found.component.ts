@@ -7,11 +7,10 @@ import { MatIcon } from '@angular/material/icon';
 import { ThemeService } from '../../core/services/theme/theme.service';
 
 @Component({
-  selector: 'app-not-found',
-  standalone: true,
-  imports: [RouterLink, MatButton, MatIcon],
-  templateUrl: './not-found.component.html',
-  styleUrl: '../../../styles/error.scss',
+    selector: 'app-not-found',
+    imports: [RouterLink, MatButton, MatIcon],
+    templateUrl: './not-found.component.html',
+    styleUrl: '../../../styles/error.scss'
 })
 export class NotFoundComponent {
   constructor(private themeService: ThemeService) {}

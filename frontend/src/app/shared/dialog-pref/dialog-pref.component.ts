@@ -35,21 +35,20 @@ interface DialogPrefData {
 }
 
 @Component({
-  selector: 'app-dialog-pref',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    LoadingComponent,
-    MatTableModule,
-    MatButtonModule,
-    MatButtonToggleModule,
-    MatIconModule,
-    MatSymbolDirective,
-  ],
-  templateUrl: './dialog-pref.component.html',
-  styleUrls: ['./dialog-pref.component.scss'],
-  animations: [fadeAnimation],
+    selector: 'app-dialog-pref',
+    imports: [
+        CommonModule,
+        FormsModule,
+        LoadingComponent,
+        MatTableModule,
+        MatButtonModule,
+        MatButtonToggleModule,
+        MatIconModule,
+        MatSymbolDirective,
+    ],
+    templateUrl: './dialog-pref.component.html',
+    styleUrls: ['./dialog-pref.component.scss'],
+    animations: [fadeAnimation]
 })
 export class DialogPrefComponent implements OnInit {
   facultyName: string = '';

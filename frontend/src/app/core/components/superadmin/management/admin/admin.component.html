@@ -20,7 +20,7 @@
   <div class="admin-table-container" [@fadeAnimation]>
     <app-table-generic
       [columns]="columns"
-      [data]="admins"
+      [data]="filteredAdmins"
       [displayedColumns]="displayedColumns"
       [showViewButton]="false"
       (edit)="openEditAdminDialog($event)"

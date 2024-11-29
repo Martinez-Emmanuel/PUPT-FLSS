@@ -1,4 +1,4 @@
-@import "../../../styles/mixins.scss";
+@use "../../../styles/mixins";
 
 :host ::ng-deep {
   .mat-mdc-checkbox .mat-internal-form-field {
@@ -8,11 +8,11 @@
 }
 
 :host {
-  @include custom-spinner;
+  @include mixins.custom-spinner;
 }
 
 .dialog-action-container {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
     $justify: flex-start,
@@ -32,7 +32,7 @@
 
 /* Dialog Content */
 .dialog-content {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
     $justify: flex-start,
@@ -97,11 +97,11 @@
       padding: var(--spacing-xxxs);
 
       .checkbox-content {
-        @include flex-layout($gap: var(--spacing-xs));
+        @include mixins.flex-layout($gap: var(--spacing-xs));
         font-size: var(--font-size-md);
 
         span[mat-symbol] {
-          @include flex-layout;
+          @include mixins.flex-layout;
           font-size: var(--font-size-lg);
           padding-left: var(--spacing-xxs);
         }
@@ -109,18 +109,18 @@
     }
 
     &.reports {
-      @include flex-layout($direction: column, $gap: var(--spacing-sm));
+      @include mixins.flex-layout($direction: column, $gap: var(--spacing-sm));
     }
 
     &.email {
-      @include flex-layout($gap: var(--spacing-xs));
+      @include mixins.flex-layout($gap: var(--spacing-xs));
     }
   }
 }
 
 /* Dialog Buttons */
 .dialog-buttons {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $align: stretch,
     $justify: flex-end,
     $gap: var(--spacing-sm)
@@ -128,7 +128,7 @@
   padding-bottom: var(--spacing-xxs);
 
   .action-button {
-    @include gradient-primary(315deg);
+    @include mixins.gradient-primary(315deg);
   }
 
   .disabled-button {

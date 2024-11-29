@@ -1,7 +1,7 @@
-@import "../../../styles/mixins.scss";
+@use "../../../styles/mixins";
 
 .dialog-export-container {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
     $justify: flex-start,
@@ -12,7 +12,7 @@
 }
 
 .dialog-title {
-  @include reset-styles;
+  @include mixins.reset-styles;
   font-weight: 600;
   color: var(--primary-text);
 }
@@ -22,7 +22,7 @@
 }
 
 .dialog-export-pdf-container {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
     $justify: flex-start
@@ -30,10 +30,10 @@
 }
 
 .dialog-actions {
-  @include flex-layout($justify: flex-end, $gap: var(--spacing-sm));
+  @include mixins.flex-layout($justify: flex-end, $gap: var(--spacing-sm));
 
   .action-button {
-    @include gradient-primary(315deg);
+    @include mixins.gradient-primary(315deg);
   }
 
   button {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ActiveSemester;
 use App\Models\Faculty;
+use App\Models\FacultyNotification;
 use App\Models\Preference;
 use App\Models\PreferencesSetting;
 use Carbon\Carbon;
@@ -120,9 +121,9 @@ class PreferenceController extends Controller
                             'course_code' => $preference->course_code ?? null,
                             'course_title' => $preference->course_title ?? null,
                         ],
-                        'lec_hours' => $preference->lec_hours ?? 'N/A',
-                        'lab_hours' => $preference->lab_hours ?? 'N/A',
-                        'units' => $preference->units ?? 'N/A',
+                        'lec_hours' => is_numeric($preference->lec_hours) ? (int) $preference->lec_hours : 0,
+                        'lab_hours' => is_numeric($preference->lab_hours) ? (int) $preference->lab_hours : 0,
+                        'units' => $preference->units ?? 0,
                         'preferred_day' => $preference->preferred_day,
                         'preferred_start_time' => $preference->preferred_start_time,
                         'preferred_end_time' => $preference->preferred_end_time,
@@ -157,7 +158,7 @@ class PreferenceController extends Controller
                 ],
             ];
         })
-            // Sort faculty with 'has_request' set to 1 at the top
+        // Sort faculty with 'has_request' set to 1 at the top
             ->sortByDesc('has_request')
             ->values();
 
@@ -204,9 +205,9 @@ class PreferenceController extends Controller
                     'course_code' => $preference->courseAssignment->course->course_code ?? null,
                     'course_title' => $preference->courseAssignment->course->course_title ?? null,
                 ],
-                'lec_hours' => $preference->courseAssignment->course->lec_hours ?? 'N/A',
-                'lab_hours' => $preference->courseAssignment->course->lab_hours ?? 'N/A',
-                'units' => $preference->courseAssignment->course->units ?? 'N/A',
+                'lec_hours' => is_numeric($preference->courseAssignment->course->lec_hours) ? (int) $preference->courseAssignment->course->lec_hours : 0,
+                'lab_hours' => is_numeric($preference->courseAssignment->course->lab_hours) ? (int) $preference->courseAssignment->course->lab_hours : 0,
+                'units' => $preference->courseAssignment->course->units ?? 0,
                 'preferred_day' => $preference->preferred_day,
                 'preferred_start_time' => $preference->preferred_start_time,
                 'preferred_end_time' => $preference->preferred_end_time,
@@ -324,6 +325,7 @@ class PreferenceController extends Controller
      */
     public function toggleAllPreferences(Request $request)
     {
+        // Step 1: Validate the input
         $validated = $request->validate([
             'status' => 'required|boolean',
             'global_deadline' => 'nullable|date|after:today',
@@ -333,26 +335,48 @@ class PreferenceController extends Controller
             $status = $validated['status'];
             $global_deadline = $status ? $validated['global_deadline'] : null;
 
-            $facultySettings = PreferencesSetting::all();
+            // Update all existing preferences_settings
+            PreferencesSetting::query()->update([
+                'is_enabled' => $status,
+                'global_deadline' => $global_deadline,
+                'individual_deadline' => null,
+                'has_request' => 0,
+                'updated_at' => now(),
+            ]);
 
-            foreach ($facultySettings as $setting) {
-                $setting->has_request = 0;
-                $setting->is_enabled = $status;
-                $setting->global_deadline = $global_deadline;
-                $setting->individual_deadline = null;
-                $setting->save();
-            }
-
+            // Handle faculties without settings
             $facultyWithoutSettings = Faculty::whereDoesntHave('preferenceSetting')->get();
             foreach ($facultyWithoutSettings as $faculty) {
                 PreferencesSetting::create([
                     'faculty_id' => $faculty->id,
-                    'has_request' => 0,
                     'is_enabled' => $status,
                     'global_deadline' => $global_deadline,
                     'individual_deadline' => null,
+                    'has_request' => 0,
                 ]);
             }
+
+            // Prepare notification message
+            $academicYear = $this->getCurrentAcademicYear();
+            $message = $status
+            ? "Preferences submission is now open for A.Y. {$academicYear}."
+            : "Preferences submission is now closed for A.Y. {$academicYear}.";
+
+            // Fetch all faculty IDs
+            $facultyIds = Faculty::pluck('id');
+
+            // Create notifications for all faculties
+            $notifications = $facultyIds->map(function ($facultyId) use ($message) {
+                return [
+                    'faculty_id' => $facultyId,
+                    'message' => $message,
+                    'is_read' => 0,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ];
+            })->toArray();
+
+            FacultyNotification::insert($notifications);
         });
 
         return response()->json([
@@ -368,6 +392,7 @@ class PreferenceController extends Controller
      */
     public function toggleSinglePreferences(Request $request)
     {
+        // Step 1: Validate the input
         $validated = $request->validate([
             'faculty_id' => 'required|integer|exists:faculty,id',
             'status' => 'required|boolean',
@@ -379,6 +404,7 @@ class PreferenceController extends Controller
             $status = $validated['status'];
             $individual_deadline = $status ? $validated['individual_deadline'] : null;
 
+            // Update or create the preference setting
             $preferenceSetting = PreferencesSetting::firstOrCreate(
                 ['faculty_id' => $faculty_id],
                 [
@@ -389,11 +415,25 @@ class PreferenceController extends Controller
                 ]
             );
 
-            $preferenceSetting->has_request = 0;
-            $preferenceSetting->is_enabled = $status;
-            $preferenceSetting->individual_deadline = $individual_deadline;
-            $preferenceSetting->global_deadline = null;
-            $preferenceSetting->save();
+            $preferenceSetting->update([
+                'is_enabled' => $status,
+                'individual_deadline' => $individual_deadline,
+                'global_deadline' => null,
+                'has_request' => 0,
+            ]);
+
+            // Prepare notification message
+            $academicYear = $this->getCurrentAcademicYear();
+            $message = $status
+            ? "Your preferences submission is now open for A.Y. {$academicYear}."
+            : "Your preferences submission is now closed for A.Y. {$academicYear}.";
+
+            // Create notification for the specific faculty
+            FacultyNotification::create([
+                'faculty_id' => $faculty_id,
+                'message' => $message,
+                'is_read' => 0,
+            ]);
         });
 
         return response()->json([
@@ -474,9 +514,21 @@ class PreferenceController extends Controller
             case 2:
                 return '2nd Semester';
             case 3:
-                return 'Summer';
+                return 'Summer Semester';
             default:
                 return 'Unknown Semester';
         }
+    }
+
+    /**
+     * Get the current active academic year in 'YYYY-YYYY' format.
+     */
+    private function getCurrentAcademicYear()
+    {
+        $activeSemester = ActiveSemester::with('academicYear')->where('is_active', 1)->first();
+        if ($activeSemester && $activeSemester->academicYear) {
+            return $activeSemester->academicYear->year_start . '-' . $activeSemester->academicYear->year_end;
+        }
+        return 'N/A';
     }
 }

@@ -6,7 +6,7 @@ export const SUPERADMIN_ROUTES: Routes = [
     loadComponent: () =>
       import('./main/main.component').then((m) => m.MainComponent),
     children: [
-      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: '', redirectTo: 'programs', pathMatch: 'full' },
       {
         path: 'dashboard',
         loadComponent: () =>
@@ -68,7 +68,7 @@ export const SUPERADMIN_ROUTES: Routes = [
           ),
         data: { pageTitle: 'Rooms' },
       },
-      { path: '**', redirectTo: 'dashboard' },
+      { path: '**', redirectTo: 'programs' },
     ],
   },
 ];

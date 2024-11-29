@@ -1,25 +1,18 @@
 @use "@angular/material" as mat;
-@import "styles/m3-theme.scss";
-@import "styles/theme";
-@import "styles/mixins";
-@import "styles/fonts.scss";
+@use "styles/m3-theme" as m3-theme;
+@use "styles/theme";
+@use "styles/mixins";
+@use "styles/fonts";
 
-@include mat.core();
+@include mat.elevation-classes();
+@include mat.app-background();
 
 :root {
-  @include mat.all-component-themes($light-theme);
-
-  // Colors
-  @each $name, $palette in $_palettes {
-    @each $shade, $value in $palette {
-      --m3-#{$name}-#{$shade}: #{$value};
-    }
-  }
-
   // Typography
   --font-base: "Inter Tight", "Helvetica Neue", sans-serif;
   --font-header: "Trajan Pro", serif;
 
+  // Font Sizes
   --font-size-tiny: 0.4rem;
   --font-size-xs: 0.65rem;
   --font-size-xsx: 0.8rem;
@@ -36,7 +29,7 @@
   --font-size-4xl: 4rem;
   --font-size-5xl: 5rem;
 
-  // Line heights
+  // Line Heights
   --line-height-sm: 1.25;
   --line-height-md: 1.5;
   --line-height-mdx: 1.6;
@@ -57,7 +50,7 @@
   --spacing-3xl: 3rem;
   --spacing-4xl: 4rem;
 
-  // Border radius
+  // Border Radius
   --border-radius-base: 0.25rem;
   --border-radius-xs: 0.3rem;
   --border-radius-xsx: 0.4rem;
@@ -102,10 +95,21 @@
   --breakpoint-md: 768px;
   --breakpoint-lg: 992px;
   --breakpoint-xl: 1200px;
+
+  @include m3-theme.all-component-themes(m3-theme.$light-theme);
+
+  // Colors
+  @each $name, $palette in m3-theme.$m3-palettes {
+    @each $shade, $value in $palette {
+      & {
+        --m3-#{$name}-#{$shade}: #{$value};
+      }
+    }
+  }
 }
 
 .dark-theme {
-  @include mat.all-component-colors($dark-theme);
+  @include mat.all-component-colors(m3-theme.$dark-theme);
 }
 
 html,
@@ -124,7 +128,7 @@ body {
 
 * {
   font-family: var(--font-base);
-  @include custom-scrollbar;
+  @include mixins.custom-scrollbar;
 }
 
 /* Custom Styling applied globally */
@@ -135,7 +139,7 @@ body {
 }
 
 .no-data-text {
-  @include flex-layout($gap: var(--spacing-xs));
+  @include mixins.flex-layout($gap: var(--spacing-xs));
   width: 100%;
   text-align: center;
   font-size: var(--font-size-md);
@@ -159,10 +163,10 @@ body {
 }
 
 .view-option {
-  @include flex-layout($align: flex-end);
+  @include mixins.flex-layout($align: flex-end);
 
   .mat-button-toggle {
-    @include flex-layout();
+    @include mixins.flex-layout();
   }
 
   .icon-spacing {
@@ -212,14 +216,13 @@ span[mat-symbol] {
 }
 
 .custom-paginator {
-  @include default-transition;
+  @include mixins.default-transition;
   padding: var(--spacing-sm) 0 !important;
   background-color: var(--neutral-light) !important;
 }
 
 .add-academic-year-dialog {
-  .mat-mdc-dialog-container 
-  .mat-mdc-dialog-title + .mat-mdc-dialog-content {
+  .mat-mdc-dialog-container .mat-mdc-dialog-title + .mat-mdc-dialog-content {
     padding-bottom: var(--spacing-sm);
   }
 }
@@ -243,7 +246,7 @@ span[mat-symbol] {
 }
 
 .mdc-text-field--filled:not(.mdc-text-field--disabled) {
-  @include default-transition;
+  @include mixins.default-transition;
 }
 
 .mdc-checkbox__checkmark {
@@ -335,7 +338,7 @@ span[mat-symbol] {
 
 // Customize calendar month title
 .fc-toolbar-title {
-  @include gradient-primary-text(315deg);
+  @include mixins.gradient-primary-text(315deg);
   font-weight: 600;
 }
 
@@ -354,7 +357,7 @@ span[mat-symbol] {
 }
 
 .fc .fc-scrollgrid-liquid {
-  @include default-transition;
+  @include mixins.default-transition;
 }
 
 .fc-v-event {

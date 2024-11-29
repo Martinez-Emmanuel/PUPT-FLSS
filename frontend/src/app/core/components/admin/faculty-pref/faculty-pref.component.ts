@@ -40,25 +40,24 @@ interface Faculty {
 }
 
 @Component({
-  selector: 'app-faculty-pref',
-  standalone: true,
-  imports: [
-    CommonModule,
-    TableHeaderComponent,
-    LoadingComponent,
-    FormsModule,
-    MatTableModule,
-    MatButtonModule,
-    MatIconModule,
-    MatSlideToggleModule,
-    MatPaginatorModule,
-    MatTooltipModule,
-    MatSnackBarModule,
-    MatSymbolDirective,
-  ],
-  templateUrl: './faculty-pref.component.html',
-  styleUrls: ['./faculty-pref.component.scss'],
-  animations: [fadeAnimation],
+    selector: 'app-faculty-pref',
+    imports: [
+        CommonModule,
+        TableHeaderComponent,
+        LoadingComponent,
+        FormsModule,
+        MatTableModule,
+        MatButtonModule,
+        MatIconModule,
+        MatSlideToggleModule,
+        MatPaginatorModule,
+        MatTooltipModule,
+        MatSnackBarModule,
+        MatSymbolDirective,
+    ],
+    templateUrl: './faculty-pref.component.html',
+    styleUrls: ['./faculty-pref.component.scss'],
+    animations: [fadeAnimation]
 })
 export class FacultyPrefComponent implements OnInit, AfterViewInit {
   inputFields: InputField[] = [

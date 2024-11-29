@@ -8,7 +8,6 @@ import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 import { LoadingComponent } from '../loading/loading.component';
 import { ScheduleTimelineComponent } from '../schedule-timeline/schedule-timeline.component';
@@ -33,22 +32,20 @@ interface ViewScheduleDialogData {
 }
 
 @Component({
-  selector: 'app-dialog-view-schedule',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    LoadingComponent,
-    ScheduleTimelineComponent,
-    MatTableModule,
-    MatButtonModule,
-    MatButtonToggleModule,
-    MatIconModule,
-    MatSymbolDirective,
-  ],
-  templateUrl: './dialog-view-schedule.component.html',
-  styleUrls: ['./dialog-view-schedule.component.scss'],
-  animations: [fadeAnimation],
+    selector: 'app-dialog-view-schedule',
+    imports: [
+        CommonModule,
+        FormsModule,
+        LoadingComponent,
+        ScheduleTimelineComponent,
+        MatTableModule,
+        MatButtonModule,
+        MatButtonToggleModule,
+        MatIconModule,
+    ],
+    templateUrl: './dialog-view-schedule.component.html',
+    styleUrls: ['./dialog-view-schedule.component.scss'],
+    animations: [fadeAnimation]
 })
 export class DialogViewScheduleComponent implements OnInit {
   title: string = '';

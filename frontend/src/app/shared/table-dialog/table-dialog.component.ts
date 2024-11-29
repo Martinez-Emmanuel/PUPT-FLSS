@@ -75,30 +75,28 @@ export interface DialogConfig {
 }
 
 @Component({
-  selector: 'app-table-dialog',
-  standalone: true,
-  templateUrl: './table-dialog.component.html',
-  styleUrls: ['./table-dialog.component.scss'],
-  providers: [provideNativeDateAdapter()],
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatTooltipModule,
-    MatDialogModule,
-    MatRadioModule,
-    MatCheckboxModule,
-    MatAutocompleteModule,
-    MatProgressSpinnerModule,
-    MatIconModule,
-    MatDatepickerModule,
-    TwoDigitInputDirective,
-  ],
-
-  changeDetection: ChangeDetectionStrategy.OnPush,
+    selector: 'app-table-dialog',
+    templateUrl: './table-dialog.component.html',
+    styleUrls: ['./table-dialog.component.scss'],
+    providers: [provideNativeDateAdapter()],
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSelectModule,
+        MatButtonModule,
+        MatTooltipModule,
+        MatDialogModule,
+        MatRadioModule,
+        MatCheckboxModule,
+        MatAutocompleteModule,
+        MatProgressSpinnerModule,
+        MatIconModule,
+        MatDatepickerModule,
+        TwoDigitInputDirective,
+    ],
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TableDialogComponent {
   form!: FormGroup;
@@ -409,7 +407,8 @@ export class TableDialogComponent {
     if (control.hasError('whitespace')) return `Your ${label} is invalid.`;
     if (control.hasError('endDateBeforeStartDate'))
       return `End Date cannot be earlier than Start Date.`;
-    if (control.hasError('yearEndLessThanYearStart')) return `Invalid Year End.`;
+    if (control.hasError('yearEndLessThanYearStart'))
+      return `Invalid Year End.`;
 
     if (control.hasError('passwordMismatch')) return 'Passwords do not match.';
 
@@ -450,7 +449,7 @@ export class TableDialogComponent {
         codeControl.enable();
       }
 
-      const formValue = this.form.value;
+      const formValue = this.form.getRawValue();
 
       const minimumSpinnerDuration = 500;
       const startTime = Date.now();

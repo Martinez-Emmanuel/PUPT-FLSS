@@ -16,11 +16,10 @@ import { AuthService } from '../../../services/auth/auth.service';
 import { CookieService } from 'ngx-cookie-service';
 
 @Component({
-  selector: 'app-main',
-  templateUrl: './main.component.html',
-  styleUrls: ['./main.component.scss'],
-  standalone: true,
-  imports: [RouterModule, CommonModule, MatTooltipModule, MatSymbolDirective],
+    selector: 'app-main',
+    templateUrl: './main.component.html',
+    styleUrls: ['./main.component.scss'],
+    imports: [RouterModule, CommonModule, MatTooltipModule, MatSymbolDirective]
 })
 export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
   private destroy$ = new Subject<void>();

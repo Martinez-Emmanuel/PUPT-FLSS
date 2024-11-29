@@ -7,11 +7,10 @@ import { FormsModule } from '@angular/forms';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 @Component({
-  selector: 'app-dialog-info',
-  standalone: true,
-  imports: [MatButtonModule, MatCheckboxModule, FormsModule, MatSymbolDirective],
-  templateUrl: './dialog-info.component.html',
-  styleUrls: ['./dialog-info.component.scss'],
+    selector: 'app-dialog-info',
+    imports: [MatButtonModule, MatCheckboxModule, FormsModule, MatSymbolDirective],
+    templateUrl: './dialog-info.component.html',
+    styleUrls: ['./dialog-info.component.scss']
 })
 export class DialogInfoComponent {
   doNotShowAgain: boolean = false;

@@ -22,17 +22,16 @@ interface CurriculumInfo {
 }
 
 @Component({
-  selector: 'app-overview',
-  standalone: true,
-  imports: [
-    MatSymbolDirective,
-    MatDialogModule,
-    MatTooltipModule,
-    LoadingComponent,
-  ],
-  templateUrl: './overview.component.html',
-  styleUrls: ['./overview.component.scss'],
-  animations: [fadeAnimation],
+    selector: 'app-overview',
+    imports: [
+        MatSymbolDirective,
+        MatDialogModule,
+        MatTooltipModule,
+        LoadingComponent,
+    ],
+    templateUrl: './overview.component.html',
+    styleUrls: ['./overview.component.scss'],
+    animations: [fadeAnimation]
 })
 export class OverviewComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();

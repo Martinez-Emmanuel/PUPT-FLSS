@@ -19,16 +19,15 @@ export interface DialogData {
 }
 
 @Component({
-  selector: 'app-dialog-generic',
-  standalone: true,
-  imports: [
-    CommonModule,
-    MatDialogModule,
-    MatButtonModule,
-    LoadingComponent,
-  ],
-  templateUrl: './dialog-generic.component.html',
-  styleUrls: ['./dialog-generic.component.scss'],
+    selector: 'app-dialog-generic',
+    imports: [
+        CommonModule,
+        MatDialogModule,
+        MatButtonModule,
+        LoadingComponent,
+    ],
+    templateUrl: './dialog-generic.component.html',
+    styleUrls: ['./dialog-generic.component.scss']
 })
 export class DialogGenericComponent {
   constructor(

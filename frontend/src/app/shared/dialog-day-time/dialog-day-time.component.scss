@@ -1,7 +1,7 @@
-@import "../../../styles/mixins.scss";
+@use "../../../styles/mixins";
 
 .dialog-day-time-container {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
     $justify: flex-start,
@@ -34,73 +34,74 @@
   }
 
   .day-buttons-container {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $justify: space-between,
       $align: stretch,
       $gap: var(--spacing-sm)
     );
     padding: var(--spacing-xs);
-    margin-bottom: var(--spacing-mdx);
+    margin-block-end: var(--spacing-mdx);
     background: var(--neutral-light);
     border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
     border-bottom: 1px solid var(--neutral-base);
-  }
 
-  .day-button {
-    @include flex-layout;
-    font-size: var(--font-size-sm);
-    width: var(--font-size-md);
-    aspect-ratio: 1 / 1;
-    padding: var(--spacing-sm);
-    border-radius: 50%;
-    user-select: none;
-    cursor: pointer;
-    border: 1px solid transparent;
-
-    position: relative;
-    overflow: hidden;
-    z-index: 1;
-
-    &::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+    .day-button {
+      @include mixins.flex-layout;
+      position: relative;
+      z-index: 1;
+      width: var(--font-size-md);
+      aspect-ratio: 1 / 1;
+      padding: var(--spacing-sm);
+      margin: 1px;
+      font-size: var(--font-size-sm);
       border-radius: 50%;
-      @include gradient-primary(315deg);
-      opacity: 0;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      z-index: -1;
-    }
-
-    &.selected {
-      color: white;
+      border: 1px solid transparent;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.2s ease-in-out;
+      overflow: hidden;
 
       &::before {
-        opacity: 1;
-        transform: scale(1);
+        content: "";
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        border-radius: 50%;
+        @include mixins.gradient-primary(315deg);
+        opacity: 0;
+        transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
-    }
 
-    &.original-day {
-      border-color: var(--primary-text);
-      border-style: dashed;
-    }
+      &:active {
+        transform: scale(0.85);
+      }
 
-    &:hover:not(.selected) {
-      background-color: var(--neutral-fade);
+      &.selected {
+        color: white;
+
+        &::before {
+          opacity: 1;
+        }
+      }
+
+      &.original-day {
+        border-color: var(--primary-text);
+        border-style: dashed;
+      }
+
+      &:hover:not(.selected) {
+        background-color: var(--neutral-fade);
+      }
     }
   }
 
   .time-fields {
-    @include flex-layout($gap: var(--spacing-md));
+    @include mixins.flex-layout($gap: var(--spacing-md));
   }
 }
 
 .dialog-actions {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $align: center,
     $justify: flex-end,
     $gap: var(--spacing-sm)
@@ -111,7 +112,7 @@
   }
 
   .confirm-button {
-    @include gradient-primary(315deg);
+    @include mixins.gradient-primary(315deg);
   }
 
   .confirm-btn-disabled {

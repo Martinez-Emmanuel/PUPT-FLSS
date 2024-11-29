@@ -1,6 +1,6 @@
--- PUPT-FLSS 2025 Official Database Schema (Version 1.5)
+-- PUPT-FLSS 2025 Official Database Schema (Version 1.6)
 -- Key Changes from the previous version:
--- (+) Add `individual_deadline` column to `preferences_setting` to enable submission period for specific faculty
+-- (+) Add `faculty_notifications` table
 
 
 -- Table structure for table `users`
@@ -298,4 +298,14 @@ CREATE TABLE `faculty_schedule_publication` (
   KEY `faculty_schedule_publication_schedule_id_foreign` (`schedule_id`),
   CONSTRAINT `faculty_schedule_publication_faculty_id_foreign` FOREIGN KEY (`faculty_id`) REFERENCES `faculty` (`id`) ON DELETE CASCADE,
   CONSTRAINT `faculty_schedule_publication_schedule_id_foreign` FOREIGN KEY (`schedule_id`) REFERENCES `schedules` (`schedule_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `faculty_notifications` (
+  `faculty_notifications_id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `faculty_id` BIGINT UNSIGNED NOT NULL,
+  `message` TEXT COLLATE utf8mb4_unicode_ci NOT NULL,
+  `is_read` TINYINT(1) NOT NULL DEFAULT '0',
+  `created_at` TIMESTAMP NULL DEFAULT NULL,
+  `updated_at` TIMESTAMP NULL DEFAULT NULL,
+  PRIMARY KEY (`faculty_notifications_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

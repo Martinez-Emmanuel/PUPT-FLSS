@@ -14,8 +14,12 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $loginUserData = $request->validate([
-            'code' => 'required|string',
-            'password' => 'required|string',
+            'code' => [
+                'required',
+                'string',
+                'regex:/^[A-Za-z0-9]{12}$/',
+            ],
+            'password' => 'required|string|min:8|max:40',
         ]);
 
         // Check if the user exists and the password is correct

@@ -8,6 +8,7 @@ use App\Http\Controllers\CurriculumController;
 use App\Http\Controllers\CurriculumDetailsController;
 use App\Http\Controllers\EmailController;
 use App\Http\Controllers\FacultyController;
+use App\Http\Controllers\FacultyNotificationController;
 use App\Http\Controllers\PreferenceController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\ReportsController;
@@ -99,6 +100,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/email-all-faculty-pref-submitted', [EmailController::class, 'emailPrefSubmitted']);
     Route::post('/email-all-faculty-schedule', [EmailController::class, 'emailAllFacultySchedule']);
     Route::post('/email-single-faculty-schedule', [EmailController::class, 'emailSingleFacultySchedule']);
+
+    /**
+     * Faculty Notification
+     */
+    Route::get('/faculty-notifications', [FacultyNotificationController::class, 'getFacultyNotifications']);
+    Route::post('/faculty-notifications/{id}/read', [FacultyNotificationController::class, 'markAsRead']);
 
     /**
      * Preferences

@@ -6,7 +6,6 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 import { LoadingComponent } from '../loading/loading.component';
 
@@ -23,19 +22,17 @@ interface ExportDialogData {
 }
 
 @Component({
-  selector: 'app-dialog-export',
-  standalone: true,
-  imports: [
-    CommonModule,
-    LoadingComponent,
-    MatTableModule,
-    MatButtonModule,
-    MatIconModule,
-    MatSymbolDirective,
-  ],
-  templateUrl: './dialog-export.component.html',
-  styleUrls: ['./dialog-export.component.scss'],
-  animations: [fadeAnimation],
+    selector: 'app-dialog-export',
+    imports: [
+        CommonModule,
+        LoadingComponent,
+        MatTableModule,
+        MatButtonModule,
+        MatIconModule,
+    ],
+    templateUrl: './dialog-export.component.html',
+    styleUrls: ['./dialog-export.component.scss'],
+    animations: [fadeAnimation]
 })
 export class DialogExportComponent implements OnInit, AfterViewInit {
   title: string = '';

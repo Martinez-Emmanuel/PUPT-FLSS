@@ -1,7 +1,7 @@
-@import "../../../styles/mixins.scss";
+@use "../../../styles/mixins";
 
 .table-heading {
-  @include flex-layout($align: center, $justify: space-between);
+  @include mixins.flex-layout($align: center, $justify: space-between);
   margin-bottom: 1rem;
 
   .heading-title {
@@ -16,7 +16,7 @@
 }
 
 .table-container {
-  @include hide-scrollbar;
+  @include mixins.hide-scrollbar;
   display: flex;
   flex-direction: column;
   background-color: var(--neutral-light);
@@ -24,7 +24,7 @@
   max-height: 50rem;
 
   .custom-table {
-    @include default-transition;
+    @include mixins.default-transition;
     background-color: var(--neutral-light);
     border-radius: var(--border-radius-md);
   }
@@ -80,7 +80,7 @@
   }
 
   .action-buttons {
-    @include flex-layout($direction: row, $align: flex-start);
+    @include mixins.flex-layout($direction: row, $align: flex-start);
     /* Note: For smaller screens in media query, changed the direction to 
       COLUMN for better viewing.*/
 
@@ -105,7 +105,7 @@
   }
 
   .custom-table-paginator {
-    @include default-transition;
+    @include mixins.default-transition;
     padding: var(--spacing-md);
     background-color: var(--neutral-light);
     border-radius: 0 0 var(--border-radius-md) var(--border-radius-md);

@@ -1,9 +1,9 @@
-@import "../../../styles/mixins.scss";
+@use "../../../styles/mixins";
 
-@include custom-spinner;
+@include mixins.custom-spinner;
 
 .dialog-pref-success-container {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
     $justify: flex-start,
@@ -12,7 +12,7 @@
   padding: var(--spacing-lg);
 
   .content {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: stretch,
       $justify: center,
@@ -20,7 +20,7 @@
     );
 
     .status-badge {
-      @include flex-layout;
+      @include mixins.flex-layout;
       margin-bottom: var(--spacing-md);
 
       span {
@@ -35,12 +35,12 @@
     }
 
     .main-text {
-      @include flex-layout($direction: column, $gap: var(--spacing-xs));
+      @include mixins.flex-layout($direction: column, $gap: var(--spacing-xs));
       margin-top: var(--spacing-sm);
 
       span[mat-symbol] {
         font-size: var(--font-size-4xl);
-        @include gradient-primary-text(315deg);
+        @include mixins.gradient-primary-text(315deg);
 
         :host-context(.dark-theme) & {
           -webkit-text-fill-color: var(--primary-text);
@@ -65,7 +65,7 @@
   }
 
   .actions {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $align: stretch,
       $justify: flex-end,
       $gap: var(--spacing-xs)

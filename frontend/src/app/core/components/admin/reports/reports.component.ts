@@ -8,12 +8,11 @@ import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { ReportsService } from '../../../services/admin/reports/reports.service';
 
 @Component({
-  selector: 'app-reports',
-  standalone: true,
-  imports: [CommonModule, MatTabsModule, RouterModule, MatSymbolDirective],
-  templateUrl: './reports.component.html',
-  styleUrl: './reports.component.scss',
-  encapsulation: ViewEncapsulation.None,
+    selector: 'app-reports',
+    imports: [CommonModule, MatTabsModule, RouterModule, MatSymbolDirective],
+    templateUrl: './reports.component.html',
+    styleUrl: './reports.component.scss',
+    encapsulation: ViewEncapsulation.None
 })
 export class ReportsComponent implements OnInit {
   constructor(

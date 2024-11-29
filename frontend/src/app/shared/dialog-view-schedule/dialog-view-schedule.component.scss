@@ -1,7 +1,7 @@
-@import "../../../styles/mixins.scss";
+@use "../../../styles/mixins";
 
 .dialog-view-schedule-container {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
     $justify: flex-start,
@@ -12,7 +12,7 @@
 }
 
 .entity-info {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $align: stretch,
     $justify: space-between,
     $gap: var(--spacing-xxs)
@@ -20,7 +20,7 @@
 
   .schedule-title {
     .dialog-title {
-      @include reset-styles;
+      @include mixins.reset-styles;
       font-weight: 600;
       color: var(--primary-text);
     }
@@ -32,7 +32,7 @@
 }
 
 .multiple-schedules-container {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
     $justify: flex-start,
@@ -43,7 +43,7 @@
   padding-right: var(--spacing-md);
 
   .schedule-group {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: stretch,
       $justify: flex-start,
@@ -52,14 +52,14 @@
     border-radius: var(--border-radius-md);
 
     .group-title {
-      @include reset-styles;
+      @include mixins.reset-styles;
       font-weight: 600;
     }
   }
 }
 
 .single-schedule-container {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
     $justify: flex-start
@@ -77,7 +77,7 @@ iframe {
 }
 
 .dialog-actions {
-  @include flex-layout($justify: flex-end, $gap: var(--spacing-sm));
+  @include mixins.flex-layout($justify: flex-end, $gap: var(--spacing-sm));
   .close-button {
     color: var(--primary-text);
   }

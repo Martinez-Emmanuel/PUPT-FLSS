@@ -1,12 +1,12 @@
-@import "../../../../../styles/mixins.scss";
+@use "../../../../../styles/mixins";
 
 * {
-  @include reset-styles;
+  @include mixins.reset-styles;
 }
 
 .overview-container {
   height: 100%;
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
     $justify: flex-start,
@@ -14,7 +14,7 @@
   );
 
   .card {
-    @include default-transition;
+    @include mixins.default-transition;
     background-color: var(--admin-bg);
     border-radius: var(--border-radius-sm);
     padding: var(--spacing-md);
@@ -22,16 +22,16 @@
   }
 
   .card-title {
-    @include flex-layout($justify: flex-start, $gap: var(--spacing-xs));
+    @include mixins.flex-layout($justify: flex-start, $gap: var(--spacing-xs));
     font-size: var(--font-size-md);
     font-weight: 500;
-    @include ellipsis;
+    @include mixins.ellipsis;
   }
 }
 
 .overview-loading-container {
   height: 100%;
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
     $justify: flex-start,
@@ -41,17 +41,17 @@
 
 /* Overview Header */
 .overview-header-container {
-  @include flex-layout($align: stretch, $justify: space-between);
+  @include mixins.flex-layout($align: stretch, $justify: space-between);
 
   .overview-greetings {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: flex-start,
       $gap: var(--spacing-xxs)
     );
 
     #admin_name {
-      @include gradient-primary-text(315deg);
+      @include mixins.gradient-primary-text(315deg);
       font-weight: 600;
     }
 
@@ -61,21 +61,21 @@
   }
 
   .active-year-sem-container {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: flex-start,
       $gap: var(--spacing-xxs)
     );
 
-    @include gradient-primary(315deg);
+    @include mixins.gradient-primary(315deg);
     padding: var(--spacing-xs) var(--spacing-md);
     border-radius: var(--border-radius-md);
     color: white;
 
     .text,
     .label {
-      @include reset-styles;
-      @include ellipsis;
+      @include mixins.reset-styles;
+      @include mixins.ellipsis;
     }
 
     .text {
@@ -90,7 +90,7 @@
 
 /* Overview Main */
 .overview-main-container {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $align: stretch,
     $justify: flex-start,
     $gap: var(--spacing-md)
@@ -99,7 +99,7 @@
 
   /* Cluster One */
   .main-cluster-one {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: stretch,
       $gap: var(--spacing-md)
@@ -110,14 +110,14 @@
     // overflow: auto;
 
     .overview-greetings {
-      @include flex-layout(
+      @include mixins.flex-layout(
         $direction: column,
         $align: flex-start,
         $gap: var(--spacing-xxs)
       );
 
       #admin_name {
-        @include gradient-primary-text(315deg);
+        @include mixins.gradient-primary-text(315deg);
         font-weight: 600;
       }
 
@@ -128,17 +128,17 @@
 
     /* Quick Stats */
     .quick-stats {
-      @include flex-layout($gap: var(--spacing-md));
+      @include mixins.flex-layout($gap: var(--spacing-md));
       flex: 0;
       // border: 1px solid blue;
 
       & .stats {
-        @include flex-layout($align: stretch);
+        @include mixins.flex-layout($align: stretch);
         flex: 1;
         padding: 0;
 
         .stats-icon {
-          @include reset-styles;
+          @include mixins.reset-styles;
           width: var(--font-size-4xl);
           height: auto;
           user-select: none;
@@ -153,7 +153,7 @@
 
     .academic-and-action {
       flex: 1;
-      @include flex-layout(
+      @include mixins.flex-layout(
         $align: stretch,
         $justify: center,
         $gap: var(--spacing-md)
@@ -163,7 +163,7 @@
       /* Academic Overview */
       .academic-overview {
         flex: 1;
-        @include flex-layout(
+        @include mixins.flex-layout(
           $direction: column,
           $align: stretch,
           $gap: var(--spacing-sm)
@@ -171,12 +171,12 @@
 
         .overview-group-one,
         .overview-group-two {
-          @include flex-layout($align: stretch, $gap: var(--spacing-sm));
+          @include mixins.flex-layout($align: stretch, $gap: var(--spacing-sm));
           flex: 1;
 
           .overview-item {
             flex: 1;
-            @include flex-layout(
+            @include mixins.flex-layout(
               $direction: column,
               $align: center,
               $justify: center
@@ -192,7 +192,7 @@
               font-weight: 400;
               color: var(--text-primary);
               text-align: center;
-              @include ellipsis;
+              @include mixins.ellipsis;
             }
 
             .progress-container {
@@ -238,7 +238,7 @@
 
       /* Action Center */
       .action-center {
-        @include flex-layout(
+        @include mixins.flex-layout(
           $align: stretch,
           $direction: column,
           $gap: var(--spacing-sm)
@@ -246,7 +246,7 @@
         flex: 1;
 
         .action-items {
-          @include flex-layout(
+          @include mixins.flex-layout(
             $direction: column,
             $align: stretch,
             $gap: var(--spacing-md)
@@ -255,16 +255,22 @@
           user-select: none;
 
           .item-group {
-            @include flex-layout($align: stretch);
+            @include mixins.flex-layout($align: stretch);
             flex: 1;
 
             &.one,
             &.two {
-              @include flex-layout($align: stretch, $gap: var(--spacing-sm));
+              @include mixins.flex-layout(
+                $align: stretch,
+                $gap: var(--spacing-sm)
+              );
             }
 
             .item {
-              @include flex-layout($direction: column, $gap: var(--spacing-xs));
+              @include mixins.flex-layout(
+                $direction: column,
+                $gap: var(--spacing-xs)
+              );
               flex: 1;
               padding: var(--spacing-sm);
               border-radius: var(--border-radius-sm);
@@ -275,7 +281,7 @@
               transition: transform 0.2s ease, box-shadow 0.2s ease;
 
               span[mat-symbol] {
-                @include gradient-primary-text;
+                @include mixins.gradient-primary-text;
                 font-family: "Material Symbols Rounded";
                 font-size: var(--font-size-3xl);
               }
@@ -286,7 +292,7 @@
 
               /* Action Items Hover */
               &:hover {
-                @include gradient-primary;
+                @include mixins.gradient-primary;
 
                 span[mat-symbol] {
                   background: none;
@@ -310,7 +316,7 @@
 
   /* Cluster Two */
   .main-cluster-two {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: stretch,
       $gap: var(--spacing-md)
@@ -320,7 +326,7 @@
 
     .notifications {
       flex: 1;
-      @include flex-layout(
+      @include mixins.flex-layout(
         $direction: column,
         $align: stretch,
         $gap: var(--spacing-sm)
@@ -328,7 +334,8 @@
 
       .notifications-content {
         flex: 1;
-        @include flex-layout;
+        @include mixins.flex-layout;
+        opacity: var(--opacity-semi-opaque);
       }
     }
   }
@@ -340,7 +347,7 @@
 
 @media screen and (max-width: 1230px) {
   .overview-main-container {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: stretch,
       $justify: flex-start,
@@ -351,7 +358,7 @@
 
 @media screen and (max-width: 1110px) {
   .overview-header-container {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: stretch,
       $justify: space-between,
@@ -362,7 +369,7 @@
 
 @media screen and (max-width: 800px) {
   .overview-main-container .main-cluster-one {
-    @include flex-layout(
+    @include mixins.flex-layout(
       $direction: column,
       $align: stretch,
       $justify: flex-start,
@@ -372,7 +379,7 @@
     height: auto;
 
     &.main-cluster-one .quick-stats {
-      @include flex-layout(
+      @include mixins.flex-layout(
         $direction: column,
         $align: stretch,
         $justify: flex-start,
@@ -381,7 +388,7 @@
     }
 
     &.main-cluster-one .academic-and-action {
-      @include flex-layout(
+      @include mixins.flex-layout(
         $direction: column,
         $align: stretch,
         $gap: var(--spacing-md)

@@ -1,18 +1,40 @@
-@import "../../../styles/mixins.scss";
+@use "sass:list";
+@use "../../../styles/mixins";
 
 $day-colors: (
-  monday: (var(--primary-text), var(--primary-text-two)),
-  tuesday: (var(--secondary-text), var(--secondary-text-two)),
-  wednesday: (var(--blue-primary), var(--blue-text)),
-  thursday: (var(--aqua-primary), var(--aqua-text)),
-  friday: (var(--purple-primary), var(--purple-text)),
-  saturday: (var(--green-primary), var(--green-text)),
-  sunday: (var(--primary-text), var(--primary-text))
+  monday: (
+    var(--primary-text),
+    var(--primary-text-two),
+  ),
+  tuesday: (
+    var(--secondary-text),
+    var(--secondary-text-two),
+  ),
+  wednesday: (
+    var(--blue-primary),
+    var(--blue-text),
+  ),
+  thursday: (
+    var(--aqua-primary),
+    var(--aqua-text),
+  ),
+  friday: (
+    var(--purple-primary),
+    var(--purple-text),
+  ),
+  saturday: (
+    var(--green-primary),
+    var(--green-text),
+  ),
+  sunday: (
+    var(--primary-text),
+    var(--primary-text),
+  ),
 );
 
 @each $day, $colors in $day-colors {
-  $primary-color: nth($colors, 1);
-  $text-color: nth($colors, 2);
+  $primary-color: list.nth($colors, 1);
+  $text-color: list.nth($colors, 2);
 
   .schedule-content.schedule-#{$day} .course {
     color: #{$primary-color};
@@ -27,14 +49,14 @@ $day-colors: (
 }
 
 .faculty-schedule-timetable-container {
-  @include hide-scrollbar;
+  @include mixins.hide-scrollbar;
   height: 100%;
   width: 100%;
   overflow-y: auto;
   border-radius: var(--border-radius-md);
 
   .faculty-schedule-timetable-table {
-    @include default-transition;
+    @include mixins.default-transition;
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
@@ -48,7 +70,7 @@ $day-colors: (
     }
 
     .faculty-schedule-timetable-table-header {
-      @include sticky;
+      @include mixins.sticky;
       background-color: var(--primary-one);
       z-index: 2;
 
@@ -76,7 +98,7 @@ $day-colors: (
       }
 
       .time-slot {
-        @include default-transition;
+        @include mixins.default-transition;
         font-weight: 500;
         border-right: 1px solid var(--neutral-fade);
         background-color: var(--neutral-space);
@@ -97,8 +119,8 @@ $day-colors: (
           }
 
           .schedule-content {
-            @include hide-scrollbar;
-            @include flex-layout(
+            @include mixins.hide-scrollbar;
+            @include mixins.flex-layout(
               $direction: column,
               $align: center,
               $justify: flex-start,

@@ -1,4 +1,4 @@
-@import "../../../styles/mixins.scss";
+@use "../../../styles/mixins";
 
 .table-dialog-container {
   max-width: var(--dialog-base);
@@ -7,7 +7,7 @@
 }
 
 :host {
-  @include custom-spinner(var(--primary-text));
+  @include mixins.custom-spinner(var(--primary-text));
 }
 
 .table-dialog-title {
@@ -20,19 +20,18 @@
 }
 
 .table-dialog-content {
-  
   .academic-year-list {
-    @include flex-layout($direction: column, $gap: var(--spacing-sm));
+    @include mixins.flex-layout($direction: column, $gap: var(--spacing-sm));
     width: 100%;
     font-size: var(--font-size-md);
 
     .academic-year-item {
-      @include flex-layout($justify: space-between);
+      @include mixins.flex-layout($justify: space-between);
       width: inherit;
 
       .delete-acad-item {
         color: var(--primary-text);
-        @include flex-layout;
+        @include mixins.flex-layout;
         cursor: pointer;
       }
     }
@@ -47,7 +46,7 @@
     }
 
     .horizontal-field-container {
-      @include flex-layout(
+      @include mixins.flex-layout(
         $align: flex-start,
         $justify: space-between,
         $gap: var(--spacing-sm)
@@ -68,12 +67,12 @@
   .validation-message {
     // border: 1px solid cyan;
 
-    @include flex-layout;
+    @include mixins.flex-layout;
     font-size: var(--font-size-sm);
-    @include flex-layout($gap: var(--spacing-xxs));
+    @include mixins.flex-layout($gap: var(--spacing-xxs));
 
     mat-icon {
-      @include flex-layout;
+      @include mixins.flex-layout;
       font-size: var(--font-size-md);
     }
   }
@@ -95,8 +94,8 @@
   padding-bottom: var(--spacing-lg);
 
   .action-button {
-    @include gradient-primary(315deg);
-  
+    @include mixins.gradient-primary(315deg);
+
     &:disabled {
       background: var(--neutral-fade);
       color: var(--neutral-base) !important;

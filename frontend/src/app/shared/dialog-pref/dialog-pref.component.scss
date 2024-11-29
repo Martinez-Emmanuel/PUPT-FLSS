@@ -1,7 +1,7 @@
-@import "../../../styles/mixins.scss";
+@use "../../../styles/mixins";
 
 .dialog-pref-container {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
     $justify: flex-start,
@@ -12,18 +12,18 @@
 }
 
 .faculty-info {
-  @include flex-layout($align: stretch, $justify: space-between);
+  @include mixins.flex-layout($align: stretch, $justify: space-between);
   color: var(--primary-text);
 
   .faculty-name {
     font-weight: 600;
-    @include reset-styles;
+    @include mixins.reset-styles;
   }
 }
 
 .dialog-pref-table-container {
-  @include flex-layout($direction: column, $align: none, $justify: none);
-  @include hide-scrollbar;
+  @include mixins.flex-layout($direction: column, $align: none, $justify: none);
+  @include mixins.hide-scrollbar;
   overflow: scroll;
   position: relative;
   border-radius: var(--border-radius-md);
@@ -31,13 +31,13 @@
   box-shadow: var(--shadow-level-1);
 
   .table-container {
-    @include hide-scrollbar;
+    @include mixins.hide-scrollbar;
     display: flex;
     flex-direction: column;
     background-color: var(--neutral-light);
 
     .custom-table {
-      @include default-transition;
+      @include mixins.default-transition;
       background-color: var(--neutral-light);
 
       .table-button {
@@ -71,7 +71,7 @@
         padding: var(--spacing-lg);
 
         .flex-cell {
-          @include flex-layout(
+          @include mixins.flex-layout(
             $align: center,
             $justify: center,
             $gap: var(--spacing-xs)
@@ -87,7 +87,7 @@
 }
 
 .dialog-pref-pdf-container {
-  @include flex-layout(
+  @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
     $justify: flex-start
@@ -96,7 +96,7 @@
 }
 
 .dialog-actions {
-  @include flex-layout($justify: flex-end, $gap: var(--spacing-sm));
+  @include mixins.flex-layout($justify: flex-end, $gap: var(--spacing-sm));
   padding-top: var(--spacing-xs);
 
   button {

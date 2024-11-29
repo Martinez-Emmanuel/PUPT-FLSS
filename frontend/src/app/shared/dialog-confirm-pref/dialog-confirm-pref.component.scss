@@ -1,7 +1,7 @@
-@import "../../../styles/mixins";
+@use "../../../styles/mixins";
 
 :host {
-  @include custom-spinner(var(--primary-text));
+  @include mixins.custom-spinner(var(--primary-text));
 }
 
 .dialog-stepper-container {
@@ -14,12 +14,12 @@
 
   span[mat-symbol] {
     font-size: var(--font-size-3xl);
-    @include gradient-primary-text(315deg);
+    @include mixins.gradient-primary-text(315deg);
   }
 
   .step-title {
-    @include reset-styles;
-    @include gradient-primary-text(315deg);
+    @include mixins.reset-styles;
+    @include mixins.gradient-primary-text(315deg);
   }
 
   .step-description {
@@ -27,7 +27,7 @@
   }
 }
 .dialog-stepper-button-container {
-  @include flex-layout($justify: flex-end, $gap: var(--spacing-md));
+  @include mixins.flex-layout($justify: flex-end, $gap: var(--spacing-md));
   padding: var(--spacing-md) 0 var(--spacing-xs) 0;
 
   &.done {

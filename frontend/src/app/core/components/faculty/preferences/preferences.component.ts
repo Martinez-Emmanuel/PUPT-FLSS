@@ -39,30 +39,29 @@ interface TableData extends Course {
 }
 
 @Component({
-  selector: 'app-preferences',
-  standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    LoadingComponent,
-    TimeFormatPipe,
-    MatSymbolDirective,
-    MatTableModule,
-    MatButtonModule,
-    MatIconModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatTooltipModule,
-    MatSnackBarModule,
-    MatDialogModule,
-    MatProgressSpinnerModule,
-    MatMenuModule,
-    MatRippleModule,
-  ],
-  templateUrl: './preferences.component.html',
-  styleUrls: ['./preferences.component.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
-  animations: [fadeAnimation, cardEntranceAnimation, rowAdditionAnimation],
+    selector: 'app-preferences',
+    imports: [
+        CommonModule,
+        FormsModule,
+        LoadingComponent,
+        TimeFormatPipe,
+        MatSymbolDirective,
+        MatTableModule,
+        MatButtonModule,
+        MatIconModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatTooltipModule,
+        MatSnackBarModule,
+        MatDialogModule,
+        MatProgressSpinnerModule,
+        MatMenuModule,
+        MatRippleModule,
+    ],
+    templateUrl: './preferences.component.html',
+    styleUrls: ['./preferences.component.scss'],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    animations: [fadeAnimation, cardEntranceAnimation, rowAdditionAnimation]
 })
 export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   showSidenav = false;
@@ -85,7 +84,8 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   dataSource = new MatTableDataSource<TableData>([]);
   subscriptions = new Subscription();
 
-  units = 0;
+  totalUnits = 0;
+  totalHours = 0;
   maxUnits = 0;
   readonly displayedColumns: string[] = [
     'action',
@@ -216,9 +216,8 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
                 units: course.units,
                 preferredDay: course.preferred_day,
                 preferredTime:
-                  course.preferred_start_time === '07:00:00' &&
-                  course.preferred_end_time === '21:00:00'
-                    ? '07:00 AM - 09:00 PM'
+                  course.preferred_start_time === '07:00 AM - 09:00 PM'
+                    ? 'Whole Day'
                     : course.preferred_start_time && course.preferred_end_time
                     ? `${this.convertTo12HourFormat(
                         course.preferred_start_time
@@ -232,6 +231,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
               this.allSelectedCourses = preferences;
               this.updateDataSource();
               this.updateTotalUnits();
+              this.updateTotalHours(); // Update total hours after data load
             } else {
               this.isPreferencesEnabled = true;
             }
@@ -305,6 +305,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectedYearLevel = null;
     this.updateDataSource();
     this.updateTotalUnits();
+    this.updateTotalHours(); // Update total hours after selecting program
     this.cdr.markForCheck();
   }
 
@@ -322,6 +323,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.selectedYearLevel = null;
     this.updateDataSource();
     this.updateTotalUnits();
+    this.updateTotalHours();
     this.cdr.markForCheck();
   }
 
@@ -383,6 +385,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.allSelectedCourses.push(newCourse);
     this.updateDataSource();
     this.updateTotalUnits();
+    this.updateTotalHours();
   }
 
   removeCourse(course: TableData): void {
@@ -409,6 +412,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
 
             this.updateDataSource();
             this.updateTotalUnits();
+            this.updateTotalHours();
             this.showSnackBar('Course preference removed successfully.');
           },
           error: (error) => {
@@ -428,6 +432,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.updateDataSource();
       this.updateTotalUnits();
+      this.updateTotalHours();
       this.showSnackBar('Course preference removed successfully.');
     }
   }
@@ -468,6 +473,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
                 this.allSelectedCourses = [];
                 this.updateDataSource();
                 this.updateTotalUnits();
+                this.updateTotalHours();
                 this.showSnackBar(
                   'All course preferences removed successfully.'
                 );
@@ -571,7 +577,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
           let preferred_start_time = '07:00:00';
           let preferred_end_time = '21:00:00';
 
-          if (preferredTime && preferredTime !== '07:00 AM - 09:00 PM') {
+          if (preferredTime && preferredTime !== 'Whole Day') {
             const times = preferredTime.split(' - ');
             if (times.length === 2) {
               preferred_start_time = this.convertTo24HourFormat(times[0]);
@@ -633,6 +639,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
           element.preferredTime = time;
           this.showSnackBar('Available day and time successfully updated.');
           this.updateTotalUnits();
+          this.updateTotalHours();
           this.cdr.markForCheck();
         }
       });
@@ -709,8 +716,17 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private updateTotalUnits(): void {
-    this.units = this.dataSource.data.reduce(
+    this.totalUnits = this.dataSource.data.reduce(
       (total, course) => total + course.units,
+      0
+    );
+    this.cdr.markForCheck();
+  }
+
+  private updateTotalHours(): void {
+    this.totalHours = this.dataSource.data.reduce(
+      (total, course) =>
+        total + (course.lec_hours || 0) + (course.lab_hours || 0),
       0
     );
     this.cdr.markForCheck();

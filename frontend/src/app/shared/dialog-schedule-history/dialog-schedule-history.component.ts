@@ -30,22 +30,21 @@ interface Semester {
 }
 
 @Component({
-  selector: 'app-dialog-schedule-history',
-  standalone: true,
-  imports: [
-    CommonModule,
-    MatDialogModule,
-    MatFormFieldModule,
-    MatSelectModule,
-    MatButtonModule,
-    MatSymbolDirective,
-    FormsModule,
-    LoadingComponent,
-    FacultyScheduleTimetableComponent,
-  ],
-  templateUrl: './dialog-schedule-history.component.html',
-  styleUrls: ['./dialog-schedule-history.component.scss'],
-  animations: [fadeAnimation],
+    selector: 'app-dialog-schedule-history',
+    imports: [
+        CommonModule,
+        MatDialogModule,
+        MatFormFieldModule,
+        MatSelectModule,
+        MatButtonModule,
+        MatSymbolDirective,
+        FormsModule,
+        LoadingComponent,
+        FacultyScheduleTimetableComponent,
+    ],
+    templateUrl: './dialog-schedule-history.component.html',
+    styleUrls: ['./dialog-schedule-history.component.scss'],
+    animations: [fadeAnimation]
 })
 export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();

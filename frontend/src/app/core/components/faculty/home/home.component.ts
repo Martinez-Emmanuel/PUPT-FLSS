@@ -1,30 +1,27 @@
 import { Component, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit } from '@angular/core';
-import { Router } from '@angular/router';
+
+import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
-import { AuthService } from '../../../services/auth/auth.service';
 import { CookieService } from 'ngx-cookie-service';
 import { ReportsService } from '../../../services/admin/reports/reports.service';
+import { FacultyNotificationService, Notification } from '../../../services/faculty/faculty-notification/faculty-notification.service';
 
-import { fadeAnimation } from '../../../animations/animations';
-
-import {
-  FullCalendarComponent,
-  FullCalendarModule,
-} from '@fullcalendar/angular';
+import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
 import { CalendarOptions, EventInput } from '@fullcalendar/core';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 
+import { fadeAnimation, cardEntranceSide } from '../../../animations/animations';
+
 @Component({
-  selector: 'app-home',
-  standalone: true,
-  imports: [LoadingComponent, FullCalendarModule],
-  templateUrl: './home.component.html',
-  styleUrls: ['./home.component.scss'],
-  animations: [fadeAnimation],
+    selector: 'app-home',
+    imports: [MatSymbolDirective, LoadingComponent, FullCalendarModule],
+    templateUrl: './home.component.html',
+    styleUrls: ['./home.component.scss'],
+    animations: [fadeAnimation, cardEntranceSide]
 })
 export class HomeComponent implements OnInit, AfterViewInit {
   @ViewChild('calendar') calendarComponent!: FullCalendarComponent;
@@ -41,10 +38,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
   facultyType: string | null = '';
   facultyEmail: string | null = '';
 
+  notifications: Notification[] = [];
+
   constructor(
-    private authService: AuthService,
     private reportsService: ReportsService,
-    private router: Router,
+    private facultyNotifService: FacultyNotificationService,
     private cookieService: CookieService,
     private changeDetectorRef: ChangeDetectorRef
   ) {}
@@ -53,12 +51,16 @@ export class HomeComponent implements OnInit, AfterViewInit {
     this.loadFacultyInfo();
     this.initializeCalendar();
     this.fetchFacultySchedule();
+    this.fetchNotifications();
   }
 
   ngAfterViewInit(): void {
     this.resizeCalendar();
   }
 
+  /**
+   * Load faculty information from cookies.
+   */
   private loadFacultyInfo(): void {
     this.facultyCode = this.cookieService.get('user_code');
     this.facultyName = this.cookieService.get('user_name');
@@ -67,6 +69,9 @@ export class HomeComponent implements OnInit, AfterViewInit {
     this.facultyEmail = this.cookieService.get('faculty_email');
   }
 
+  /**
+   * Initialize the calendar with default options.
+   */
   private initializeCalendar(): void {
     this.calendarOptions = {
       plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
@@ -91,6 +96,9 @@ export class HomeComponent implements OnInit, AfterViewInit {
     };
   }
 
+  /**
+   * Fetch faculty schedule from the back-end.
+   */
   private fetchFacultySchedule(): void {
     if (this.facultyId) {
       this.reportsService
@@ -115,6 +123,28 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /**
+   * Fetch notifications from the back-end.
+   */
+  private fetchNotifications(): void {
+    this.facultyNotifService.getFacultyNotifications().subscribe({
+      next: (response) => {
+        this.notifications = response.notifications.map(notification => ({
+          ...notification,
+          timestamp: new Date(notification.created_at).toLocaleString(),
+        }));
+        this.changeDetectorRef.detectChanges();
+      },
+      error: (error) => {
+        console.error('Error fetching notifications', error);
+      },
+    });
+  }
+
+  /**
+   * Process the schedule response and set up calendar events.
+   * @param response - The schedule data from the back-end.
+   */
   private processScheduleResponse(response: any): void {
     const facultySchedule = response.faculty_schedule;
 
@@ -131,6 +161,9 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /**
+   * Update calendar events based on the fetched schedule.
+   */
   private updateCalendarEvents(): void {
     if (this.calendarComponent && this.calendarComponent.getApi()) {
       const calendarApi = this.calendarComponent.getApi();
@@ -144,6 +177,9 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /**
+   * Resize the calendar to fit the container.
+   */
   private resizeCalendar(): void {
     if (this.calendarComponent && this.calendarComponent.getApi()) {
       const calendarApi = this.calendarComponent.getApi();
@@ -151,15 +187,25 @@ export class HomeComponent implements OnInit, AfterViewInit {
     }
   }
 
+  /**
+   * Get ordinal suffix for the semester number.
+   * @param num - The semester number.
+   * @returns The ordinal suffix as a string.
+   */
   private getOrdinalSuffix(num: number): string {
     const j = num % 10;
     const k = num % 100;
-    if (j == 1 && k != 11) return 'st';
-    if (j == 2 && k != 12) return 'nd';
-    if (j == 3 && k != 13) return 'rd';
+    if (j === 1 && k !== 11) return 'st';
+    if (j === 2 && k !== 12) return 'nd';
+    if (j === 3 && k !== 13) return 'rd';
     return 'th';
   }
 
+  /**
+   * Create calendar events from the faculty schedule.
+   * @param facultySchedule - The schedule data.
+   * @returns An array of EventInput objects.
+   */
   private createEventsFromSchedule(facultySchedule: any): EventInput[] {
     const events: EventInput[] = [];
     const startDate = new Date(facultySchedule.start_date);
@@ -179,14 +225,11 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
       while (currentDate <= endDate) {
         if (currentDate.getDay() === dayIndex) {
+          const dateStr = currentDate.toISOString().split('T')[0];
           events.push({
             title: `${schedule.course_details.course_code}`,
-            start: `${currentDate.toISOString().split('T')[0]}T${
-              schedule.start_time
-            }`,
-            end: `${currentDate.toISOString().split('T')[0]}T${
-              schedule.end_time
-            }`,
+            start: `${dateStr}T${schedule.start_time}`,
+            end: `${dateStr}T${schedule.end_time}`,
           });
         }
         currentDate.setDate(currentDate.getDate() + 1);
@@ -194,22 +237,5 @@ export class HomeComponent implements OnInit, AfterViewInit {
     });
 
     return events;
-  }
-
-  private clearAllCookies(): void {
-    this.cookieService.deleteAll('/', '.yourdomain.com');
-  }
-
-  public logout(): void {
-    this.authService.logout().subscribe({
-      next: (response) => {
-        console.log('Logout successful', response);
-        this.clearAllCookies();
-        this.router.navigate(['/login']);
-      },
-      error: (error) => {
-        console.error('Logout failed', error);
-      },
-    });
   }
 }

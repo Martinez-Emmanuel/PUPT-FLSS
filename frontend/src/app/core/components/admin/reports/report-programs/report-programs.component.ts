@@ -67,23 +67,22 @@ interface Program {
 }
 
 @Component({
-  selector: 'app-report-programs',
-  standalone: true,
-  imports: [
-    CommonModule,
-    MatTableModule,
-    MatPaginatorModule,
-    MatIconModule,
-    MatButtonModule,
-    MatSlideToggleModule,
-    MatTooltipModule,
-    TableHeaderComponent,
-    LoadingComponent,
-    MatSymbolDirective,
-  ],
-  templateUrl: './report-programs.component.html',
-  styleUrls: ['./report-programs.component.scss'],
-  animations: [fadeAnimation],
+    selector: 'app-report-programs',
+    imports: [
+        CommonModule,
+        MatTableModule,
+        MatPaginatorModule,
+        MatIconModule,
+        MatButtonModule,
+        MatSlideToggleModule,
+        MatTooltipModule,
+        TableHeaderComponent,
+        LoadingComponent,
+        MatSymbolDirective,
+    ],
+    templateUrl: './report-programs.component.html',
+    styleUrls: ['./report-programs.component.scss'],
+    animations: [fadeAnimation]
 })
 export class ReportProgramsComponent implements OnInit {
   inputFields: InputField[] = [

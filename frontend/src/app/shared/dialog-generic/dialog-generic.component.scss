@@ -1,4 +1,4 @@
-@import "../../../styles/mixins.scss";
+@use "../../../styles/mixins";
 
 :host {
   .mat-dialog-container {
@@ -32,7 +32,7 @@
 
   /* Proceed action button */
   &.custom-dialog-buttons .dialog-action {
-    @include gradient-primary(315deg);
+    @include mixins.gradient-primary(315deg);
     color: white;
     font-weight: 500;
   }

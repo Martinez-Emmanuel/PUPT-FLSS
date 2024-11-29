@@ -48,6 +48,7 @@
               matInput
               [formControlName]="field.formControlName"
               [attr.disabled]="field.disabled ? '' : null"
+              [readonly]="field.disabled ? true : false" 
               [maxlength]="field.maxLength ?? null"
             />
             <input

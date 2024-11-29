@@ -30,12 +30,11 @@ type Day =
   | 'Sunday';
 
 @Component({
-  selector: 'app-faculty-schedule-timetable',
-  standalone: true,
-  imports: [CommonModule],
-  templateUrl: './faculty-schedule-timetable.component.html',
-  styleUrls: ['./faculty-schedule-timetable.component.scss'],
-  animations: [fadeAnimation],
+    selector: 'app-faculty-schedule-timetable',
+    imports: [CommonModule],
+    templateUrl: './faculty-schedule-timetable.component.html',
+    styleUrls: ['./faculty-schedule-timetable.component.scss'],
+    animations: [fadeAnimation]
 })
 export class FacultyScheduleTimetableComponent implements OnInit {
   @Input() facultySchedule: any;

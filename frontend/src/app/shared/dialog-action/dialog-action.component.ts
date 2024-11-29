@@ -47,30 +47,29 @@ export const MY_DATE_FORMATS = {
 };
 
 @Component({
-  selector: 'app-dialog-action',
-  standalone: true,
-  imports: [
-    RouterLink,
-    MatDialogModule,
-    MatButtonModule,
-    MatCheckboxModule,
-    MatProgressSpinnerModule,
-    FormsModule,
-    CommonModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSymbolDirective,
-  ],
-  providers: [
-    MatDatepickerModule,
-    { provide: DateAdapter, useClass: NativeDateAdapter },
-    { provide: MAT_DATE_LOCALE, useValue: 'en-US' },
-    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
-  ],
-  templateUrl: './dialog-action.component.html',
-  styleUrls: ['./dialog-action.component.scss'],
+    selector: 'app-dialog-action',
+    imports: [
+        RouterLink,
+        MatDialogModule,
+        MatButtonModule,
+        MatCheckboxModule,
+        MatProgressSpinnerModule,
+        FormsModule,
+        CommonModule,
+        MatDatepickerModule,
+        MatNativeDateModule,
+        MatFormFieldModule,
+        MatInputModule,
+        MatSymbolDirective,
+    ],
+    providers: [
+        MatDatepickerModule,
+        { provide: DateAdapter, useClass: NativeDateAdapter },
+        { provide: MAT_DATE_LOCALE, useValue: 'en-US' },
+        { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
+    ],
+    templateUrl: './dialog-action.component.html',
+    styleUrls: ['./dialog-action.component.scss']
 })
 export class DialogActionComponent {
   private readonly SNACKBAR_DURATION = 5000;
