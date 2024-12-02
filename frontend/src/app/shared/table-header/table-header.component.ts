@@ -23,20 +23,21 @@ export interface InputField {
 }
 
 @Component({
-    selector: 'app-table-header',
-    imports: [
-        CommonModule,
-        MatIconModule,
-        MatButtonModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatRippleModule,
-        ReactiveFormsModule,
-        MatSelectModule,
-        MatTooltipModule,
-    ],
-    templateUrl: './table-header.component.html',
-    styleUrls: ['./table-header.component.scss']
+  selector: 'app-table-header',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatIconModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatRippleModule,
+    ReactiveFormsModule,
+    MatSelectModule,
+    MatTooltipModule
+  ],
+  templateUrl: './table-header.component.html',
+  styleUrls: ['./table-header.component.scss'],
 })
 export class TableHeaderComponent implements OnInit, OnChanges {
   @Input() inputFields: InputField[] = [];
@@ -63,7 +64,6 @@ export class TableHeaderComponent implements OnInit, OnChanges {
   @Output() addAcademicYear = new EventEmitter<void>();
 
   form: FormGroup;
-  previousAcademicYear: string = '';
 
   constructor(private fb: FormBuilder, private dialog: MatDialog) {
     this.form = this.fb.group({});
@@ -79,9 +79,6 @@ export class TableHeaderComponent implements OnInit, OnChanges {
     }
   }
 
-  /**
-   * Initialize the form controls based on input fields and selected values.
-   */
   private initializeForm() {
     this.form = this.fb.group({});
     this.inputFields.forEach((field) => {
@@ -90,44 +87,17 @@ export class TableHeaderComponent implements OnInit, OnChanges {
           ? this.selectedValues[field.key]
           : '';
       this.form.addControl(field.key, this.fb.control(initialValue));
-
-      if (field.key === 'academicYear') {
-        this.previousAcademicYear = initialValue;
-      }
     });
 
     this.form.valueChanges.subscribe((value) => {
-      if ('search' in value) {
-        this.search.emit(value['search']);
-      }
-
-      if ('academicYear' in value) {
-        const currentValue = value['academicYear'];
-        if (currentValue === '__add__') {
-          this.addAcademicYear.emit();
-          this.form
-            .get('academicYear')
-            ?.setValue(this.previousAcademicYear, { emitEvent: false });
-        } else {
-          this.previousAcademicYear = currentValue;
-          this.inputChange.emit(value);
-        }
-      } else {
-        this.inputChange.emit(value);
-      }
+      this.inputChange.emit(value);
     });
   }
 
-  /**
-   * Emit add event when Add button is clicked.
-   */
   onAdd(): void {
     this.add.emit();
   }
 
-  /**
-   * Emit export event when Export button is clicked.
-   */
   onExport(): void {
     if (this.showExportDialog) {
       const dialogRef = this.dialog.open(TableDialogComponent, {
@@ -148,22 +118,23 @@ export class TableHeaderComponent implements OnInit, OnChanges {
     }
   }
 
-  /**
-   * Emit event when Active Year & Semester is clicked.
-   */
   onActiveYearSemClick(): void {
     this.activeYearSemClick.emit();
   }
 
-  /**
-   * Clear the search input and emit the change.
-   * @param key - The form control key to clear.
-   */
+  onAddAcademicYearClick(): void {
+    this.addAcademicYear.emit();
+  }
+
   onClearSearch(key: string): void {
     this.form.get(key)?.setValue('');
     this.inputChange.emit(this.form.value);
-    if (key === 'search') {
-      this.search.emit('');
-    }
   }
+  
+  trackByOptionKey(index: number, option: any): string {
+    return `${option.key}-${index}`;
+  }
+  
+  
+  
 }

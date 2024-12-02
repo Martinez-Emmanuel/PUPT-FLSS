@@ -25,6 +25,7 @@ class CurriculumDetailsController extends Controller
                 return [
                     'curricula_program_id' => $curriculaProgram->curricula_program_id,
                     'name' => $curriculaProgram->program->program_code,
+                    'program_title' => $curriculaProgram->program->program_title, // Add program_title here
                     'number_of_years' => $curriculaProgram->program->number_of_years,
                     'year_levels' => $this->getYearLevels($curriculaProgram),
                 ];

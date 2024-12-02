@@ -157,4 +157,21 @@ export class CurriculumService {
   deleteCourse(courseId: number): Observable<any> {
     return this.http.delete(`${this.baseUrl}/courses/${courseId}`);
   }
+
+  //will delete din naman
+  updateEntireCurriculum(
+    updatedCurriculum: Curriculum
+  ): Observable<Curriculum> {
+    const curricula = this.curriculaSubject.getValue();
+    const index = curricula.findIndex(
+      (c) => c.curriculum_year === updatedCurriculum.curriculum_year
+    );
+    if (index !== -1) {
+      curricula[index] = updatedCurriculum;
+      this.curriculaSubject.next([...curricula]);
+      return of(updatedCurriculum);
+    }
+    return throwError(() => new Error('Curriculum not found'));
+  }
+
 }
