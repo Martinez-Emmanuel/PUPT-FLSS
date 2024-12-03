@@ -90,6 +90,7 @@
           [disabled]="data.currentState"
           readonly
           required
+          (click)="startPicker.open()"
         />
         <mat-datepicker-toggle matIconSuffix [for]="startPicker">
         </mat-datepicker-toggle>
@@ -121,17 +122,18 @@
         <mat-label>End Date</mat-label>
         <input
           matInput
-          [matDatepicker]="picker"
+          [matDatepicker]="endPicker"
           [min]="minDate"
           [(ngModel)]="submissionDeadline"
           (dateChange)="onDeadlineChange($event)"
           [disabled]="data.currentState"
           readonly
           required
+          (click)="endPicker.open()"
         />
-        <mat-datepicker-toggle matIconSuffix [for]="picker">
+        <mat-datepicker-toggle matIconSuffix [for]="endPicker">
         </mat-datepicker-toggle>
-        <mat-datepicker #picker></mat-datepicker>
+        <mat-datepicker #endPicker></mat-datepicker>
 
         @if (data.type === 'all_preferences' || data.type ===
         'single_preferences') {

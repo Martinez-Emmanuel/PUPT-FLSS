@@ -112,7 +112,6 @@ export class DialogActionComponent {
     programs: false,
     rooms: false,
   };
-
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: DialogActionData,
     private dialogRef: MatDialogRef<DialogActionComponent>,
