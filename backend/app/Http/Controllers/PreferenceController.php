@@ -151,10 +151,14 @@ class PreferenceController extends Controller
                         'academic_year' => $activeSemester->academicYear->year_start . '-' . $activeSemester->academicYear->year_end,
                         'semester_id' => $activeSemester->semester_id,
                         'semester_label' => $this->getSemesterLabel($activeSemester->semester_id),
-                        'global_deadline' => $preferenceSetting && $preferenceSetting->global_deadline ? Carbon::parse($preferenceSetting->global_deadline)->toDateString() : null,
+                        'global_start_date' => $preferenceSetting && $preferenceSetting->global_start_date
+                        ? Carbon::parse($preferenceSetting->global_start_date)->toDateString() : null,
+                        'individual_start_date' => $preferenceSetting && $preferenceSetting->individual_start_date
+                        ? Carbon::parse($preferenceSetting->individual_start_date)->toDateString() : null,
+                        'global_deadline' => $preferenceSetting && $preferenceSetting->global_deadline
+                        ? Carbon::parse($preferenceSetting->global_deadline)->toDateString() : null,
                         'individual_deadline' => $preferenceSetting && $preferenceSetting->individual_deadline
-                        ? Carbon::parse($preferenceSetting->individual_deadline)->toDateString()
-                        : ($preferenceSetting && $preferenceSetting->global_deadline ? Carbon::parse($preferenceSetting->global_deadline)->toDateString() : null),
+                        ? Carbon::parse($preferenceSetting->individual_deadline)->toDateString() : null,
                         'courses' => $courses->toArray(),
                     ],
                 ],
@@ -256,6 +260,10 @@ class PreferenceController extends Controller
                         'academic_year' => $activeSemester->academicYear->year_start . '-' . $activeSemester->academicYear->year_end,
                         'semester_id' => $activeSemester->semester_id,
                         'semester_label' => $this->getSemesterLabel($activeSemester->semester_id),
+                        'global_start_date' => $preferenceSetting && $preferenceSetting->global_start_date
+                        ? Carbon::parse($preferenceSetting->global_start_date)->toDateString() : null,
+                        'individual_start_date' => $preferenceSetting && $preferenceSetting->individual_start_date
+                        ? Carbon::parse($preferenceSetting->individual_start_date)->toDateString() : null,
                         'global_deadline' => $preferenceSetting && $preferenceSetting->global_deadline ? Carbon::parse($preferenceSetting->global_deadline)->toDateString() : null,
                         'individual_deadline' => $preferenceSetting && $preferenceSetting->individual_deadline
                         ? Carbon::parse($preferenceSetting->individual_deadline)->toDateString()
@@ -437,16 +445,29 @@ class PreferenceController extends Controller
         $validated = $request->validate([
             'status' => 'required|boolean',
             'global_deadline' => 'nullable|date|after:today',
+            'global_start_date' => 'nullable|date',
         ]);
 
         DB::transaction(function () use ($validated) {
             $status = $validated['status'];
             $global_deadline = $status ? $validated['global_deadline'] : null;
+            $global_start_date = $status ? $validated['global_start_date'] : null;
 
-            // Update all existing preferences_settings
+            // Current date and start date
+            $currentDate = Carbon::now();
+            $startDate = $global_start_date ? Carbon::parse($global_start_date) : null;
+
+            // Determine final status
+            $finalStatus = false;
+            if ($status) {
+                // Enable only if start date is today or already passed
+                $finalStatus = $startDate ? $startDate->lessThanOrEqualTo($currentDate) : true;
+            }
+
             PreferencesSetting::query()->update([
-                'is_enabled' => $status,
+                'is_enabled' => $finalStatus,
                 'global_deadline' => $global_deadline,
+                'global_start_date' => $global_start_date,
                 'individual_deadline' => null,
                 'has_request' => 0,
                 'updated_at' => now(),
@@ -459,6 +480,7 @@ class PreferenceController extends Controller
                     'faculty_id' => $faculty->id,
                     'is_enabled' => $status,
                     'global_deadline' => $global_deadline,
+                    'global_start_date' => $global_start_date,
                     'individual_deadline' => null,
                     'has_request' => 0,
                 ]);
@@ -468,7 +490,7 @@ class PreferenceController extends Controller
             $academicYear = $this->getCurrentAcademicYear();
             $message = $status
             ? "Preferences submission is now open for A.Y. {$academicYear}."
-            : "Preferences submission is now closed for A.Y. {$academicYear}.";
+            : "Preferences submission is set to start on {$global_start_date} for A.Y. {$academicYear}.";
 
             // Fetch all faculty IDs
             $facultyIds = Faculty::pluck('id');
@@ -491,6 +513,7 @@ class PreferenceController extends Controller
             'message' => 'All preferences settings updated successfully',
             'status' => $validated['status'],
             'global_deadline' => $validated['global_deadline'],
+            'global_start_date' => $validated['global_start_date'],
             'updated_preferences' => PreferencesSetting::all(),
         ], 200);
     }
@@ -505,14 +528,26 @@ class PreferenceController extends Controller
             'faculty_id' => 'required|integer|exists:faculty,id',
             'status' => 'required|boolean',
             'individual_deadline' => 'nullable|date|after:today',
+            'individual_start_date' => 'nullable|date',
         ]);
 
         DB::transaction(function () use ($validated) {
             $faculty_id = $validated['faculty_id'];
             $status = $validated['status'];
             $individual_deadline = $status ? $validated['individual_deadline'] : null;
+            $individual_start_date = $status ? $validated['individual_start_date'] : null;
 
-            // Update or create the preference setting
+            // Current date and start date
+            $currentDate = Carbon::now();
+            $startDate = $individual_start_date ? Carbon::parse($individual_start_date) : null;
+
+            // Determine final status
+            $finalStatus = false;
+            if ($status) {
+                // Enable only if start date is today or already passed
+                $finalStatus = $startDate ? $startDate->lessThanOrEqualTo($currentDate) : true;
+            }
+
             $preferenceSetting = PreferencesSetting::firstOrCreate(
                 ['faculty_id' => $faculty_id],
                 [
@@ -520,13 +555,17 @@ class PreferenceController extends Controller
                     'is_enabled' => 0,
                     'global_deadline' => null,
                     'individual_deadline' => null,
+                    'global_start_date' => null,
+                    'individual_start_date' => null,
                 ]
             );
 
             $preferenceSetting->update([
-                'is_enabled' => $status,
+                'is_enabled' => $finalStatus,
                 'individual_deadline' => $individual_deadline,
+                'individual_start_date' => $individual_start_date,
                 'global_deadline' => null,
+                'global_start_date' => null,
                 'has_request' => 0,
             ]);
 
@@ -534,7 +573,7 @@ class PreferenceController extends Controller
             $academicYear = $this->getCurrentAcademicYear();
             $message = $status
             ? "Your preferences submission is now open for A.Y. {$academicYear}."
-            : "Your preferences submission is now closed for A.Y. {$academicYear}.";
+            : "Your preferences submission is set to start on {$individual_start_date} for A.Y. {$academicYear}.";
 
             // Create notification for the specific faculty
             FacultyNotification::create([
@@ -549,6 +588,7 @@ class PreferenceController extends Controller
             'faculty_id' => $validated['faculty_id'],
             'is_enabled' => $validated['status'],
             'individual_deadline' => $validated['individual_deadline'],
+            'individual_start_date' => $validated['individual_start_date'],
             'updated_preference' => PreferencesSetting::find($validated['faculty_id']),
         ], 200);
     }

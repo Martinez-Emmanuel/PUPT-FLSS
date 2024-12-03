@@ -15,6 +15,24 @@ class CheckPreferencesDeadline extends Command
     {
         $today = Carbon::now()->format('Y-m-d');
 
+        // Enable preferences and clear the global start dates
+        PreferencesSetting::query()
+            ->where('is_enabled', false)
+            ->where('global_start_date', '<=', $today)
+            ->update([
+                'is_enabled' => true,
+                'global_start_date' => null,
+            ]);
+
+        // Enable preferences and clear individual start dates
+        PreferencesSetting::query()
+            ->where('is_enabled', false)
+            ->where('individual_start_date', '<=', $today)
+            ->update([
+                'is_enabled' => true,
+                'individual_start_date' => null,
+            ]);
+
         // Disable preferences and clear the global deadlines
         PreferencesSetting::query()
             ->where('is_enabled', true)

@@ -5,7 +5,7 @@
   <!-- Dialog Content -->
   <div class="dialog-content">
     <!-- Main Action Text -->
-    @if (!showReportOptions) {
+    @if (!showReportOptions && !isPreferencesScheduled) {
     <div class="main-text">
       <strong>{{ actionText }}</strong>
 
@@ -45,7 +45,8 @@
     @if (showReportOptions) {
     <div class="main-text">
       This will <strong>print and download</strong> an official copy of the
-      schedule reports for this semester. Select at least one from the following:
+      schedule reports for this semester. Select at least one from the
+      following:
     </div>
 
     <div class="checkbox-container reports">
@@ -75,11 +76,49 @@
     </div>
     }
 
-    <!-- Submission Deadline Date Picker Section -->
-    @if (showDeadlinePicker) {
-    <div class="deadline-picker">
+    <!-- Start Date Picker Section -->
+    @if (showStartDatePicker && !isPreferencesScheduled) {
+    <div class="date-picker">
       <mat-form-field appearance="fill">
-        <mat-label>Submission Deadline</mat-label>
+        <mat-label>Start Date</mat-label>
+        <input
+          matInput
+          [matDatepicker]="startPicker"
+          [min]="currentDate"
+          [(ngModel)]="startDate"
+          (dateChange)="onStartDateChange($event)"
+          [disabled]="data.currentState"
+          readonly
+          required
+        />
+        <mat-datepicker-toggle matIconSuffix [for]="startPicker">
+        </mat-datepicker-toggle>
+        <mat-datepicker #startPicker></mat-datepicker>
+
+        @if (data.type === 'all_preferences' || data.type ===
+        'single_preferences') {
+        <mat-hint>
+          @if (data.currentState) { Current Set Start Date: @if
+          (isStartDateToday) {
+          <strong>{{ getStartDateText(true) }}</strong>
+          } @else {
+          {{ startDate | date }}
+          <strong>({{ remainingDaysStart }} day(s) left)</strong>
+          } } @else { The submission will start @if (isStartDateToday) {
+          <strong>{{ getStartDateText(false) }}</strong>
+          } @else {
+          <strong>{{ remainingDaysStart }} day(s)</strong> from now } }
+        </mat-hint>
+        }
+      </mat-form-field>
+    </div>
+    }
+
+    <!-- Submission Deadline Date Picker Section -->
+    @if (showDeadlinePicker && !isPreferencesScheduled) {
+    <div class="date-picker">
+      <mat-form-field appearance="fill">
+        <mat-label>End Date</mat-label>
         <input
           matInput
           [matDatepicker]="picker"
@@ -102,13 +141,12 @@
           <strong>{{ getDeadlineText(true) }}</strong>
           } @else {
           {{ submissionDeadline | date }}
-          <strong>({{ remainingDays }} days left)</strong>
-          } } @else { The submission will automatically close after @if
-          (isDeadlineToday) {
+          <strong>({{ remainingDays }} day(s) left)</strong>
+          } } @else { The submission will close @if (isDeadlineToday) {
           <strong>{{ getDeadlineText(false) }}</strong>
           } @else {
-          <strong>{{ remainingDays }} days</strong>
-          } }
+          <strong>{{ remainingDays }} day(s)</strong> after the set start date }
+          }
         </mat-hint>
         }
       </mat-form-field>
@@ -116,7 +154,7 @@
     }
 
     <!-- Email Notification Section -->
-    @if (showEmailOption && !data.currentState) {
+    @if (showEmailOption && !data.currentState && !isPreferencesScheduled) {
     <div class="checkbox-container email">
       <mat-checkbox [(ngModel)]="sendEmail" class="email-checkbox">
         <span class="checkbox-content">
@@ -149,19 +187,50 @@
       </div>
     </div>
     }
+
+    <!-- New Section for Scheduled Preferences Submission -->
+    @if (isPreferencesScheduled) {
+    <div class="scheduled-preferences">
+      <div class="scheduled-pref-icon">
+        <span mat-symbol="hourglass_top"></span>
+      </div>
+      <div class="scheduled-pref-text">
+        Preferences submission is currently scheduled to open from
+        <strong>{{ startDate | date }}</strong> until
+        <strong>{{ submissionDeadline | date }}</strong
+        >.
+      </div>
+    </div>
+    }
   </div>
 
   <!-- Dialog Buttons -->
   <div class="dialog-buttons">
     <button
       mat-button
-      class="cancel"
+      class="close"
       (click)="closeDialog()"
       [disabled]="isProcessing"
     >
-      Cancel
+      Close
     </button>
 
+    @if (isPreferencesScheduled) {
+    <button
+      mat-flat-button
+      color="primary"
+      class="action-button"
+      (click)="cancelScheduledSubmission()"
+      [disabled]="isProcessing"
+      [ngClass]="{
+        'disabled-button': isProcessing
+      }"
+    >
+      @if (!isProcessing) { Cancel Scheduled Submission } @else {
+      <mat-spinner class="custom-spinner" diameter="25"></mat-spinner>
+      }
+    </button>
+    } @else {
     <button
       mat-flat-button
       color="primary"
@@ -170,18 +239,21 @@
       [disabled]="
         isProcessing ||
         (data.type === 'reports' && !isReportSelectionValid()) ||
-        (showDeadlinePicker && submissionDeadline === null)
+        (showDeadlinePicker && submissionDeadline === null) ||
+        (showStartDatePicker && startDate === null)
       "
       [ngClass]="{
         'disabled-button':
           isProcessing ||
           (data.type === 'reports' && !isReportSelectionValid()) ||
-          (showDeadlinePicker && submissionDeadline === null)
+          (showDeadlinePicker && submissionDeadline === null) ||
+          (showStartDatePicker && startDate === null)
       }"
     >
       @if (!isProcessing) { Confirm } @else {
       <mat-spinner class="custom-spinner" diameter="25"></mat-spinner>
       }
     </button>
+    }
   </div>
 </div>
