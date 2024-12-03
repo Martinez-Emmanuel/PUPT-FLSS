@@ -137,16 +137,39 @@
     background: var(--neutral-fade) !important;
   }
 
-  .cancel {
+  .close {
     color: var(--primary-text);
   }
 }
 
-.deadline-picker,
+.date-picker,
 .deadline-info {
   width: 100%;
 
   mat-form-field {
     width: 100%;
   }
+}
+
+.set-submission-text {
+  margin-bottom: 0;
+}
+
+.scheduled-preferences {
+  text-align: center;
+}
+
+.scheduled-pref-icon {
+  @include mixins.flex-layout($direction: column, $gap: var(--spacing-xs));
+  margin-bottom: var(--spacing-sm);
+
+  span[mat-symbol] {
+    font-size: var(--font-size-4xl);
+    @include mixins.gradient-primary-text(315deg);
+
+  }
+}
+
+.scheduled-pref-text {
+  line-height: var(--line-height-md);
 }

@@ -47,6 +47,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
     { curriculum_id: 0, curriculum_year: '0' },
   ];
   globalDeadline: string | null = null;
+  globalStartDate: string | null = null;
 
   // Progress metrics
   preferencesProgress = 0;
@@ -130,6 +131,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
     this.preferencesEnabled = data.preferencesSubmissionEnabled;
     this.schedulesPublished = data.publishProgress > 0;
     this.globalDeadline = data.global_deadline || null;
+    this.globalStartDate = data.global_start_date || null;
   }
 
   private resetProgressMetrics(): void {
@@ -160,6 +162,10 @@ export class OverviewComponent implements OnInit, OnDestroy {
       ? new Date(this.globalDeadline)
       : null;
 
+    const StartDate = this.globalStartDate
+    ? new Date(this.globalStartDate)
+    : null;
+
     const dialogData: DialogActionData = {
       type: 'all_preferences',
       academicYear: this.activeYear,
@@ -167,6 +173,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
       hasSecondaryText: true,
       currentState: this.preferencesEnabled,
       global_deadline: deadlineDate,
+      global_start_date: StartDate,
     };
 
     const dialogRef = this.dialog.open(DialogActionComponent, {

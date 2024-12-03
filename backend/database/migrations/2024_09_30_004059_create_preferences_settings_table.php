@@ -18,7 +18,9 @@ class CreatePreferencesSettingsTable extends Migration
             $table->unsignedBigInteger('faculty_id')->nullable();
             $table->tinyInteger('has_request')->default(0)->comment('1 for request made, 0 for no request');
             $table->tinyInteger('is_enabled')->default(0)->comment('1 for enabled, 0 for disabled');
+            $table->date('global_start_date')->nullable();
             $table->date('global_deadline')->nullable();
+            $table->date('individual_start_date')->nullable();
             $table->date('individual_deadline')->nullable();
             $table->timestamps();
 

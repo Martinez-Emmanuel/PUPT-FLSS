@@ -27,6 +27,8 @@ class PreferencesSetting extends Model
         'is_enabled',
         'global_deadline',
         'individual_deadline',
+        'global_start_date',
+        'individual_start_date',
         'has_request',
     ];
 
@@ -39,6 +41,8 @@ class PreferencesSetting extends Model
         'is_enabled' => 'boolean',
         'global_deadline' => 'date',
         'individual_deadline' => 'date',
+        'global_start_date' => 'date',
+        'individual_start_date' => 'date',
         'has_request' => 'boolean',
     ];
 
