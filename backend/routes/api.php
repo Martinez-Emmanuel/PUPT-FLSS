@@ -7,6 +7,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CurriculumController;
 use App\Http\Controllers\CurriculumDetailsController;
 use App\Http\Controllers\EmailController;
+use App\Http\Controllers\ExternalController;
 use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\FacultyNotificationController;
 use App\Http\Controllers\PreferenceController;
@@ -178,4 +179,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/year_levels/{id}', [YearLevelController::class, 'show']);
     Route::put('/updateYearLevel/{id}', [YearLevelController::class, 'update']);
     Route::delete('/deleteYearLevel/{id}', [YearLevelController::class, 'destroy']);
+});
+
+/*
+|----------------------------
+| External/Integration Routes
+|----------------------------
+ */
+Route::prefix('external')->middleware(['encrypt.response'])->group(function () {
+
+    /**
+     * E-Class Record System (ECRS)
+     */
+    Route::prefix('ecrs')->middleware('check.api.key:ecrs')->group(function () {
+        Route::get('/pupt-faculty-schedules', [ExternalController::class, 'ECRSFacultySchedules']);
+    });
 });
