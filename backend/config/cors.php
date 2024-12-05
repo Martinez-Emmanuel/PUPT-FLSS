@@ -20,10 +20,11 @@ return [
     'allowed_methods' => ['GET', 'POST', 'PUT', 'DELETE'],
 
     'allowed_origins' => [
-        'https://app.pupt-flss.com',
-        'https://beta.pupt-flss.com',
-        'http://localhost:4200',
-        'http://127.0.0.1:4200',
+        '*',
+        // 'https://app.pupt-flss.com',
+        // 'https://beta.pupt-flss.com',
+        // 'http://localhost:4200',
+        // 'http://127.0.0.1:4200',
     ],
 
     'allowed_origins_patterns' => [],
