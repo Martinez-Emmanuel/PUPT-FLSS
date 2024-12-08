@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../../environments/environment.dev';
 
 export interface OverviewDetails {
+  global_start_date: null;
   activeAcademicYear: string;
   activeSemester: string;
   activeFacultyCount: number;

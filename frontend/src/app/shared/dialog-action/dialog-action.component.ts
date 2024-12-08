@@ -22,13 +22,20 @@ import { PreferencesService } from '../../core/services/faculty/preference/prefe
 import { ReportsService } from '../../core/services/admin/reports/reports.service';
 
 export interface DialogActionData {
-  type: 'all_preferences' | 'single_preferences' | 'all_publish' | 'single_publish' | 'reports';
+  type:
+    | 'all_preferences'
+    | 'single_preferences'
+    | 'all_publish'
+    | 'single_publish'
+    | 'reports';
   currentState: boolean;
   academicYear?: string;
   semester?: string;
   hasSecondaryText?: boolean;
   global_deadline?: Date | null;
   individual_deadline?: Date | null;
+  global_start_date?: Date | null;
+  individual_start_date?: Date | null;
   facultyName?: string;
   faculty_id?: number;
   hasIndividualDeadlines?: boolean;
@@ -47,29 +54,29 @@ export const MY_DATE_FORMATS = {
 };
 
 @Component({
-    selector: 'app-dialog-action',
-    imports: [
-        RouterLink,
-        MatDialogModule,
-        MatButtonModule,
-        MatCheckboxModule,
-        MatProgressSpinnerModule,
-        FormsModule,
-        CommonModule,
-        MatDatepickerModule,
-        MatNativeDateModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatSymbolDirective,
-    ],
-    providers: [
-        MatDatepickerModule,
-        { provide: DateAdapter, useClass: NativeDateAdapter },
-        { provide: MAT_DATE_LOCALE, useValue: 'en-US' },
-        { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
-    ],
-    templateUrl: './dialog-action.component.html',
-    styleUrls: ['./dialog-action.component.scss']
+  selector: 'app-dialog-action',
+  imports: [
+    RouterLink,
+    MatDialogModule,
+    MatButtonModule,
+    MatCheckboxModule,
+    MatProgressSpinnerModule,
+    FormsModule,
+    CommonModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSymbolDirective,
+  ],
+  providers: [
+    MatDatepickerModule,
+    { provide: DateAdapter, useClass: NativeDateAdapter },
+    { provide: MAT_DATE_LOCALE, useValue: 'en-US' },
+    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
+  ],
+  templateUrl: './dialog-action.component.html',
+  styleUrls: ['./dialog-action.component.scss'],
 })
 export class DialogActionComponent {
   private readonly SNACKBAR_DURATION = 5000;
@@ -88,16 +95,23 @@ export class DialogActionComponent {
   showDeadlinePicker = false;
   hasIndividualDeadlines = false;
 
+  currentDate: Date = new Date();
   minDate: Date = new Date();
   submissionDeadline: Date | null = null;
   remainingDays: number = 0;
+
+  startDate: Date | null = null;
+  showStartDatePicker = false;
+  isStartDateToday = false;
+  remainingDaysStart: number = 0;
+
+  isPreferencesScheduled = false;
 
   reportOptions = {
     faculty: false,
     programs: false,
     rooms: false,
   };
-
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: DialogActionData,
     private dialogRef: MatDialogRef<DialogActionComponent>,
@@ -111,20 +125,37 @@ export class DialogActionComponent {
     if (this.data.type === 'all_preferences') {
       this.submissionDeadline = this.data.global_deadline || null;
       this.showDeadlinePicker = true;
-      this.calculateRemainingDays;
+      this.calculateRemainingDays();
+
+      this.startDate = this.data.global_start_date || null;
+      this.showStartDatePicker = true;
+      this.calculateRemainingDaysStart();
     } else if (this.data.type === 'single_preferences') {
       this.submissionDeadline =
         this.data.individual_deadline || this.data.global_deadline || null;
       this.facultyName = this.data.facultyName || '';
       this.showDeadlinePicker = true;
-      this.calculateRemainingDays;
+      this.calculateRemainingDays();
+
+      this.startDate =
+        this.data.individual_start_date || this.data.global_start_date || null;
+      this.showStartDatePicker = true;
+      this.calculateRemainingDaysStart();
     }
 
     if (this.submissionDeadline) {
       this.calculateRemainingDays();
     }
 
+    if (this.startDate) {
+      this.calculateRemainingDaysStart();
+    }
+
     this.hasIndividualDeadlines = this.data.hasIndividualDeadlines || false;
+
+    this.isPreferencesScheduled =
+      Boolean(this.data.global_start_date || this.data.individual_start_date) &&
+      !this.data.currentState;
   }
 
   /**
@@ -189,6 +220,21 @@ export class DialogActionComponent {
       return;
     }
 
+    // Check if both startDate and submissionDeadline are filled out
+    if (this.showStartDatePicker && !this.startDate) {
+      this.snackBar.open('Please select a start date.', 'Close', {
+        duration: this.SNACKBAR_DURATION,
+      });
+      return;
+    }
+
+    if (this.showDeadlinePicker && !this.submissionDeadline) {
+      this.snackBar.open('Please select a submission deadline.', 'Close', {
+        duration: this.SNACKBAR_DURATION,
+      });
+      return;
+    }
+
     this.isProcessing = true;
     let operation$: Observable<any>;
 
@@ -244,22 +290,80 @@ export class DialogActionComponent {
   }
 
   /**
+   * Calculates remaining days between today and start date
+   * and determines if the start date is today
+   */
+  public calculateRemainingDaysStart(): void {
+    if (this.startDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      const startDate = new Date(this.startDate);
+      startDate.setHours(0, 0, 0, 0);
+
+      const diffTime = startDate.getTime() - today.getTime();
+      this.remainingDaysStart = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      this.isStartDateToday =
+        this.remainingDaysStart <= 0 && this.remainingDaysStart >= -1;
+    }
+  }
+
+  /**
+   * Returns formatted start date text based on whether start date is today
+   */
+  public getStartDateText(isCurrentStartDate: boolean = false): string {
+    if (!this.startDate) return '';
+
+    if (this.isStartDateToday) {
+      if (isCurrentStartDate) {
+        return 'Today';
+      } else {
+        return 'today, immediately';
+      }
+    }
+
+    if (isCurrentStartDate) {
+      return `${formatDate(this.startDate, 'longDate', 'en-US')} (${
+        this.remainingDaysStart
+      } days left)`;
+    } else {
+      return `${this.remainingDaysStart} day(s)`;
+    }
+  }
+
+  /**
+   * Handles start date change
+   */
+  public onStartDateChange(event: any): void {
+    this.startDate = event.value;
+    this.calculateRemainingDaysStart();
+    this.minDate = this.startDate!;
+
+    if (this.submissionDeadline && this.startDate! > this.submissionDeadline!) {
+      this.submissionDeadline = null;
+      this.calculateRemainingDays();
+    } else {
+      this.calculateRemainingDays();
+    }
+  }
+
+  /**
    * Calculates remaining days between today and submission deadline
    * and determines if the deadline is today
    */
   public calculateRemainingDays(): void {
-    if (this.submissionDeadline) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+    if (this.submissionDeadline && this.startDate) {
+      const startDate = new Date(this.startDate);
+      startDate.setHours(0, 0, 0, 0);
 
       const deadline = new Date(this.submissionDeadline);
       deadline.setHours(0, 0, 0, 0);
 
-      const diffTime = deadline.getTime() - today.getTime();
+      const diffTime = deadline.getTime() - startDate.getTime();
       this.remainingDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-      this.isDeadlineToday =
-        this.remainingDays <= 0 && this.remainingDays >= -1;
+      this.isDeadlineToday = this.remainingDays === 0;
     }
   }
 
@@ -269,7 +373,15 @@ export class DialogActionComponent {
   public getDeadlineText(isCurrentDeadline: boolean = false): string {
     if (!this.submissionDeadline) return '';
 
-    if (this.isDeadlineToday) {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const deadline = new Date(this.submissionDeadline);
+    deadline.setHours(0, 0, 0, 0);
+
+    const isActuallyToday = today.getTime() === deadline.getTime();
+
+    if (isActuallyToday) {
       if (isCurrentDeadline) {
         return 'Today at 11:59 PM';
       } else {
@@ -280,9 +392,10 @@ export class DialogActionComponent {
     if (isCurrentDeadline) {
       return `${formatDate(this.submissionDeadline, 'longDate', 'en-US')} (${
         this.remainingDays
-      } days left)`;
+      } day(s) left)`;
     } else {
-      return `${this.remainingDays} days`;
+      // return `${this.remainingDays} day(s)`;
+      return `at 11:59 PM on this day`;
     }
   }
 
@@ -295,24 +408,99 @@ export class DialogActionComponent {
   }
 
   /**
+   * Returns the formatted scheduled start date
+   */
+  public getScheduledStartDate(): string {
+    const startDate =
+      this.data.individual_start_date || this.data.global_start_date;
+    return startDate ? formatDate(startDate, 'medium', 'en-US') : '';
+  }
+
+  /**
+   * Returns the formatted scheduled deadline date
+   */
+  public getScheduledDeadlineDate(): string {
+    const deadline = this.data.individual_deadline || this.data.global_deadline;
+    return deadline ? formatDate(deadline, 'medium', 'en-US') : '';
+  }
+
+  /**
+   * Placeholder method for canceling scheduled submission
+   * This will be implemented later as per your requirement
+   */
+  public cancelScheduledSubmission(): void {
+    this.isProcessing = true;
+
+    let operation$: Observable<any>;
+
+    if (this.data.type === 'all_preferences') {
+      operation$ = this.preferencesService.toggleAllPreferences(
+        false,
+        null,
+        null
+      );
+    } else if (this.data.type === 'single_preferences') {
+      operation$ = this.preferencesService.toggleSingleFacultyPreferences(
+        this.data.faculty_id!,
+        false,
+        null,
+        null
+      );
+    } else {
+      operation$ = of(null);
+    }
+
+    operation$
+      .pipe(
+        finalize(() => {
+          this.isProcessing = false;
+        })
+      )
+      .subscribe({
+        next: () => {
+          const successMessage = 'Scheduled submission canceled successfully.';
+          this.snackBar.open(successMessage, 'Close', {
+            duration: this.SNACKBAR_DURATION,
+          });
+          this.dialogRef.close(true);
+        },
+        error: (error) => {
+          console.error('Operation failed:', error);
+          const errorMessage = 'Failed to cancel scheduled submission.';
+          this.snackBar.open(errorMessage, 'Close', {
+            duration: this.SNACKBAR_DURATION,
+          });
+          this.dialogRef.close(false);
+        },
+      });
+  }
+
+  /**
    * Handles the single preference toggle operation
    */
   private handleSinglePreferenceOperation(): Observable<any> {
     const newStatus = !this.data.currentState;
+
+    let formattedStartDate: string | null = null;
+    if (newStatus && this.startDate) {
+      const date = new Date(this.startDate);
+      date.setHours(0, 0, 0, 0);
+      formattedStartDate = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
+    }
 
     let formattedDate: string | null = null;
     if (newStatus && this.submissionDeadline) {
       const date = new Date(this.submissionDeadline);
       date.setHours(23, 59, 59, 999);
       formattedDate = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
-      console.log('Sending individual deadline to backend:', formattedDate);
     }
 
     return this.preferencesService
       .toggleSingleFacultyPreferences(
         this.data.faculty_id!,
         newStatus,
-        formattedDate
+        formattedDate,
+        formattedStartDate
       )
       .pipe(
         switchMap(() => {
@@ -340,6 +528,13 @@ export class DialogActionComponent {
   private handleAllPreferencesOperation(): Observable<any> {
     const newStatus = !this.data.currentState;
 
+    let formattedStartDate: string | null = null;
+    if (newStatus && this.startDate) {
+      const date = new Date(this.startDate);
+      date.setHours(0, 0, 0, 0);
+      formattedStartDate = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
+    }
+
     let formattedDate: string | null = null;
     if (newStatus && this.submissionDeadline) {
       const date = new Date(this.submissionDeadline);
@@ -349,7 +544,8 @@ export class DialogActionComponent {
 
     const togglePreferences$ = this.preferencesService.toggleAllPreferences(
       newStatus,
-      formattedDate
+      formattedDate,
+      formattedStartDate
     );
 
     const emailNotification$ =
@@ -493,8 +689,8 @@ export class DialogActionComponent {
       case 'reports':
         return 'Reports generated successfully.';
       case 'all_preferences':
-        return `Preferences for all faculty ${
-          !this.data.currentState ? 'enabled' : 'disabled'
+        return `Preferences submission for all faculty ${
+          !this.data.currentState ? 'updated' : 'disabled'
         } successfully.${this.sendEmail ? ' Email sent.' : ''}`;
       case 'all_publish':
         return `Schedules for all faculty ${
@@ -505,8 +701,8 @@ export class DialogActionComponent {
           !this.data.currentState ? 'published' : 'unpublished'
         } successfully.${this.sendEmail ? ' Email sent.' : ''}`;
       case 'single_preferences':
-        return `Preferences for ${this.facultyName} ${
-          !this.data.currentState ? 'enabled' : 'disabled'
+        return `Preferences submission for ${this.facultyName} ${
+          !this.data.currentState ? 'updated' : 'disabled'
         } successfully.${this.sendEmail ? ' Email sent.' : ''}`;
       default:
         return 'Operation completed successfully.';

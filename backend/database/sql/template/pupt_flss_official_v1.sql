@@ -1,9 +1,6 @@
 -- PUPT-FLSS 2025 Official Database Schema (Version 1.7)
 -- Key Changes from the previous version:
--- (+) Add `email` column on `users` table
--- (+) Add separate `*_name` columns on `users` table
--- (-) Remove `faculty_email` column on `faculty` table
-
+-- (+) Add `global_start_date` and `individual_start_date` columns 
 
 -- Table structure for table `users`
 CREATE TABLE `users` (
@@ -210,7 +207,9 @@ CREATE TABLE `preferences_settings` (
   `faculty_id` bigint(20) UNSIGNED DEFAULT NULL,
   `has_request` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1 for request made, 0 for no request',
   `is_enabled` tinyint(1) NOT NULL DEFAULT '0' COMMENT '1 for enabled, 0 for disabled',
+  `global_start_date` date DEFAULT NULL,
   `global_deadline` date DEFAULT NULL,
+  `individual_start_date` date DEFAULT NULL,
   `individual_deadline` date DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,

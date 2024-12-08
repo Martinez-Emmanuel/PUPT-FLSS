@@ -187,11 +187,17 @@
               <mat-slide-toggle
                 class="header-toggle"
                 [checked]="isToggleAllChecked"
-                [disabled]="hasIndividualDeadlines && !isToggleAllChecked"
+                [disabled]="
+                  (hasIndividualDeadlines &&
+                    !isToggleAllChecked &&
+                    isEnabled) ||
+                  isIndividualStartDateSet
+                "
                 [matTooltip]="getAllToggleTooltip(isToggleAllChecked)"
                 (change)="onToggleAllPreferences($event)"
               >
               </mat-slide-toggle>
+
               <span
                 mat-symbol="help"
                 [fill]="false"
@@ -210,7 +216,7 @@
               <mat-slide-toggle
                 class="single-toggle"
                 [checked]="element.is_enabled"
-                [disabled]="isToggleAllChecked"
+                [disabled]="isToggleAllChecked || isGlobalStartDateSet"
                 [matTooltip]="getSingleToggleTooltip(element)"
                 (change)="onToggleSinglePreferences(element, $event)"
               >

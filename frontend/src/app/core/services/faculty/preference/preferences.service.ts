@@ -28,6 +28,8 @@ export interface ActiveSemester {
   courses: Course[];
   global_deadline?: Date | null;
   individual_deadline?: Date | null;
+  global_start_date?: Date | null;
+  individual_start_date?: Date | null;
 }
 
 export interface SemesterDetails {
@@ -227,12 +229,14 @@ export class PreferencesService {
    */
   toggleAllPreferences(
     status: boolean,
-    deadline: string | null
+    deadline: string | null,
+    startDate: string | null
   ): Observable<any> {
     return this.http
       .post(`${this.baseUrl}/toggle-all-preferences`, {
         status,
         global_deadline: deadline,
+        global_start_date: startDate,
       })
       .pipe(
         tap(() => {
@@ -268,13 +272,15 @@ export class PreferencesService {
   toggleSingleFacultyPreferences(
     faculty_id: number,
     status: boolean,
-    individual_deadline: string | null
+    individual_deadline: string | null,
+    individual_start_date: string | null
   ): Observable<any> {
     return this.http
       .post(`${this.baseUrl}/toggle-single-preferences`, {
         faculty_id,
         status,
         individual_deadline,
+        individual_start_date,
       })
       .pipe(
         tap(() => {

@@ -40,24 +40,24 @@ interface Faculty {
 }
 
 @Component({
-    selector: 'app-faculty-pref',
-    imports: [
-        CommonModule,
-        TableHeaderComponent,
-        LoadingComponent,
-        FormsModule,
-        MatTableModule,
-        MatButtonModule,
-        MatIconModule,
-        MatSlideToggleModule,
-        MatPaginatorModule,
-        MatTooltipModule,
-        MatSnackBarModule,
-        MatSymbolDirective,
-    ],
-    templateUrl: './faculty-pref.component.html',
-    styleUrls: ['./faculty-pref.component.scss'],
-    animations: [fadeAnimation]
+  selector: 'app-faculty-pref',
+  imports: [
+    CommonModule,
+    TableHeaderComponent,
+    LoadingComponent,
+    FormsModule,
+    MatTableModule,
+    MatButtonModule,
+    MatIconModule,
+    MatSlideToggleModule,
+    MatPaginatorModule,
+    MatTooltipModule,
+    MatSnackBarModule,
+    MatSymbolDirective,
+  ],
+  templateUrl: './faculty-pref.component.html',
+  styleUrls: ['./faculty-pref.component.scss'],
+  animations: [fadeAnimation],
 })
 export class FacultyPrefComponent implements OnInit, AfterViewInit {
   inputFields: InputField[] = [
@@ -92,6 +92,9 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   // Toggle states
   isToggleAllChecked = false;
   isAnyIndividualToggleOn = false;
+  isEnabled!: boolean;
+  isGlobalStartDateSet = false;
+  isIndividualStartDateSet = false;
 
   // Loading state
   isLoading = new BehaviorSubject<boolean>(true);
@@ -164,6 +167,8 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
           this.checkToggleAllState();
           this.updateHasAnyPreferences();
           this.updateIndividualDeadlinesState();
+          this.checkGlobalStartDate();
+          this.checkIndividualStartDate();
           this.isLoading.next(false);
         },
         (error) => {
@@ -250,6 +255,30 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     this.isAnyIndividualToggleOn = this.filteredData.some(
       (faculty) => faculty.is_enabled
     );
+
+    this.isEnabled = allEnabled;
+  }
+
+  /**
+   * Checks if a global_start_date is set and updates the state.
+   */
+  checkGlobalStartDate(): void {
+    this.isGlobalStartDateSet = this.allData.some((faculty) =>
+      faculty.active_semesters?.some(
+        (semester) => semester.global_start_date !== null
+      )
+    );
+  }
+
+  /**
+   * Checks if a global_start_date is set and updates the state.
+   */
+  checkIndividualStartDate(): void {
+    this.isIndividualStartDateSet = this.allData.some((faculty) =>
+      faculty.active_semesters?.some(
+        (semester) => semester.individual_start_date !== null
+      )
+    );
   }
 
   /**
@@ -301,6 +330,11 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
       ? new Date(this.allData[0].active_semesters[0].global_deadline)
       : null;
 
+    const existingStartDate = this.allData[0]?.active_semesters?.[0]
+      ?.global_start_date
+      ? new Date(this.allData[0].active_semesters[0].global_start_date)
+      : null;
+
     const hasIndividualDeadlines = this.hasIndividualDeadlines;
 
     const dialogData: DialogActionData = {
@@ -310,6 +344,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
       currentState: this.isToggleAllChecked,
       hasSecondaryText: false,
       global_deadline: existingDeadline,
+      global_start_date: existingStartDate,
       hasIndividualDeadlines: hasIndividualDeadlines,
     };
 
@@ -343,16 +378,26 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   ): void {
     event.source.checked = faculty.is_enabled;
 
+    const activeSemester = faculty.active_semesters?.[0];
+    const existingStartDate =
+      activeSemester?.individual_start_date ||
+      activeSemester?.global_start_date ||
+      null;
+    const existingDeadline =
+      activeSemester?.individual_deadline ||
+      activeSemester?.global_deadline ||
+      null;
+
     const dialogData: DialogActionData = {
       type: 'single_preferences',
-      academicYear: faculty.active_semesters?.[0]?.academic_year || '',
-      semester: faculty.active_semesters?.[0]?.semester_label || '',
+      academicYear: activeSemester?.academic_year || '',
+      semester: activeSemester?.semester_label || '',
       currentState: faculty.is_enabled,
       hasSecondaryText: false,
       facultyName: faculty.facultyName,
       faculty_id: faculty.faculty_id,
-      individual_deadline:
-        faculty.active_semesters?.[0]?.individual_deadline || null,
+      individual_start_date: existingStartDate,
+      individual_deadline: existingDeadline,
     };
 
     const dialogRef = this.dialog.open(DialogActionComponent, {
@@ -694,6 +739,9 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
    * Gets the tooltip text for a single faculty toggle.
    */
   getSingleToggleTooltip(faculty: Faculty): string {
+    if (this.isGlobalStartDateSet) {
+      return 'Global submission start date has been set – individual changes disabled';
+    }
     if (this.isToggleAllChecked) {
       return `Global preferences submission is active 
       – individual changes disabled`;
