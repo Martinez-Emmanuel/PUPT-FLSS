@@ -38,14 +38,13 @@
         >
           <mat-label>{{ field.label }}</mat-label>
           <mat-select [formControlName]="field.key">
-            @for (option of field.options; track option.key) {
-              <mat-option [value]="option.key">
-                {{ option.label }}
-              </mat-option>
-            }
             @if (field.key === 'academicYear') {
-              <mat-option (click)="onAddAcademicYearClick()">
+              <mat-option value="__add__">
                 Add Academic Year
+              </mat-option>
+            } @for (option of field.options; track option.key || option) {
+              <mat-option [value]="option.key ?? option" >
+                {{ option.label ?? option }}
               </mat-option>
             }
           </mat-select>

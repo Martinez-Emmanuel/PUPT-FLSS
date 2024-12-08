@@ -134,7 +134,23 @@ export class TableHeaderComponent implements OnInit, OnChanges {
   trackByOptionKey(index: number, option: any): string {
     return `${option.key}-${index}`;
   }
+
+  trackByField(index: number, field: any): string {
+    return field.key;  // Use a unique identifier (e.g., field.key)
+  }
   
+  trackByOption(index: number, option: string): string {
+    return option;  // If options are simple strings, use the string itself
+  }
   
-  
+  trackByKey(index: number, item: any): any {
+    // If the item is an object with a key, return the key
+    if (item && typeof item === 'object' && 'key' in item) {
+      return item.key;
+    }
+    
+    // If the item is a primitive, return the item itself
+    return item;
+  }
+
 }
