@@ -38,8 +38,8 @@ class AddApiKey extends Command
 
             if ($existingKey) {
                 if ($active || $inactive) {
-                    $this->updateKeyStatus($system, $existingKey, $active);
-                    $this->info("API key status updated successfully.");
+                    $newStatus = $this->updateKeyStatus($system, $existingKey, $active);
+                    $this->info("API key for system '{$system}' updated to " . ($newStatus ? 'active' : 'inactive') . ".");
                 } else {
                     $this->error("This exact API key already exists for the system '{$system}'.");
                     DB::rollBack();
@@ -48,7 +48,7 @@ class AddApiKey extends Command
             } else {
                 // Add new key (always inactive by default unless --active is specified)
                 $this->addNewKey($system, $key, $active);
-                $this->info("New API key added successfully for system '{$system}'.");
+                $this->info("New API key added successfully for system '{$system}' and set to " . ($active ? 'active' : 'inactive') . ".");
             }
 
             DB::commit();
@@ -105,7 +105,7 @@ class AddApiKey extends Command
     private function findExistingKey(string $system, string $key): ?ApiKey
     {
         $keys = ApiKey::where('system', $system)->get();
-        
+
         foreach ($keys as $existingKey) {
             try {
                 $decryptedKey = Crypt::decryptString($existingKey->encrypted_key);
@@ -116,11 +116,11 @@ class AddApiKey extends Command
                 continue;
             }
         }
-        
+
         return null;
     }
 
-    private function updateKeyStatus(string $system, ApiKey $apiKey, bool $setActive): void
+    private function updateKeyStatus(string $system, ApiKey $apiKey, bool $setActive): bool
     {
         if ($setActive) {
             // First, set all keys for this system as inactive
@@ -130,6 +130,8 @@ class AddApiKey extends Command
         // Update the status of the specific key
         $apiKey->is_active = $setActive;
         $apiKey->save();
+
+        return $apiKey->is_active;
     }
 
     private function addNewKey(string $system, string $key, bool $setActive): void
