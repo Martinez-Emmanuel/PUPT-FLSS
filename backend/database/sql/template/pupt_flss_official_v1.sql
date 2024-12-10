@@ -1,6 +1,6 @@
--- PUPT-FLSS 2025 Official Database Schema (Version 1.7)
+-- PUPT-FLSS 2025 Official Database Schema (Version 1.8)
 -- Key Changes from the previous version:
--- (+) Add `global_start_date` and `individual_start_date` columns 
+-- (+) Add `api_keys` table
 
 -- Table structure for table `users`
 CREATE TABLE `users` (
@@ -313,4 +313,14 @@ CREATE TABLE `faculty_notifications` (
   `created_at` TIMESTAMP NULL DEFAULT NULL,
   `updated_at` TIMESTAMP NULL DEFAULT NULL,
   PRIMARY KEY (`faculty_notifications_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `api_keys` (
+  `api_keys_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `system` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `encrypted_key` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `is_active` tinyint NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`api_keys_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
