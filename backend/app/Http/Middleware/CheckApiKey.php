@@ -6,12 +6,12 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\Response;
+use App\Models\ApiKey;
 
 class CheckApiKey
 {
     /**
-     * Validates API key from X-API-Key header against environment configuration.
-     * Requires {SYSTEM}_API_KEY to be set in environment variables.
+     * Validates API key from X-API-Key header against database configuration.
      *
      * @param  Request  $request
      * @param  Closure  $next
@@ -39,21 +39,19 @@ class CheckApiKey
                 return $this->errorResponse('API key is required', 401);
             }
 
-            // Get expected API key from environment
-            $envKey = strtoupper($system) . '_API_KEY';
-            $expectedApiKey = config($envKey) ?? env($envKey);
+            // Get expected API key from database
+            $apiKeyRecord = ApiKey::where('system', $system)->where('is_active', true)->first();
 
-            // Check if API key is configured
-            if (empty($expectedApiKey)) {
-                Log::error('API Key middleware: Missing environment configuration', [
+            // Check if API key is configured and active
+            if (!$apiKeyRecord) {
+                Log::error('API Key middleware: Missing or inactive API key configuration', [
                     'system' => $system,
-                    'env_key' => $envKey,
                 ]);
                 return $this->errorResponse('API key configuration error', 500);
             }
 
             // Validate API key
-            if (!hash_equals($expectedApiKey, $apiKey)) {
+            if (!hash_equals($apiKeyRecord->key, $apiKey)) {
                 Log::warning('API Key middleware: Invalid API key used', [
                     'ip' => $request->ip(),
                     'path' => $request->path(),
