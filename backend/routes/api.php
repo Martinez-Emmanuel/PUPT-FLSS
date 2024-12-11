@@ -191,8 +191,7 @@ Route::prefix('external')->group(function () {
     /**
      * E-Class Record System (ECRS)
      */
-    Route::prefix('ecrs')->middleware(['encrypt.response', 'check.api.key:ecrs'])->group(function () {
-
+    Route::prefix('ecrs')->middleware(['check.hmac:ecrs'])->group(function () {
         // Version 1
         Route::prefix('v1')->group(function () {
             Route::get('/pupt-faculty-schedules', [ExternalController::class, 'ECRSFacultySchedules']);
