@@ -378,7 +378,8 @@ export class ReportFacultyComponent
         faculty.schedules ?? [], 
         currentY,
         margin,
-        pageWidth
+        pageWidth,
+        faculty.facultyName 
       );
     });
     return doc.output('blob'); 
@@ -404,7 +405,8 @@ export class ReportFacultyComponent
         faculty.schedules, 
         currentY, 
         margin, 
-        pageWidth
+        pageWidth,
+        faculty.facultyName 
       );
     }
     return doc.output('blob');
@@ -477,7 +479,8 @@ export class ReportFacultyComponent
     scheduleData: any[], 
     startY: number, 
     margin: number, 
-    pageWidth: number
+    pageWidth: number,
+    facultyName: string
   ): void {
     const hasSchedules = scheduleData && scheduleData.length > 0;
   
@@ -636,14 +639,36 @@ export class ReportFacultyComponent
         }
       });
   
-      days.forEach((_, i) => {
-        const lineX = margin + i * dayColumnWidth;
-        doc.setDrawColor(200, 200, 200);
-        doc.setLineWidth(0.5);
-        doc.line(lineX, startY, lineX, maxYPosition);
-      });
-      doc.line(pageWidth - margin, startY, pageWidth - margin, maxYPosition);
-      doc.line(margin, maxYPosition, pageWidth - margin, maxYPosition);
+    days.forEach((_, i) => {
+      const lineX = margin + i * dayColumnWidth;
+      doc.setDrawColor(200, 200, 200);
+      doc.setLineWidth(0.5);
+      doc.line(lineX, startY, lineX, maxYPosition);
+    });
+    doc.line(pageWidth - margin, startY, pageWidth - margin, maxYPosition);
+    doc.line(margin, maxYPosition, pageWidth - margin, maxYPosition);
+
+    // Footer content: "Prepared By" and "Received By"
+    const footerMargin = 20; 
+  
+    // "Prepared By:" on the left side
+    const preparedByXPosition = margin;  
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Prepared By:', preparedByXPosition, pageHeight - footerMargin);
+    
+    // "Received By: <Faculty Name>" on the right side
+    const receivedByXPosition = pageWidth - margin - 80;  
+    doc.setFont('helvetica', 'bold');
+    doc.text('Received By:', receivedByXPosition, pageHeight - footerMargin);
+    
+    // Faculty name for "Received By:" on the next line, indented
+    const indent = 10;
+    doc.setFont('helvetica', 'normal');
+    doc.text(
+      `Professor ${facultyName}`, 
+      receivedByXPosition + indent, pageHeight - footerMargin + 8
+    );
   }
 
   private formatTime(time: string): string {
