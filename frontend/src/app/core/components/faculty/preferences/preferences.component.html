@@ -195,18 +195,6 @@
           </td>
         </ng-container>
 
-        <!-- # Column -->
-        <!-- <ng-container matColumnDef="num">
-          <th mat-header-cell *matHeaderCellDef class="table-header">#</th>
-          <td
-            mat-cell
-            *matCellDef="let element; let i = index"
-            class="table-cell"
-          >
-            {{ i + 1 }}
-          </td>
-        </ng-container> -->
-
         <!-- Course Code Column -->
         <ng-container matColumnDef="course_code">
           <th mat-header-cell *matHeaderCellDef class="table-header">
@@ -265,15 +253,7 @@
               >
                 <mat-icon fontSet="material-icons-round">today</mat-icon>
                 <span class="display-day-time">
-                  {{
-                    element.preferredDay && element.preferredTime
-                      ? element.preferredDay +
-                        ", " +
-                        (element.preferredTime === "07:00 AM - 09:00 PM"
-                          ? "Whole Day"
-                          : (element.preferredTime | timeFormat))
-                      : "Click to select day & time"
-                  }}
+                  {{ formatSelectedDaysAndTime(element) }}
                 </span>
               </button>
             </div>

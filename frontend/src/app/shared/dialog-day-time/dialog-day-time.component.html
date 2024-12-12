@@ -12,11 +12,8 @@
       @for (day of dayButtons; track day.name) {
       <div
         class="day-button"
-        [class.selected]="day.name === selectedDay"
-        [class.original-day]="
-          day.name === originalDay && day.name !== selectedDay
-        "
-        (click)="selectDay(day.name)"
+        [class.selected]="day.selected"
+        (click)="toggleDay(day)"
         matRipple
         [matRippleColor]="'rgba(255, 255, 255, 0.1)'"
       >
@@ -73,12 +70,12 @@
       class="confirm-button"
       (click)="onConfirm()"
       [disabled]="
-        !selectedDay ||
+        !isAnyDaySelected() ||
         (!isWholeDay && (!startTime || !endTime || !isEndTimeValid()))
       "
       [ngClass]="{
         'confirm-btn-disabled':
-          !selectedDay ||
+          !isAnyDaySelected() ||
           (!isWholeDay && (!startTime || !endTime || !isEndTimeValid()))
       }"
     >

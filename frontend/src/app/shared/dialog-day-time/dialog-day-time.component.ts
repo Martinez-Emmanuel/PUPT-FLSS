@@ -18,25 +18,25 @@ interface DayButton {
 }
 
 @Component({
-    selector: 'app-dialog-time',
-    imports: [
-        CommonModule,
-        FormsModule,
-        MatDialogModule,
-        MatFormFieldModule,
-        MatSelectModule,
-        MatOptionModule,
-        MatButtonModule,
-        MatIconModule,
-        MatCheckboxModule,
-        MatRippleModule,
-    ],
-    templateUrl: './dialog-day-time.component.html',
-    styleUrls: ['./dialog-day-time.component.scss']
+  selector: 'app-dialog-time',
+  imports: [
+    CommonModule,
+    FormsModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatOptionModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCheckboxModule,
+    MatRippleModule,
+  ],
+  templateUrl: './dialog-day-time.component.html',
+  styleUrls: ['./dialog-day-time.component.scss'],
 })
 export class DialogDayTimeComponent {
-  selectedDay: string = '';
-  originalDay: string = '';
+  selectedDays: string[] = [];
+  originalDays: string[] = [];
   startTime: string = '';
   endTime: string = '';
   courseCode: string = '';
@@ -63,8 +63,12 @@ export class DialogDayTimeComponent {
     this.generateTimeOptions();
 
     if (data.selectedDay) {
-      this.originalDay = data.selectedDay;
-      this.selectedDay = data.selectedDay;
+      this.originalDays = data.selectedDay;
+      this.selectedDays = data.selectedDay;
+
+      this.dayButtons.forEach((dayButton) => {
+        dayButton.selected = this.selectedDays.includes(dayButton.name);
+      });
     }
 
     if (data.selectedTime) {
@@ -88,8 +92,11 @@ export class DialogDayTimeComponent {
     }
   }
 
-  selectDay(day: string): void {
-    this.selectedDay = day;
+  toggleDay(day: DayButton): void {
+    day.selected = !day.selected;
+    this.selectedDays = this.dayButtons
+      .filter((d) => d.selected)
+      .map((d) => d.name);
   }
 
   generateTimeOptions() {
@@ -125,12 +132,12 @@ export class DialogDayTimeComponent {
   onConfirm(): void {
     if (this.isWholeDay) {
       this.dialogRef.close({
-        day: this.selectedDay,
+        days: this.selectedDays,
         time: '07:00 AM - 09:00 PM',
       });
-    } else if (this.selectedDay && this.startTime && this.endTime) {
+    } else if (this.isAnyDaySelected() && this.startTime && this.endTime) {
       this.dialogRef.close({
-        day: this.selectedDay,
+        days: this.selectedDays,
         time: `${this.startTime} - ${this.endTime}`,
       });
     }
@@ -153,5 +160,9 @@ export class DialogDayTimeComponent {
       this.startTime = '';
       this.endTime = '';
     }
+  }
+
+  isAnyDaySelected(): boolean {
+    return this.selectedDays.length > 0;
   }
 }

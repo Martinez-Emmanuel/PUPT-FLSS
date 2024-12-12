@@ -16,7 +16,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatRippleModule } from '@angular/material/core';
 
-import { TimeFormatPipe } from '../../../pipes/time-format/time-format.pipe';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 import { DialogDayTimeComponent } from '../../../../shared/dialog-day-time/dialog-day-time.component';
@@ -33,35 +32,34 @@ import { CookieService } from 'ngx-cookie-service';
 import { fadeAnimation, cardEntranceAnimation, rowAdditionAnimation } from '../../../animations/animations';
 
 interface TableData extends Course {
-  preferredDay: string;
+  preferredDays: string[];
   preferredTime: string;
   isSubmitted: boolean;
 }
 
 @Component({
-    selector: 'app-preferences',
-    imports: [
-        CommonModule,
-        FormsModule,
-        LoadingComponent,
-        TimeFormatPipe,
-        MatSymbolDirective,
-        MatTableModule,
-        MatButtonModule,
-        MatIconModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatTooltipModule,
-        MatSnackBarModule,
-        MatDialogModule,
-        MatProgressSpinnerModule,
-        MatMenuModule,
-        MatRippleModule,
-    ],
-    templateUrl: './preferences.component.html',
-    styleUrls: ['./preferences.component.scss'],
-    changeDetection: ChangeDetectionStrategy.OnPush,
-    animations: [fadeAnimation, cardEntranceAnimation, rowAdditionAnimation]
+  selector: 'app-preferences',
+  imports: [
+    CommonModule,
+    FormsModule,
+    LoadingComponent,
+    MatSymbolDirective,
+    MatTableModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatTooltipModule,
+    MatSnackBarModule,
+    MatDialogModule,
+    MatProgressSpinnerModule,
+    MatMenuModule,
+    MatRippleModule,
+  ],
+  templateUrl: './preferences.component.html',
+  styleUrls: ['./preferences.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  animations: [fadeAnimation, cardEntranceAnimation, rowAdditionAnimation],
 })
 export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   showSidenav = false;
@@ -214,7 +212,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
                 lec_hours: course.lec_hours,
                 lab_hours: course.lab_hours,
                 units: course.units,
-                preferredDay: course.preferred_day,
+                preferredDays: course.preferred_days,
                 preferredTime:
                   course.preferred_start_time === '07:00 AM - 09:00 PM'
                     ? 'Whole Day'
@@ -231,7 +229,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
               this.allSelectedCourses = preferences;
               this.updateDataSource();
               this.updateTotalUnits();
-              this.updateTotalHours(); // Update total hours after data load
+              this.updateTotalHours();
             } else {
               this.isPreferencesEnabled = true;
             }
@@ -378,7 +376,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
 
     const newCourse: TableData = {
       ...course,
-      preferredDay: '',
+      preferredDays: [],
       preferredTime: '',
       isSubmitted: false,
     };
@@ -518,9 +516,9 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     for (const course of this.dataSource.data) {
-      if (!course.preferredDay || !course.preferredTime) {
+      if (course.preferredDays.length === 0 || !course.preferredTime) {
         this.showSnackBar(
-          'Please select preferred day and time for all courses.'
+          'Please select preferred day/s and time for all courses.'
         );
         return;
       }
@@ -573,7 +571,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       faculty_id: parseInt(facultyId),
       active_semester_id: activeSemesterId,
       preferences: this.dataSource.data.map(
-        ({ course_assignment_id, preferredDay, preferredTime }) => {
+        ({ course_assignment_id, preferredDays, preferredTime }) => {
           let preferred_start_time = '07:00:00';
           let preferred_end_time = '21:00:00';
 
@@ -587,7 +585,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
 
           return {
             course_assignment_id,
-            preferred_day: preferredDay,
+            preferred_days: preferredDays, // Send the array of days
             preferred_start_time,
             preferred_end_time,
           };
@@ -622,7 +620,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.dialog
       .open(DialogDayTimeComponent, {
         data: {
-          selectedDay: element.preferredDay,
+          selectedDay: element.preferredDays,
           selectedTime: element.preferredTime,
           daysOfWeek: this.daysOfWeek,
           courseCode: element.course_code,
@@ -634,8 +632,8 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       .afterClosed()
       .subscribe((result) => {
         if (result) {
-          const { day, time } = result;
-          element.preferredDay = day;
+          const { days, time } = result;
+          element.preferredDays = days;
           element.preferredTime = time;
           this.showSnackBar('Available day and time successfully updated.');
           this.updateTotalUnits();
@@ -703,14 +701,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     return false;
   }
 
-  // private isMaxUnitsExceeded(course: Course): boolean {
-  //   if (this.units + course.units > this.maxUnits) {
-  //     this.showSnackBar('Maximum units have been reached.');
-  //     return true;
-  //   }
-  //   return false;
-  // }
-
   private updateDataSource(): void {
     this.dataSource.data = [...this.allSelectedCourses];
   }
@@ -757,7 +747,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       this.isRemoveDisabled ||
       this.isSubmitting ||
       this.dataSource.data.some(
-        (course) => !course.preferredDay || !course.preferredTime
+        (course) => course.preferredDays.length === 0 || !course.preferredTime
       )
     );
   }
@@ -778,5 +768,19 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     return `${hour12.toString().padStart(2, '0')}:${minute
       .toString()
       .padStart(2, '0')} ${ampm}`;
+  }
+
+  formatSelectedDaysAndTime(element: TableData): string {
+    const days = element.preferredDays.join(', ');
+    const time =
+      element.preferredTime === '07:00 AM - 09:00 PM'
+        ? 'Whole Day'
+        : element.preferredTime;
+
+    if (days && time) {
+      return `${days}, ${time}`;
+    } else {
+      return 'Click to select day & time';
+    }
   }
 }

@@ -22,7 +22,7 @@ interface Course {
   lec_hours: number;
   lab_hours: number;
   units: number;
-  preferred_day: string;
+  preferred_days: string[];
   preferred_start_time: string;
   preferred_end_time: string;
 }
@@ -35,20 +35,20 @@ interface DialogPrefData {
 }
 
 @Component({
-    selector: 'app-dialog-pref',
-    imports: [
-        CommonModule,
-        FormsModule,
-        LoadingComponent,
-        MatTableModule,
-        MatButtonModule,
-        MatButtonToggleModule,
-        MatIconModule,
-        MatSymbolDirective,
-    ],
-    templateUrl: './dialog-pref.component.html',
-    styleUrls: ['./dialog-pref.component.scss'],
-    animations: [fadeAnimation]
+  selector: 'app-dialog-pref',
+  imports: [
+    CommonModule,
+    FormsModule,
+    LoadingComponent,
+    MatTableModule,
+    MatButtonModule,
+    MatButtonToggleModule,
+    MatIconModule,
+    MatSymbolDirective,
+  ],
+  templateUrl: './dialog-pref.component.html',
+  styleUrls: ['./dialog-pref.component.scss'],
+  animations: [fadeAnimation],
 })
 export class DialogPrefComponent implements OnInit {
   facultyName: string = '';
@@ -91,7 +91,7 @@ export class DialogPrefComponent implements OnInit {
               lec_hours: course.lec_hours,
               lab_hours: course.lab_hours,
               units: course.units,
-              preferred_day: course.preferred_day,
+              preferred_days: course.preferred_days,
               preferred_start_time: course.preferred_start_time,
               preferred_end_time: course.preferred_end_time,
             }));
@@ -147,5 +147,35 @@ export class DialogPrefComponent implements OnInit {
 
   convertToDate(timeString: string): Date {
     return new Date(`1970-01-01T${timeString}`);
+  }
+
+  formatPreferredDaysAndTime(course: Course): string {
+    const days = course.preferred_days.join(', ');
+    const time =
+      course.preferred_start_time === '07:00:00' &&
+      course.preferred_end_time === '21:00:00'
+        ? 'Whole Day'
+        : `${this.convertTo12HourFormat(
+            course.preferred_start_time
+          )} - ${this.convertTo12HourFormat(course.preferred_end_time)}`;
+    return `${days} (${time})`;
+  }
+
+  convertTo12HourFormat(time: string): string {
+    const [hour, minute] = time.split(':').map(Number);
+    let ampm = 'AM';
+    let hour12 = hour;
+
+    if (hour >= 12) {
+      ampm = 'PM';
+      if (hour > 12) hour12 = hour - 12;
+    }
+    if (hour === 0) {
+      hour12 = 12;
+    }
+
+    return `${hour12.toString().padStart(2, '0')}:${minute
+      .toString()
+      .padStart(2, '0')} ${ampm}`;
   }
 }
