@@ -234,12 +234,6 @@
   background-color: var(--neutral-extra);
 
   .content.faculty-list {
-    @include mixins.flex-layout(
-      $direction: column,
-      $align: stretch,
-      $justify: flex-start,
-      $gap: var(--spacing-sm)
-    );
     @include mixins.hide-scrollbar;
     margin-bottom: var(--spacing-lg);
     border-radius: var(--border-radius-sm);
@@ -248,6 +242,50 @@
     .no-faculty-message {
       opacity: var(--opacity-semi-opaque);
       font-style: italic;
+    }
+
+    .faculty-card-wrapper {
+      @include mixins.flex-layout(
+        $direction: column,
+        $align: stretch,
+        $gap: var(--spacing-xxxs)
+      );
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .faculty-pref-nav {
+      @include mixins.flex-layout(
+        $align: center,
+        $justify: space-between,
+        $gap: var(--spacing-xxs)
+      );
+
+      .nav-button-container {
+        @include mixins.flex-layout;
+      }
+
+      .pref-nav-button {
+        @include mixins.flex-layout($align: center);
+        border: none;
+        outline: none;
+        background-color: transparent;
+        cursor: pointer;
+        padding: 0px;
+        border-radius: 50%;
+
+        mat-icon {
+          color: var(--neutral-base);
+        }
+
+        &:hover:not(:disabled) {
+          background-color: var(--neutral-fade);
+        }
+
+        &:disabled {
+          opacity: var(--opacity-semi-transparent);
+          cursor: not-allowed;
+        }
+      }
     }
 
     .faculty-card {

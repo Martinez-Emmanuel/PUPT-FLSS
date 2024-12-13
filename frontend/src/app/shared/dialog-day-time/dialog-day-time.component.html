@@ -1,7 +1,7 @@
 <div class="dialog-day-time-container">
   <!-- Dialog Title -->
   <div class="dialog-title">
-    <h2 class="title-text">Select Day & Time</h2>
+    <h2 class="title-text">Preferred Day & Time</h2>
     <span class="course-detail">For {{ courseCode }} - {{ courseTitle }}</span>
   </div>
 
@@ -22,44 +22,45 @@
       }
     </div>
 
-    <div class="time-fields">
-      <!-- Start Time Selection -->
-      <mat-form-field appearance="fill" class="dialog-field">
-        <mat-label>Start Time</mat-label>
-        <mat-select
-          [(ngModel)]="startTime"
-          (selectionChange)="onStartTimeChange()"
-          [disabled]="isWholeDay"
-        >
-          @for (time of timeOptions; track time) {
-          <mat-option [value]="time">
-            {{ time }}
-          </mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
+    <div class="time-fields-scroll-container">
+      <!-- Time Selection for Each Day -->
+      @for (day of dayButtons; track day.name) { @if (day.selected) {
+      <div class="time-fields-container">
+        <div class="day-label-wrapper">
+          <span class="day-label">{{ day.name }}</span>
+        </div>
 
-      <!-- End Time Selection -->
-      <mat-form-field appearance="fill" class="dialog-field">
-        <mat-label>End Time</mat-label>
-        <mat-select [(ngModel)]="endTime" [disabled]="isWholeDay">
-          @for (time of endTimeOptions; track time) {
-          <mat-option [value]="time">
-            {{ time }}
-          </mat-option>
-          }
-        </mat-select>
-      </mat-form-field>
+        <div class="time-fields-wrapper">
+          <!-- Start Time Selection -->
+          <mat-form-field appearance="fill" class="dialog-field">
+            <mat-label>Start Time</mat-label>
+            <mat-select
+              [(ngModel)]="day.startTime"
+              (selectionChange)="onStartTimeChange(day)"
+            >
+              @for (time of timeOptions; track time) {
+              <mat-option [value]="time">
+                {{ time }}
+              </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          <!-- End Time Selection -->
+          <mat-form-field appearance="fill" class="dialog-field">
+            <mat-label>End Time</mat-label>
+            <mat-select [(ngModel)]="day.endTime" [disabled]="!day.startTime">
+              @for (time of day.endTimeOptions; track time) {
+              <mat-option [value]="time">
+                {{ time }}
+              </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+      } }
     </div>
-
-    <!-- Whole Day Checkbox -->
-    <mat-checkbox
-      class="day-checkbox"
-      [(ngModel)]="isWholeDay"
-      (change)="onWholeDayChange()"
-    >
-      Whole Day (Any time is preferred)
-    </mat-checkbox>
   </div>
 
   <!-- Dialog buttons -->
@@ -69,14 +70,9 @@
       mat-flat-button
       class="confirm-button"
       (click)="onConfirm()"
-      [disabled]="
-        !isAnyDaySelected() ||
-        (!isWholeDay && (!startTime || !endTime || !isEndTimeValid()))
-      "
+      [disabled]="!isAnyDaySelected()"
       [ngClass]="{
-        'confirm-btn-disabled':
-          !isAnyDaySelected() ||
-          (!isWholeDay && (!startTime || !endTime || !isEndTimeValid()))
+        'confirm-btn-disabled': !isAnyDaySelected()
       }"
     >
       Confirm

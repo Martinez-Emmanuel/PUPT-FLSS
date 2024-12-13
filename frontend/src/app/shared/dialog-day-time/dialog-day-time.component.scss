@@ -13,6 +13,7 @@
 
 .dialog-title {
   color: var(--primary-text);
+  flex-shrink: 0;
 
   .title-text {
     margin: 0;
@@ -29,10 +30,6 @@
 .dialog-content {
   height: auto;
 
-  .dialog-field {
-    width: 100%;
-  }
-
   .day-buttons-container {
     @include mixins.flex-layout(
       $justify: space-between,
@@ -44,6 +41,7 @@
     background: var(--neutral-light);
     border-radius: var(--border-radius-sm) var(--border-radius-sm) 0 0;
     border-bottom: 1px solid var(--neutral-base);
+    flex-shrink: 0;
 
     .day-button {
       @include mixins.flex-layout;
@@ -95,8 +93,34 @@
     }
   }
 
-  .time-fields {
-    @include mixins.flex-layout($gap: var(--spacing-md));
+  .time-fields-scroll-container {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
+    max-height: 40vh;
+    padding-right: var(--spacing-xs);
+
+    @include mixins.custom-scrollbar;
+  }
+
+  .time-fields-container {
+    @include mixins.flex-layout($direction: column, $gap: var(--spacing-xs));
+
+    .day-label-wrapper {
+      width: 100%;
+      @include mixins.flex-layout($align: flex-start, $justify: flex-start);
+
+      .day-label {
+        color: var(--primary-text);
+        font-size: var(--font-size-sm);
+        font-weight: 500;
+      }
+    }
+
+    .time-fields-wrapper {
+      @include mixins.flex-layout($gap: var(--spacing-sm));
+      width: 100%;
+    }
   }
 }
 
@@ -106,6 +130,7 @@
     $justify: flex-end,
     $gap: var(--spacing-sm)
   );
+  flex-shrink: 0;
 
   .cancel {
     color: var(--primary-text) !important;

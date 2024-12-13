@@ -6,6 +6,12 @@ import { map, shareReplay, tap, take, catchError } from 'rxjs/operators';
 
 import { environment } from '../../../../../environments/environment.dev';
 
+export interface PreferredDay {
+  day: string;
+  start_time: string;
+  end_time: string;
+}
+
 export interface Course {
   course_assignment_id: number;
   course_id: number;
@@ -17,8 +23,8 @@ export interface Course {
   lab_hours: number;
   units: number;
   tuition_hours: number;
+  preferred_days?: PreferredDay[];
 }
-
 export interface ActiveSemester {
   active_semester_id: number;
   academic_year_id: number;

@@ -619,18 +619,31 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
       currentY += 5;
 
       const courseData = activeSemester.courses.map(
-        (course: any, index: number) => [
-          (index + 1).toString(),
-          course.course_details?.course_code || 'N/A',
-          course.course_details?.course_title || 'N/A',
-          course.lec_hours.toString(),
-          course.lab_hours.toString(),
-          course.units.toString(),
-          course.preferred_day,
-          `${this.formatTimeTo12Hour(
-            course.preferred_start_time
-          )} - ${this.formatTimeTo12Hour(course.preferred_end_time)}`,
-        ]
+        (course: any, index: number) => {
+          const preferredDays = course.preferred_days || [];
+          const formattedDayTimes = preferredDays
+            .map((pd: any) => {
+              const day = pd.day;
+              const startTime = pd.start_time
+                ? this.formatTimeTo12Hour(pd.start_time)
+                : 'N/A';
+              const endTime = pd.end_time
+                ? this.formatTimeTo12Hour(pd.end_time)
+                : 'N/A';
+              return `${day} - ${startTime} to ${endTime}`;
+            })
+            .join('\n');
+
+          return [
+            (index + 1).toString(),
+            course.course_details?.course_code || 'N/A',
+            course.course_details?.course_title || 'N/A',
+            course.lec_hours.toString(),
+            course.lab_hours.toString(),
+            course.units.toString(),
+            formattedDayTimes || 'N/A',
+          ];
+        }
       );
 
       // Table Configuration
@@ -642,8 +655,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
           'Lec',
           'Lab',
           'Units',
-          'Preferred Day',
-          'Preferred Time',
+          'Preferred Day & Time',
         ],
       ];
       const tableConfig = {
@@ -672,8 +684,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
           3: { cellWidth: 13 },
           4: { cellWidth: 13 },
           5: { cellWidth: 13 },
-          6: { cellWidth: 25 },
-          7: { cellWidth: 35 },
+          6: { cellWidth: 55 },
         },
         margin: { left: margin, right: margin },
       };
@@ -722,7 +733,10 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   /**
    * Formats time from 24-hour to 12-hour format.
    */
-  formatTimeTo12Hour(time: string): string {
+  formatTimeTo12Hour(time: string | undefined): string {
+    if (!time) {
+      return 'N/A';
+    }
     const [hour, minute] = time.split(':');
     const hours = parseInt(hour, 10);
     const minutesFormatted = minute.length === 2 ? minute : `0${minute}`;

@@ -15,6 +15,8 @@ class PreferenceDay extends Model
     protected $fillable = [
         'preference_id',
         'preferred_day',
+        'preferred_start_time',
+        'preferred_end_time',
     ];
 
     public function preference()

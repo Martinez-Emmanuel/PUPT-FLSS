@@ -13,14 +13,9 @@ return new class extends Migration
             $table->unsignedBigInteger('faculty_id');
             $table->unsignedInteger('active_semester_id');
             $table->unsignedInteger('course_assignment_id');
-
-            $table->time('preferred_start_time');
-            $table->time('preferred_end_time');
-
             $table->timestamps();
 
             $table->unique(['faculty_id', 'active_semester_id', 'course_assignment_id'], 'unique_preference');
-
             $table->foreign('faculty_id')->references('id')->on('faculty')->onDelete('cascade');
             $table->foreign('active_semester_id')->references('active_semester_id')->on('active_semesters')->onDelete('cascade');
             $table->foreign('course_assignment_id')->references('course_assignment_id')->on('course_assignments')->onDelete('cascade');

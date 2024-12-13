@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
 import { Observable, Subject, forkJoin } from 'rxjs';
 import { map, startWith, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
@@ -30,6 +30,24 @@ function mustMatchOption(validOptions: string[]): ValidatorFn {
   };
 }
 
+interface Preference {
+  day: string;
+  time: string;
+}
+
+interface SuggestedFaculty {
+  faculty_id: number;
+  name: string;
+  type: string;
+  preferences: Preference[];
+  prefIndex: number;
+}
+
+interface ProfessorOption {
+  id: number;
+  name: string;
+}
+
 interface DialogData {
   dayOptions: string[];
   timeOptions: string[];
@@ -37,7 +55,7 @@ interface DialogData {
   selectedProgramInfo: string;
   selectedProgramId: number;
   selectedCourseInfo: string;
-  suggestedFaculty: { name: string; type: string; day: string; time: string }[];
+  suggestedFaculty: SuggestedFaculty[];
   professorOptions: string[];
   roomOptions: string[];
   facultyOptions: Faculty[];
@@ -51,49 +69,45 @@ interface DialogData {
   schedule_id: number;
   year_level: number;
   section_id: number;
+  course_id: number;
+  preferences: any[];
 }
 
 @Component({
-    selector: 'app-dialog-scheduling',
-    imports: [
-        CommonModule,
-        MatFormFieldModule,
-        MatDialogModule,
-        MatIconModule,
-        MatInputModule,
-        MatButtonModule,
-        ReactiveFormsModule,
-        MatSelectModule,
-        MatAutocompleteModule,
-        MatRippleModule,
-        MatSnackBarModule,
-        MatProgressSpinnerModule,
-        MatSymbolDirective,
-    ],
-    templateUrl: './dialog-scheduling.component.html',
-    styleUrls: ['./dialog-scheduling.component.scss'],
-    animations: [cardEntranceSide]
+  selector: 'app-dialog-scheduling',
+  imports: [
+    CommonModule,
+    MatFormFieldModule,
+    MatDialogModule,
+    MatIconModule,
+    MatInputModule,
+    MatButtonModule,
+    ReactiveFormsModule,
+    MatSelectModule,
+    MatAutocompleteModule,
+    MatRippleModule,
+    MatSnackBarModule,
+    MatProgressSpinnerModule,
+    MatSymbolDirective,
+  ],
+  templateUrl: './dialog-scheduling.component.html',
+  styleUrls: ['./dialog-scheduling.component.scss'],
+  animations: [cardEntranceSide],
 })
 export class DialogSchedulingComponent implements OnInit, OnDestroy {
   scheduleForm!: FormGroup;
-  filteredProfessors$!: Observable<string[]>;
+  filteredProfessors$!: Observable<ProfessorOption[]>;
   filteredRooms$!: Observable<string[]>;
   hasConflicts = false;
   isLoading = false;
   conflictMessage: string = '';
-
-  private destroy$ = new Subject<void>();
-
-  selectedFaculty: {
-    name: string;
-    type: string;
-    day: string;
-    time: string;
-  } | null = null;
+  selectedFaculty: SuggestedFaculty | null = null;
 
   dayButtons: { name: string; shortName: string }[] = [];
   selectedDay: string = '';
   originalDay: string = '';
+
+  private destroy$ = new Subject<void>();
 
   constructor(
     private fb: FormBuilder,
@@ -112,12 +126,6 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     this.populateExistingSchedule();
     this.setupConflictDetection();
     this.setupCustomValidators();
-
-    this.selectedDay = this.scheduleForm.get('day')!.value || '';
-    this.originalDay = this.selectedDay;
-    this.scheduleForm.get('day')!.valueChanges
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(day => this.selectedDay = day);
   }
 
   ngOnDestroy(): void {
@@ -135,7 +143,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
       Saturday: 'Sat',
       Sunday: 'Sun',
     };
-    this.dayButtons = this.data.dayOptions.map(day => ({
+    this.dayButtons = this.data.dayOptions.map((day) => ({
       name: day,
       shortName: dayShortNames[day] || day.substring(0, 3),
     }));
@@ -298,14 +306,12 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   }
 
   private setupCustomValidators(): void {
-    this.scheduleForm.get('professor')?.setValidators([
-      // Validators.required,
-      mustMatchOption(this.data.professorOptions),
-    ]);
-    this.scheduleForm.get('room')?.setValidators([
-      // Validators.required,
-      mustMatchOption(this.data.roomOptions),
-    ]);
+    this.scheduleForm
+      .get('professor')
+      ?.setValidators([mustMatchOption(this.data.professorOptions)]);
+    this.scheduleForm
+      .get('room')
+      ?.setValidators([mustMatchOption(this.data.roomOptions)]);
 
     this.scheduleForm.get('professor')?.updateValueAndValidity();
     this.scheduleForm.get('room')?.updateValueAndValidity();
@@ -325,6 +331,10 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
       room: room !== 'Not set' ? room : '',
     });
 
+    // Set selectedDay immediately after patching the form
+    this.selectedDay = this.scheduleForm.get('day')!.value || '';
+    this.originalDay = this.selectedDay;
+
     if (startTime && startTime !== 'Not set') {
       this.updateEndTimeOptions(startTime);
     }
@@ -343,6 +353,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     this.data.endTimeOptions = [...this.data.timeOptions];
     this.selectedDay = '';
     this.originalDay = '';
+    this.selectedFaculty = null;
   }
 
   public onAssign(): void {
@@ -420,19 +431,15 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     });
   }
 
-  public onFacultyClick(faculty: {
-    name: string;
-    type: string;
-    day: string;
-    time: string;
-  }): void {
+  public onFacultyClick(
+    faculty: SuggestedFaculty,
+    preference: Preference
+  ): void {
     this.selectedFaculty = faculty;
 
-    const day = faculty.day;
-
-    const [startTime, endTime] = faculty.time
-      .split(' - ')
-      .map((time) => time.trim());
+    const day = preference.day;
+    const time = preference.time;
+    const [startTime, endTime] = time.split(' - ').map((t) => t.trim());
 
     this.scheduleForm.patchValue({
       day: day,
@@ -446,23 +453,51 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     this.scheduleForm.markAllAsTouched();
   }
 
+  nextPreference(faculty: SuggestedFaculty): void {
+    faculty.prefIndex = (faculty.prefIndex + 1) % faculty.preferences.length;
+  }
+
+  previousPreference(faculty: SuggestedFaculty): void {
+    faculty.prefIndex =
+      (faculty.prefIndex - 1 + faculty.preferences.length) %
+      faculty.preferences.length;
+  }
+
   /*** Autocomplete and Filtering ***/
 
   private setupAutocomplete(): void {
-    this.filteredProfessors$ = this.setupFilter(
-      'professor',
-      this.data.professorOptions
+    const professorOptions: ProfessorOption[] = this.data.professorOptions.map(
+      (name, index) => ({
+        id: index,
+        name: name,
+      })
     );
+
+    this.filteredProfessors$ = this.setupFilter('professor', professorOptions);
     this.filteredRooms$ = this.setupFilter('room', this.data.roomOptions);
   }
 
   private setupFilter(
     controlName: string,
-    options: string[]
-  ): Observable<string[]> {
+    options: string[] | ProfessorOption[]
+  ): Observable<any> {
     return this.scheduleForm.get(controlName)!.valueChanges.pipe(
       startWith(''),
-      map((value) => this.filterOptions(value, options))
+      map((value) =>
+        Array.isArray(options) && typeof options[0] === 'string'
+          ? this.filterOptions(value, options as string[])
+          : this.filterProfessorOptions(value, options as ProfessorOption[])
+      )
+    );
+  }
+
+  private filterProfessorOptions(
+    value: string | null,
+    options: ProfessorOption[]
+  ): ProfessorOption[] {
+    const filterValue = (value || '').toLowerCase();
+    return options.filter((option) =>
+      option.name.toLowerCase().includes(filterValue)
     );
   }
 
@@ -507,7 +542,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     if (!time) {
       return null;
     }
-  
+
     const [timePart, period] = time.split(' ');
     let [hours, minutes] = timePart.split(':').map(Number);
 
@@ -523,22 +558,14 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     return `${formattedHours}:${formattedMinutes}:00`;
   }
 
-  private handleError(message: string) {
-    return (error: any): void => {
-      console.error(`${message}:`, error);
-      this.snackBar.open(`${message}. Please try again.`, 'Close', {
-        duration: 3000,
-      });
-    };
-  }
-
-  public isFacultySelected(faculty: {
-    name: string;
-    type: string;
-    day: string;
-    time: string;
-  }): boolean {
-    return this.selectedFaculty === faculty;
+  public isPreferenceSelected(preference: Preference): boolean {
+    return (
+      this.scheduleForm.get('day')?.value === preference.day &&
+      this.scheduleForm.get('startTime')?.value +
+        ' - ' +
+        this.scheduleForm.get('endTime')?.value ===
+        preference.time
+    );
   }
 
   public selectDay(dayName: string): void {

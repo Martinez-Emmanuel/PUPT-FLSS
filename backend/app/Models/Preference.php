@@ -17,9 +17,6 @@ class Preference extends Model
         'faculty_id',
         'active_semester_id',
         'course_assignment_id',
-        'preferred_day',
-        'preferred_start_time',
-        'preferred_end_time',
     ];
 
     public function faculty()
