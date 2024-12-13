@@ -11,7 +11,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { TableGenericComponent } from '../../../../../../shared/table-generic/table-generic.component';
 import { TableHeaderComponent, InputField } from '../../../../../../shared/table-header/table-header.component';
 import { TableDialogComponent, DialogConfig } from '../../../../../../shared/table-dialog/table-dialog.component';
-import { DialogGenericComponent } from '../../../../../../shared/dialog-generic/dialog-generic.component';
 import { DialogExportComponent } from '../../../../../../shared/dialog-export/dialog-export.component';
 import { LoadingComponent } from '../../../../../../shared/loading/loading.component';
 import { fadeAnimation, pageFloatUpAnimation } from '../../../../../animations/animations';
@@ -33,7 +32,6 @@ import {
     CommonModule,
     TableGenericComponent,
     TableHeaderComponent,
-    DialogGenericComponent,
     LoadingComponent
   ],
   templateUrl: './curriculum-detail.component.html',
