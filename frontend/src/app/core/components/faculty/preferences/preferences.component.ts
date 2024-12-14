@@ -396,19 +396,17 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private searchCourses(query: string): Course[] {
     const uniqueCourses = new Set<string>();
-    return (
-      this.showProgramSelection
-        ? this.programs.flatMap((program) =>
-            program.year_levels.flatMap((yl) => yl.semester.courses)
-          )
-        : this.filteredCourses
-    ).filter(
-      (course) =>
-        (course.course_code.toLowerCase().includes(query) ||
-          course.course_title.toLowerCase().includes(query)) &&
-        !uniqueCourses.has(course.course_code) &&
-        uniqueCourses.add(course.course_code)
-    );
+    return this.programs
+      .flatMap((program) =>
+        program.year_levels.flatMap((yl) => yl.semester.courses)
+      )
+      .filter(
+        (course) =>
+          (course.course_code.toLowerCase().includes(query) ||
+            course.course_title.toLowerCase().includes(query)) &&
+          !uniqueCourses.has(course.course_code) &&
+          uniqueCourses.add(course.course_code)
+      );
   }
 
   clearSearch(): void {
@@ -419,7 +417,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  
   // ===========================
   // Course Management
   // ===========================
