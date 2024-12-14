@@ -74,8 +74,6 @@ type SearchState =
 export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   // UI State
   isLoading = true;
-  isSubmitting = false;
-  isRemovingAll = false;
   searchState: SearchState = 'programSelection';
 
   // Data
@@ -93,7 +91,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   // Faculty Info
   facultyId = '';
   facultyName = '';
-  maxUnits = 0;
 
   // Preferences Status
   isPreferencesEnabled = true;
@@ -158,20 +155,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  get isRemoveDisabled(): boolean {
-    return this.dataSource.data.length === 0;
-  }
-
-  get isSubmitDisabled(): boolean {
-    return (
-      this.isRemoveDisabled ||
-      this.isSubmitting ||
-      this.dataSource.data.some((course) =>
-        course.preferredDays.some((pd) => !pd.start_time || !pd.end_time)
-      )
-    );
-  }
-
   get showProgramSelection(): boolean {
     return this.searchState === 'programSelection';
   }
@@ -187,7 +170,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit() {
     this.subscribeToThemeChanges();
-    this.maxUnits = this.getMaxUnitsFromCookie();
     this.loadAllData();
   }
 
@@ -293,8 +275,8 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       units: course.units,
       preferredDays: course.preferred_days.map((prefDay: any) => ({
         day: prefDay.day,
-        start_time: this.convertTo12HourFormat(prefDay.start_time),
-        end_time: this.convertTo12HourFormat(prefDay.end_time),
+        start_time: this.formatTimeForPayload(prefDay.start_time),
+        end_time: this.formatTimeForPayload(prefDay.end_time),
       })),
       isSubmitted: true,
       pre_req: course.course_details.pre_req ?? null,
@@ -321,14 +303,6 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
         this.cdr.markForCheck();
       })
     );
-  }
-
-  private getMaxUnitsFromCookie(): number {
-    const facultyUnits = parseInt(
-      this.cookieService.get('faculty_units') || '',
-      10
-    );
-    return isNaN(facultyUnits) ? 0 : facultyUnits;
   }
 
   // ============================
@@ -483,164 +457,21 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showSnackBar('Course preference removed successfully.');
   }
 
-  removeAllCourses(): void {
-    if (!this.facultyId) {
-      this.showSnackBar('Error: Missing faculty or semester information.');
-      return;
-    }
-
-    const dialogData: DialogData = {
-      title: 'Remove All Courses',
-      content: 'Are you sure you want to remove all your selected courses?',
-      actionText: 'Confirm',
-      cancelText: 'Cancel',
-      action: 'remove',
-    };
-
-    this.dialog
-      .open(DialogGenericComponent, {
-        data: dialogData,
-        disableClose: true,
-        panelClass: 'dialog-base',
-      })
-      .afterClosed()
-      .subscribe((result) => {
-        if (result === 'remove') {
-          this.isRemovingAll = true;
-          this.cdr.markForCheck();
-
-          if (this.activeSemesterId === null) {
-            this.showSnackBar('Error: Active Semester not found.');
-            return;
-          }
-
-          this.preferencesService
-            .deleteAllPreferences(this.facultyId, this.activeSemesterId)
-            .subscribe({
-              next: () => {
-                this.allSelectedCourses = [];
-                this.updateDataSource();
-                this.showSnackBar(
-                  'All course preferences removed successfully.'
-                );
-                this.isRemovingAll = false;
-                this.cdr.markForCheck();
-              },
-              error: (error) => {
-                const message =
-                  error.status === 403
-                    ? 'Submission is now closed. You cannot modify your preferences anymore.'
-                    : 'Error removing all course preferences.';
-                this.showSnackBar(message);
-                this.isRemovingAll = false;
-                this.cdr.markForCheck();
-              },
-            });
-        }
-      });
-  }
-
-  // ===========================
-  // Preference Submission
-  // ===========================
-
-  submitPreferences(): void {
-    if (!this.isPreferencesEnabled || this.isSubmitting) {
-      this.showSnackBar('You have already submitted your preferences.');
-      return;
-    }
-
-    if (!this.facultyId || !this.activeSemesterId) {
-      this.showSnackBar('Error: Faculty ID or Active Semester not found.');
-      return;
-    }
-
-    if (!this.validatePreferredTimes()) {
-      this.showSnackBar(
-        'Please select preferred start and end time for all days for each course.'
-      );
-      return;
-    }
-
-    this.isSubmitting = true;
-    this.cdr.markForCheck();
-
-    const submittedData = this.prepareSubmissionData(
-      this.facultyId,
-      this.activeSemesterId
-    );
-    this.preferencesService.submitPreferences(submittedData).subscribe({
-      next: () => {
-        this.updateSubmittedCourses();
-        this.isSubmitting = false;
-        this.dialog.open(DialogPrefSuccessComponent, {
-          width: '30rem',
-          disableClose: true,
-          data: { deadline: this.submissionDeadline },
-        });
-        this.cdr.markForCheck();
-      },
-      error: (error) => {
-        const message =
-          error.status === 403 && error.error && error.error.message
-            ? error.error.message
-            : 'Error submitting preferences.';
-        this.showSnackBar(message);
-        this.isSubmitting = false;
-        this.cdr.markForCheck();
-      },
-    });
-  }
-
-  private validatePreferredTimes(): boolean {
-    return this.dataSource.data.every((course) =>
-      course.preferredDays.every((pd) => pd.start_time && pd.end_time)
-    );
-  }
-
-  private prepareSubmissionData(facultyId: string, activeSemesterId: number) {
-    return {
-      faculty_id: parseInt(facultyId),
-      active_semester_id: activeSemesterId,
-      preferences: this.dataSource.data.map(
-        ({ course_assignment_id, preferredDays }) => ({
-          course_assignment_id,
-          preferred_days: preferredDays
-            .filter((pd) => pd.start_time && pd.end_time)
-            .map((pd) => ({
-              day: pd.day,
-              start_time: this.convertTo24HourFormat(pd.start_time),
-              end_time: this.convertTo24HourFormat(pd.end_time),
-            })),
-        })
-      ),
-    };
-  }
-
-  private updateSubmittedCourses() {
-    this.allSelectedCourses.forEach((course) => {
-      if (
-        this.dataSource.data.some((c) => c.course_code === course.course_code)
-      ) {
-        course.isSubmitted = true;
-      }
-    });
-  }
-
   // ===========================
   // Dialog Methods
   // ===========================
 
   openDayTimeDialog(element: TableData): void {
-    const currentPreferredDays = element.preferredDays.map((day) => ({
-      ...day,
-    }));
     this.dialog
       .open(DialogDayTimeComponent, {
         data: {
-          selectedDays: currentPreferredDays,
+          selectedDays: element.preferredDays,
           courseCode: element.course_code,
           courseTitle: element.course_title,
+          facultyId: this.facultyId,
+          activeSemesterId: this.activeSemesterId,
+          courseAssignmentId: element.course_assignment_id,
+          allSelectedCourses: this.allSelectedCourses
         },
         disableClose: true,
         autoFocus: false,
@@ -648,8 +479,14 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       .afterClosed()
       .subscribe((result) => {
         if (result) {
-          element.preferredDays = result.days;
-          this.showSnackBar('Available day and time successfully updated.');
+          const courseIndex = this.allSelectedCourses.findIndex(
+            (c) => c.course_code === element.course_code
+          );
+          if (courseIndex !== -1) {
+            this.allSelectedCourses[courseIndex].preferredDays = result.days;
+            this.allSelectedCourses[courseIndex].isSubmitted = true;
+          }
+          this.updateDataSource();
           this.cdr.markForCheck();
         }
       });
@@ -716,31 +553,23 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  convertTo24HourFormat(time: string): string {
+  formatTimeForPayload(time: string | undefined | null): string {
     if (!time) return '';
-    const [timeStr, modifier] = time.split(' ');
-    let [hours, minutes] = timeStr.split(':').map(Number);
-    if (modifier === 'PM' && hours !== 12) hours += 12;
-    if (modifier === 'AM' && hours === 12) hours = 0;
-    return `${hours.toString().padStart(2, '0')}:${minutes
-      .toString()
-      .padStart(2, '0')}:00`;
-  }
+    if (time.includes('AM') || time.includes('PM')) {
+        const [timePart, modifier] = time.split(' ');
+        let [hours, minutes] = timePart.split(':').map(Number);
 
-  convertTo12HourFormat(time24: string | undefined | null): string {
-    if (!time24) return '';
-    if (time24.includes('AM') || time24.includes('PM')) return time24;
-    try {
-      const [hours, minutes] = time24.split(':').map(Number);
-      if (isNaN(hours) || isNaN(minutes)) return '';
-      const hour12 = hours % 12 || 12;
-      const ampm = hours < 12 || hours === 24 ? 'AM' : 'PM';
-      return `${hour12.toString().padStart(2, '0')}:${minutes
-        .toString()
-        .padStart(2, '0')} ${ampm}`;
-    } catch (error) {
-      console.warn('Error converting time format:', error);
-      return '';
+        if (hours === 12) {
+            hours = 0;
+        }
+
+        if (modifier === 'PM') {
+            hours += 12;
+        }
+
+        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+    } else {
+        return time;
     }
   }
 

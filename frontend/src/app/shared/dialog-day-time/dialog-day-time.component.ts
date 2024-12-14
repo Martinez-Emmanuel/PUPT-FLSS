@@ -8,6 +8,9 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatOptionModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRippleModule } from '@angular/material/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
+import { PreferencesService } from '../../core/services/faculty/preference/preferences.service';
 
 interface DayButton {
   name: string;
@@ -22,6 +25,10 @@ interface DialogData {
   selectedDays: Array<{ day: string; start_time: string; end_time: string }>;
   courseCode: string;
   courseTitle: string;
+  facultyId: string;
+  activeSemesterId: number;
+  courseAssignmentId: number;
+  allSelectedCourses: any[];
 }
 
 @Component({
@@ -58,7 +65,9 @@ export class DialogDayTimeComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<DialogDayTimeComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData
+    @Inject(MAT_DIALOG_DATA) public data: DialogData,
+    private preferencesService: PreferencesService,
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -177,13 +186,74 @@ export class DialogDayTimeComponent implements OnInit {
 
   onConfirm(): void {
     const selectedDays = this.dayButtons
-      .filter((day) => day.selected && day.startTime && day.endTime)
-      .map((day) => ({
-        day: day.name,
-        start_time: day.startTime,
-        end_time: day.endTime,
-      }));
-    this.dialogRef.close({ days: selectedDays });
+        .filter((day) => day.selected && day.startTime && day.endTime)
+        .map((day) => ({
+          day: day.name,
+          start_time: String(this.convertTo24HourFormat(day.startTime)),
+          end_time: String(this.convertTo24HourFormat(day.endTime)),
+        }));
+
+    const currentCourse = this.data.allSelectedCourses.find(
+        (course) => course.course_code === this.data.courseCode
+    );
+    if (currentCourse) {
+      currentCourse.preferredDays = selectedDays;
+    }
+
+    // Prepare the preference data for submission using allSelectedCourses
+    const preferenceData = {
+      faculty_id: parseInt(this.data.facultyId),
+      active_semester_id: this.data.activeSemesterId,
+      preferences: this.data.allSelectedCourses
+          .filter((course) => course.preferredDays.length > 0)
+          .map((course) => ({
+            course_assignment_id: course.course_assignment_id,
+            preferred_days: course.preferredDays.map((day: any) => ({
+              day: day.day,
+              start_time: day.start_time,
+              end_time: day.end_time,
+            })),
+          })),
+    };
+
+    // Submit the preferences
+    this.preferencesService.submitPreferences(preferenceData).subscribe({
+      next: () => {
+        this.snackBar.open('Preferences saved successfully', 'Close', {
+          duration: 3000,
+        });
+        this.dialogRef.close({ days: selectedDays });
+      },
+      error: (error) => {
+        const message =
+            error.status === 403 && error.error && error.error.message
+                ? error.error.message
+                : 'Error submitting preferences.';
+        this.snackBar.open(message, 'Close', {
+          duration: 5000,
+        });
+      },
+    });
+  }
+
+  convertTo24HourFormat(time12: string): string {
+    const [time, modifier] = time12.split(' ');
+    let [hours, minutes] = time.split(':').map(Number);
+
+    if (hours === 12) {
+      hours = 0;
+    }
+
+    if (modifier === 'PM') {
+      hours += 12;
+    }
+
+    // Format time to HH:mm:ss with leading zeros
+    const formattedHours = hours.toString().padStart(2, '0');
+    const formattedMinutes = minutes.toString().padStart(2, '0');
+    const formattedSeconds = '00';
+
+    return `${formattedHours}:${formattedMinutes}:${formattedSeconds}`;
   }
 
   // ===========================
@@ -196,7 +266,7 @@ export class DialogDayTimeComponent implements OnInit {
       return false;
     }
     return this.dayButtons
-      .filter((day) => day.selected)
-      .every((day) => day.startTime !== '' && day.endTime !== '');
+        .filter((day) => day.selected)
+        .every((day) => day.startTime !== '' && day.endTime !== '');
   }
 }

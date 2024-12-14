@@ -25,11 +25,6 @@
 
     @if(isPreferencesEnabled) {
     <div id="total_container" [class.disabled]="!isPreferencesEnabled">
-      <!-- <div class="units max" [@fadeAnimation]>
-                <h2>{{ maxUnits }}</h2>
-                <span>Max. Units Allowed</span>
-              </div> -->
-      <!-- Total Units-->
       <div class="total units" [@fadeAnimation]>
         <h2>{{ totalUnits }}</h2>
         <span>Total Units Selected</span>
@@ -270,47 +265,6 @@
           </td>
         </tr>
       </table>
-
-      <!--Table Pseudo Footer-->
-      <div class="table-footer">
-        <!-- Remove All Button -->
-        <div
-          class="button-container"
-          (click)="!isRemoveDisabled && removeAllCourses()"
-          [matTooltip]="
-            isRemoveDisabled ? 'You must select at least one course.' : ''
-          "
-          [class.disabled]="isRemoveDisabled || isRemovingAll"
-        >
-          @if (!isRemovingAll) {
-          <span mat-symbol="delete_sweep" class="remove"></span>
-          <span class="button-text remove">Remove all</span>
-          } @else {
-          <mat-spinner class="custom-spinner" diameter="20"></mat-spinner>
-          <span class="button-text remove">Remove all</span>
-          }
-        </div>
-
-        <!-- Submit Preferences Button -->
-        <div
-          class="button-container"
-          (click)="!isSubmitDisabled && submitPreferences()"
-          [matTooltip]="
-            isSubmitDisabled
-              ? 'Select one or more courses and ensure each has a selected day and time.'
-              : ''
-          "
-          [class.disabled]="isSubmitDisabled"
-        >
-          @if (!isSubmitting) {
-          <span class="button-text submit">Submit Preferences</span>
-          <span mat-symbol="done_all" class="submit"></span>
-          } @else {
-          <span class="button-text submit">Submit Preferences</span>
-          <mat-spinner class="custom-spinner-two" diameter="20"></mat-spinner>
-          }
-        </div>
-      </div>
     </div>
     }
     <!-- If preferences are disabled, display the closed submission UI -->
