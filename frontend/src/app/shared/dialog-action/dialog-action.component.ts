@@ -112,6 +112,7 @@ export class DialogActionComponent {
     programs: false,
     rooms: false,
   };
+
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: DialogActionData,
     private dialogRef: MatDialogRef<DialogActionComponent>,
@@ -304,31 +305,8 @@ export class DialogActionComponent {
       const diffTime = startDate.getTime() - today.getTime();
       this.remainingDaysStart = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-      this.isStartDateToday =
-        this.remainingDaysStart <= 0 && this.remainingDaysStart >= -1;
-    }
-  }
-
-  /**
-   * Returns formatted start date text based on whether start date is today
-   */
-  public getStartDateText(isCurrentStartDate: boolean = false): string {
-    if (!this.startDate) return '';
-
-    if (this.isStartDateToday) {
-      if (isCurrentStartDate) {
-        return 'Today';
-      } else {
-        return 'today, immediately';
-      }
-    }
-
-    if (isCurrentStartDate) {
-      return `${formatDate(this.startDate, 'longDate', 'en-US')} (${
-        this.remainingDaysStart
-      } days left)`;
-    } else {
-      return `${this.remainingDaysStart} day(s)`;
+      // If remainingDaysStart <= 0, let's treat that as "it's starting immediately"
+      this.isStartDateToday = this.remainingDaysStart <= 0;
     }
   }
 
@@ -349,7 +327,7 @@ export class DialogActionComponent {
   }
 
   /**
-   * Calculates remaining days between today and submission deadline
+   * Calculates remaining days between start date and submission deadline
    * and determines if the deadline is today
    */
   public calculateRemainingDays(): void {
@@ -368,38 +346,6 @@ export class DialogActionComponent {
   }
 
   /**
-   * Returns formatted deadline text based on whether deadline is today
-   */
-  public getDeadlineText(isCurrentDeadline: boolean = false): string {
-    if (!this.submissionDeadline) return '';
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const deadline = new Date(this.submissionDeadline);
-    deadline.setHours(0, 0, 0, 0);
-
-    const isActuallyToday = today.getTime() === deadline.getTime();
-
-    if (isActuallyToday) {
-      if (isCurrentDeadline) {
-        return 'Today at 11:59 PM';
-      } else {
-        return 'today at 11:59 PM';
-      }
-    }
-
-    if (isCurrentDeadline) {
-      return `${formatDate(this.submissionDeadline, 'longDate', 'en-US')} (${
-        this.remainingDays
-      } day(s) left)`;
-    } else {
-      // return `${this.remainingDays} day(s)`;
-      return `at 11:59 PM on this day`;
-    }
-  }
-
-  /**
    * Handles deadline date change
    */
   public onDeadlineChange(event: any): void {
@@ -408,25 +354,7 @@ export class DialogActionComponent {
   }
 
   /**
-   * Returns the formatted scheduled start date
-   */
-  public getScheduledStartDate(): string {
-    const startDate =
-      this.data.individual_start_date || this.data.global_start_date;
-    return startDate ? formatDate(startDate, 'medium', 'en-US') : '';
-  }
-
-  /**
-   * Returns the formatted scheduled deadline date
-   */
-  public getScheduledDeadlineDate(): string {
-    const deadline = this.data.individual_deadline || this.data.global_deadline;
-    return deadline ? formatDate(deadline, 'medium', 'en-US') : '';
-  }
-
-  /**
    * Placeholder method for canceling scheduled submission
-   * This will be implemented later as per your requirement
    */
   public cancelScheduledSubmission(): void {
     this.isProcessing = true;
@@ -434,11 +362,7 @@ export class DialogActionComponent {
     let operation$: Observable<any>;
 
     if (this.data.type === 'all_preferences') {
-      operation$ = this.preferencesService.toggleAllPreferences(
-        false,
-        null,
-        null
-      );
+      operation$ = this.preferencesService.toggleAllPreferences(false, null, null);
     } else if (this.data.type === 'single_preferences') {
       operation$ = this.preferencesService.toggleSingleFacultyPreferences(
         this.data.faculty_id!,
@@ -476,7 +400,7 @@ export class DialogActionComponent {
   }
 
   /**
-   * Handles the single preference toggle operation
+   * Handles single preference toggle operation
    */
   private handleSinglePreferenceOperation(): Observable<any> {
     const newStatus = !this.data.currentState;
@@ -488,18 +412,18 @@ export class DialogActionComponent {
       formattedStartDate = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
     }
 
-    let formattedDate: string | null = null;
+    let formattedDeadline: string | null = null;
     if (newStatus && this.submissionDeadline) {
       const date = new Date(this.submissionDeadline);
       date.setHours(23, 59, 59, 999);
-      formattedDate = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
+      formattedDeadline = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
     }
 
     return this.preferencesService
       .toggleSingleFacultyPreferences(
         this.data.faculty_id!,
         newStatus,
-        formattedDate,
+        formattedDeadline,
         formattedStartDate
       )
       .pipe(
@@ -523,7 +447,7 @@ export class DialogActionComponent {
   }
 
   /**
-   * Handles preferences toggle operation with proper date handling
+   * Handles all preferences toggle operation
    */
   private handleAllPreferencesOperation(): Observable<any> {
     const newStatus = !this.data.currentState;
@@ -535,16 +459,16 @@ export class DialogActionComponent {
       formattedStartDate = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
     }
 
-    let formattedDate: string | null = null;
+    let formattedDeadline: string | null = null;
     if (newStatus && this.submissionDeadline) {
       const date = new Date(this.submissionDeadline);
       date.setHours(23, 59, 59, 999);
-      formattedDate = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
+      formattedDeadline = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
     }
 
     const togglePreferences$ = this.preferencesService.toggleAllPreferences(
       newStatus,
-      formattedDate,
+      formattedDeadline,
       formattedStartDate
     );
 
@@ -557,7 +481,7 @@ export class DialogActionComponent {
   }
 
   /**
-   * Handles publish/unpublish operation using ReportsService
+   * Handles publish/unpublish for all schedules
    */
   private handleAllPublishOperation(): Observable<any> {
     const newStatus = !this.data.currentState;
@@ -573,7 +497,7 @@ export class DialogActionComponent {
   }
 
   /**
-   * Handles publish/unpublish operation for a single faculty using ReportsService
+   * Handles publish/unpublish for a single faculty schedule
    */
   private handleSinglePublishOperation(): Observable<any> {
     const newStatus = !this.data.currentState;
@@ -682,7 +606,7 @@ export class DialogActionComponent {
   }
 
   /**
-   * Gets the appropriate success message based on the action type
+   * Gets success message based on the action type
    */
   private getSuccessMessage(): string {
     switch (this.data.type) {
@@ -710,7 +634,7 @@ export class DialogActionComponent {
   }
 
   /**
-   * Gets the appropriate error message based on the action type
+   * Gets error message based on the action type
    */
   private getErrorMessage(): string {
     switch (this.data.type) {

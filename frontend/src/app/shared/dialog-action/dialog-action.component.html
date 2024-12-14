@@ -92,25 +92,23 @@
           required
           (click)="startPicker.open()"
         />
-        <mat-datepicker-toggle matIconSuffix [for]="startPicker">
-        </mat-datepicker-toggle>
+        <mat-datepicker-toggle
+          matIconSuffix
+          [for]="startPicker"
+        ></mat-datepicker-toggle>
         <mat-datepicker #startPicker></mat-datepicker>
 
+        <!-- Simplified logic for Start Date mat-hint -->
         @if (data.type === 'all_preferences' || data.type ===
         'single_preferences') {
-        <mat-hint>
-          @if (data.currentState) { Current Set Start Date: @if
-          (isStartDateToday) {
-          <strong>{{ getStartDateText(true) }}</strong>
-          } @else {
-          {{ startDate | date }}
-          <strong>({{ remainingDaysStart }} day(s) left)</strong>
-          } } @else { The submission will start @if (isStartDateToday) {
-          <strong>{{ getStartDateText(false) }}</strong>
-          } @else {
-          <strong>{{ remainingDaysStart }} day(s)</strong> from now } }
+        <mat-hint *ngIf="!data.currentState">
+          The submission will start @if (isStartDateToday) {
+          <strong>today, immediately</strong>
+          } @else { in <strong>{{ remainingDaysStart }} day(s)</strong>
+          }
         </mat-hint>
         }
+        <!-- no mat-hint if data.currentState === true -->
       </mat-form-field>
     </div>
     }
@@ -131,26 +129,24 @@
           required
           (click)="endPicker.open()"
         />
-        <mat-datepicker-toggle matIconSuffix [for]="endPicker">
-        </mat-datepicker-toggle>
+        <mat-datepicker-toggle
+          matIconSuffix
+          [for]="endPicker"
+        ></mat-datepicker-toggle>
         <mat-datepicker #endPicker></mat-datepicker>
 
+        <!-- Simplified logic for End Date mat-hint -->
         @if (data.type === 'all_preferences' || data.type ===
         'single_preferences') {
-        <mat-hint>
-          @if (data.currentState) { Current Set Submission Deadline: @if
-          (isDeadlineToday) {
-          <strong>{{ getDeadlineText(true) }}</strong>
+        <mat-hint *ngIf="data.currentState">
+          The submission is set to close in @if (isDeadlineToday) {
+          <strong>today at 11:59 PM</strong>
           } @else {
-          {{ submissionDeadline | date }}
-          <strong>({{ remainingDays }} day(s) left)</strong>
-          } } @else { The submission will close @if (isDeadlineToday) {
-          <strong>{{ getDeadlineText(false) }}</strong>
-          } @else {
-          <strong>{{ remainingDays }} day(s)</strong> after the set start date }
+          <strong>{{ remainingDays }} day(s)</strong>
           }
         </mat-hint>
         }
+        <!-- no mat-hint if data.currentState === false -->
       </mat-form-field>
     </div>
     }
@@ -228,9 +224,9 @@
         'disabled-button': isProcessing
       }"
     >
-      @if (!isProcessing) { Cancel Scheduled Submission } @else {
+      @if (isProcessing) {
       <mat-spinner class="custom-spinner" diameter="25"></mat-spinner>
-      }
+      } @else { Cancel Scheduled Submission }
     </button>
     } @else {
     <button
@@ -252,9 +248,9 @@
           (showStartDatePicker && startDate === null)
       }"
     >
-      @if (!isProcessing) { Confirm } @else {
+      @if (isProcessing) {
       <mat-spinner class="custom-spinner" diameter="25"></mat-spinner>
-      }
+      } @else { Confirm }
     </button>
     }
   </div>
