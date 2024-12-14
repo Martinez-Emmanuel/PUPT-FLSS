@@ -193,33 +193,16 @@ export class DialogDayTimeComponent implements OnInit {
           end_time: String(this.convertTo24HourFormat(day.endTime)),
         }));
 
-    const currentCourse = this.data.allSelectedCourses.find(
-        (course) => course.course_code === this.data.courseCode
-    );
-    if (currentCourse) {
-      currentCourse.preferredDays = selectedDays;
-    }
-
-    // Prepare the preference data for submission using allSelectedCourses
     const preferenceData = {
       faculty_id: parseInt(this.data.facultyId),
       active_semester_id: this.data.activeSemesterId,
-      preferences: this.data.allSelectedCourses
-          .filter((course) => course.preferredDays.length > 0)
-          .map((course) => ({
-            course_assignment_id: course.course_assignment_id,
-            preferred_days: course.preferredDays.map((day: any) => ({
-              day: day.day,
-              start_time: day.start_time,
-              end_time: day.end_time,
-            })),
-          })),
+      course_assignment_id: this.data.courseAssignmentId,
+      preferred_days: selectedDays
     };
 
-    // Submit the preferences
-    this.preferencesService.submitPreferences(preferenceData).subscribe({
+    this.preferencesService.submitSinglePreference(preferenceData).subscribe({
       next: () => {
-        this.snackBar.open('Preferences saved successfully', 'Close', {
+        this.snackBar.open('Your preferences has been saved successfully.', 'Close', {
           duration: 3000,
         });
         this.dialogRef.close({ days: selectedDays });
@@ -228,7 +211,7 @@ export class DialogDayTimeComponent implements OnInit {
         const message =
             error.status === 403 && error.error && error.error.message
                 ? error.error.message
-                : 'Error submitting preferences.';
+                : 'Error submitting preference.';
         this.snackBar.open(message, 'Close', {
           duration: 5000,
         });

@@ -169,14 +169,19 @@ export class PreferencesService {
   }
 
   /**
-   * Submits user preferences and clears relevant caches upon success.
+   * Submits a single preference for a faculty member.
    */
-  submitPreferences(preferences: any): Observable<any> {
+  submitSinglePreference(preference: {
+    faculty_id: number;
+    active_semester_id: number;
+    course_assignment_id: number;
+    preferred_days: PreferredDay[];
+  }): Observable<any> {
     const url = `${this.baseUrl}/submit-preferences`;
-    return this.http.post(url, preferences).pipe(
-      tap(() => this.clearCaches(preferences.faculty_id.toString())),
+    return this.http.post(url, preference).pipe(
+      tap(() => this.clearCaches(preference.faculty_id.toString())),
       catchError((error) => {
-        console.error('Error submitting preferences:', error);
+        console.error('Error submitting single preference:', error);
         return throwError(() => error);
       })
     );

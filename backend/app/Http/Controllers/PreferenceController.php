@@ -15,23 +15,23 @@ use Illuminate\Support\Facades\DB;
 class PreferenceController extends Controller
 {
     /**
-     * Submits faculty course preferences and updates existing entries.
+     * Submits a single faculty preference and updates existing entries.
      */
     public function submitPreferences(Request $request)
     {
         $validatedData = $request->validate([
             'faculty_id' => 'required|exists:faculty,id',
             'active_semester_id' => 'required|exists:active_semesters,active_semester_id',
-            'preferences' => 'required|array',
-            'preferences.*.course_assignment_id' => 'required|exists:course_assignments,course_assignment_id',
-            'preferences.*.preferred_days' => 'required|array',
-            'preferences.*.preferred_days.*.day' => 'required|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
-            'preferences.*.preferred_days.*.start_time' => 'required|date_format:H:i:s',
-            'preferences.*.preferred_days.*.end_time' => 'required|date_format:H:i:s',
+            'course_assignment_id' => 'required|exists:course_assignments,course_assignment_id',
+            'preferred_days' => 'required|array',
+            'preferred_days.*.day' => 'required|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
+            'preferred_days.*.start_time' => 'required|date_format:H:i:s',
+            'preferred_days.*.end_time' => 'required|date_format:H:i:s',
         ]);
 
         $facultyId = $validatedData['faculty_id'];
         $activeSemesterId = $validatedData['active_semester_id'];
+        $courseAssignmentId = $validatedData['course_assignment_id'];
 
         $preferenceSetting = PreferencesSetting::where('faculty_id', $facultyId)->first();
         $globalDeadline = $preferenceSetting->global_deadline;
@@ -46,29 +46,39 @@ class PreferenceController extends Controller
             ], 403);
         }
 
-        DB::transaction(function () use ($validatedData, $facultyId, $activeSemesterId) {
-            $existingPreferences = Preference::where('faculty_id', $facultyId)
-                ->where('active_semester_id', $activeSemesterId)
-                ->get();
+        DB::transaction(function () use ($validatedData, $facultyId, $activeSemesterId, $courseAssignmentId) {
+            $preference = Preference::updateOrCreate(
+                [
+                    'faculty_id' => $facultyId,
+                    'active_semester_id' => $activeSemesterId,
+                    'course_assignment_id' => $courseAssignmentId,
+                ],
+                []
+            );
 
-            $existingIds = $existingPreferences->pluck('course_assignment_id')->toArray();
-            $newIds = array_column($validatedData['preferences'], 'course_assignment_id');
+            // Check if preferred days have changed
+            $existingDays = PreferenceDay::where('preference_id', $preference->preferences_id)
+                ->orderBy('preferred_day')
+                ->get()
+                ->map(function ($day) {
+                    return [
+                        'day' => $day->preferred_day,
+                        'start_time' => $day->preferred_start_time,
+                        'end_time' => $day->preferred_end_time,
+                    ];
+                })->toArray();
 
-            foreach ($validatedData['preferences'] as $preferenceData) {
-                $preference = Preference::updateOrCreate(
-                    [
-                        'faculty_id' => $facultyId,
-                        'active_semester_id' => $activeSemesterId,
-                        'course_assignment_id' => $preferenceData['course_assignment_id'],
-                    ],
-                    []
-                );
+            $newDays = $validatedData['preferred_days'];
+            usort($newDays, function ($a, $b) {
+                return $a['day'] <=> $b['day'];
+            });
 
+            if ($existingDays !== $newDays) {
                 // Delete existing days for this preference
                 PreferenceDay::where('preference_id', $preference->preferences_id)->delete();
 
                 // Create new preference days with start and end times
-                foreach ($preferenceData['preferred_days'] as $dayData) {
+                foreach ($newDays as $dayData) {
                     PreferenceDay::create([
                         'preference_id' => $preference->preferences_id,
                         'preferred_day' => $dayData['day'],
@@ -77,18 +87,10 @@ class PreferenceController extends Controller
                     ]);
                 }
             }
-
-            $preferencesToDelete = array_diff($existingIds, $newIds);
-            if (!empty($preferencesToDelete)) {
-                Preference::where('faculty_id', $facultyId)
-                    ->where('active_semester_id', $activeSemesterId)
-                    ->whereIn('course_assignment_id', $preferencesToDelete)
-                    ->delete();
-            }
         });
 
         return response()->json([
-            'message' => 'Preferences submitted successfully',
+            'message' => 'Preference submitted successfully',
         ], 201);
     }
 
