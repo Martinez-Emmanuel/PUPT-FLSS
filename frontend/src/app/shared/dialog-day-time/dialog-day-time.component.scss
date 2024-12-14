@@ -1,5 +1,9 @@
 @use "../../../styles/mixins";
 
+:host {
+  @include mixins.custom-spinner(var(--primary-text));
+}
+
 .dialog-day-time-container {
   @include mixins.flex-layout(
     $direction: column,

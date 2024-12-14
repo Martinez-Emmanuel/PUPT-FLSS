@@ -9,6 +9,7 @@ import { MatOptionModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRippleModule } from '@angular/material/core';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { PreferencesService } from '../../core/services/faculty/preference/preferences.service';
 
@@ -42,6 +43,7 @@ interface DialogData {
     MatOptionModule,
     MatButtonModule,
     MatRippleModule,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './dialog-day-time.component.html',
   styleUrls: ['./dialog-day-time.component.scss'],
@@ -52,6 +54,7 @@ export class DialogDayTimeComponent implements OnInit {
   courseTitle = '';
   timeOptions: string[] = [];
   dayButtons: DayButton[] = [];
+  isSaving = false;
 
   private readonly daysOfWeek = [
     'Monday',
@@ -185,36 +188,43 @@ export class DialogDayTimeComponent implements OnInit {
   }
 
   onConfirm(): void {
+    this.isSaving = true;
     const selectedDays = this.dayButtons
-        .filter((day) => day.selected && day.startTime && day.endTime)
-        .map((day) => ({
-          day: day.name,
-          start_time: String(this.convertTo24HourFormat(day.startTime)),
-          end_time: String(this.convertTo24HourFormat(day.endTime)),
-        }));
+      .filter((day) => day.selected && day.startTime && day.endTime)
+      .map((day) => ({
+        day: day.name,
+        start_time: String(this.convertTo24HourFormat(day.startTime)),
+        end_time: String(this.convertTo24HourFormat(day.endTime)),
+      }));
 
     const preferenceData = {
       faculty_id: parseInt(this.data.facultyId),
       active_semester_id: this.data.activeSemesterId,
       course_assignment_id: this.data.courseAssignmentId,
-      preferred_days: selectedDays
+      preferred_days: selectedDays,
     };
 
     this.preferencesService.submitSinglePreference(preferenceData).subscribe({
       next: () => {
-        this.snackBar.open('Your preferences has been saved successfully.', 'Close', {
-          duration: 3000,
-        });
+        this.snackBar.open(
+          'Your preferences has been saved successfully.',
+          'Close',
+          {
+            duration: 3000,
+          }
+        );
+        this.isSaving = false;
         this.dialogRef.close({ days: selectedDays });
       },
       error: (error) => {
         const message =
-            error.status === 403 && error.error && error.error.message
-                ? error.error.message
-                : 'Error submitting preference.';
+          error.status === 403 && error.error && error.error.message
+            ? error.error.message
+            : 'Error submitting preference.';
         this.snackBar.open(message, 'Close', {
           duration: 5000,
         });
+        this.isSaving = false;
       },
     });
   }
@@ -249,7 +259,7 @@ export class DialogDayTimeComponent implements OnInit {
       return false;
     }
     return this.dayButtons
-        .filter((day) => day.selected)
-        .every((day) => day.startTime !== '' && day.endTime !== '');
+      .filter((day) => day.selected)
+      .every((day) => day.startTime !== '' && day.endTime !== '');
   }
 }

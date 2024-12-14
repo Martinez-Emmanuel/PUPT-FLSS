@@ -84,6 +84,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   selectedYearLevel: number | null = null;
   dynamicYearLevels: number[] = [];
   allSelectedCourses: TableData[] = [];
+  isRemoving: { [course_code: string]: boolean } = {};
   dataSource = new MatTableDataSource<TableData>([]);
 
   // Faculty Info
@@ -423,6 +424,9 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       return;
     }
 
+    this.isRemoving[course.course_code] = true;
+    this.cdr.markForCheck();
+
     this.preferencesService
       .deletePreference(
         course_assignment_id,
@@ -435,7 +439,9 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
             (c) => c.course_code !== course.course_code
           );
           this.updateDataSource();
+          this.isRemoving[course.course_code] = false;
           this.showSnackBar('Course preference removed successfully.');
+          this.cdr.markForCheck();
         },
         error: (error) => {
           const message =
@@ -443,6 +449,8 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
               ? 'Submission is now closed. You cannot modify your preferences anymore.'
               : 'Error removing course preference.';
           this.showSnackBar(message);
+          this.isRemoving[course.course_code] = false;
+          this.cdr.markForCheck();
         },
       });
   }
@@ -469,7 +477,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
           facultyId: this.facultyId,
           activeSemesterId: this.activeSemesterId,
           courseAssignmentId: element.course_assignment_id,
-          allSelectedCourses: this.allSelectedCourses
+          allSelectedCourses: this.allSelectedCourses,
         },
         disableClose: true,
         autoFocus: false,
@@ -554,20 +562,22 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   formatTimeForPayload(time: string | undefined | null): string {
     if (!time) return '';
     if (time.includes('AM') || time.includes('PM')) {
-        const [timePart, modifier] = time.split(' ');
-        let [hours, minutes] = timePart.split(':').map(Number);
+      const [timePart, modifier] = time.split(' ');
+      let [hours, minutes] = timePart.split(':').map(Number);
 
-        if (hours === 12) {
-            hours = 0;
-        }
+      if (hours === 12) {
+        hours = 0;
+      }
 
-        if (modifier === 'PM') {
-            hours += 12;
-        }
+      if (modifier === 'PM') {
+        hours += 12;
+      }
 
-        return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:00`;
+      return `${hours.toString().padStart(2, '0')}:${minutes
+        .toString()
+        .padStart(2, '0')}:00`;
     } else {
-        return time;
+      return time;
     }
   }
 
@@ -577,7 +587,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       .map((pd) => pd.day);
     return selectedDays.length > 0
       ? selectedDays.join(', ')
-      : 'Click to select day';
+      : 'Click to select day and time';
   }
 
   getCellClass(column: string): string {

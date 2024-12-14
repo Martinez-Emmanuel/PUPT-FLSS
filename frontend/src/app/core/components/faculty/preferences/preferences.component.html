@@ -184,7 +184,11 @@
               class="remove-button"
               (click)="removeCourse(element)"
             >
+              @if (isRemoving[element.course_code]) {
+              <mat-spinner class="custom-spinner" diameter="20"></mat-spinner>
+              } @else {
               <span mat-symbol="do_not_disturb_on" variant="outlined"></span>
+              }
             </button>
           </td>
         </ng-container>

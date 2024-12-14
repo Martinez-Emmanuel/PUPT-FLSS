@@ -70,12 +70,16 @@
       mat-flat-button
       class="confirm-button"
       (click)="onConfirm()"
-      [disabled]="!isAnyDaySelected()"
+      [disabled]="!isAnyDaySelected() || isSaving"
       [ngClass]="{
-        'confirm-btn-disabled': !isAnyDaySelected()
+        'confirm-btn-disabled': !isAnyDaySelected() || isSaving
       }"
     >
-      Confirm
+      @if (isSaving) {
+      <mat-spinner class="custom-spinner" diameter="25"></mat-spinner>
+      } @else {
+      <span>Confirm</span>
+      }
     </button>
   </div>
 </div>

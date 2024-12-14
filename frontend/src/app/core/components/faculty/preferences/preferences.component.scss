@@ -6,7 +6,6 @@
 
 :host {
   @include mixins.custom-spinner;
-  @include mixins.custom-spinner-two();
 }
 
 .faculty-preferences-container {
