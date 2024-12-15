@@ -20,7 +20,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SchedulingService } from '../../core/services/admin/scheduling/scheduling.service';
 import { Faculty, Room } from '../../core/models/scheduling.model';
 
-import { cardEntranceSide } from '../../core/animations/animations';
+import { cardEntranceSide, cardSwipeAnimation } from '../../core/animations/animations';
 
 function mustMatchOption(validOptions: string[]): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
@@ -41,6 +41,7 @@ interface SuggestedFaculty {
   type: string;
   preferences: Preference[];
   prefIndex: number;
+  animating: boolean;
 }
 
 interface ProfessorOption {
@@ -92,7 +93,7 @@ interface DialogData {
   ],
   templateUrl: './dialog-scheduling.component.html',
   styleUrls: ['./dialog-scheduling.component.scss'],
-  animations: [cardEntranceSide],
+  animations: [cardEntranceSide, cardSwipeAnimation],
 })
 export class DialogSchedulingComponent implements OnInit, OnDestroy {
   scheduleForm!: FormGroup;
@@ -126,6 +127,10 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     this.populateExistingSchedule();
     this.setupConflictDetection();
     this.setupCustomValidators();
+
+    this.data.suggestedFaculty.forEach(
+      (faculty) => (faculty.animating = false)
+    );
   }
 
   ngOnDestroy(): void {
@@ -454,13 +459,33 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   }
 
   nextPreference(faculty: SuggestedFaculty): void {
+    // If an animation is currently running, ignore the click
+    if (faculty.animating) {
+      return;
+    }
+
+    faculty.animating = true;
     faculty.prefIndex = (faculty.prefIndex + 1) % faculty.preferences.length;
+
+    setTimeout(() => {
+      faculty.animating = false;
+    }, 600);
   }
 
   previousPreference(faculty: SuggestedFaculty): void {
+    // If an animation is currently running, ignore the click
+    if (faculty.animating) {
+      return;
+    }
+
+    faculty.animating = true;
     faculty.prefIndex =
       (faculty.prefIndex - 1 + faculty.preferences.length) %
       faculty.preferences.length;
+
+    setTimeout(() => {
+      faculty.animating = false;
+    }, 600);
   }
 
   /*** Autocomplete and Filtering ***/

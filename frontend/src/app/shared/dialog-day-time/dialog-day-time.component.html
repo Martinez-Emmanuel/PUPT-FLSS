@@ -24,12 +24,15 @@
 
     <div class="time-fields-scroll-container">
       <!-- Time Selection for Each Day -->
-      @for (day of dayButtons; track day.name) { @if (day.selected) {
-      <div class="time-fields-container">
+      @for (day of dayButtons; track day.name) {
+      <div
+        class="time-fields-container"
+        [@showHideFieldsAnimation]="day.selected ? 'visible' : 'hidden'"
+      >
         <div class="day-label-wrapper">
           <span class="day-label">{{ day.name }}</span>
         </div>
-
+        @if (day.selected) {
         <div class="time-fields-wrapper">
           <!-- Start Time Selection -->
           <mat-form-field appearance="fill" class="dialog-field">
@@ -58,8 +61,9 @@
             </mat-select>
           </mat-form-field>
         </div>
+        }
       </div>
-      } }
+      }
     </div>
   </div>
 

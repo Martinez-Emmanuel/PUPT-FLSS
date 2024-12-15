@@ -98,3 +98,67 @@ export const rowAdditionAnimation = trigger('rowAdditionAnimation', [
     ),
   ]),
 ]);
+
+export const cardSwipeAnimation = trigger('cardSwipeAnimation', [
+  transition(':increment', [
+    style({
+      transform: 'translateX(20%) translateY(0) scale(0.9)',
+      opacity: 0,
+      zIndex: 0,
+      filter: 'blur(4px)',
+    }),
+    animate(
+      '600ms cubic-bezier(0.23, 1, 0.32, 1)',
+      style({
+        transform: 'translateX(0) translateY(0) scale(1)',
+        opacity: 1,
+        zIndex: 1,
+        filter: 'blur(0)',
+      })
+    ),
+  ]),
+  transition(':decrement', [
+    style({
+      transform: 'translateX(-20%) translateY(0) scale(0.9)',
+      opacity: 0,
+      zIndex: 0,
+      filter: 'blur(4px)',
+    }),
+    animate(
+      '600ms cubic-bezier(0.23, 1, 0.32, 1)',
+      style({
+        transform: 'translateX(0) translateY(0) scale(1)',
+        opacity: 1,
+        zIndex: 1,
+        filter: 'blur(0)',
+      })
+    ),
+  ]),
+]);
+
+export const showHideFieldsAnimation = trigger('showHideFieldsAnimation', [
+  state(
+    'visible',
+    style({
+      opacity: 1,
+      height: '*',
+      transform: 'translateY(0)',
+      overflow: 'hidden',
+    })
+  ),
+  state(
+    'hidden',
+    style({
+      opacity: 0,
+      height: '0px',
+      transform: 'translateY(-10px)',
+      overflow: 'hidden',
+    })
+  ),
+  transition('visible => hidden', [
+    animate('300ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
+  ]),
+  transition('hidden => visible', [
+    animate('300ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
+  ]),
+]);

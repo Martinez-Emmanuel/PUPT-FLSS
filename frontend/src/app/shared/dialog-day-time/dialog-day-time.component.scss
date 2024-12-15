@@ -98,17 +98,19 @@
   }
 
   .time-fields-scroll-container {
+    @include mixins.custom-scrollbar;
     flex: 1;
     overflow-y: auto;
     min-height: 0;
-    max-height: 40vh;
+    max-height: 30rem;
     padding-right: var(--spacing-xs);
-
-    @include mixins.custom-scrollbar;
   }
 
   .time-fields-container {
     @include mixins.flex-layout($direction: column, $gap: var(--spacing-xs));
+    position: relative;
+    width: 100%;
+    transform-origin: top;
 
     .day-label-wrapper {
       width: 100%;

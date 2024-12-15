@@ -12,6 +12,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { PreferencesService } from '../../core/services/faculty/preference/preferences.service';
+import { showHideFieldsAnimation } from '../../core/animations/animations';
 
 interface DayButton {
   name: string;
@@ -48,6 +49,7 @@ interface DialogData {
   templateUrl: './dialog-day-time.component.html',
   styleUrls: ['./dialog-day-time.component.scss'],
   standalone: true,
+  animations: [showHideFieldsAnimation],
 })
 export class DialogDayTimeComponent implements OnInit {
   courseCode = '';

@@ -56,12 +56,11 @@
           (click)="
             onFacultyClick(faculty, faculty.preferences[faculty.prefIndex])
           "
-          style="cursor: pointer"
           [class.selected-faculty]="
             selectedFaculty?.faculty_id === faculty.faculty_id &&
             isPreferenceSelected(faculty.preferences[faculty.prefIndex])
           "
-          
+          [@cardSwipeAnimation]="faculty.prefIndex"
           matRipple
         >
           <div
