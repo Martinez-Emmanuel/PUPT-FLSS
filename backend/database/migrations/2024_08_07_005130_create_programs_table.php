@@ -16,8 +16,9 @@ return new class extends Migration {
             $table->string('program_title', 100);  
             $table->string('program_info', 255); 
             $table->integer('number_of_years'); 
-            $table->enum('status', ['Active', 'Inactive']); 
-            $table->timestamps();  
+            $table->enum('status', ['Active', 'Inactive']);
+            $table->index('status');
+            $table->timestamps();
 
 
             $table->unique('program_code');  

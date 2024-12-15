@@ -14,6 +14,7 @@ return new class extends Migration
             $table->increments('curriculum_id');
             $table->string('curriculum_year', 4);
             $table->enum('status', ['Active', 'Inactive']);
+            $table->index('status');
             $table->timestamps();
         });
     }

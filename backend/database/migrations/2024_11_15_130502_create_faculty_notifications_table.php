@@ -24,6 +24,8 @@ class CreateFacultyNotificationsTable extends Migration
             $table->foreign('faculty_id')
                 ->references('id')->on('faculty')
                 ->onDelete('cascade');
+            $table->index('faculty_id');
+            $table->index('is_read');
         });
     }
 

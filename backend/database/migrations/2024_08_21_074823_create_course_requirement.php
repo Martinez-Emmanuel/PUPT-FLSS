@@ -13,11 +13,13 @@ return new class extends Migration
     {
         Schema::create('course_requirements', function (Blueprint $table) {
             $table->increments('requirement_id');
-            $table->unsignedInteger('course_id')->nullable(); 
+            $table->unsignedInteger('course_id')->nullable();
             $table->enum('requirement_type', ['pre', 'co']);
-            $table->unsignedInteger('required_course_id')->nullable(); 
+            $table->unsignedInteger('required_course_id')->nullable();
             $table->foreign('course_id')->references('course_id')->on('courses')->onDelete('cascade');
             $table->foreign('required_course_id')->references('course_id')->on('courses')->onDelete('cascade');
+            $table->index('course_id');
+            $table->index('required_course_id');
             $table->timestamps();
         });
     }

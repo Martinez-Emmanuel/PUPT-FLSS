@@ -23,6 +23,9 @@ class CreateFacultySchedulePublicationTable extends Migration
             // Foreign key constraints
             $table->foreign('faculty_id')->references('id')->on('faculty')->onDelete('cascade');
             $table->foreign('schedule_id')->references('schedule_id')->on('schedules')->onDelete('cascade');
+            $table->index('faculty_id');
+            $table->index('schedule_id');
+            $table->index('is_published');
         });
     }
 

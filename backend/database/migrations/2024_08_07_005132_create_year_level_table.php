@@ -11,17 +11,18 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('year_levels', function (Blueprint $table) {
-            $table->increments('year_level_id'); 
-            $table->unsignedInteger('curricula_program_id')->nullable(); 
-            $table->integer('year'); 
+            $table->increments('year_level_id');
+            $table->unsignedInteger('curricula_program_id')->nullable();
+            $table->integer('year');
             $table->timestamps();
 
             // Foreign key to curricula_program table
             $table->foreign('curricula_program_id')
-                  ->references('curricula_program_id')
-                  ->on('curricula_program')
-                  ->onDelete('cascade')
-                  ->onUpdate('restrict');
+                ->references('curricula_program_id')
+                ->on('curricula_program')
+                ->onDelete('cascade')
+                ->onUpdate('restrict');
+            $table->index('curricula_program_id');
         });
     }
 
