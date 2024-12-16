@@ -90,6 +90,10 @@ export class TableHeaderComponent implements OnInit, OnChanges {
 
     this.form.valueChanges.subscribe((value) => {
       this.inputChange.emit(value);
+
+      if (value['academicYear'] === '__add__') {
+        this.addAcademicYear.emit();
+      }
     });
   }
 
