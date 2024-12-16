@@ -23,11 +23,13 @@ class DatabaseSeeder extends Seeder
             CoursesTableSeeder::class,
             CourseAssignmentsTableSeeder::class,
             CourseRequirementsTableSeeder::class,
-            // PreferencesSeeder::class,
+            PreferencesSeeder::class,
+            PreferenceDaysTableSeeder::class,
             RoomsTableSeeder::class,
             SectionsPerProgramYearTableSeeder::class,
             SectionCoursesTableSeeder::class,
-            // SchedulesTableSeeder::class,
+            SchedulesTableSeeder::class,
+            ApiKeysTableSeeder::class,
         ]);
     }
 }

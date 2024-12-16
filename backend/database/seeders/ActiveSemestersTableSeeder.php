@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Csv\CsvToArray;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -9,67 +10,35 @@ class ActiveSemestersTableSeeder extends Seeder
 {
     public function run()
     {
-        DB::table('active_semesters')->insert([
-            [
-                'active_semester_id' => 1,
-                'academic_year_id' => 2,
-                'semester_id' => 1,
-                'is_active' => 1,
-                'start_date' => '2024-09-09',
-                'end_date' => '2025-02-07',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'active_semester_id' => 2,
-                'academic_year_id' => 2,
-                'semester_id' => 2,
-                'is_active' => 0,
-                'start_date' => '2025-03-24',
-                'end_date' => '2025-07-25',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'active_semester_id' => 3,
-                'academic_year_id' => 2,
-                'semester_id' => 3,
-                'is_active' => 0,
-                'start_date' => '2025-08-04',
-                'end_date' => '2025-09-05',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'active_semester_id' => 4,
-                'academic_year_id' => 1,
-                'semester_id' => 1,
-                'is_active' => 0,
-                'start_date' => '2023-09-01',
-                'end_date' => '2024-02-01',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'active_semester_id' => 5,
-                'academic_year_id' => 1,
-                'semester_id' => 2,
-                'is_active' => 0,
-                'start_date' => '2024-03-15',
-                'end_date' => '2024-07-10',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'active_semester_id' => 6,
-                'academic_year_id' => 1,
-                'semester_id' => 3,
-                'is_active' => 0,
-                'start_date' => '2024-08-01',
-                'end_date' => '2024-09-01',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+        $csvPath = database_path('seeders/csv/active_semesters.csv');
+
+        try {
+            $csvData = CsvToArray::convert($csvPath);
+        } catch (\Exception $e) {
+            $this->command->error($e->getMessage());
+            return;
+        }
+
+        $dataToInsert = [];
+
+        foreach ($csvData as $record) {
+            $dataToInsert[] = [
+                'active_semester_id' => $record['active_semester_id'],
+                'academic_year_id' => $record['academic_year_id'],
+                'semester_id' => $record['semester_id'],
+                'is_active' => $record['is_active'],
+                'start_date' => $record['start_date'],
+                'end_date' => $record['end_date'],
+                'created_at' => $record['created_at'],
+                'updated_at' => $record['updated_at'],
+            ];
+        }
+
+        try {
+            DB::table('active_semesters')->insert($dataToInsert);
+            $this->command->info('Active semesters table seeded successfully!');
+        } catch (\Exception $e) {
+            $this->command->error('Error seeding active semesters table: ' . $e->getMessage());
+        }
     }
 }
