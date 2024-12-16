@@ -4,24 +4,18 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
     public function up(): void
     {
         Schema::create('preferences', function (Blueprint $table) {
             $table->bigIncrements('preferences_id');
-            
             $table->unsignedBigInteger('faculty_id');
             $table->unsignedInteger('active_semester_id');
             $table->unsignedInteger('course_assignment_id');
-
-            $table->enum('preferred_day', ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday']);
-            $table->time('preferred_start_time');
-            $table->time('preferred_end_time');
-
             $table->timestamps();
 
             $table->unique(['faculty_id', 'active_semester_id', 'course_assignment_id'], 'unique_preference');
-
             $table->foreign('faculty_id')->references('id')->on('faculty')->onDelete('cascade');
             $table->foreign('active_semester_id')->references('active_semester_id')->on('active_semesters')->onDelete('cascade');
             $table->foreign('course_assignment_id')->references('course_assignment_id')->on('course_assignments')->onDelete('cascade');

@@ -6,7 +6,6 @@
 
 :host {
   @include mixins.custom-spinner;
-  @include mixins.custom-spinner-two();
 }
 
 .faculty-preferences-container {
@@ -269,16 +268,11 @@
     background-color: var(--neutral-light);
 
     .day-time-button-container {
-      @include mixins.flex-layout($justify: flex-start);
+      @include mixins.flex-layout;
 
       .day-time-button {
-        @include mixins.flex-layout;
         color: var(--primary-text);
-      }
-
-      mat-icon {
-        @include mixins.flex-layout;
-        padding: var(--spacing-sm);
+        cursor: pointer;
       }
     }
 

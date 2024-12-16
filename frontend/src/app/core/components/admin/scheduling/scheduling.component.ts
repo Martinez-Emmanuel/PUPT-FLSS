@@ -764,12 +764,23 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         const selectedProgramInfo = `${schedule.program_code} ${schedule.year}-${schedule.section}`;
         const selectedCourseInfo = `${schedule.course_code} - ${schedule.course_title}`;
 
-        const suggestedFaculty: {
-          name: string;
-          type: string;
+        // =======================
+        // Updated SuggestedFaculty
+        // =======================
+        interface Preference {
           day: string;
           time: string;
-        }[] = [];
+        }
+
+        interface SuggestedFaculty {
+          faculty_id: number;
+          name: string;
+          type: string;
+          preferences: Preference[];
+          prefIndex: number;
+        }
+
+        const suggestedFaculty: SuggestedFaculty[] = [];
 
         preferences.preferences.forEach((pref) => {
           const facultyDetails = faculty.faculty.find(
@@ -785,23 +796,35 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           pref.active_semesters.forEach((semester) => {
             semester.courses.forEach((course) => {
               if (course.course_details.course_id === schedule.course_id) {
-                suggestedFaculty.push({
+                const existingFaculty = suggestedFaculty.find(
+                  (f) => f.faculty_id === facultyDetails.faculty_id
+                );
+
+                const facultyPref: SuggestedFaculty = {
+                  faculty_id: facultyDetails.faculty_id,
                   name: pref.faculty_name,
                   type: facultyDetails.faculty_type,
-                  day: course.preferred_day,
-                  time: `${this.formatTimeFromBackend(
-                    course.preferred_start_time
-                  )} - ${this.formatTimeFromBackend(
-                    course.preferred_end_time
-                  )}`,
-                });
+                  preferences: course.preferred_days.map((prefDay) => ({
+                    day: prefDay.day,
+                    time: `${this.formatTimeFromBackend(
+                      prefDay.start_time
+                    )} - ${this.formatTimeFromBackend(prefDay.end_time)}`,
+                  })),
+                  prefIndex: 0,
+                };
+
+                if (existingFaculty) {
+                  existingFaculty.preferences.push(...facultyPref.preferences);
+                } else {
+                  suggestedFaculty.push(facultyPref);
+                }
               }
             });
           });
         });
 
         const dialogRef = this.dialog.open(DialogSchedulingComponent, {
-          maxWidth: '45rem',
+          maxWidth: '50rem',
           width: '100%',
           disableClose: true,
           data: {

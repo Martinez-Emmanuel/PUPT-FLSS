@@ -17,9 +17,6 @@ class Preference extends Model
         'faculty_id',
         'active_semester_id',
         'course_assignment_id',
-        'preferred_day',
-        'preferred_start_time',
-        'preferred_end_time',
     ];
 
     public function faculty()
@@ -31,21 +28,25 @@ class Preference extends Model
     {
         return $this->belongsTo(ActiveSemester::class, 'active_semester_id');
     }
-    
+
     public function courseAssignment()
     {
         return $this->belongsTo(CourseAssignment::class, 'course_assignment_id');
     }
+
     public function course()
     {
         return $this->hasOneThrough(
             Course::class,
             CourseAssignment::class,
-            'course_assignment_id', // Foreign key on the CourseAssignment table
-            'course_id',            // Foreign key on the Course table
-            'course_assignment_id', // Local key on the Preferences table
-            'course_id'             // Local key on the CourseAssignment table
+            'course_assignment_id',
+            'course_id',
+            'course_assignment_id',
+            'course_id'
         );
     }
 
+    public function preferenceDays() {
+        return $this->hasMany(PreferenceDay::class, 'preference_id');
+    }
 }

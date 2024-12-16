@@ -25,11 +25,6 @@
 
     @if(isPreferencesEnabled) {
     <div id="total_container" [class.disabled]="!isPreferencesEnabled">
-      <!-- <div class="units max" [@fadeAnimation]>
-                <h2>{{ maxUnits }}</h2>
-                <span>Max. Units Allowed</span>
-              </div> -->
-      <!-- Total Units-->
       <div class="total units" [@fadeAnimation]>
         <h2>{{ totalUnits }}</h2>
         <span>Total Units Selected</span>
@@ -123,7 +118,7 @@
         </h3>
         <div class="programs-scroll-container">
           <div [@cardEntranceAnimation]="programs.length">
-            @for (program of programs; track trackByProgramId($index, program)){
+            @for (program of programs; track program.program_id) {
             <div
               class="program-card pop"
               (click)="selectProgram(program)"
@@ -150,8 +145,7 @@
         </h3>
         <div class="courses-scroll-container">
           <div [@cardEntranceAnimation]="filteredCourses.length">
-            @for (course of filteredCourses; track trackByCourseId($index,
-            course)) {
+            @for (course of filteredCourses; track course.course_id) {
             <div
               class="course-card pop"
               (click)="addCourseToTable(course)"
@@ -190,22 +184,14 @@
               class="remove-button"
               (click)="removeCourse(element)"
             >
+              @if (isRemoving[element.course_code]) {
+              <mat-spinner class="custom-spinner" diameter="20"></mat-spinner>
+              } @else {
               <span mat-symbol="do_not_disturb_on" variant="outlined"></span>
+              }
             </button>
           </td>
         </ng-container>
-
-        <!-- # Column -->
-        <!-- <ng-container matColumnDef="num">
-          <th mat-header-cell *matHeaderCellDef class="table-header">#</th>
-          <td
-            mat-cell
-            *matCellDef="let element; let i = index"
-            class="table-cell"
-          >
-            {{ i + 1 }}
-          </td>
-        </ng-container> -->
 
         <!-- Course Code Column -->
         <ng-container matColumnDef="course_code">
@@ -251,31 +237,18 @@
           </td>
         </ng-container>
 
-        <!-- Available Day & Time Column -->
-        <ng-container matColumnDef="availableDayTime">
+        <!-- Preferred Day & Time Column -->
+        <ng-container matColumnDef="preferredDayTime">
           <th mat-header-cell *matHeaderCellDef class="table-header">
-            Available Day & Time
+            Preferred Day & Time
           </th>
           <td mat-cell *matCellDef="let element" class="table-cell picker-cell">
             <div class="day-time-button-container">
-              <button
-                mat-button
-                (click)="openDayTimeDialog(element)"
-                class="day-time-button"
-              >
-                <mat-icon fontSet="material-icons-round">today</mat-icon>
+              <div (click)="openDayTimeDialog(element)" class="day-time-button">
                 <span class="display-day-time">
-                  {{
-                    element.preferredDay && element.preferredTime
-                      ? element.preferredDay +
-                        ", " +
-                        (element.preferredTime === "07:00 AM - 09:00 PM"
-                          ? "Whole Day"
-                          : (element.preferredTime | timeFormat))
-                      : "Click to select day & time"
-                  }}
+                  {{ formatSelectedDaysAndTime(element) }}
                 </span>
-              </button>
+              </div>
             </div>
           </td>
         </ng-container>
@@ -296,47 +269,6 @@
           </td>
         </tr>
       </table>
-
-      <!--Table Pseudo Footer-->
-      <div class="table-footer">
-        <!-- Remove All Button -->
-        <div
-          class="button-container"
-          (click)="!isRemoveDisabled && removeAllCourses()"
-          [matTooltip]="
-            isRemoveDisabled ? 'You must select at least one course.' : ''
-          "
-          [class.disabled]="isRemoveDisabled || isRemovingAll"
-        >
-          @if (!isRemovingAll) {
-          <span mat-symbol="delete_sweep" class="remove"></span>
-          <span class="button-text remove">Remove all</span>
-          } @else {
-          <mat-spinner class="custom-spinner" diameter="20"></mat-spinner>
-          <span class="button-text remove">Remove all</span>
-          }
-        </div>
-
-        <!-- Submit Preferences Button -->
-        <div
-          class="button-container"
-          (click)="!isSubmitDisabled && submitPreferences()"
-          [matTooltip]="
-            isSubmitDisabled
-              ? 'Select one or more courses and ensure each has a selected day and time.'
-              : ''
-          "
-          [class.disabled]="isSubmitDisabled"
-        >
-          @if (!isSubmitting) {
-          <span class="button-text submit">Submit Preferences</span>
-          <span mat-symbol="done_all" class="submit"></span>
-          } @else {
-          <span class="button-text submit">Submit Preferences</span>
-          <mat-spinner class="custom-spinner-two" diameter="20"></mat-spinner>
-          }
-        </div>
-      </div>
     </div>
     }
     <!-- If preferences are disabled, display the closed submission UI -->

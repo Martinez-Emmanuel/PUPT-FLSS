@@ -5,7 +5,7 @@
       <h2 class="dialog-title suggested">
         <span mat-symbol="dynamic_form"></span> Suggested
       </h2>
-      <span class="desc">*Based on submitted preferences</span>
+      <span class="desc">Based on faculty preferences</span>
     </div>
 
     <mat-dialog-content
@@ -17,26 +17,67 @@
       <div class="no-faculty-message">
         No faculty has selected this course as their preference.
       </div>
-      } @else { @for (faculty of data.suggestedFaculty; track faculty) {
-      <div
-        class="faculty-card"
-        (click)="onFacultyClick(faculty)"
-        style="cursor: pointer"
-        [ngClass]="{ 'selected-faculty': isFacultySelected(faculty) }"
-        matRipple
-      >
-        <div
-          class="faculty-type"
-          [ngClass]="{
-            'full-time': faculty.type.includes('Full-time'),
-            'full-time-designee': faculty.type.includes('Designee'),
-            'part-time': faculty.type === 'Part-time'
-          }"
-        >
-          {{ faculty.type }}
+      } @else {
+      <!-- Outer loop for faculty -->
+      @for (faculty of data.suggestedFaculty; track faculty.faculty_id) {
+      <div class="faculty-card-wrapper">
+        <!-- Faculty Pref Navigator -->
+        @if (faculty.preferences.length > 1) {
+        <div class="faculty-pref-nav">
+          <!-- Display current and total preference count -->
+          <span class="preference-count">
+            {{ faculty.prefIndex + 1 }} of {{ faculty.preferences.length }}
+            Preferences
+          </span>
+          <!-- Navigation arrows -->
+          <div class="nav-button-container">
+            <button
+              class="pref-nav-button"
+              (click)="previousPreference(faculty)"
+              [disabled]="faculty.prefIndex === 0"
+            >
+              <mat-icon>chevron_left</mat-icon>
+            </button>
+            <button
+              class="pref-nav-button"
+              (click)="nextPreference(faculty)"
+              [disabled]="faculty.prefIndex === faculty.preferences.length - 1"
+            >
+              <mat-icon>chevron_right</mat-icon>
+            </button>
+          </div>
         </div>
-        <div class="faculty-name">{{ faculty.name }}</div>
-        <div class="faculty-pref">{{ faculty.day }}, {{ faculty.time }}</div>
+        }
+
+        <!-- Inner loop for preferences (each card) -->
+        @if (faculty.preferences[faculty.prefIndex]) {
+        <div
+          class="faculty-card"
+          (click)="
+            onFacultyClick(faculty, faculty.preferences[faculty.prefIndex])
+          "
+          [class.selected-faculty]="
+            selectedFaculty?.faculty_id === faculty.faculty_id &&
+            isPreferenceSelected(faculty.preferences[faculty.prefIndex])
+          "
+          [@cardSwipeAnimation]="faculty.prefIndex"
+          matRipple
+        >
+          <div
+            class="faculty-type"
+            [class.full-time]="faculty.type.includes('Full-time')"
+            [class.full-time-designee]="faculty.type.includes('Designee')"
+            [class.part-time]="faculty.type === 'Part-time'"
+          >
+            {{ faculty.type }}
+          </div>
+          <div class="faculty-name">{{ faculty.name }}</div>
+          <div class="faculty-pref">
+            {{ faculty.preferences[faculty.prefIndex].day }},
+            {{ faculty.preferences[faculty.prefIndex].time }}
+          </div>
+        </div>
+        }
       </div>
       } }
     </mat-dialog-content>
@@ -106,9 +147,10 @@
             [matAutocomplete]="professorAuto"
           />
           <mat-autocomplete #professorAuto="matAutocomplete">
-            @for (professor of filteredProfessors$ | async; track professor) {
-            <mat-option [value]="professor">
-              {{ professor }}
+            @for (professor of filteredProfessors$ | async; track professor.id)
+            {
+            <mat-option [value]="professor.name">
+              {{ professor.name }}
             </mat-option>
             }
           </mat-autocomplete>

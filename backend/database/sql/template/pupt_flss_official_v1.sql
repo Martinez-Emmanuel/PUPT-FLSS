@@ -1,6 +1,7 @@
--- PUPT-FLSS 2025 Official Database Schema (Version 1.7)
+-- PUPT-FLSS 2025 Official Database Schema (Version 1.9)
 -- Key Changes from the previous version:
--- (+) Add `global_start_date` and `individual_start_date` columns 
+-- (+) Add `preference_days` table
+-- (*) Modify `preferences` table
 
 -- Table structure for table `users`
 CREATE TABLE `users` (
@@ -189,9 +190,6 @@ CREATE TABLE `preferences` (
   `faculty_id` bigint(20) UNSIGNED NOT NULL,
   `active_semester_id` int(10) UNSIGNED NOT NULL,
   `course_assignment_id` int(10) UNSIGNED NOT NULL,
-  `preferred_day` enum('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `preferred_start_time` time NOT NULL,
-  `preferred_end_time` time NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`preferences_id`),
@@ -199,6 +197,19 @@ CREATE TABLE `preferences` (
   FOREIGN KEY (`faculty_id`) REFERENCES `faculty` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`active_semester_id`) REFERENCES `active_semesters` (`active_semester_id`) ON DELETE CASCADE,
   FOREIGN KEY (`course_assignment_id`) REFERENCES `course_assignments` (`course_assignment_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Table structure for table `preference_days`
+CREATE TABLE `preference_days` (
+  `preference_day_id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+  `preference_id` bigint(20) UNSIGNED NOT NULL,
+  `preferred_day` enum('Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `preferred_start_time` time NOT NULL,
+  `preferred_end_time` time NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`preference_day_id`),
+  FOREIGN KEY (`preference_id`) REFERENCES `preferences` (`preferences_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table structure for table `preferences_settings`
@@ -313,4 +324,14 @@ CREATE TABLE `faculty_notifications` (
   `created_at` TIMESTAMP NULL DEFAULT NULL,
   `updated_at` TIMESTAMP NULL DEFAULT NULL,
   PRIMARY KEY (`faculty_notifications_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `api_keys` (
+  `api_keys_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
+  `system` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `encrypted_key` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `is_active` tinyint NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`api_keys_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

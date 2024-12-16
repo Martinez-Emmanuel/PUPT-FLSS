@@ -184,21 +184,15 @@
                 [disabled]="loadingScheduleId === element.schedule_id"
               >
                 <div class="button-content">
-                  <ng-container
-                    *ngIf="
-                      loadingScheduleId === element.schedule_id;
-                      else editIcon
-                    "
-                  >
-                    <mat-spinner
-                      class="custom-spinner"
-                      diameter="25"
-                    ></mat-spinner>
-                  </ng-container>
-                  <ng-template #editIcon>
-                    <mat-icon>edit</mat-icon>
-                    <span>Edit</span>
-                  </ng-template>
+                  @if (loadingScheduleId === element.schedule_id) {
+                  <mat-spinner
+                    class="custom-spinner"
+                    diameter="25"
+                  ></mat-spinner>
+                  } @else {
+                  <mat-icon>edit</mat-icon>
+                  <span>Edit</span>
+                  }
                 </div>
               </button>
             </div>

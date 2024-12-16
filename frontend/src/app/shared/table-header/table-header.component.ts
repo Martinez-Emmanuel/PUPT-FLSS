@@ -24,7 +24,6 @@ export interface InputField {
 
 @Component({
   selector: 'app-table-header',
-  standalone: true,
   imports: [
     CommonModule,
     MatIconModule,

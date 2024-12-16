@@ -6,6 +6,7 @@ use App\Models\ActiveSemester;
 use App\Models\Faculty;
 use App\Models\FacultyNotification;
 use App\Models\Preference;
+use App\Models\PreferenceDay;
 use App\Models\PreferencesSetting;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -14,25 +15,24 @@ use Illuminate\Support\Facades\DB;
 class PreferenceController extends Controller
 {
     /**
-     * Submits faculty course preferences and updates existing entries.
+     * Submits a single faculty preference and updates existing entries.
      */
     public function submitPreferences(Request $request)
     {
         $validatedData = $request->validate([
             'faculty_id' => 'required|exists:faculty,id',
             'active_semester_id' => 'required|exists:active_semesters,active_semester_id',
-            'preferences' => 'required|array',
-            'preferences.*.course_assignment_id' => 'required|exists:course_assignments,course_assignment_id',
-            'preferences.*.preferred_day' => 'required|string',
-            'preferences.*.preferred_start_time' => 'required|string',
-            'preferences.*.preferred_end_time' => 'required|string',
+            'course_assignment_id' => 'required|exists:course_assignments,course_assignment_id',
+            'preferred_days' => 'required|array',
+            'preferred_days.*.day' => 'required|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
+            'preferred_days.*.start_time' => 'required|date_format:H:i:s',
+            'preferred_days.*.end_time' => 'required|date_format:H:i:s',
         ]);
 
-        // Check if the current date is past the submission deadline
         $facultyId = $validatedData['faculty_id'];
         $activeSemesterId = $validatedData['active_semester_id'];
+        $courseAssignmentId = $validatedData['course_assignment_id'];
 
-        // Retrieve preference setting for deadline check
         $preferenceSetting = PreferencesSetting::where('faculty_id', $facultyId)->first();
         $globalDeadline = $preferenceSetting->global_deadline;
         $individualDeadline = $preferenceSetting->individual_deadline;
@@ -46,41 +46,51 @@ class PreferenceController extends Controller
             ], 403);
         }
 
-        // Perform preference submission within a transaction
-        DB::transaction(function () use ($validatedData, $facultyId, $activeSemesterId, $request) {
-            $existingPreferences = Preference::where('faculty_id', $facultyId)
-                ->where('active_semester_id', $activeSemesterId)
-                ->get();
+        DB::transaction(function () use ($validatedData, $facultyId, $activeSemesterId, $courseAssignmentId) {
+            $preference = Preference::updateOrCreate(
+                [
+                    'faculty_id' => $facultyId,
+                    'active_semester_id' => $activeSemesterId,
+                    'course_assignment_id' => $courseAssignmentId,
+                ],
+                []
+            );
 
-            $existingIds = $existingPreferences->pluck('course_assignment_id')->toArray();
-            $newIds = array_column($validatedData['preferences'], 'course_assignment_id');
+            // Check if preferred days have changed
+            $existingDays = PreferenceDay::where('preference_id', $preference->preferences_id)
+                ->orderBy('preferred_day')
+                ->get()
+                ->map(function ($day) {
+                    return [
+                        'day' => $day->preferred_day,
+                        'start_time' => $day->preferred_start_time,
+                        'end_time' => $day->preferred_end_time,
+                    ];
+                })->toArray();
 
-            foreach ($validatedData['preferences'] as $preference) {
-                Preference::updateOrCreate(
-                    [
-                        'faculty_id' => $facultyId,
-                        'active_semester_id' => $activeSemesterId,
-                        'course_assignment_id' => $preference['course_assignment_id'],
-                    ],
-                    [
-                        'preferred_day' => $preference['preferred_day'],
-                        'preferred_start_time' => $preference['preferred_start_time'],
-                        'preferred_end_time' => $preference['preferred_end_time'],
-                    ]
-                );
-            }
+            $newDays = $validatedData['preferred_days'];
+            usort($newDays, function ($a, $b) {
+                return $a['day'] <=> $b['day'];
+            });
 
-            $preferencesToDelete = array_diff($existingIds, $newIds);
-            if (!empty($preferencesToDelete)) {
-                Preference::where('faculty_id', $facultyId)
-                    ->where('active_semester_id', $activeSemesterId)
-                    ->whereIn('course_assignment_id', $preferencesToDelete)
-                    ->delete();
+            if ($existingDays !== $newDays) {
+                // Delete existing days for this preference
+                PreferenceDay::where('preference_id', $preference->preferences_id)->delete();
+
+                // Create new preference days with start and end times
+                foreach ($newDays as $dayData) {
+                    PreferenceDay::create([
+                        'preference_id' => $preference->preferences_id,
+                        'preferred_day' => $dayData['day'],
+                        'preferred_start_time' => $dayData['start_time'],
+                        'preferred_end_time' => $dayData['end_time'],
+                    ]);
+                }
             }
         });
 
         return response()->json([
-            'message' => 'Preferences submitted successfully',
+            'message' => 'Preference submitted successfully',
         ], 201);
     }
 
@@ -106,7 +116,7 @@ class PreferenceController extends Controller
             })
             ->leftJoin('course_assignments', 'preferences.course_assignment_id', '=', 'course_assignments.course_assignment_id')
             ->leftJoin('courses', 'course_assignments.course_id', '=', 'courses.course_id')
-            ->select('faculty.*', 'preferences.*', 'course_assignments.*', 'courses.*')
+            ->select('faculty.*', 'preferences.preferences_id', 'course_assignments.*', 'courses.*') // Select necessary columns
             ->get();
 
         $facultyPreferences = $faculty->groupBy('id')->map(function ($facultyGroup) use ($activeSemester) {
@@ -116,6 +126,17 @@ class PreferenceController extends Controller
 
             $courses = $facultyGroup->map(function ($preference) {
                 if ($preference->course_assignment_id) {
+                    $preferenceDays = PreferenceDay::where('preference_id', $preference->preferences_id)
+                        ->orderBy('preferred_day')
+                        ->get()
+                        ->map(function ($day) {
+                            return [
+                                'day' => $day->preferred_day,
+                                'start_time' => $day->preferred_start_time,
+                                'end_time' => $day->preferred_end_time,
+                            ];
+                        })->values()->toArray();
+
                     return [
                         'course_assignment_id' => $preference->course_assignment_id ?? 'N/A',
                         'course_details' => [
@@ -126,9 +147,7 @@ class PreferenceController extends Controller
                         'lec_hours' => is_numeric($preference->lec_hours) ? (int) $preference->lec_hours : 0,
                         'lab_hours' => is_numeric($preference->lab_hours) ? (int) $preference->lab_hours : 0,
                         'units' => $preference->units ?? 0,
-                        'preferred_day' => $preference->preferred_day,
-                        'preferred_start_time' => $preference->preferred_start_time,
-                        'preferred_end_time' => $preference->preferred_end_time,
+                        'preferred_days' => $preferenceDays,
                         'created_at' => $preference->created_at ? Carbon::parse($preference->created_at)->toDateTimeString() : 'N/A',
                         'updated_at' => $preference->updated_at ? Carbon::parse($preference->updated_at)->toDateTimeString() : 'N/A',
                     ];
@@ -211,6 +230,17 @@ class PreferenceController extends Controller
 
             $courses = $facultyGroup->flatMap(function ($preference) use ($activeSemester) {
                 if ($preference->course_assignment_id) {
+                    $preferenceDays = PreferenceDay::where('preference_id', $preference->preferences_id)
+                        ->orderBy('preferred_day')
+                        ->get()
+                        ->map(function ($day) {
+                            return [
+                                'day' => $day->preferred_day,
+                                'start_time' => $day->preferred_start_time,
+                                'end_time' => $day->preferred_end_time,
+                            ];
+                        })->values()->toArray();
+
                     // Fetch all courses with the same course code that are active
                     $relatedCourses = DB::table('courses')
                         ->join('course_assignments', 'courses.course_id', '=', 'course_assignments.course_id')
@@ -223,7 +253,7 @@ class PreferenceController extends Controller
                         })
                         ->get();
 
-                    return $relatedCourses->map(function ($course) use ($preference) {
+                    return $relatedCourses->map(function ($course) use ($preference, $preferenceDays) {
                         return [
                             'course_assignment_id' => $course->course_assignment_id ?? 'N/A',
                             'course_details' => [
@@ -234,9 +264,7 @@ class PreferenceController extends Controller
                             'lec_hours' => is_numeric($course->lec_hours) ? (int) $course->lec_hours : 0,
                             'lab_hours' => is_numeric($course->lab_hours) ? (int) $course->lab_hours : 0,
                             'units' => $course->units ?? 0,
-                            'preferred_day' => $preference->preferred_day,
-                            'preferred_start_time' => $preference->preferred_start_time,
-                            'preferred_end_time' => $preference->preferred_end_time,
+                            'preferred_days' => $preferenceDays,
                             'created_at' => $preference->created_at ? Carbon::parse($preference->created_at)->toDateTimeString() : 'N/A',
                             'updated_at' => $preference->updated_at ? Carbon::parse($preference->updated_at)->toDateTimeString() : 'N/A',
                         ];
@@ -302,7 +330,7 @@ class PreferenceController extends Controller
                 'preferenceSetting',
                 'preferences' => function ($query) use ($activeSemester) {
                     $query->where('active_semester_id', $activeSemester->active_semester_id)
-                        ->with(['courseAssignment.course']);
+                        ->with(['courseAssignment.course', 'preferenceDays']);
                 },
             ])
             ->first();
@@ -314,6 +342,14 @@ class PreferenceController extends Controller
         $preferenceSetting = $faculty->preferenceSetting;
 
         $courses = $faculty->preferences->map(function ($preference) {
+            $preferenceDays = $preference->preferenceDays->map(function ($day) {
+                return [
+                    'day' => $day->preferred_day,
+                    'start_time' => $day->preferred_start_time,
+                    'end_time' => $day->preferred_end_time,
+                ];
+            })->sortBy('day')->values()->toArray();
+
             return [
                 'course_assignment_id' => $preference->course_assignment_id ?? 'N/A',
                 'course_details' => [
@@ -324,9 +360,7 @@ class PreferenceController extends Controller
                 'lec_hours' => is_numeric($preference->courseAssignment->course->lec_hours) ? (int) $preference->courseAssignment->course->lec_hours : 0,
                 'lab_hours' => is_numeric($preference->courseAssignment->course->lab_hours) ? (int) $preference->courseAssignment->course->lab_hours : 0,
                 'units' => $preference->courseAssignment->course->units ?? 0,
-                'preferred_day' => $preference->preferred_day,
-                'preferred_start_time' => $preference->preferred_start_time,
-                'preferred_end_time' => $preference->preferred_end_time,
+                'preferred_days' => $preferenceDays,
                 'created_at' => $preference->created_at ? Carbon::parse($preference->created_at)->toDateTimeString() : 'N/A',
                 'updated_at' => $preference->updated_at ? Carbon::parse($preference->updated_at)->toDateTimeString() : 'N/A',
             ];
@@ -385,7 +419,7 @@ class PreferenceController extends Controller
             ], 403);
         }
 
-        // Find and delete the specific preference
+        // Find and delete the specific preference along with its associated days
         $preference = Preference::where('faculty_id', $facultyId)
             ->where('active_semester_id', $activeSemesterId)
             ->where('course_assignment_id', $preference_id)
@@ -395,13 +429,17 @@ class PreferenceController extends Controller
             return response()->json(['message' => 'Preference not found.'], 404);
         }
 
+        // Delete related preference days
+        PreferenceDay::where('preference_id', $preference->preferences_id)->delete();
+
+        // Delete the preference
         $preference->delete();
 
         return response()->json(['message' => 'Preference deleted successfully.'], 200);
     }
 
     /**
-     * Deletes all preferences for a specific faculty and semester.
+     * Deletes all preferences for a specific faculty and active semester.
      */
     public function deleteAllPreferences(Request $request)
     {
@@ -422,18 +460,26 @@ class PreferenceController extends Controller
 
         if ($preferenceSetting->is_enabled == 0 || ($deadline && Carbon::now()->greaterThan(Carbon::parse($deadline)->endOfDay()))) {
             return response()->json([
-                'message' => 'The submission deadline has passed or preferences modification is disabled. You cannot delete all preferences.',
+                'message' => 'The submission deadline has passed. You cannot delete preferences.',
             ], 403);
         }
 
-        // Delete all preferences for the specified faculty and semester
-        DB::transaction(function () use ($facultyId, $activeSemesterId) {
-            Preference::where('faculty_id', $facultyId)
-                ->where('active_semester_id', $activeSemesterId)
-                ->delete();
-        });
+        // Find all preferences for the faculty in the active semester
+        $preferences = Preference::where('faculty_id', $facultyId)
+            ->where('active_semester_id', $activeSemesterId)
+            ->get();
 
-        return response()->json(['message' => 'All preferences deleted successfully.'], 200);
+        if ($preferences->isEmpty()) {
+            return response()->json(['message' => 'No preferences found for this faculty in the active semester.'], 404);
+        }
+
+        // Delete related preference days and then the preferences
+        foreach ($preferences as $preference) {
+            PreferenceDay::where('preference_id', $preference->preferences_id)->delete();
+            $preference->delete();
+        }
+
+        return response()->json(['message' => 'All preferences for this faculty in the active semester deleted successfully.'], 200);
     }
 
     /**
