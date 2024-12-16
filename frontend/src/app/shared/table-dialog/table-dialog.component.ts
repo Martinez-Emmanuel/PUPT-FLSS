@@ -75,28 +75,28 @@ export interface DialogConfig {
 }
 
 @Component({
-    selector: 'app-table-dialog',
-    templateUrl: './table-dialog.component.html',
-    styleUrls: ['./table-dialog.component.scss'],
-    providers: [provideNativeDateAdapter()],
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatSelectModule,
-        MatButtonModule,
-        MatTooltipModule,
-        MatDialogModule,
-        MatRadioModule,
-        MatCheckboxModule,
-        MatAutocompleteModule,
-        MatProgressSpinnerModule,
-        MatIconModule,
-        MatDatepickerModule,
-        TwoDigitInputDirective,
-    ],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-table-dialog',
+  templateUrl: './table-dialog.component.html',
+  styleUrls: ['./table-dialog.component.scss'],
+  providers: [provideNativeDateAdapter()],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatTooltipModule,
+    MatDialogModule,
+    MatRadioModule,
+    MatCheckboxModule,
+    MatAutocompleteModule,
+    MatProgressSpinnerModule,
+    MatIconModule,
+    MatDatepickerModule,
+    TwoDigitInputDirective,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableDialogComponent {
   form!: FormGroup;
@@ -235,7 +235,7 @@ export class TableDialogComponent {
 
   private addFormControl(field: DialogFieldConfig): void {
     const validators = this.getValidators(field);
-    let initialValue = this.data.initialValue?.[field.formControlName] || '';
+    let initialValue = this.data.initialValue?.[field.formControlName];
 
     // Modify this section to properly handle array values for multiselect
     if (field.type === 'multiselect') {
