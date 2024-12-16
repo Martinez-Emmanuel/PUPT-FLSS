@@ -16,6 +16,7 @@ class CreateCoursesTable extends Migration
             $table->integer('lab_hours');
             $table->integer('units');
             $table->integer('tuition_hours');
+            $table->index('course_code');
             $table->timestamps();
         });
     }

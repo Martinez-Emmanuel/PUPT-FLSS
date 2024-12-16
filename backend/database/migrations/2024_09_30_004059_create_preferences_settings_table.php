@@ -28,8 +28,14 @@ class CreatePreferencesSettingsTable extends Migration
                 ->references('id')->on('faculty')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
-
             $table->unique(['faculty_id'], 'unique_faculty_setting');
+            $table->index('faculty_id');
+            $table->index('has_request');
+            $table->index('is_enabled');
+            $table->index('global_start_date');
+            $table->index('global_deadline');
+            $table->index('individual_start_date');
+            $table->index('individual_deadline');
         });
     }
 

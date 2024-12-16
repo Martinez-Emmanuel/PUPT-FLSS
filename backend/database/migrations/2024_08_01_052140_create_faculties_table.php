@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('faculty_type', 50);
             $table->string('faculty_units');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->index('user_id');
             $table->timestamps();
         });
     }

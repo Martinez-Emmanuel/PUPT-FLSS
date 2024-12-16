@@ -4,7 +4,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration {
+return new class extends Migration
+{
 
     public function up(): void
     {
@@ -19,14 +20,17 @@ return new class extends Migration {
 
             // Foreign key constraints
             $table->foreign('academic_year_id')
-                  ->references('academic_year_id')
-                  ->on('academic_years')
-                  ->onDelete('set null');
+                ->references('academic_year_id')
+                ->on('academic_years')
+                ->onDelete('set null');
 
             $table->foreign('semester_id')
-                  ->references('semester_id')
-                  ->on('semesters')
-                  ->onDelete('set null');
+                ->references('semester_id')
+                ->on('semesters')
+                ->onDelete('set null');
+            $table->index('academic_year_id');
+            $table->index('semester_id');
+            $table->index('is_active');
         });
     }
 

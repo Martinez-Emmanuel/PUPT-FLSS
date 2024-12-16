@@ -16,6 +16,8 @@ return new class extends Migration
             $table->string('system');
             $table->string('encrypted_key', 500);
             $table->tinyInteger('is_active')->default(1);
+            $table->index('system');
+            $table->index('is_active');
             $table->timestamps();
         });
     }

@@ -19,6 +19,9 @@ return new class extends Migration
             $table->foreign('faculty_id')->references('id')->on('faculty')->onDelete('cascade');
             $table->foreign('active_semester_id')->references('active_semester_id')->on('active_semesters')->onDelete('cascade');
             $table->foreign('course_assignment_id')->references('course_assignment_id')->on('course_assignments')->onDelete('cascade');
+            $table->index('faculty_id');
+            $table->index('active_semester_id');
+            $table->index('course_assignment_id');
         });
     }
 

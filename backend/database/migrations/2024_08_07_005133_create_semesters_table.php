@@ -14,9 +14,10 @@ class CreateSemestersTable extends Migration
             $table->timestamps();
 
             $table->foreign('year_level_id')
-                  ->references('year_level_id')
-                  ->on('year_levels')
-                  ->onDelete('cascade');
+                ->references('year_level_id')
+                ->on('year_levels')
+                ->onDelete('cascade');
+            $table->index('year_level_id');
         });
     }
 
