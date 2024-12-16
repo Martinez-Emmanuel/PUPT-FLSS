@@ -1,0 +1,7 @@
+"id","last_name","first_name","middle_name","suffix_name","code","email","password","role","status","created_at","updated_at"
+"1","Martinez","Emmanuel","Quinco",NULL,"FA0001TG2024","emmanuellmartinez013@gmail.com","$2y$12$Qbl18iXqdpki3PEDahh7oeitNLsDsNVqbBjedbFMuAGdEFRpNT8ua","faculty","Active","2024-10-23 14:59:17","2024-10-23 14:59:17"
+"2","Ferrer","Marissa","B.",NULL,"ADM001TG2024","marissa.ferrer@example.com","$2y$12$NxGM.BOWGJAerEi8auIOjeca1Ylm1QLW.q8gS2zArllKqVsutXfea","admin","Active","2024-10-23 14:59:17","2024-10-23 14:59:17"
+"3","Martinez","Emmanuel","Quinco",NULL,"SDM001TG2024","emmanuel.martinez@example.com","$2y$12$jyaeyDAJJ8/sA6smSotg4edn9hwehgcxlHTXj0fVJBiE3TqK5thv.","superadmin","Active","2024-10-23 14:59:17","2024-10-23 14:59:17"
+"4","Naoe","Adrian","Bico",NULL,"FA0002TG2024","adrian.naoe@example.com","$2y$12$HNLIN/mBMfr7atZnAV2tduIuOlvah6WoHEunXOObE.tkyjxLdNuqK","faculty","Active","2024-10-23 14:59:18","2024-10-23 14:59:18"
+"5","Malaluan","Kyla","Catu",NULL,"FA0003TG2024","kyla.malaluan@example.com","$2y$12$u968c9mNgslF03HcOz6s0O/6nXLshzuPwyuTzlPxxJYI6N6ZbHizK","faculty","Active","2024-10-23 14:59:18","2024-10-23 14:59:18"
+"6","Rasquero","Via","Abrilla",NULL,"FA0004TG2024","via.rasquero@example.com","$2y$12$JO.b8KrL7SRY1VazgSgswe8PGLNz91mJeNZCuDUCY6U1m8hwchLOO","faculty","Active","2024-10-23 14:59:19","2024-10-23 14:59:19"
