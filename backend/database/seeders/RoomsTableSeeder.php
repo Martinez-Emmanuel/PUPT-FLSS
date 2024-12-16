@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Csv\CsvToArray;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -9,62 +10,36 @@ class RoomsTableSeeder extends Seeder
 {
     public function run()
     {
-        DB::table('rooms')->insert([
-            [
-                'room_id' => 1,
-                'room_code' => 'A201',
-                'location' => 'Building A',
-                'floor_level' => '2nd',
-                'room_type' => 'Lecture',
-                'capacity' => 50,
-                'status' => 'Available',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'room_id' => 2,
-                'room_code' => 'A301',
-                'location' => 'Building A',
-                'floor_level' => '3rd',
-                'room_type' => 'Lecture',
-                'capacity' => 50,
-                'status' => 'Available',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'room_id' => 3,
-                'room_code' => 'A401',
-                'location' => 'Building A',
-                'floor_level' => '4th',
-                'room_type' => 'Lecture',
-                'capacity' => 50,
-                'status' => 'Available',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'room_id' => 4,
-                'room_code' => 'DOST Lab',
-                'location' => 'Building A',
-                'floor_level' => '2nd',
-                'room_type' => 'Lab',
-                'capacity' => 30,
-                'status' => 'Available',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'room_id' => 5,
-                'room_code' => 'Aboitiz Lab',
-                'location' => 'Building A',
-                'floor_level' => '3rd',
-                'room_type' => 'Lab',
-                'capacity' => 30,
-                'status' => 'Available',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+        $csvPath = database_path('seeders/csv/rooms.csv');
+
+        try {
+            $csvData = CsvToArray::convert($csvPath);
+        } catch (\Exception $e) {
+            $this->command->error($e->getMessage());
+            return;
+        }
+
+        $dataToInsert = [];
+
+        foreach ($csvData as $record) {
+            $dataToInsert[] = [
+                'room_id' => $record['room_id'],
+                'room_code' => $record['room_code'],
+                'location' => $record['location'],
+                'floor_level' => $record['floor_level'],
+                'room_type' => $record['room_type'],
+                'capacity' => $record['capacity'],
+                'status' => $record['status'],
+                'created_at' => $record['created_at'],
+                'updated_at' => $record['updated_at'],
+            ];
+        }
+
+        try {
+            DB::table('rooms')->insert($dataToInsert);
+            $this->command->info('Rooms table seeded successfully!');
+        } catch (\Exception $e) {
+            $this->command->error('Error seeding rooms table: ' . $e->getMessage());
+        }
     }
 }

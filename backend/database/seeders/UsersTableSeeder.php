@@ -2,99 +2,47 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Csv\CsvToArray;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 
 class UsersTableSeeder extends Seeder
 {
     public function run()
     {
-        DB::table('users')->insert([
-            [
-                'id' => 1,
-                'first_name' => 'Emmanuel',
-                'middle_name' => 'Q.',
-                'last_name' => 'Martinez',
-                'suffix_name' => null,
-                'code' => 'FA0001TG2024',
-                'email' => 'emmanuellmartinez013@gmail.com',
-                'password' => Hash::make('facultypass'),
-                'role' => 'faculty',
-                'status' => 'Active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 2,
-                'first_name' => 'Marissa',
-                'middle_name' => 'B.',
-                'last_name' => 'Ferrer',
-                'suffix_name' => null,
-                'code' => 'ADM001TG2024',
-                'email' => 'marissa.ferrer@example.com',
-                'password' => Hash::make('adminpass'),
-                'role' => 'admin',
-                'status' => 'Active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 3,
-                'first_name' => 'Emmanuel',
-                'middle_name' => 'Q.',
-                'last_name' => 'Martinez',
-                'suffix_name' => null,
-                'code' => 'SDM001TG2024',
-                'email' => 'emmanuel.martinez@example.com',
-                'password' => Hash::make('superadminpass'),
-                'role' => 'superadmin',
-                'status' => 'Active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 4,
-                'first_name' => 'Adrian',
-                'middle_name' => 'B.',
-                'last_name' => 'Naoe',
-                'suffix_name' => null,
-                'code' => 'FA0002TG2024',
-                'email' => 'adrian.naoe@example.com',
-                'password' => Hash::make('facultypass'),
-                'role' => 'faculty',
-                'status' => 'Active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 5,
-                'first_name' => 'Kyla Rica',
-                'middle_name' => 'C.',
-                'last_name' => 'Malaluan',
-                'suffix_name' => null,
-                'code' => 'FA0003TG2024',
-                'email' => 'kyla.malaluan@example.com',
-                'password' => Hash::make('facultypass'),
-                'role' => 'faculty',
-                'status' => 'Active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'id' => 6,
-                'first_name' => 'Via Clariz',
-                'middle_name' => 'A.',
-                'last_name' => 'Rasquero',
-                'suffix_name' => null,
-                'code' => 'FA0004TG2024',
-                'email' => 'via.rasquero@example.com',
-                'password' => Hash::make('facultypass'),
-                'role' => 'faculty',
-                'status' => 'Active',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+        $csvPath = database_path('seeders/csv/users.csv');
+
+        try {
+            $csvData = CsvToArray::convert($csvPath);
+        } catch (\Exception $e) {
+            $this->command->error($e->getMessage());
+            return;
+        }
+
+        $dataToInsert = [];
+
+        foreach ($csvData as $record) {
+            $dataToInsert[] = [
+                'id' => $record['id'],
+                'first_name' => $record['first_name'],
+                'middle_name' => $record['middle_name'] === 'NULL' ? null : $record['middle_name'],
+                'last_name' => $record['last_name'],
+                'suffix_name' => $record['suffix_name'] === 'NULL' ? null : $record['suffix_name'],
+                'code' => $record['code'],
+                'email' => $record['email'],
+                'password' => $record['password'],
+                'role' => $record['role'],
+                'status' => $record['status'],
+                'created_at' => $record['created_at'],
+                'updated_at' => $record['updated_at'],
+            ];
+        }
+
+        try {
+            DB::table('users')->insert($dataToInsert);
+            $this->command->info('Users table seeded successfully!');
+        } catch (\Exception $e) {
+            $this->command->error('Error seeding users table: ' . $e->getMessage());
+        }
     }
 }

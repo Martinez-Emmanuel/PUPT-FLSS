@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use Database\Seeders\Csv\CsvToArray;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 
@@ -9,79 +10,34 @@ class ProgramYearLevelCurriculaTableSeeder extends Seeder
 {
     public function run()
     {
-        DB::table('program_year_level_curricula')->insert([
-            [
-                'program_year_level_curricula_id' => 1,
-                'academic_year_id' => 2,
-                'program_id' => 1,
-                'year_level' => 1,
-                'curriculum_id' => 2,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'program_year_level_curricula_id' => 2,
-                'academic_year_id' => 2,
-                'program_id' => 1,
-                'year_level' => 2,
-                'curriculum_id' => 2,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'program_year_level_curricula_id' => 3,
-                'academic_year_id' => 2,
-                'program_id' => 1,
-                'year_level' => 3,
-                'curriculum_id' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'program_year_level_curricula_id' => 4,
-                'academic_year_id' => 2,
-                'program_id' => 1,
-                'year_level' => 4,
-                'curriculum_id' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'program_year_level_curricula_id' => 5,
-                'academic_year_id' => 2,
-                'program_id' => 2,
-                'year_level' => 1,
-                'curriculum_id' => 2,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'program_year_level_curricula_id' => 6,
-                'academic_year_id' => 2,
-                'program_id' => 2,
-                'year_level' => 2,
-                'curriculum_id' => 2,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'program_year_level_curricula_id' => 7,
-                'academic_year_id' => 2,
-                'program_id' => 2,
-                'year_level' => 3,
-                'curriculum_id' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'program_year_level_curricula_id' => 8,
-                'academic_year_id' => 2,
-                'program_id' => 2,
-                'year_level' => 4,
-                'curriculum_id' => 1,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
+        $csvPath = database_path('seeders/csv/program_year_level_curricula.csv');
+
+        try {
+            $csvData = CsvToArray::convert($csvPath);
+        } catch (\Exception $e) {
+            $this->command->error($e->getMessage());
+            return;
+        }
+
+        $dataToInsert = [];
+
+        foreach ($csvData as $record) {
+            $dataToInsert[] = [
+                'program_year_level_curricula_id' => $record['program_year_level_curricula_id'],
+                'academic_year_id' => $record['academic_year_id'],
+                'program_id' => $record['program_id'],
+                'year_level' => $record['year_level'],
+                'curriculum_id' => $record['curriculum_id'],
+                'created_at' => $record['created_at'],
+                'updated_at' => $record['updated_at'],
+            ];
+        }
+
+        try {
+            DB::table('program_year_level_curricula')->insert($dataToInsert);
+            $this->command->info('Program year level curricula table seeded successfully!');
+        } catch (\Exception $e) {
+            $this->command->error('Error seeding program year level curricula table: ' . $e->getMessage());
+        }
     }
 }
