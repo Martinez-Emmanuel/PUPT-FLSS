@@ -1,8 +1,8 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
-import { catchError, of } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, of, Subject, takeUntil } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -30,7 +30,7 @@ import { fadeAnimation } from '../../../../animations/animations';
   animations: [fadeAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FacultyComponent implements OnInit {
+export class FacultyComponent implements OnInit, OnDestroy {
   facultyStatuses = ['Active', 'Inactive'];
   facultyTypes = [
     'Full-time (Permanent)',
@@ -43,6 +43,9 @@ export class FacultyComponent implements OnInit {
   faculty: Faculty[] = [];
   filteredFaculty: Faculty[] = [];
   isLoading = true;
+
+  searchControl = new FormControl('');
+  private destroy$ = new Subject<void>();
 
   columns = [
     { key: 'index', label: '#' },
@@ -82,6 +85,49 @@ export class FacultyComponent implements OnInit {
 
   ngOnInit() {
     this.fetchFaculty();
+    this.setupSearch();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  setupSearch() {
+    this.searchControl.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe((searchTerm) => {
+        this.onSearch(searchTerm || '');
+      });
+  }
+
+  /**
+   * Handles the search input and filters the faculty accordingly.
+   * @param searchTerm The term entered by the user in the search field.
+   */
+  onSearch(searchTerm: string) {
+    const lowerSearch = searchTerm.toLowerCase();
+
+    if (!lowerSearch) {
+      this.filteredFaculty = [...this.faculty];
+    } else {
+      this.filteredFaculty = this.faculty.filter(
+        (faculty) =>
+          faculty.code.toLowerCase().includes(lowerSearch) ||
+          faculty.name.toLowerCase().includes(lowerSearch) ||
+          faculty.email.toLowerCase().includes(lowerSearch) ||
+          faculty.faculty_type.toLowerCase().includes(lowerSearch) ||
+          faculty.status.toLowerCase().includes(lowerSearch) ||
+          faculty.faculty_units.toString().includes(lowerSearch)
+      );
+    }
+    this.cdr.markForCheck();
+  }
+
+  onInputChange(values: { [key: string]: any }) {
+    if (values['search'] !== undefined) {
+      this.searchControl.setValue(values['search']);
+    }
   }
 
   /**
@@ -103,50 +149,15 @@ export class FacultyComponent implements OnInit {
           this.isLoading = false;
           this.cdr.markForCheck();
           return of([]);
-        })
+        }),
+        takeUntil(this.destroy$)
       )
       .subscribe((faculty) => {
-        this.faculty = faculty.map((user, index) => ({
-          id: user.id.toString(),
-          code: user.code,
-          name: user.name,
-          last_name: user.last_name,
-          first_name: user.first_name,
-          middle_name: user.middle_name,
-          suffix_name: user.suffix_name,
-          email: user.email || '',
-          faculty_type: user.faculty_type || '',
-          faculty_units: user.faculty_units ?? 0,
-          status: user.status || 'Active',
-          role: user.role,
-        }));
+        this.faculty = faculty;
         this.filteredFaculty = [...this.faculty];
         this.isLoading = false;
         this.cdr.markForCheck();
       });
-  }
-
-  /**
-   * Handles the search input and filters the faculty accordingly.
-   * @param searchTerm The term entered by the user in the search field.
-   */
-  onSearch(searchTerm: string) {
-    if (!searchTerm) {
-      this.filteredFaculty = [...this.faculty];
-    } else {
-      const lowerSearch = searchTerm.toLowerCase();
-      this.filteredFaculty = this.faculty.filter(
-        (faculty) =>
-          faculty.code.toLowerCase().includes(lowerSearch) ||
-          faculty.name.toLowerCase().includes(lowerSearch) ||
-          faculty.email.toLowerCase().includes(lowerSearch) ||
-          faculty.faculty_type.toLowerCase().includes(lowerSearch) ||
-          faculty.status.toLowerCase().includes(lowerSearch) ||
-          faculty.faculty_units.toString().includes(lowerSearch)
-      );
-    }
-    console.log('Filtered Faculty:', this.filteredFaculty);
-    this.cdr.markForCheck();
   }
 
   /**

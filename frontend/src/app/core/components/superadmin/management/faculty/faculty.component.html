@@ -11,7 +11,7 @@
       [searchLabel]="'Search Faculty'"
       [addButtonLabel]="'Add Faculty'"
       [inputFields]="headerInputFields"
-      (search)="onSearch($event)"
+      (inputChange)="onInputChange($event)"
       (add)="openAddFacultyDialog()"
     ></app-table-header>
   </div>

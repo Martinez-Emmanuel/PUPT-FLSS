@@ -27,6 +27,7 @@ export interface User {
   status: string;
   faculty?: Faculty;
   passwordDisplay?: string;
+  fullName: string;
 }
 
 @Injectable({
