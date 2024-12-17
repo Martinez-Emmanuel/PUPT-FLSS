@@ -110,6 +110,10 @@ export class FacultyComponent implements OnInit {
           id: user.id.toString(),
           code: user.code,
           name: user.name,
+          last_name: user.last_name,
+          first_name: user.first_name,
+          middle_name: user.middle_name,
+          suffix_name: user.suffix_name,
           email: user.email || '',
           faculty_type: user.faculty_type || '',
           faculty_units: user.faculty_units ?? 0,
@@ -127,9 +131,7 @@ export class FacultyComponent implements OnInit {
    * @param searchTerm The term entered by the user in the search field.
    */
   onSearch(searchTerm: string) {
-    console.log('Search term:', searchTerm); // Debugging line
     if (!searchTerm) {
-      // If search term is empty, display all faculty
       this.filteredFaculty = [...this.faculty];
     } else {
       const lowerSearch = searchTerm.toLowerCase();
@@ -166,11 +168,32 @@ export class FacultyComponent implements OnInit {
           disabled: !!faculty,
         },
         {
-          label: 'Name',
-          formControlName: 'name',
+          label: 'Last Name',
+          formControlName: 'last_name',
           type: 'text',
           maxLength: 50,
           required: true,
+        },
+        {
+          label: 'First Name',
+          formControlName: 'first_name',
+          type: 'text',
+          maxLength: 50,
+          required: true,
+        },
+        {
+          label: 'Middle Name',
+          formControlName: 'middle_name',
+          type: 'text',
+          maxLength: 50,
+          required: false,
+        },
+        {
+          label: 'Suffix Name',
+          formControlName: 'suffix_name',
+          type: 'text',
+          maxLength: 50,
+          required: false,
         },
         {
           label: 'Password',
@@ -348,6 +371,9 @@ export class FacultyComponent implements OnInit {
       .subscribe((result) => {
         if (result !== null) {
           this.faculty = this.faculty.filter((f) => f.id !== facultyId);
+          this.filteredFaculty = this.filteredFaculty.filter(
+            (f) => f.id !== facultyId
+          );
           this.snackBar.open('Faculty deleted successfully', 'Close', {
             duration: 3000,
           });

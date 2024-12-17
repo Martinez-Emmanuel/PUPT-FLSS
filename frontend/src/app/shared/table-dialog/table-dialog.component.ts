@@ -451,6 +451,12 @@ export class TableDialogComponent {
 
       const formValue = this.form.getRawValue();
 
+      if (formValue.last_name && formValue.first_name) {
+        formValue.name = `${formValue.last_name}, ${formValue.first_name} ${
+          formValue.middle_name || ''
+        } ${formValue.suffix_name || ''}`.trim();
+      }
+
       const minimumSpinnerDuration = 500;
       const startTime = Date.now();
 

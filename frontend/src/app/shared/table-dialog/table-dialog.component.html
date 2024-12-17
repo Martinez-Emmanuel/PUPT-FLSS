@@ -48,7 +48,7 @@
               matInput
               [formControlName]="field.formControlName"
               [attr.disabled]="field.disabled ? '' : null"
-              [readonly]="field.disabled ? true : false" 
+              [readonly]="field.disabled ? true : false"
               [maxlength]="field.maxLength ?? null"
             />
             <input
@@ -167,16 +167,14 @@
           </mat-option>
           }
         </mat-select>
-        } 
-        @case ('multiselect') {
-        <mat-select [formControlName]="field.formControlName" 
-            multiple>
+        } @case ('multiselect') {
+        <mat-select [formControlName]="field.formControlName" multiple>
           @for (option of field.options; track option) {
           <mat-option [value]="option">
             {{ option }}
           </mat-option>
           }
-        </mat-select>         
+        </mat-select>
         } @case ('autocomplete') {
         <input
           type="text"
@@ -247,10 +245,7 @@
       (click)="onSave()"
     >
       @if (isLoading) {
-      <mat-spinner
-        [diameter]="25"
-        class="custom-spinner"
-      ></mat-spinner>
+      <mat-spinner [diameter]="25" class="custom-spinner"></mat-spinner>
       } @else {
       <span>{{ data.isEdit ? "Update" : "Confirm" }}</span>
       }
