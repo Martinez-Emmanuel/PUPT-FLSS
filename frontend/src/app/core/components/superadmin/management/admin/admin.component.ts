@@ -6,7 +6,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';
 
-
 import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
 import { InputField, TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
@@ -17,18 +16,18 @@ import { AdminService, User } from '../../../../services/superadmin/management/a
 import { fadeAnimation } from '../../../../animations/animations';
 
 @Component({
-    selector: 'app-admin',
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        TableGenericComponent,
-        TableHeaderComponent,
-        LoadingComponent,
-    ],
-    templateUrl: './admin.component.html',
-    styleUrls: ['./admin.component.scss'],
-    animations: [fadeAnimation],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-admin',
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TableGenericComponent,
+    TableHeaderComponent,
+    LoadingComponent,
+  ],
+  templateUrl: './admin.component.html',
+  styleUrls: ['./admin.component.scss'],
+  animations: [fadeAnimation],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class AdminComponent implements OnInit {
   adminStatuses = ['Active', 'Inactive'];
@@ -41,7 +40,7 @@ export class AdminComponent implements OnInit {
   columns = [
     { key: 'index', label: '#' },
     { key: 'code', label: 'Admin Code' },
-    { key: 'name', label: 'Name' },
+    { key: 'fullName', label: 'Name' },
     { key: 'passwordDisplay', label: 'Password' },
     { key: 'role', label: 'Role' },
     { key: 'status', label: 'Status' },
@@ -50,7 +49,7 @@ export class AdminComponent implements OnInit {
   displayedColumns: string[] = [
     'index',
     'code',
-    'name',
+    'fullName',
     'passwordDisplay',
     'role',
     'status',
@@ -82,6 +81,9 @@ export class AdminComponent implements OnInit {
       next: (admins) => {
         this.admins = admins.map((admin) => ({
           ...admin,
+          fullName: `${admin.last_name}, ${admin.first_name} ${
+            admin.middle_name ?? ''
+          } ${admin.suffix_name ?? ''}`,
           passwordDisplay: '••••••••',
         }));
         this.filteredAdmins = [...this.admins];
@@ -110,7 +112,11 @@ export class AdminComponent implements OnInit {
       this.filteredAdmins = this.admins.filter(
         (admin) =>
           admin.code.toLowerCase().includes(lowerSearch) ||
-          admin.name.toLowerCase().includes(lowerSearch) ||
+          `${admin.last_name}, ${admin.first_name} ${admin.middle_name ?? ''} ${
+            admin.suffix_name ?? ''
+          }`
+            .toLowerCase()
+            .includes(lowerSearch) ||
           admin.role.toLowerCase().includes(lowerSearch) ||
           admin.status.toLowerCase().includes(lowerSearch)
       );
@@ -133,10 +139,36 @@ export class AdminComponent implements OnInit {
           disabled: !!admin,
         },
         {
-          label: 'Name',
-          formControlName: 'name',
+          label: 'Last Name',
+          formControlName: 'last_name',
           type: 'text',
           maxLength: 50,
+          required: true,
+        },
+        {
+          label: 'First Name',
+          formControlName: 'first_name',
+          type: 'text',
+          maxLength: 50,
+          required: true,
+        },
+        {
+          label: 'Middle Name',
+          formControlName: 'middle_name',
+          type: 'text',
+          maxLength: 50,
+        },
+        {
+          label: 'Suffix',
+          formControlName: 'suffix_name',
+          type: 'text',
+          maxLength: 50,
+        },
+        {
+          label: 'Email',
+          formControlName: 'email',
+          type: 'text',
+          maxLength: 100,
           required: true,
         },
         {
@@ -183,8 +215,9 @@ export class AdminComponent implements OnInit {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         const { confirmPassword, ...adminData } = result;
+        const { name, ...rest } = adminData;
 
-        this.adminService.addAdmin(adminData).subscribe({
+        this.adminService.addAdmin(rest).subscribe({
           next: (newAdmin) => {
             this.snackBar.open('Admin added successfully', 'Close', {
               duration: 3000,

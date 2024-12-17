@@ -163,7 +163,10 @@ class AccountController extends Controller
     {
         // Validate the incoming request
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'suffix_name' => 'nullable|string|max:255',
             'code' => 'required|string|max:255|unique:users',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:8',
@@ -173,7 +176,10 @@ class AccountController extends Controller
 
         // Create the user with the role provided in the request
         $admin = User::create([
-            'name' => $validatedData['name'],
+            'last_name' => $validatedData['last_name'],
+            'first_name' => $validatedData['first_name'],
+            'middle_name' => $validatedData['middle_name'],
+            'suffix_name' => $validatedData['suffix_name'],
             'code' => $validatedData['code'],
             'email' => $validatedData['email'],
             'role' => $validatedData['role'], // Role comes from the request
@@ -188,7 +194,10 @@ class AccountController extends Controller
     {
         // Validate the incoming request
         $validatedData = $request->validate([
-            'name' => 'sometimes|required|string|max:255',
+            'last_name' => 'sometimes|required|string|max:255',
+            'first_name' => 'sometimes|required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'suffix_name' => 'nullable|string|max:255',
             'code' => 'sometimes|required|string|max:255|unique:users,code,' . $admin->id,
             'email' => 'sometimes|required|email|unique:users,email,' . $admin->id,
             'password' => 'sometimes|string|min:8',
@@ -200,9 +209,24 @@ class AccountController extends Controller
         $changedFields = [];
 
         // Check each field for changes and update if necessary
-        if (isset($validatedData['name'])) {
-            $admin->name = $validatedData['name'];
-            $changedFields[] = 'name';
+        if (isset($validatedData['last_name']) && $admin->last_name != $validatedData['last_name']) {
+            $admin->last_name = $validatedData['last_name'];
+            $changedFields[] = 'last_name';
+        }
+
+        if (isset($validatedData['first_name']) && $admin->first_name != $validatedData['first_name']) {
+            $admin->first_name = $validatedData['first_name'];
+            $changedFields[] = 'first_name';
+        }
+
+        if (isset($validatedData['middle_name']) && $admin->middle_name != $validatedData['middle_name']) {
+            $admin->middle_name = $validatedData['middle_name'];
+            $changedFields[] = 'middle_name';
+        }
+
+        if (isset($validatedData['suffix_name']) && $admin->suffix_name != $validatedData['suffix_name']) {
+            $admin->suffix_name = $validatedData['suffix_name'];
+            $changedFields[] = 'suffix_name';
         }
 
         if (isset($validatedData['code']) && $admin->code != $validatedData['code']) {

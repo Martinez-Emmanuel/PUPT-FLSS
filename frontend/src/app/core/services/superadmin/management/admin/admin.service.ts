@@ -17,7 +17,10 @@ export interface Faculty {
 export interface User {
   code: string;
   id: string;
-  name: string;
+  last_name: string;
+  first_name: string;
+  middle_name?: string;
+  suffix_name?: string;
   password?: string;
   email: string;
   role: string;
@@ -51,7 +54,10 @@ export class AdminService {
 
   // Update an existing admin
   updateAdmin(id: string, updatedAdmin: User): Observable<User> {
-    return this.http.put<User>(`${this.baseUrl}/updateAdmins/${id}`, updatedAdmin);
+    return this.http.put<User>(
+      `${this.baseUrl}/updateAdmins/${id}`,
+      updatedAdmin
+    );
   }
 
   // Delete an admin by ID

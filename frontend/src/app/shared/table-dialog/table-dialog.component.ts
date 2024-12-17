@@ -227,10 +227,23 @@ export class TableDialogComponent {
   }
 
   public hasFormChanged(): boolean {
-    return (
-      JSON.stringify(this.form.getRawValue()) !==
-      JSON.stringify(this.initialFormValues)
-    );
+    // When editing, password fields are not required, so we need to ignore them when checking for changes
+    if (this.data.isEdit) {
+      const currentValues = { ...this.form.getRawValue() };
+      const initialValues = { ...this.initialFormValues };
+      delete currentValues.password;
+      delete currentValues.confirmPassword;
+      delete initialValues.password;
+      delete initialValues.confirmPassword;
+
+      return JSON.stringify(currentValues) !== JSON.stringify(initialValues);
+    } else {
+      // When adding, we need to check all fields
+      return (
+        JSON.stringify(this.form.getRawValue()) !==
+        JSON.stringify(this.initialFormValues)
+      );
+    }
   }
 
   private addFormControl(field: DialogFieldConfig): void {
@@ -254,23 +267,34 @@ export class TableDialogComponent {
       initialValue = new Date(initialValue);
     }
 
-    const control = this.fb.control(initialValue, { validators });
-
-    if (field.disabled) {
-      control.disable();
+    // When editing, password fields are not required
+    if (
+      this.data.isEdit &&
+      (field.formControlName === 'password' ||
+        field.formControlName === 'confirmPassword')
+    ) {
+      const control = this.fb.control(initialValue);
+      this.form.addControl(field.formControlName, control);
+    } else {
+      const control = this.fb.control(initialValue, { validators });
+      this.form.addControl(field.formControlName, control);
+      if (field.confirmPassword) {
+        control.setValidators([
+          ...validators,
+          this.passwordMatchValidator.bind(this),
+        ]);
+      }
     }
 
-    this.form.addControl(field.formControlName, control);
+    const formControl = this.form.get(field.formControlName);
+    if (formControl) {
+      if (field.disabled) {
+        formControl.disable();
+      }
 
-    if (field.type === 'autocomplete') {
-      this.initAutocompleteOptions(field);
-    }
-
-    if (field.confirmPassword) {
-      control.setValidators([
-        ...validators,
-        this.passwordMatchValidator.bind(this),
-      ]);
+      if (field.type === 'autocomplete') {
+        this.initAutocompleteOptions(field);
+      }
     }
   }
 
