@@ -1,9 +1,9 @@
-import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
-import { Observable, Subject, forkJoin } from 'rxjs';
-import { map, startWith, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Observable, Subject, forkJoin, of } from 'rxjs';
+import { map, startWith, takeUntil, debounceTime, distinctUntilChanged, switchMap, shareReplay, catchError } from 'rxjs/operators';
 
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -22,6 +22,11 @@ import { Faculty, Room } from '../../core/models/scheduling.model';
 
 import { cardEntranceSide, cardSwipeAnimation } from '../../core/animations/animations';
 
+/**
+ * Validator to ensure the control's value matches one of the valid options.
+ * @param validOptions Array of valid string options.
+ * @returns Validator function.
+ */
 function mustMatchOption(validOptions: string[]): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     if (!control.value) return null;
@@ -43,7 +48,6 @@ interface SuggestedFaculty {
   prefIndex: number;
   animating: boolean;
 }
-
 interface ProfessorOption {
   id: number;
   name: string;
@@ -94,28 +98,58 @@ interface DialogData {
   templateUrl: './dialog-scheduling.component.html',
   styleUrls: ['./dialog-scheduling.component.scss'],
   animations: [cardEntranceSide, cardSwipeAnimation],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DialogSchedulingComponent implements OnInit, OnDestroy {
+  /** Reactive form group for scheduling */
   scheduleForm!: FormGroup;
+
+  /** Observable for filtered professors based on user input */
   filteredProfessors$!: Observable<ProfessorOption[]>;
+
+  /** Observable for filtered rooms based on user input */
   filteredRooms$!: Observable<string[]>;
+
+  /** Flag indicating if there are scheduling conflicts */
   hasConflicts = false;
+
+  /** Flag indicating if a loading operation is in progress */
   isLoading = false;
+
+  /** Message detailing any conflicts detected */
   conflictMessage: string = '';
+
+  /** Currently selected faculty */
   selectedFaculty: SuggestedFaculty | null = null;
 
+  /** Array of day buttons with names and short names */
   dayButtons: { name: string; shortName: string }[] = [];
+
+  /** Currently selected day */
   selectedDay: string = '';
+
+  /** Original day before any changes */
   originalDay: string = '';
 
+  /** Subject to manage unsubscription and prevent memory leaks */
   private destroy$ = new Subject<void>();
 
+  /**
+   * Constructor for DialogSchedulingComponent.
+   * @param fb FormBuilder instance.
+   * @param dialogRef Reference to the MatDialog.
+   * @param data Injected dialog data.
+   * @param schedulingService Service for scheduling operations.
+   * @param snackBar Service for displaying snack bar messages.
+   * @param cdr ChangeDetectorRef for manual change detection.
+   */
   constructor(
-    private fb: FormBuilder,
-    private dialogRef: MatDialogRef<DialogSchedulingComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
+    private dialogRef: MatDialogRef<DialogSchedulingComponent>,
+    private fb: FormBuilder,
     private schedulingService: SchedulingService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private cdr: ChangeDetectorRef
   ) {
     this.initForm();
   }
@@ -131,6 +165,8 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     this.data.suggestedFaculty.forEach(
       (faculty) => (faculty.animating = false)
     );
+
+    this.cdr.markForCheck();
   }
 
   ngOnDestroy(): void {
@@ -138,6 +174,22 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  /**
+   * Initializes the scheduling form with necessary controls.
+   */
+  private initForm(): void {
+    this.scheduleForm = this.fb.group({
+      day: [''],
+      startTime: [''],
+      endTime: [''],
+      professor: [''],
+      room: [''],
+    });
+  }
+
+  /**
+   * Initializes day buttons with short names.
+   */
   private initializeDayButtons(): void {
     const dayShortNames: { [key: string]: string } = {
       Monday: 'Mon',
@@ -154,28 +206,172 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     }));
   }
 
-  /*** Conflict Detection ***/
+  /**
+   * Sets up autocomplete observables for professor and room inputs.
+   */
+  private setupAutocomplete(): void {
+    const professorOptions: ProfessorOption[] = this.data.professorOptions.map(
+      (name, index) => ({
+        id: index,
+        name: name,
+      })
+    );
+
+    this.filteredProfessors$ = this.setupFilter('professor', professorOptions);
+    this.filteredRooms$ = this.setupFilter('room', this.data.roomOptions);
+  }
+
+  /**
+   * Sets up filtering logic for autocomplete inputs.
+   * @param controlName Name of the form control.
+   * @param options Array of string or ProfessorOption for filtering.
+   * @returns Observable emitting filtered options.
+   */
+  private setupFilter(
+    controlName: string,
+    options: string[] | ProfessorOption[]
+  ): Observable<any> {
+    return this.scheduleForm.get(controlName)!.valueChanges.pipe(
+      startWith(''),
+      map((value) =>
+        Array.isArray(options) && typeof options[0] === 'string'
+          ? this.filterOptions(value, options as string[])
+          : this.filterProfessorOptions(value, options as ProfessorOption[])
+      ),
+      shareReplay(1)
+    );
+  }
+
+  /**
+   * Filters professor options based on user input.
+   * @param value User input value.
+   * @param options Array of ProfessorOption.
+   * @returns Filtered array of ProfessorOption.
+   */
+  private filterProfessorOptions(
+    value: string | null,
+    options: ProfessorOption[]
+  ): ProfessorOption[] {
+    const filterValue = (value || '').toLowerCase();
+    return options.filter((option) =>
+      option.name.toLowerCase().includes(filterValue)
+    );
+  }
+
+  /**
+   * Filters string options based on user input.
+   * @param value User input value.
+   * @param options Array of string options.
+   * @returns Filtered array of strings.
+   */
+  private filterOptions(value: string | null, options: string[]): string[] {
+    const filterValue = (value || '').toLowerCase();
+    return options.filter((option) =>
+      option.toLowerCase().includes(filterValue)
+    );
+  }
+
+  /**
+   * Handles changes in the start time to update end time options.
+   */
+  private handleStartTimeChanges(): void {
+    this.scheduleForm
+      .get('startTime')!
+      .valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((startTime) => this.updateEndTimeOptions(startTime));
+  }
+
+  /**
+   * Updates end time options based on selected start time.
+   * @param startTime Selected start time.
+   */
+  private updateEndTimeOptions(startTime: string): void {
+    if (!startTime) {
+      this.data.endTimeOptions = [];
+      this.scheduleForm.patchValue({ endTime: '' });
+      return;
+    }
+
+    const startIndex = this.data.timeOptions.indexOf(startTime);
+    if (startIndex === -1) {
+      this.data.endTimeOptions = [];
+      this.scheduleForm.patchValue({ endTime: '' });
+      return;
+    }
+
+    this.data.endTimeOptions = this.data.timeOptions.slice(startIndex + 1);
+    const currentEndTime = this.scheduleForm.get('endTime')!.value;
+    if (!this.data.endTimeOptions.includes(currentEndTime)) {
+      this.scheduleForm.patchValue({ endTime: '' });
+    }
+
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Sets up custom validators for the form controls.
+   */
+  private setupCustomValidators(): void {
+    this.scheduleForm
+      .get('professor')
+      ?.setValidators([mustMatchOption(this.data.professorOptions)]);
+    this.scheduleForm
+      .get('room')
+      ?.setValidators([mustMatchOption(this.data.roomOptions)]);
+
+    this.scheduleForm.get('professor')?.updateValueAndValidity();
+    this.scheduleForm.get('room')?.updateValueAndValidity();
+  }
+
+  /**
+   * Populates the form with existing schedule data if available.
+   */
+  private populateExistingSchedule(): void {
+    if (!this.data.existingSchedule) return;
+
+    const { day, time, professor, room } = this.data.existingSchedule;
+    const [startTime, endTime] = time.split(' - ').map((time) => time.trim());
+
+    this.scheduleForm.patchValue({
+      day: day !== 'Not set' ? day : '',
+      startTime: startTime !== 'Not set' ? startTime : '',
+      endTime: endTime !== 'Not set' ? endTime : '',
+      professor: professor !== 'Not set' ? professor : '',
+      room: room !== 'Not set' ? room : '',
+    });
+
+    // Set selectedDay immediately after patching the form
+    this.selectedDay = this.scheduleForm.get('day')!.value || '';
+    this.originalDay = this.selectedDay;
+
+    if (startTime && startTime !== 'Not set') {
+      this.updateEndTimeOptions(startTime);
+    }
+
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Sets up conflict detection by subscribing to form value changes.
+   */
   private setupConflictDetection(): void {
     this.scheduleForm.valueChanges
       .pipe(
-        debounceTime(0),
+        debounceTime(150),
         distinctUntilChanged(
           (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
         ),
+        switchMap(() => this.detectConflicts()),
         takeUntil(this.destroy$)
       )
-      .subscribe(() => {
-        this.detectConflicts();
-      });
+      .subscribe();
   }
 
-  private conflictPriorities: { [key: string]: number } = {
-    program: 1,
-    faculty: 2,
-    room: 3,
-  };
-
-  private detectConflicts(): void {
+  /**
+   * Detects scheduling conflicts based on form values.
+   * @returns Observable<void>
+   */
+  private detectConflicts(): Observable<void> {
     const formValues = this.scheduleForm.value;
     const { day, startTime, endTime, professor, room } = formValues;
 
@@ -253,114 +449,63 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
       // Not enough fields to perform any conflict check
       this.conflictMessage = '';
       this.hasConflicts = false;
-      return;
+      this.cdr.markForCheck();
+      return of();
     }
 
     // Execute all validations in parallel
-    forkJoin(
+    return forkJoin(
       validationObservables.map((vo) =>
         vo.observable.pipe(map((result) => ({ type: vo.type, ...result })))
       )
-    )
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (results) => {
-          results.forEach((result) => {
-            if (!result.isValid) {
-              conflictMessages.push({
-                type: result.type,
-                message: result.message,
-              });
-            }
-          });
-
-          if (conflictMessages.length > 0) {
-            // Sort conflict messages based on priority
-            conflictMessages.sort(
-              (a, b) =>
-                this.conflictPriorities[a.type] -
-                this.conflictPriorities[b.type]
-            );
-
-            // Pick the highest priority conflict message
-            const highestPriorityConflict = conflictMessages[0];
-            this.conflictMessage = highestPriorityConflict.message;
-            this.hasConflicts = true;
-          } else {
-            this.conflictMessage = '';
-            this.hasConflicts = false;
+    ).pipe(
+      map((results) => {
+        results.forEach((result) => {
+          if (!result.isValid) {
+            conflictMessages.push({
+              type: result.type,
+              message: result.message,
+            });
           }
-        },
-        error: (error) => {
-          this.conflictMessage =
-            'An error occurred during validation. Please try again.';
+        });
+
+        if (conflictMessages.length > 0) {
+          // Define conflict priorities
+          const conflictPriorities: { [key: string]: number } = {
+            program: 1,
+            faculty: 2,
+            room: 3,
+          };
+
+          // Sort conflict messages based on priority
+          conflictMessages.sort(
+            (a, b) => conflictPriorities[a.type] - conflictPriorities[b.type]
+          );
+
+          // Pick the highest priority conflict message
+          const highestPriorityConflict = conflictMessages[0];
+          this.conflictMessage = highestPriorityConflict.message;
           this.hasConflicts = true;
-        },
-      });
+        } else {
+          this.conflictMessage = '';
+          this.hasConflicts = false;
+        }
+
+        this.cdr.markForCheck();
+      }),
+      catchError((error) => {
+        this.conflictMessage =
+          'An error occurred during validation. Please try again.';
+        this.hasConflicts = true;
+        this.cdr.markForCheck();
+        return of();
+      })
+    );
   }
 
-  /*** Form Setup ***/
-  private initForm(): void {
-    this.scheduleForm = this.fb.group({
-      day: [''],
-      startTime: [''],
-      endTime: [''],
-      professor: [''],
-      room: [''],
-    });
-  }
-
-  private setupCustomValidators(): void {
-    this.scheduleForm
-      .get('professor')
-      ?.setValidators([mustMatchOption(this.data.professorOptions)]);
-    this.scheduleForm
-      .get('room')
-      ?.setValidators([mustMatchOption(this.data.roomOptions)]);
-
-    this.scheduleForm.get('professor')?.updateValueAndValidity();
-    this.scheduleForm.get('room')?.updateValueAndValidity();
-  }
-
-  private populateExistingSchedule(): void {
-    if (!this.data.existingSchedule) return;
-
-    const { day, time, professor, room } = this.data.existingSchedule;
-    const [startTime, endTime] = time.split(' - ').map((time) => time.trim());
-
-    this.scheduleForm.patchValue({
-      day: day !== 'Not set' ? day : '',
-      startTime: startTime !== 'Not set' ? startTime : '',
-      endTime: endTime !== 'Not set' ? endTime : '',
-      professor: professor !== 'Not set' ? professor : '',
-      room: room !== 'Not set' ? room : '',
-    });
-
-    // Set selectedDay immediately after patching the form
-    this.selectedDay = this.scheduleForm.get('day')!.value || '';
-    this.originalDay = this.selectedDay;
-
-    if (startTime && startTime !== 'Not set') {
-      this.updateEndTimeOptions(startTime);
-    }
-  }
-
-  /*** Form Actions ***/
-
-  public onCancel(): void {
-    this.scheduleForm.patchValue({ day: this.originalDay });
-    this.selectedDay = this.originalDay;
-    this.dialogRef.close();
-  }
-
-  public onClearAll(): void {
-    this.scheduleForm.reset();
-    this.data.endTimeOptions = [...this.data.timeOptions];
-    this.selectedDay = '';
-    this.originalDay = '';
-    this.selectedFaculty = null;
-  }
-
+  /**
+   * Assigns the schedule after performing validations.
+   */
   public onAssign(): void {
     if (this.hasConflicts) {
       this.snackBar.open(
@@ -393,6 +538,8 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
 
     // Proceed with assigning schedule after conflict check
     this.isLoading = true;
+    this.cdr.markForCheck();
+
     this.schedulingService
       .assignSchedule(
         this.data.schedule_id,
@@ -419,6 +566,10 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Handles errors that occur during schedule assignment.
+   * @param error Error object.
+   */
   private handleAssignmentError(error: any): void {
     console.error('Failed to assign schedule:', error);
 
@@ -434,8 +585,37 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     this.snackBar.open(errorMessage, 'Close', {
       duration: 5000,
     });
+
+    this.cdr.markForCheck();
   }
 
+  /**
+   * Clears all form fields and resets state.
+   */
+  public onClearAll(): void {
+    this.scheduleForm.reset();
+    this.data.endTimeOptions = [...this.data.timeOptions];
+    this.selectedDay = '';
+    this.originalDay = '';
+    this.selectedFaculty = null;
+
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Cancels the dialog and reverts any changes.
+   */
+  public onCancel(): void {
+    this.scheduleForm.patchValue({ day: this.originalDay });
+    this.selectedDay = this.originalDay;
+    this.dialogRef.close();
+  }
+
+  /**
+   * Handles click events on a faculty card to select preferences.
+   * @param faculty Selected faculty.
+   * @param preference Selected preference.
+   */
   public onFacultyClick(
     faculty: SuggestedFaculty,
     preference: Preference
@@ -456,27 +636,32 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     this.selectedDay = day;
     this.originalDay = day;
     this.scheduleForm.markAllAsTouched();
+
+    this.cdr.markForCheck();
   }
 
-  nextPreference(faculty: SuggestedFaculty): void {
-    // If an animation is currently running, ignore the click
-    if (faculty.animating) {
-      return;
-    }
+  /**
+   * Navigates to the next preference for a faculty.
+   * @param faculty Faculty whose preference is to be navigated.
+   */
+  public nextPreference(faculty: SuggestedFaculty): void {
+    if (faculty.animating) return;
 
     faculty.animating = true;
     faculty.prefIndex = (faculty.prefIndex + 1) % faculty.preferences.length;
 
     setTimeout(() => {
       faculty.animating = false;
+      this.cdr.markForCheck();
     }, 600);
   }
 
-  previousPreference(faculty: SuggestedFaculty): void {
-    // If an animation is currently running, ignore the click
-    if (faculty.animating) {
-      return;
-    }
+  /**
+   * Navigates to the previous preference for a faculty.
+   * @param faculty Faculty whose preference is to be navigated.
+   */
+  public previousPreference(faculty: SuggestedFaculty): void {
+    if (faculty.animating) return;
 
     faculty.animating = true;
     faculty.prefIndex =
@@ -485,84 +670,26 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
 
     setTimeout(() => {
       faculty.animating = false;
+      this.cdr.markForCheck();
     }, 600);
   }
 
-  /*** Autocomplete and Filtering ***/
+  /**
+   * Selects a day from the day buttons.
+   * @param dayName Name of the day to select.
+   */
+  public selectDay(dayName: string): void {
+    this.selectedDay = dayName;
+    this.scheduleForm.patchValue({ day: dayName });
 
-  private setupAutocomplete(): void {
-    const professorOptions: ProfessorOption[] = this.data.professorOptions.map(
-      (name, index) => ({
-        id: index,
-        name: name,
-      })
-    );
-
-    this.filteredProfessors$ = this.setupFilter('professor', professorOptions);
-    this.filteredRooms$ = this.setupFilter('room', this.data.roomOptions);
+    this.cdr.markForCheck();
   }
 
-  private setupFilter(
-    controlName: string,
-    options: string[] | ProfessorOption[]
-  ): Observable<any> {
-    return this.scheduleForm.get(controlName)!.valueChanges.pipe(
-      startWith(''),
-      map((value) =>
-        Array.isArray(options) && typeof options[0] === 'string'
-          ? this.filterOptions(value, options as string[])
-          : this.filterProfessorOptions(value, options as ProfessorOption[])
-      )
-    );
-  }
-
-  private filterProfessorOptions(
-    value: string | null,
-    options: ProfessorOption[]
-  ): ProfessorOption[] {
-    const filterValue = (value || '').toLowerCase();
-    return options.filter((option) =>
-      option.name.toLowerCase().includes(filterValue)
-    );
-  }
-
-  private filterOptions(value: string | null, options: string[]): string[] {
-    const filterValue = (value || '').toLowerCase();
-    return options.filter((option) =>
-      option.toLowerCase().includes(filterValue)
-    );
-  }
-
-  /*** Time Selection Handling ***/
-
-  private handleStartTimeChanges(): void {
-    this.scheduleForm
-      .get('startTime')!
-      .valueChanges.pipe(takeUntil(this.destroy$))
-      .subscribe((startTime) => this.updateEndTimeOptions(startTime));
-  }
-
-  private updateEndTimeOptions(startTime: string): void {
-    if (!startTime) {
-      this.data.endTimeOptions = [];
-      return;
-    }
-
-    const startIndex = this.data.timeOptions.indexOf(startTime);
-    if (startIndex === -1) {
-      this.data.endTimeOptions = [];
-      return;
-    }
-
-    this.data.endTimeOptions = this.data.timeOptions.slice(startIndex + 1);
-    const currentEndTime = this.scheduleForm.get('endTime')!.value;
-    if (!this.data.endTimeOptions.includes(currentEndTime)) {
-      this.scheduleForm.patchValue({ endTime: '' });
-    }
-  }
-
-  /*** Utility Methods ***/
-
+  /**
+   * Formats time string to backend format.
+   * @param time Time string in 'HH:MM AM/PM' format.
+   * @returns Time string in 'HH:MM:SS' 24-hour format or null.
+   */
   private formatTimeToBackend(time: string | null): string | null {
     if (!time) {
       return null;
@@ -583,18 +710,30 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     return `${formattedHours}:${formattedMinutes}:00`;
   }
 
+  /**
+   * Determines if a given preference is currently selected.
+   * @param preference Preference to check.
+   * @returns True if selected, false otherwise.
+   */
   public isPreferenceSelected(preference: Preference): boolean {
     return (
       this.scheduleForm.get('day')?.value === preference.day &&
-      this.scheduleForm.get('startTime')?.value +
-        ' - ' +
-        this.scheduleForm.get('endTime')?.value ===
-        preference.time
+      `${this.scheduleForm.get('startTime')?.value} - ${
+        this.scheduleForm.get('endTime')?.value
+      }` === preference.time
     );
   }
 
-  public selectDay(dayName: string): void {
-    this.selectedDay = dayName;
-    this.scheduleForm.patchValue({ day: dayName });
+  /**
+   * Formats time string for display purposes.
+   * @param time Time string in 'HH:MM:SS' format.
+   * @returns Formatted time string in 'HH:MM AM/PM' format.
+   */
+  public formatTimeForDisplay(time: string): string {
+    if (!time) return '';
+    const [hours, minutes, seconds] = time.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const displayHours = hours % 12 || 12;
+    return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
   }
 }
