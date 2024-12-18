@@ -33,14 +33,14 @@
           <div class="nav-button-container">
             <button
               class="pref-nav-button"
-              (click)="previousPreference(faculty)"
+              (click)="showPreviousFacultyPreference(faculty)"
               [disabled]="faculty.prefIndex === 0"
             >
               <mat-icon>chevron_left</mat-icon>
             </button>
             <button
               class="pref-nav-button"
-              (click)="nextPreference(faculty)"
+              (click)="showNextFacultyPreference(faculty)"
               [disabled]="faculty.prefIndex === faculty.preferences.length - 1"
             >
               <mat-icon>chevron_right</mat-icon>
@@ -54,11 +54,14 @@
         <div
           class="faculty-card"
           (click)="
-            onFacultyClick(faculty, faculty.preferences[faculty.prefIndex])
+            populateFormWithFacultyPreference(
+              faculty,
+              faculty.preferences[faculty.prefIndex]
+            )
           "
           [class.selected-faculty]="
             selectedFaculty?.faculty_id === faculty.faculty_id &&
-            isPreferenceSelected(faculty.preferences[faculty.prefIndex])
+            doesPreferenceMatchForm(faculty.preferences[faculty.prefIndex])
           "
           [@cardSwipeAnimation]="faculty.prefIndex"
           matRipple
@@ -203,21 +206,21 @@
     <mat-dialog-actions class="scheduling-dialog-actions">
       <button
         class="clear-all-button"
-        (click)="onClearAll()"
+        (click)="resetForm()"
         matRipple
         [matRippleColor]="'rgba(134,134,134,0.1)'"
       >
         Clear All
       </button>
       <div class="button-group">
-        <button class="cancel-button" mat-button (click)="onCancel()">
+        <button class="cancel-button" mat-button (click)="cancelDialog()">
           Cancel
         </button>
         <button
           class="action-button"
           mat-flat-button
           [disabled]="hasConflicts || isLoading || scheduleForm.invalid"
-          (click)="onAssign()"
+          (click)="assignValidatedSchedule()"
         >
           @if (isLoading) {
           <mat-spinner [diameter]="25" class="custom-spinner"></mat-spinner>
