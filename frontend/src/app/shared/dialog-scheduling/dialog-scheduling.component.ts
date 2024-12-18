@@ -410,6 +410,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     const room_id = selectedRoom ? selectedRoom.room_id : null;
     const program_id = this.data.selectedProgramId;
     const year_level = this.data.year_level;
+    const section_id = this.data.section_id
 
     const validationObservables: {
       type: string;
@@ -430,7 +431,8 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
           year_level,
           day,
           formattedStartTime,
-          formattedEndTime
+          formattedEndTime,
+          section_id
         ),
       });
     }

@@ -364,7 +364,8 @@ export class SchedulingService {
     year_level: number,
     day: string | null,
     start_time: string | null,
-    end_time: string | null
+    end_time: string | null,
+    section_id: number
   ): Observable<{ isValid: boolean; message: string }> {
     if (!program_id || !year_level || !day || !start_time || !end_time) {
       return of({ isValid: true, message: 'Program overlap check skipped' });
@@ -379,7 +380,8 @@ export class SchedulingService {
           day!,
           start_time!,
           end_time!,
-          schedule_id
+          schedule_id,
+          section_id
         );
 
         if (conflictingDetail) {
@@ -510,10 +512,10 @@ export class SchedulingService {
     return { isValid: true, message: 'Room is available' };
   }
 
-  /**
-   * Helper method to find conflicting course within the same program and year level
-   */
 
+  /**
+   * Helper method to find conflicting course within the same program, year level, and section.
+   */
   private findConflictingCourseInProgram(
     schedules: PopulateSchedulesResponse,
     program_id: number,
@@ -521,7 +523,8 @@ export class SchedulingService {
     day: string,
     start_time: string,
     end_time: string,
-    currentScheduleId: number
+    currentScheduleId: number,
+    section_id: number
   ): ConflictingCourseDetail | undefined {
     for (const program of schedules.programs) {
       if (program.program_id !== program_id) continue;
@@ -529,6 +532,7 @@ export class SchedulingService {
         if (yl.year_level !== year_level) continue;
         for (const semester of yl.semesters) {
           for (const section of semester.sections) {
+            if (section.section_per_program_year_id !== section_id) continue;
             for (const course of section.courses) {
               if (course.schedule?.day !== day) continue;
               if (course.schedule?.schedule_id === currentScheduleId) continue;
@@ -546,6 +550,7 @@ export class SchedulingService {
                 };
               }
             }
+            return undefined;
           }
         }
       }

@@ -37,21 +37,21 @@ import {
 import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
 
 @Component({
-    selector: 'app-scheduling',
-    imports: [
-        CommonModule,
-        TableHeaderComponent,
-        LoadingComponent,
-        MatTableModule,
-        MatButtonModule,
-        MatIconModule,
-        MatTooltipModule,
-        MatProgressSpinnerModule,
-        MatSymbolDirective,
-    ],
-    templateUrl: './scheduling.component.html',
-    styleUrls: ['./scheduling.component.scss'],
-    animations: [fadeAnimation, pageFloatUpAnimation]
+  selector: 'app-scheduling',
+  imports: [
+    CommonModule,
+    TableHeaderComponent,
+    LoadingComponent,
+    MatTableModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule,
+    MatProgressSpinnerModule,
+    MatSymbolDirective,
+  ],
+  templateUrl: './scheduling.component.html',
+  styleUrls: ['./scheduling.component.scss'],
+  animations: [fadeAnimation, pageFloatUpAnimation],
 })
 export class SchedulingComponent implements OnInit, OnDestroy {
   schedules: Schedule[] = [];
@@ -761,8 +761,16 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         const program = this.programOptions.find(
           (p) => p.display === this.selectedProgram
         );
-        const selectedProgramInfo = `${schedule.program_code} ${schedule.year}-${schedule.section}`;
-        const selectedCourseInfo = `${schedule.course_code} - ${schedule.course_title}`;
+
+        const selectedProgramInfo = 
+          `${schedule.program_code} ${schedule.year}-${schedule.section}`;
+        const selectedCourseInfo = 
+          `${schedule.course_code} - ${schedule.course_title}`;
+        const section = this.sectionOptions.find(
+          (s) => s.section_name === schedule.section
+        );
+
+        const sectionId = section ? section.section_id : null;
 
         // =======================
         // Updated SuggestedFaculty
@@ -830,7 +838,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           data: {
             selectedProgramId: program?.id,
             year_level: this.selectedYear,
-            section_id: this.selectedSection,
+            section_id: sectionId,
             dayOptions: this.dayOptions,
             timeOptions: this.timeOptions,
             endTimeOptions: this.timeOptions,
