@@ -199,8 +199,7 @@ export class SchedulingService {
           }
         );
       }),
-      catchError((error) => {
-        console.error('Error during conflict detection:', error);
+      catchError(() => {
         return throwError(
           () => new Error('An error occurred during conflict detection.')
         );

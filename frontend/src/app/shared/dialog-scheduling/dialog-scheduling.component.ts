@@ -331,7 +331,6 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
           this.cdr.markForCheck();
         }),
         catchError((error) => {
-          console.error('Error during conflict detection:', error);
           this.conflictMessage =
             'An error occurred during validation. Please try again.';
           this.hasConflicts = true;
@@ -398,7 +397,6 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   }
 
   private handleAssignmentError(error: any): void {
-    console.error('Failed to assign schedule:', error);
     this.conflictMessage = error?.message || 'Failed to assign schedule.';
     this.hasConflicts = true;
     this.snackBar.open(this.conflictMessage, 'Close', { duration: 5000 });

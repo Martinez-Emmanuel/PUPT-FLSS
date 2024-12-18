@@ -175,7 +175,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         this.activeSemester = activeSemester;
         this.startDate = startDate;
         this.endDate = endDate;
-        console.log('Active Semester Set:', this.activeSemester);
       }),
       map(() => void 0),
       catchError((error) => {
@@ -303,7 +302,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     );
 
     if (!selectedProgram) {
-      console.log('No program found.');
       this.schedules = [];
       return;
     }
@@ -331,7 +329,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     );
 
     if (!selectedYearLevelObj) {
-      console.log('No year level found.');
       this.schedules = [];
       return;
     }
@@ -359,7 +356,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     );
 
     if (!selectedSection) {
-      console.log('No section found.');
       this.schedules = [];
       return;
     }
@@ -381,21 +377,12 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     yearLevel: number,
     sectionId: number
   ): Observable<Schedule[]> {
-    console.log(
-      `Fetching courses for Program ID: ${programId}, 
-      Year Level: ${yearLevel},
-      Section ID: ${sectionId}`
-    );
-
     return this.schedulingService.populateSchedules().pipe(
       tap((response: PopulateSchedulesResponse) => {
-        console.log('Response', response);
-
         const program = response.programs.find(
           (p) => p.program_id === programId
         );
         if (!program) {
-          console.error('Program not found');
           this.schedules = [];
           return;
         }
@@ -404,7 +391,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           (yl) => yl.year_level === yearLevel
         );
         if (!yearLevelData) {
-          console.error('Year level not found');
           this.schedules = [];
           return;
         }
@@ -413,7 +399,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           (s) => s.semester === response.semester_id
         );
         if (!semesterData) {
-          console.error('Semester not found');
           this.schedules = [];
           return;
         }
@@ -422,7 +407,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           (s) => s.section_per_program_year_id === sectionId
         );
         if (!sectionData) {
-          console.error('Section not found');
           this.schedules = [];
           return;
         }
@@ -472,7 +456,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         });
 
         this.cdr.detectChanges();
-        console.log('Final Schedules:', this.schedules);
       }),
       map(() => this.schedules),
       catchError((error) => {
@@ -505,7 +488,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         tap((academicYears: AcademicYear[]) => {
           if (!academicYears.length) {
-            console.error('No academic years available');
             return;
           }
 
@@ -795,9 +777,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
             (f) => f.faculty_id === pref.faculty_id
           );
           if (!facultyDetails) {
-            console.warn(
-              `Faculty details not found for faculty_id: ${pref.faculty_id}`
-            );
             return;
           }
 
@@ -989,7 +968,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
   private handleError(message: string) {
     return (error: any): void => {
-      console.error(`${message}:`, error);
       this.snackBar.open(`${message}. Please try again.`, 'Close', {
         duration: 3000,
       });
