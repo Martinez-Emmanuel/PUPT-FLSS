@@ -366,8 +366,6 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
 
   /** Sets up custom validators for the form controls. */
   private setupCustomValidators(): void {
-    this.scheduleForm.get('startTime')?.setValidators([Validators.required]);
-    this.scheduleForm.get('endTime')?.setValidators([Validators.required]);
     this.scheduleForm
       .get('professor')
       ?.setValidators([mustMatchOption(this.data.professorOptions)]);
@@ -377,8 +375,6 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
 
     this.scheduleForm.get('professor')?.updateValueAndValidity();
     this.scheduleForm.get('room')?.updateValueAndValidity();
-    this.scheduleForm.get('startTime')?.updateValueAndValidity();
-    this.scheduleForm.get('endTime')?.updateValueAndValidity();
   }
 
   /** Sets up conflict detection by subscribing to form value changes. */
@@ -535,18 +531,6 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     if (this.hasConflicts) {
       this.snackBar.open(
         'There is a scheduling conflict. Please resolve it before proceeding.',
-        'Close',
-        {
-          duration: 3000,
-        }
-      );
-      return;
-    }
-
-    if (this.scheduleForm.invalid) {
-      this.scheduleForm.markAllAsTouched();
-      this.snackBar.open(
-        'Both Start Time and End Time are required.',
         'Close',
         {
           duration: 3000,
