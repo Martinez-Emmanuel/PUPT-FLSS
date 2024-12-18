@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn, Validators } from '@angular/forms';
 
 import { Observable, Subject, forkJoin, of } from 'rxjs';
 import { map, startWith, takeUntil, debounceTime, distinctUntilChanged, switchMap, shareReplay, catchError } from 'rxjs/operators';
@@ -312,6 +312,10 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
    * Sets up custom validators for the form controls.
    */
   private setupCustomValidators(): void {
+    // Add required validator for startTime and endTime
+    this.scheduleForm.get('startTime')?.setValidators([Validators.required]);
+    this.scheduleForm.get('endTime')?.setValidators([Validators.required]);
+
     this.scheduleForm
       .get('professor')
       ?.setValidators([mustMatchOption(this.data.professorOptions)]);
@@ -321,6 +325,8 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
 
     this.scheduleForm.get('professor')?.updateValueAndValidity();
     this.scheduleForm.get('room')?.updateValueAndValidity();
+    this.scheduleForm.get('startTime')?.updateValueAndValidity();
+    this.scheduleForm.get('endTime')?.updateValueAndValidity();
   }
 
   /**
@@ -520,6 +526,13 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
 
     if (this.scheduleForm.invalid) {
       this.scheduleForm.markAllAsTouched();
+      this.snackBar.open(
+        'Both Start Time and End Time are required.',
+        'Close',
+        {
+          duration: 3000,
+        }
+      );
       return;
     }
 
