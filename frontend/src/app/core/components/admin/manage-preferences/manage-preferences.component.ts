@@ -250,7 +250,13 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
    */
   checkToggleAllState(): void {
     const allEnabled = this.filteredData.every((faculty) => faculty.is_enabled);
-    this.isToggleAllChecked = allEnabled;
+    const isGlobalDeadlineSet = this.allData.some((faculty) =>
+      faculty.active_semesters?.some(
+        (semester) => semester.global_deadline !== null
+      )
+    );
+
+    this.isToggleAllChecked = allEnabled && isGlobalDeadlineSet;
 
     this.isAnyIndividualToggleOn = this.filteredData.some(
       (faculty) => faculty.is_enabled
