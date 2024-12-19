@@ -1,10 +1,10 @@
 import { Component, Inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { CommonModule, formatDate } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { forkJoin, of, Observable } from 'rxjs';
-import { switchMap, finalize, tap } from 'rxjs/operators';
+import { of } from 'rxjs';
+import { finalize, switchMap } from 'rxjs/operators';
 
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,46 +12,19 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule, DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE, NativeDateAdapter } from '@angular/material/core';
 
 import { ReportGenerationService } from '../../core/services/admin/report-generation/report-generation.service';
-import { PreferencesService } from '../../core/services/faculty/preference/preferences.service';
 import { ReportsService } from '../../core/services/admin/reports/reports.service';
 
 export interface DialogActionData {
-  type:
-    | 'all_preferences'
-    | 'single_preferences'
-    | 'all_publish'
-    | 'single_publish'
-    | 'reports';
+  type: 'all_publish' | 'single_publish' | 'reports';
   currentState: boolean;
   academicYear?: string;
   semester?: string;
   hasSecondaryText?: boolean;
-  global_deadline?: Date | null;
-  individual_deadline?: Date | null;
-  global_start_date?: Date | null;
-  individual_start_date?: Date | null;
   facultyName?: string;
   faculty_id?: number;
-  hasIndividualDeadlines?: boolean;
 }
-
-export const MY_DATE_FORMATS = {
-  parse: {
-    dateInput: 'MM/DD/YYYY',
-  },
-  display: {
-    dateInput: 'MM/DD/YYYY',
-    monthYearLabel: 'MMM YYYY',
-    dateA11yLabel: 'LL',
-    monthYearA11yLabel: 'MMMM YYYY',
-  },
-};
 
 @Component({
   selector: 'app-dialog-action',
@@ -63,17 +36,7 @@ export const MY_DATE_FORMATS = {
     MatProgressSpinnerModule,
     FormsModule,
     CommonModule,
-    MatDatepickerModule,
-    MatNativeDateModule,
-    MatFormFieldModule,
-    MatInputModule,
     MatSymbolDirective,
-  ],
-  providers: [
-    MatDatepickerModule,
-    { provide: DateAdapter, useClass: NativeDateAdapter },
-    { provide: MAT_DATE_LOCALE, useValue: 'en-US' },
-    { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
   ],
   templateUrl: './dialog-action.component.html',
   styleUrls: ['./dialog-action.component.scss'],
@@ -85,27 +48,11 @@ export class DialogActionComponent {
   actionText!: string;
   navigationLink!: string;
   linkText!: string;
-  facultyName: string = '';
 
   sendEmail = false;
   isProcessing = false;
   showEmailOption = false;
-  isDeadlineToday = false;
   showReportOptions = false;
-  showDeadlinePicker = false;
-  hasIndividualDeadlines = false;
-
-  currentDate: Date = new Date();
-  minDate: Date = new Date();
-  submissionDeadline: Date | null = null;
-  remainingDays: number = 0;
-
-  startDate: Date | null = null;
-  showStartDatePicker = false;
-  isStartDateToday = false;
-  remainingDaysStart: number = 0;
-
-  isPreferencesScheduled = false;
 
   reportOptions = {
     faculty: false,
@@ -117,46 +64,10 @@ export class DialogActionComponent {
     @Inject(MAT_DIALOG_DATA) public data: DialogActionData,
     private dialogRef: MatDialogRef<DialogActionComponent>,
     private snackBar: MatSnackBar,
-    private preferencesService: PreferencesService,
     private reportsService: ReportsService,
     private reportGenerationService: ReportGenerationService
   ) {
     this.initializeDialogContent();
-
-    if (this.data.type === 'all_preferences') {
-      this.submissionDeadline = this.data.global_deadline || null;
-      this.showDeadlinePicker = true;
-      this.calculateRemainingDays();
-
-      this.startDate = this.data.global_start_date || null;
-      this.showStartDatePicker = true;
-      this.calculateRemainingDaysStart();
-    } else if (this.data.type === 'single_preferences') {
-      this.submissionDeadline =
-        this.data.individual_deadline || this.data.global_deadline || null;
-      this.facultyName = this.data.facultyName || '';
-      this.showDeadlinePicker = true;
-      this.calculateRemainingDays();
-
-      this.startDate =
-        this.data.individual_start_date || this.data.global_start_date || null;
-      this.showStartDatePicker = true;
-      this.calculateRemainingDaysStart();
-    }
-
-    if (this.submissionDeadline) {
-      this.calculateRemainingDays();
-    }
-
-    if (this.startDate) {
-      this.calculateRemainingDaysStart();
-    }
-
-    this.hasIndividualDeadlines = this.data.hasIndividualDeadlines || false;
-
-    this.isPreferencesScheduled =
-      Boolean(this.data.global_start_date || this.data.individual_start_date) &&
-      !this.data.currentState;
   }
 
   /**
@@ -164,15 +75,6 @@ export class DialogActionComponent {
    */
   private initializeDialogContent(): void {
     switch (this.data.type) {
-      case 'all_preferences':
-        this.dialogTitle = 'Faculty Preferences Submission';
-        this.actionText = this.data.currentState ? 'Disable' : 'Enable';
-        this.navigationLink = '/admin/faculty-preferences';
-        this.linkText = 'Faculty Preferences';
-        this.showEmailOption = !this.data.currentState;
-        this.showReportOptions = false;
-        break;
-
       case 'all_publish':
         this.dialogTitle = 'Faculty Load & Schedule';
         this.actionText = this.data.currentState ? 'Unpublish' : 'Publish';
@@ -199,16 +101,6 @@ export class DialogActionComponent {
         this.showEmailOption = false;
         this.showReportOptions = true;
         break;
-
-      case 'single_preferences':
-        this.dialogTitle = `Faculty Preferences Submission`;
-        this.actionText = this.data.currentState ? 'Disable' : 'Enable';
-        this.navigationLink = '/admin/faculty-preferences';
-        this.linkText = 'Faculty Preferences';
-        this.showEmailOption = !this.data.currentState;
-        this.showReportOptions = false;
-        this.showDeadlinePicker = true;
-        break;
     }
   }
 
@@ -221,40 +113,11 @@ export class DialogActionComponent {
       return;
     }
 
-    // Check if both startDate and submissionDeadline are filled out
-    if (this.showStartDatePicker && !this.startDate) {
-      this.snackBar.open('Please select a start date.', 'Close', {
-        duration: this.SNACKBAR_DURATION,
-      });
-      return;
-    }
-
-    if (this.showDeadlinePicker && !this.submissionDeadline) {
-      this.snackBar.open('Please select a submission deadline.', 'Close', {
-        duration: this.SNACKBAR_DURATION,
-      });
-      return;
-    }
-
     this.isProcessing = true;
-    let operation$: Observable<any>;
-
-    switch (this.data.type) {
-      case 'all_preferences':
-        operation$ = this.handleAllPreferencesOperation();
-        break;
-      case 'all_publish':
-        operation$ = this.handleAllPublishOperation();
-        break;
-      case 'single_publish':
-        operation$ = this.handleSinglePublishOperation();
-        break;
-      case 'single_preferences':
-        operation$ = this.handleSinglePreferenceOperation();
-        break;
-      default:
-        operation$ = of(null);
-    }
+    const operation$ =
+      this.data.type === 'all_publish'
+        ? this.handleAllPublishOperation()
+        : this.handleSinglePublishOperation();
 
     operation$
       .pipe(
@@ -291,199 +154,9 @@ export class DialogActionComponent {
   }
 
   /**
-   * Calculates remaining days between today and start date
-   * and determines if the start date is today
-   */
-  public calculateRemainingDaysStart(): void {
-    if (this.startDate) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      const startDate = new Date(this.startDate);
-      startDate.setHours(0, 0, 0, 0);
-
-      const diffTime = startDate.getTime() - today.getTime();
-      this.remainingDaysStart = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      // If remainingDaysStart <= 0, let's treat that as "it's starting immediately"
-      this.isStartDateToday = this.remainingDaysStart <= 0;
-    }
-  }
-
-  /**
-   * Handles start date change
-   */
-  public onStartDateChange(event: any): void {
-    this.startDate = event.value;
-    this.calculateRemainingDaysStart();
-    this.minDate = this.startDate!;
-
-    if (this.submissionDeadline && this.startDate! > this.submissionDeadline!) {
-      this.submissionDeadline = null;
-      this.calculateRemainingDays();
-    } else {
-      this.calculateRemainingDays();
-    }
-  }
-
-  /**
-   * Calculates remaining days between start date and submission deadline
-   * and determines if the deadline is today
-   */
-  public calculateRemainingDays(): void {
-    if (this.submissionDeadline && this.startDate) {
-      const startDate = new Date(this.startDate);
-      startDate.setHours(0, 0, 0, 0);
-
-      const deadline = new Date(this.submissionDeadline);
-      deadline.setHours(0, 0, 0, 0);
-
-      const diffTime = deadline.getTime() - startDate.getTime();
-      this.remainingDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-      this.isDeadlineToday = this.remainingDays === 0;
-    }
-  }
-
-  /**
-   * Handles deadline date change
-   */
-  public onDeadlineChange(event: any): void {
-    this.submissionDeadline = event.value;
-    this.calculateRemainingDays();
-  }
-
-  /**
-   * Placeholder method for canceling scheduled submission
-   */
-  public cancelScheduledSubmission(): void {
-    this.isProcessing = true;
-
-    let operation$: Observable<any>;
-
-    if (this.data.type === 'all_preferences') {
-      operation$ = this.preferencesService.toggleAllPreferences(false, null, null);
-    } else if (this.data.type === 'single_preferences') {
-      operation$ = this.preferencesService.toggleSingleFacultyPreferences(
-        this.data.faculty_id!,
-        false,
-        null,
-        null
-      );
-    } else {
-      operation$ = of(null);
-    }
-
-    operation$
-      .pipe(
-        finalize(() => {
-          this.isProcessing = false;
-        })
-      )
-      .subscribe({
-        next: () => {
-          const successMessage = 'Scheduled submission canceled successfully.';
-          this.snackBar.open(successMessage, 'Close', {
-            duration: this.SNACKBAR_DURATION,
-          });
-          this.dialogRef.close(true);
-        },
-        error: (error) => {
-          console.error('Operation failed:', error);
-          const errorMessage = 'Failed to cancel scheduled submission.';
-          this.snackBar.open(errorMessage, 'Close', {
-            duration: this.SNACKBAR_DURATION,
-          });
-          this.dialogRef.close(false);
-        },
-      });
-  }
-
-  /**
-   * Handles single preference toggle operation
-   */
-  private handleSinglePreferenceOperation(): Observable<any> {
-    const newStatus = !this.data.currentState;
-
-    let formattedStartDate: string | null = null;
-    if (newStatus && this.startDate) {
-      const date = new Date(this.startDate);
-      date.setHours(0, 0, 0, 0);
-      formattedStartDate = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
-    }
-
-    let formattedDeadline: string | null = null;
-    if (newStatus && this.submissionDeadline) {
-      const date = new Date(this.submissionDeadline);
-      date.setHours(23, 59, 59, 999);
-      formattedDeadline = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
-    }
-
-    return this.preferencesService
-      .toggleSingleFacultyPreferences(
-        this.data.faculty_id!,
-        newStatus,
-        formattedDeadline,
-        formattedStartDate
-      )
-      .pipe(
-        switchMap(() => {
-          if (this.sendEmail) {
-            return this.preferencesService
-              .sendPreferencesEmailToFaculty(this.data.faculty_id!)
-              .pipe(
-                tap(() => {
-                  this.snackBar.open(
-                    `Email sent to ${this.data.facultyName}`,
-                    'Close',
-                    { duration: this.SNACKBAR_DURATION }
-                  );
-                })
-              );
-          }
-          return of(null);
-        })
-      );
-  }
-
-  /**
-   * Handles all preferences toggle operation
-   */
-  private handleAllPreferencesOperation(): Observable<any> {
-    const newStatus = !this.data.currentState;
-
-    let formattedStartDate: string | null = null;
-    if (newStatus && this.startDate) {
-      const date = new Date(this.startDate);
-      date.setHours(0, 0, 0, 0);
-      formattedStartDate = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
-    }
-
-    let formattedDeadline: string | null = null;
-    if (newStatus && this.submissionDeadline) {
-      const date = new Date(this.submissionDeadline);
-      date.setHours(23, 59, 59, 999);
-      formattedDeadline = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
-    }
-
-    const togglePreferences$ = this.preferencesService.toggleAllPreferences(
-      newStatus,
-      formattedDeadline,
-      formattedStartDate
-    );
-
-    const emailNotification$ =
-      this.sendEmail && newStatus
-        ? this.preferencesService.sendPreferencesEmailToAll()
-        : of(null);
-
-    return forkJoin([togglePreferences$, emailNotification$]);
-  }
-
-  /**
    * Handles publish/unpublish for all schedules
    */
-  private handleAllPublishOperation(): Observable<any> {
+  private handleAllPublishOperation() {
     const newStatus = !this.data.currentState;
     const isPublished = newStatus ? 1 : 0;
     return this.reportsService.togglePublishAllSchedules(isPublished).pipe(
@@ -499,7 +172,7 @@ export class DialogActionComponent {
   /**
    * Handles publish/unpublish for a single faculty schedule
    */
-  private handleSinglePublishOperation(): Observable<any> {
+  private handleSinglePublishOperation() {
     const newStatus = !this.data.currentState;
     const isPublished = newStatus ? 1 : 0;
     const facultyId = this.data.faculty_id!;
@@ -612,10 +285,6 @@ export class DialogActionComponent {
     switch (this.data.type) {
       case 'reports':
         return 'Reports generated successfully.';
-      case 'all_preferences':
-        return `Preferences submission for all faculty ${
-          !this.data.currentState ? 'updated' : 'disabled'
-        } successfully.${this.sendEmail ? ' Email sent.' : ''}`;
       case 'all_publish':
         return `Schedules for all faculty ${
           !this.data.currentState ? 'published' : 'unpublished'
@@ -623,10 +292,6 @@ export class DialogActionComponent {
       case 'single_publish':
         return `Schedule for ${this.data.facultyName} ${
           !this.data.currentState ? 'published' : 'unpublished'
-        } successfully.${this.sendEmail ? ' Email sent.' : ''}`;
-      case 'single_preferences':
-        return `Preferences submission for ${this.facultyName} ${
-          !this.data.currentState ? 'updated' : 'disabled'
         } successfully.${this.sendEmail ? ' Email sent.' : ''}`;
       default:
         return 'Operation completed successfully.';
@@ -640,10 +305,6 @@ export class DialogActionComponent {
     switch (this.data.type) {
       case 'reports':
         return 'Failed to generate reports.';
-      case 'all_preferences':
-        return `Failed to ${
-          !this.data.currentState ? 'enable' : 'disable'
-        } preferences for all faculty.`;
       case 'all_publish':
         return `Failed to ${
           !this.data.currentState ? 'publish' : 'unpublish'
@@ -652,10 +313,6 @@ export class DialogActionComponent {
         return `Failed to ${
           !this.data.currentState ? 'publish' : 'unpublish'
         } schedule for ${this.data.facultyName}.`;
-      case 'single_preferences':
-        return `Failed to ${
-          !this.data.currentState ? 'enable' : 'disable'
-        } preferences for ${this.facultyName}.`;
       default:
         return 'Operation failed.';
     }

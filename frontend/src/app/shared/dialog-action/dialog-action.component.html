@@ -5,21 +5,17 @@
   <!-- Dialog Content -->
   <div class="dialog-content">
     <!-- Main Action Text -->
-    @if (!showReportOptions && !isPreferencesScheduled) {
+    @if (!showReportOptions) {
     <div class="main-text">
       <strong>{{ actionText }}</strong>
 
       <span>
         {{
-          data.type === "all_preferences"
-            ? "load and schedule preferences submission for all active faculty members this"
-            : data.type === "all_publish"
+          data.type === "all_publish"
             ? "official load and schedule for all active faculty members this"
             : data.type === "single_publish"
             ? "official load and schedule for"
-            : data.type === "reports"
-            ? "generate and download schedule reports for"
-            : "load and schedule preferences submission for"
+            : "generate and download schedule reports for"
         }}
 
         {{ data.type.includes("single") ? data.facultyName + " this" : "" }}
@@ -32,8 +28,7 @@
     <!-- Seondary Text Section -->
     @if (data.hasSecondaryText) {
     <div class="secondary-text">
-      @if (!showReportOptions) { For specific faculty, go to } @else { For a
-      more specific view and download of reports, go to the }
+      For a more specific view and download of reports, go to the
       <a class="link" [routerLink]="navigationLink" (click)="closeDialog()">
         {{ linkText }}
       </a>
@@ -76,128 +71,19 @@
     </div>
     }
 
-    <!-- Start Date Picker Section -->
-    @if (showStartDatePicker && !isPreferencesScheduled) {
-    <div class="date-picker">
-      <mat-form-field appearance="fill">
-        <mat-label>Start Date</mat-label>
-        <input
-          matInput
-          [matDatepicker]="startPicker"
-          [min]="currentDate"
-          [(ngModel)]="startDate"
-          (dateChange)="onStartDateChange($event)"
-          [disabled]="data.currentState"
-          readonly
-          required
-          (click)="startPicker.open()"
-        />
-        <mat-datepicker-toggle
-          matIconSuffix
-          [for]="startPicker"
-        ></mat-datepicker-toggle>
-        <mat-datepicker #startPicker></mat-datepicker>
-
-        <!-- Simplified logic for Start Date mat-hint -->
-        @if (data.type === 'all_preferences' || data.type ===
-        'single_preferences') {
-        <mat-hint *ngIf="!data.currentState">
-          The submission will start @if (isStartDateToday) {
-          <strong>today, immediately</strong>
-          } @else { in <strong>{{ remainingDaysStart }} day(s)</strong>
-          }
-        </mat-hint>
-        }
-        <!-- no mat-hint if data.currentState === true -->
-      </mat-form-field>
-    </div>
-    }
-
-    <!-- Submission Deadline Date Picker Section -->
-    @if (showDeadlinePicker && !isPreferencesScheduled) {
-    <div class="date-picker">
-      <mat-form-field appearance="fill">
-        <mat-label>End Date</mat-label>
-        <input
-          matInput
-          [matDatepicker]="endPicker"
-          [min]="minDate"
-          [(ngModel)]="submissionDeadline"
-          (dateChange)="onDeadlineChange($event)"
-          [disabled]="data.currentState"
-          readonly
-          required
-          (click)="endPicker.open()"
-        />
-        <mat-datepicker-toggle
-          matIconSuffix
-          [for]="endPicker"
-        ></mat-datepicker-toggle>
-        <mat-datepicker #endPicker></mat-datepicker>
-
-        <!-- Simplified logic for End Date mat-hint -->
-        @if (data.type === 'all_preferences' || data.type ===
-        'single_preferences') {
-        <mat-hint *ngIf="data.currentState">
-          The submission is set to close in @if (isDeadlineToday) {
-          <strong>today at 11:59 PM</strong>
-          } @else {
-          <strong>{{ remainingDays }} day(s)</strong>
-          }
-        </mat-hint>
-        }
-        <!-- no mat-hint if data.currentState === false -->
-      </mat-form-field>
-    </div>
-    }
-
     <!-- Email Notification Section -->
-    @if (showEmailOption && !data.currentState && !isPreferencesScheduled) {
+    @if (showEmailOption && !data.currentState) {
     <div class="checkbox-container email">
       <mat-checkbox [(ngModel)]="sendEmail" class="email-checkbox">
         <span class="checkbox-content">
           <span mat-symbol="email"></span>
           <span>
-            Send email to @if (data.type === 'single_preferences' || data.type
-            === 'single_publish') {
+            Send email to @if (data.type === 'single_publish') {
             {{ data.facultyName }}
             } @else { all faculty members }
           </span>
         </span>
       </mat-checkbox>
-    </div>
-    }
-
-    <!-- Confirmation Text -->
-    @if ((data.type === 'all_preferences' || data.type === 'single_preferences')
-    && data.currentState) {
-    <div class="main-text">
-      <div class="confirm-disable">
-        This will <strong>immediately</strong> disable the preferences
-        submission and bypass the currently set deadline.
-      </div>
-    </div>
-    } @if (data.type === 'all_preferences' && !data.currentState &&
-    hasIndividualDeadlines) {
-    <div class="main-text">
-      <div class="confirm-disable">
-        This will bypass individual deadlines set to any faculty members.
-      </div>
-    </div>
-    }
-
-    <!-- New Section for Scheduled Preferences Submission -->
-    @if (isPreferencesScheduled) {
-    <div class="scheduled-preferences">
-      <div class="scheduled-pref-icon">
-        <span mat-symbol="hourglass_top"></span>
-      </div>
-      <div class="scheduled-pref-text">
-        Preferences submission is currently scheduled to open from
-        <strong>{{ startDate | date }}</strong> until
-        <strong>{{ submissionDeadline | date }}</strong
-        >.
-      </div>
     </div>
     }
   </div>
@@ -213,45 +99,22 @@
       Close
     </button>
 
-    @if (isPreferencesScheduled) {
-    <button
-      mat-flat-button
-      color="primary"
-      class="action-button"
-      (click)="cancelScheduledSubmission()"
-      [disabled]="isProcessing"
-      [ngClass]="{
-        'disabled-button': isProcessing
-      }"
-    >
-      @if (isProcessing) {
-      <mat-spinner class="custom-spinner" diameter="25"></mat-spinner>
-      } @else { Cancel Scheduled Submission }
-    </button>
-    } @else {
     <button
       mat-flat-button
       color="primary"
       class="action-button"
       (click)="confirmAction()"
       [disabled]="
-        isProcessing ||
-        (data.type === 'reports' && !isReportSelectionValid()) ||
-        (showDeadlinePicker && submissionDeadline === null) ||
-        (showStartDatePicker && startDate === null)
+        isProcessing || (data.type === 'reports' && !isReportSelectionValid())
       "
       [ngClass]="{
         'disabled-button':
-          isProcessing ||
-          (data.type === 'reports' && !isReportSelectionValid()) ||
-          (showDeadlinePicker && submissionDeadline === null) ||
-          (showStartDatePicker && startDate === null)
+          isProcessing || (data.type === 'reports' && !isReportSelectionValid())
       }"
     >
       @if (isProcessing) {
       <mat-spinner class="custom-spinner" diameter="25"></mat-spinner>
       } @else { Confirm }
     </button>
-    }
   </div>
 </div>
