@@ -20,10 +20,10 @@ export const ADMIN_ROUTES: Routes = [
         data: { pageTitle: 'Overview' },
       },
       {
-        path: 'faculty-preferences',
+        path: 'manage-preferences',
         loadComponent: () =>
-          import('./faculty-pref/faculty-pref.component').then(
-            (m) => m.FacultyPrefComponent
+          import('./manage-preferences/manage-preferences.component').then(
+            (m) => m.ManagePreferencesComponent
           ),
         data: { pageTitle: 'Faculty Preferences' },
       },

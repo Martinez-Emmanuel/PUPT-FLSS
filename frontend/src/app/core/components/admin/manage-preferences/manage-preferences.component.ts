@@ -40,7 +40,7 @@ interface Faculty {
 }
 
 @Component({
-  selector: 'app-faculty-pref',
+  selector: 'app-manage-preferences',
   imports: [
     CommonModule,
     TableHeaderComponent,
@@ -55,11 +55,11 @@ interface Faculty {
     MatSnackBarModule,
     MatSymbolDirective,
   ],
-  templateUrl: './faculty-pref.component.html',
-  styleUrls: ['./faculty-pref.component.scss'],
+  templateUrl: './manage-preferences.component.html',
+  styleUrls: ['./manage-preferences.component.scss'],
   animations: [fadeAnimation],
 })
-export class FacultyPrefComponent implements OnInit, AfterViewInit {
+export class ManagePreferencesComponent implements OnInit, AfterViewInit {
   inputFields: InputField[] = [
     {
       type: 'text',
