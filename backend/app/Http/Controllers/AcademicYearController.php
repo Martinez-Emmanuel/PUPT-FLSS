@@ -329,6 +329,8 @@ class AcademicYearController extends Controller
                 'is_enabled' => 0,
                 'global_deadline' => null,
                 'individual_deadline' => null,
+                'global_start_date' => null,
+                'individual_start_date' => null,
             ]);
 
             // Update the given academic year and semester to active in ActiveSemester
