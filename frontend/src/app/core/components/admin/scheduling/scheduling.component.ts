@@ -537,7 +537,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
               initialValue: {
                 academicYear: this.activeYear || academicYearOptions[0] || '',
                 semester: this.activeSemesterLabel || semesterOptions[0] || '',
-                startDate: this.startDate ? new Date(this.startDate) : null, // Convert to Date
+                startDate: this.startDate ? new Date(this.startDate) : null,
                 endDate: this.endDate ? new Date(this.endDate) : null,    
               },
             },

@@ -67,7 +67,7 @@ export const MY_DATE_FORMATS = {
     { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
   ],
   templateUrl: './dialog-toggle-preferences.component.html',
-  styleUrls: ['./dialog-toggle-preferences.component.scss'], // reused dialog-action styles
+  styleUrls: ['./dialog-toggle-preferences.component.scss'],
 })
 export class DialogTogglePreferencesComponent {
   private readonly SNACKBAR_DURATION = 5000;

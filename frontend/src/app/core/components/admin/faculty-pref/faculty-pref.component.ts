@@ -335,6 +335,8 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
       ? new Date(this.allData[0].active_semesters[0].global_start_date)
       : null;
 
+    const hasIndividualDeadlines = this.hasIndividualDeadlines;
+
     const dialogData: DialogTogglePreferencesData = {
       type: 'all_preferences',
       academicYear: this.allData[0]?.active_semesters?.[0]?.academic_year || '',
@@ -342,7 +344,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
       currentState: this.isToggleAllChecked,
       global_deadline: existingDeadline,
       global_start_date: existingStartDate,
-      hasIndividualDeadlines: this.hasIndividualDeadlines,
+      hasIndividualDeadlines: hasIndividualDeadlines,
     };
 
     const dialogRef = this.dialog.open(DialogTogglePreferencesComponent, {
@@ -353,24 +355,13 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe((confirmed: boolean) => {
       if (confirmed) {
-        this.preferencesService.getPreferences().subscribe((response) => {
-          this.allData = response.preferences.map((faculty: any) => ({
-            faculty_id: faculty.faculty_id,
-            facultyName: faculty.faculty_name,
-            facultyCode: faculty.faculty_code,
-            facultyType: faculty.faculty_type,
-            facultyUnits: faculty.faculty_units,
-            has_request: faculty.has_request,
-            is_enabled: faculty.is_enabled === 1,
-            active_semesters: faculty.active_semesters,
-          }));
-          this.filteredData = [...this.allData];
-          this.applyFilter(this.currentFilter);
-          this.checkToggleAllState();
-          this.cdr.markForCheck();
-        });
-      } else {
-        this.isToggleAllChecked = !this.isToggleAllChecked;
+        const newStatus = this.isToggleAllChecked;
+        this.filteredData.forEach(
+          (faculty) => (faculty.is_enabled = newStatus)
+        );
+        this.isToggleAllChecked = newStatus;
+        this.updateDisplayedData();
+        this.cdr.markForCheck();
       }
     });
   }
@@ -415,20 +406,20 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe((confirmed: boolean) => {
       if (confirmed) {
+        faculty.is_enabled = !faculty.is_enabled;
+
         this.preferencesService.getPreferences().subscribe((response) => {
           const updatedFaculty = response?.preferences?.find(
             (item: any) => item.faculty_id === faculty.faculty_id
           );
           if (updatedFaculty) {
-            faculty.is_enabled = updatedFaculty.is_enabled === 1;
             faculty.active_semesters = updatedFaculty.active_semesters;
-            this.updateDisplayedData();
-            this.checkToggleAllState();
-            this.cdr.markForCheck();
           }
+
+          this.updateDisplayedData();
+          this.checkToggleAllState();
+          this.cdr.markForCheck();
         });
-      } else {
-        event.source.checked = faculty.is_enabled;
       }
     });
   }
