@@ -53,14 +53,11 @@
         ></mat-datepicker-toggle>
         <mat-datepicker #startPicker></mat-datepicker>
 
-        <!-- Simplified logic for Start Date mat-hint -->
         @if (!data.currentState && (data.type === 'all_preferences' || data.type
         === 'single_preferences')) {
         <mat-hint>
-          The submission will start @if (isStartDateToday) {
-          <strong>today, immediately</strong>
-          } @else { in <strong>{{ remainingDaysStart }} day(s)</strong>
-          }
+          The submission will start
+          <strong>{{ getStartDateDescription() }}</strong>
         </mat-hint>
         }
         <!-- no mat-hint if data.currentState === true -->
@@ -91,22 +88,20 @@
         required
         (click)="endPicker.open()"
       />
+
       <mat-datepicker-toggle
         matIconSuffix
         [for]="endPicker"
       ></mat-datepicker-toggle>
       <mat-datepicker #endPicker></mat-datepicker>
 
-      @if (data.type === 'all_preferences' || data.type ===
-      'single_preferences') { @if (data.currentState) {
+      @if (data.currentState && (data.type === 'all_preferences' || data.type
+      === 'single_preferences')) {
       <mat-hint>
-        The submission is set to close in @if (isDeadlineToday) {
-        <strong>today at 11:59 PM</strong>
-        } @else {
-        <strong>{{ remainingDays }} day(s)</strong>
-        }
+        The submission is set to close
+        <strong>{{ getDeadlineDescription() }}</strong>
       </mat-hint>
-      } }
+      }
     </mat-form-field>
     }
 

@@ -58,8 +58,8 @@ export const MY_DATE_FORMATS = {
     MatNativeDateModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSymbolDirective
-],
+    MatSymbolDirective,
+  ],
   providers: [
     MatDatepickerModule,
     { provide: DateAdapter, useClass: NativeDateAdapter },
@@ -297,7 +297,11 @@ export class DialogTogglePreferencesComponent {
     let operation$: Observable<any>;
 
     if (this.data.type === 'all_preferences') {
-      operation$ = this.preferencesService.toggleAllPreferences(false, null, null);
+      operation$ = this.preferencesService.toggleAllPreferences(
+        false,
+        null,
+        null
+      );
     } else if (this.data.type === 'single_preferences') {
       operation$ = this.preferencesService.toggleSingleFacultyPreferences(
         this.data.faculty_id!,
@@ -413,6 +417,40 @@ export class DialogTogglePreferencesComponent {
         : of(null);
 
     return forkJoin([togglePreferences$, emailNotification$]);
+  }
+
+  /**
+   * Handles the Start Date Field Mat Hint Description
+   */
+  public getStartDateDescription(): string {
+    if (!this.startDate) return 'in 0 days';
+
+    if (this.isStartDateToday) {
+      return 'today, immediately';
+    }
+
+    if (this.remainingDaysStart === 1) {
+      return 'tomorrow';
+    }
+
+    return `in ${this.remainingDaysStart} days`;
+  }
+
+  /**
+   * Handles the Deadline Field Mat Hint Description
+   */
+  public getDeadlineDescription(): string {
+    if (!this.submissionDeadline) return '';
+
+    if (this.isDeadlineToday) {
+      return 'today at 11:59 PM';
+    }
+
+    if (this.remainingDays === 1) {
+      return 'tomorrow at 11:59 PM';
+    }
+
+    return `in ${this.remainingDays} days`;
   }
 
   /**
