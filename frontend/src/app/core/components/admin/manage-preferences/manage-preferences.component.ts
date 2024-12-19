@@ -39,6 +39,13 @@ interface Faculty {
   active_semesters?: ActiveSemester[];
 }
 
+interface ToggleState {
+  isGlobalDisabled: boolean;
+  isIndividualDisabled: boolean;
+  globalTooltip: string;
+  individualTooltip: string;
+}
+
 @Component({
   selector: 'app-manage-preferences',
   imports: [
@@ -753,32 +760,41 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
   // Utility Methods
   // ===========================
 
-  /**
-   * Gets the tooltip text for a single faculty toggle.
-   */
-  getSingleToggleTooltip(faculty: Faculty): string {
-    if (this.isGlobalStartDateSet) {
-      return 'Global submission start date has been set – individual changes disabled';
-    }
-    if (this.isToggleAllChecked) {
-      return `Global preferences submission is active 
-      – individual changes disabled`;
-    }
-    return `${
-      faculty.is_enabled ? 'Disable' : 'Enable'
-    } preferences submission for ${faculty.facultyName} only`;
+  public getTooltip(type: 'global' | 'individual', faculty?: Faculty): string {
+    const state = this.getToggleState(faculty || this.allData[0]);
+    return type === 'global' ? state.globalTooltip : state.individualTooltip;
   }
 
-  /**
-   * Gets the tooltip text for the "Toggle All" checkbox.
-   */
-  getAllToggleTooltip(isEnabled: boolean): string {
-    if (this.hasIndividualDeadlines && !this.isToggleAllChecked) {
-      return `Global preferences toggle is disabled 
-        because individual deadlines are set`;
-    }
-    return `${
-      isEnabled ? 'Disable' : 'Enable'
-    } preferences submission for ALL faculty`;
+  public getToggleState(faculty: Faculty): ToggleState {
+    const isGlobalDisabled =
+      (this.hasIndividualDeadlines &&
+        !this.isToggleAllChecked &&
+        this.isEnabled) ||
+      this.isIndividualStartDateSet;
+
+    const isIndividualDisabled =
+      this.isToggleAllChecked || this.isGlobalStartDateSet;
+
+    const globalTooltip =
+      this.hasIndividualDeadlines && !this.isToggleAllChecked
+        ? 'Global preferences toggle is disabled because individual deadlines are set'
+        : `${
+            this.isToggleAllChecked ? 'Disable' : 'Enable'
+          } preferences submission for ALL faculty`;
+
+    const individualTooltip = this.isGlobalStartDateSet
+      ? 'Global submission start date has been set – individual changes disabled'
+      : this.isToggleAllChecked
+      ? 'Global preferences submission is active – individual changes disabled'
+      : `${
+          faculty.is_enabled ? 'Disable' : 'Enable'
+        } preferences submission for ${faculty.facultyName} only`;
+
+    return {
+      isGlobalDisabled,
+      isIndividualDisabled,
+      globalTooltip,
+      individualTooltip,
+    };
   }
 }
