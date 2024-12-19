@@ -5,6 +5,12 @@
     display: flex;
     flex-direction: row-reverse;
   }
+
+  .mat-mdc-form-field:not(.has-hint) {
+    .mat-mdc-form-field-subscript-wrapper {
+      display: none !important;
+    }
+  }
 }
 
 :host {

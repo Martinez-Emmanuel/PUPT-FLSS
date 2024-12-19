@@ -26,7 +26,15 @@
     <!-- Start Date Picker Section -->
     @if (showStartDatePicker && !isPreferencesScheduled) {
     <div class="date-picker">
-      <mat-form-field appearance="fill">
+      <mat-form-field
+        appearance="fill"
+        [ngClass]="{
+          'has-hint':
+            !data.currentState &&
+            (data.type === 'all_preferences' ||
+              data.type === 'single_preferences')
+        }"
+      >
         <mat-label>Start Date</mat-label>
         <input
           matInput
@@ -46,9 +54,9 @@
         <mat-datepicker #startPicker></mat-datepicker>
 
         <!-- Simplified logic for Start Date mat-hint -->
-        @if (data.type === 'all_preferences' || data.type ===
-        'single_preferences') {
-        <mat-hint *ngIf="!data.currentState">
+        @if (!data.currentState && (data.type === 'all_preferences' || data.type
+        === 'single_preferences')) {
+        <mat-hint>
           The submission will start @if (isStartDateToday) {
           <strong>today, immediately</strong>
           } @else { in <strong>{{ remainingDaysStart }} day(s)</strong>
@@ -62,40 +70,44 @@
 
     <!-- Submission Deadline Date Picker Section -->
     @if (showDeadlinePicker && !isPreferencesScheduled) {
-    <div class="date-picker">
-      <mat-form-field appearance="fill">
-        <mat-label>End Date</mat-label>
-        <input
-          matInput
-          [matDatepicker]="endPicker"
-          [min]="minDate"
-          [(ngModel)]="submissionDeadline"
-          (dateChange)="onDeadlineChange($event)"
-          [disabled]="data.currentState"
-          readonly
-          required
-          (click)="endPicker.open()"
-        />
-        <mat-datepicker-toggle
-          matIconSuffix
-          [for]="endPicker"
-        ></mat-datepicker-toggle>
-        <mat-datepicker #endPicker></mat-datepicker>
+    <mat-form-field
+      appearance="fill"
+      [ngClass]="{
+        'has-hint':
+          (data.type === 'all_preferences' ||
+            data.type === 'single_preferences') &&
+          data.currentState
+      }"
+    >
+      <mat-label>End Date</mat-label>
+      <input
+        matInput
+        [matDatepicker]="endPicker"
+        [min]="minDate"
+        [(ngModel)]="submissionDeadline"
+        (dateChange)="onDeadlineChange($event)"
+        [disabled]="data.currentState"
+        readonly
+        required
+        (click)="endPicker.open()"
+      />
+      <mat-datepicker-toggle
+        matIconSuffix
+        [for]="endPicker"
+      ></mat-datepicker-toggle>
+      <mat-datepicker #endPicker></mat-datepicker>
 
-        <!-- Simplified logic for End Date mat-hint -->
-        @if (data.type === 'all_preferences' || data.type ===
-        'single_preferences') {
-        <mat-hint *ngIf="data.currentState">
-          The submission is set to close in @if (isDeadlineToday) {
-          <strong>today at 11:59 PM</strong>
-          } @else {
-          <strong>{{ remainingDays }} day(s)</strong>
-          }
-        </mat-hint>
+      @if (data.type === 'all_preferences' || data.type ===
+      'single_preferences') { @if (data.currentState) {
+      <mat-hint>
+        The submission is set to close in @if (isDeadlineToday) {
+        <strong>today at 11:59 PM</strong>
+        } @else {
+        <strong>{{ remainingDays }} day(s)</strong>
         }
-        <!-- no mat-hint if data.currentState === false -->
-      </mat-form-field>
-    </div>
+      </mat-hint>
+      } }
+    </mat-form-field>
     }
 
     <!-- Email Notification Section -->
