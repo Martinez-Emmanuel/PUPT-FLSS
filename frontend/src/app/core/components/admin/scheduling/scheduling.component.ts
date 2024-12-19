@@ -537,8 +537,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
               initialValue: {
                 academicYear: this.activeYear || academicYearOptions[0] || '',
                 semester: this.activeSemesterLabel || semesterOptions[0] || '',
-                startDate: this.startDate ? new Date(this.startDate) : null,
-                endDate: this.endDate ? new Date(this.endDate) : null,
+                startDate: this.startDate ? new Date(this.startDate) : null, // Convert to Date
+                endDate: this.endDate ? new Date(this.endDate) : null,    
               },
             },
             disableClose: true,
@@ -565,15 +565,14 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                     ?.setValue(firstSemester.semester_number);
                   dialogRef.componentInstance.form
                     ?.get('startDate')
-                    ?.setValue(new Date(firstSemester.start_date));
+                    ?.setValue(firstSemester.start_date);
                   dialogRef.componentInstance.form
                     ?.get('endDate')
-                    ?.setValue(new Date(firstSemester.end_date));
+                    ?.setValue(firstSemester.end_date);
                 }
               }
             });
 
-          // Handle changes when Semester is changed
           dialogRef.componentInstance.form
             ?.get('semester')
             ?.valueChanges.pipe(takeUntil(this.destroy$))
@@ -592,10 +591,10 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                 if (selectedSemesterObj) {
                   dialogRef.componentInstance.form
                     ?.get('startDate')
-                    ?.setValue(new Date(selectedSemesterObj.start_date));
+                    ?.setValue(selectedSemesterObj.start_date);
                   dialogRef.componentInstance.form
                     ?.get('endDate')
-                    ?.setValue(new Date(selectedSemesterObj.end_date));
+                    ?.setValue(selectedSemesterObj.end_date);
                 }
               }
             });
