@@ -2,8 +2,8 @@ import { Component, OnInit, AfterViewInit, ViewChild, ChangeDetectorRef } from '
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { BehaviorSubject } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { filter, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSlideToggleModule, MatSlideToggleChange } from '@angular/material/slide-toggle';
@@ -110,6 +110,9 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
   hasAnyPreferences = false;
   hasIndividualDeadlines = false;
 
+  // Search Subject
+  private searchSubject = new Subject<string>();
+
   @ViewChild(MatPaginator) paginator?: MatPaginator;
 
   constructor(
@@ -123,6 +126,14 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
     this.preferencesService.clearPreferencesCache();
     this.loadFacultyPreferences();
     this.setupFilterPredicate();
+    this.searchSubject
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged()
+      )
+      .subscribe((searchValue) => {
+        this.applyFilter(searchValue);
+      });
   }
 
   ngAfterViewInit(): void {
@@ -245,8 +256,8 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
    */
   onInputChange(inputValues: { [key: string]: any }): void {
     const searchValue = inputValues['searchFaculty'] || '';
-    this.applyFilter(searchValue);
-  }
+    this.searchSubject.next(searchValue);
+}
 
   // ===========================
   // Toggle Management
