@@ -185,12 +185,13 @@
           <th mat-header-cell *matHeaderCellDef class="custom-header">
             <div class="helper-container">
               <mat-slide-toggle
-              class="header-toggle"
-              [checked]="isToggleAllChecked"
-              [disabled]="getToggleState(allData[0]).isGlobalDisabled"
-              [matTooltip]="getTooltip('global')"
-              (change)="onToggleAllPreferences($event)">
-            </mat-slide-toggle>
+                class="header-toggle"
+                [checked]="isToggleAllChecked"
+                [disabled]="getToggleState(allData[0]).isGlobalDisabled"
+                [matTooltip]="getTooltip('global')"
+                (change)="onToggleAllPreferences($event)"
+              >
+              </mat-slide-toggle>
 
               <span
                 mat-symbol="help"
@@ -208,12 +209,13 @@
           <td mat-cell *matCellDef="let element" class="custom-cell">
             <div class="helper-container">
               <mat-slide-toggle
-              class="single-toggle"
-              [checked]="element.is_enabled"
-              [disabled]="getToggleState(element).isIndividualDisabled"
-              [matTooltip]="getTooltip('individual', element)"
-              (change)="onToggleSinglePreferences(element, $event)">
-            </mat-slide-toggle>
+                class="single-toggle"
+                [checked]="element.is_enabled"
+                [disabled]="getToggleState(element).isIndividualDisabled"
+                [matTooltip]="getTooltip('individual', element)"
+                (change)="onToggleSinglePreferences(element, $event)"
+              >
+              </mat-slide-toggle>
             </div>
           </td>
         </ng-container>
@@ -238,7 +240,7 @@
       <mat-paginator
         class="custom-paginator"
         [length]="filteredData.length"
-        [pageSize]="10"
+        [pageSize]="25"
         [pageSizeOptions]="[5, 10, 25, 50, 100]"
         [showFirstLastButtons]="true"
         (page)="updateDisplayedData()"
