@@ -17,7 +17,7 @@
       <div class="no-faculty-message">
         No faculty has selected this course as their preference.
       </div>
-      } @else {
+      } @else { 
       <!-- Outer loop for faculty -->
       @for (faculty of data.suggestedFaculty; track faculty.faculty_id) {
       <div class="faculty-card-wrapper">
@@ -121,7 +121,7 @@
             <mat-label>Start Time</mat-label>
             <mat-icon matPrefix>access_time_filled</mat-icon>
             <mat-select formControlName="startTime">
-              @for (time of data.timeOptions; track time) {
+              @for (time of data.options.timeOptions; track time) {
               <mat-option [value]="time">{{ time }}</mat-option>
               }
             </mat-select>
@@ -132,7 +132,7 @@
             <mat-label>End Time</mat-label>
             <mat-icon matPrefix>access_time_filled</mat-icon>
             <mat-select formControlName="endTime">
-              @for (time of data.endTimeOptions; track time) {
+              @for (time of data.options.endTimeOptions; track time) {
               <mat-option [value]="time">{{ time }}</mat-option>
               }
             </mat-select>

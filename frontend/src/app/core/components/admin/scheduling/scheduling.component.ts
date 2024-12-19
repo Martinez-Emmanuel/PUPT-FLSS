@@ -537,8 +537,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
               initialValue: {
                 academicYear: this.activeYear || academicYearOptions[0] || '',
                 semester: this.activeSemesterLabel || semesterOptions[0] || '',
-                startDate: this.startDate || null,
-                endDate: this.endDate || null,
+                startDate: this.startDate ? new Date(this.startDate) : null, // Convert to Date
+                endDate: this.endDate ? new Date(this.endDate) : null,    
               },
             },
             disableClose: true,
@@ -744,10 +744,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           (p) => p.display === this.selectedProgram
         );
 
-        const selectedProgramInfo = 
-          `${schedule.program_code} ${schedule.year}-${schedule.section}`;
-        const selectedCourseInfo = 
-          `${schedule.course_code} - ${schedule.course_title}`;
+        const selectedProgramInfo = `${schedule?.program_code} ${this.selectedYear}-${this.selectedSection}`;
+        const selectedCourseInfo = `${schedule.course_code} - ${schedule.course_title}`;
         const section = this.sectionOptions.find(
           (s) => s.section_name === schedule.section
         );
@@ -815,20 +813,32 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           width: '100%',
           disableClose: true,
           data: {
-            selectedProgramId: program?.id,
-            year_level: this.selectedYear,
-            section_id: sectionId,
-            dayOptions: this.dayOptions,
-            timeOptions: this.timeOptions,
-            endTimeOptions: this.timeOptions,
-            professorOptions: professorOptions,
-            roomOptions: roomOptions,
+            program: {
+              id: program?.id || 0,
+              info: selectedProgramInfo,
+            },
+            academic: {
+              year_level: this.selectedYear,
+              section_id: sectionId || 0,
+            },
+            options: {
+              dayOptions: this.dayOptions,
+              timeOptions: this.timeOptions,
+              endTimeOptions: this.timeOptions,
+              professorOptions: professorOptions,
+              roomOptions: roomOptions,
+            },
             facultyOptions: faculty.faculty,
             roomOptionsList: availableRooms,
             selectedProgramInfo: selectedProgramInfo,
             selectedCourseInfo: selectedCourseInfo,
             suggestedFaculty: suggestedFaculty,
-            existingSchedule: schedule,
+            existingSchedule: {
+              day: schedule.day,
+              time: schedule.time,
+              professor: schedule.professor,
+              room: schedule.room,
+            },
             schedule_id: schedule.schedule_id,
             course_id: schedule.course_id,
           },

@@ -49,23 +49,33 @@ interface SuggestedFaculty {
   prefIndex: number;
   animating: boolean;
 }
+
 interface ProfessorOption {
   id: number;
   name: string;
 }
 
 interface DialogData {
-  dayOptions: string[];
-  timeOptions: string[];
-  endTimeOptions: string[];
-  selectedProgramInfo: string;
-  selectedProgramId: number;
-  selectedCourseInfo: string;
-  suggestedFaculty: SuggestedFaculty[];
-  professorOptions: string[];
-  roomOptions: string[];
+  program: {
+    id: number;
+    info: string;
+  };
+  academic: {
+    year_level: number;
+    section_id: number;
+  };
+  options: {
+    dayOptions: string[];
+    timeOptions: string[];
+    endTimeOptions: string[];
+    professorOptions: string[];
+    roomOptions: string[];
+  };
   facultyOptions: Faculty[];
   roomOptionsList: Room[];
+  selectedProgramInfo: string;
+  selectedCourseInfo: string;
+  suggestedFaculty: SuggestedFaculty[];
   existingSchedule?: {
     day: string;
     time: string;
@@ -73,10 +83,7 @@ interface DialogData {
     room: string;
   };
   schedule_id: number;
-  year_level: number;
-  section_id: number;
   course_id: number;
-  preferences: any[];
 }
 
 @Component({
@@ -171,7 +178,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
       Saturday: 'Sat',
       Sunday: 'Sun',
     };
-    this.dayButtons = this.data.dayOptions.map((day) => ({
+    this.dayButtons = this.data.options.dayOptions.map((day) => ({
       name: day,
       shortName: dayShortNames[day] || day.substring(0, 3),
     }));
@@ -201,7 +208,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   }
 
   private setupAutocomplete(): void {
-    const professorOptions: ProfessorOption[] = this.data.professorOptions.map(
+    const professorOptions: ProfessorOption[] = this.data.options.professorOptions.map(
       (name, index) => ({ id: index, name: name })
     );
 
@@ -215,7 +222,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
 
     this.filteredRooms$ = this.scheduleForm.get('room')!.valueChanges.pipe(
       startWith(''),
-      map((value) => this.filterRoomOptions(value, this.data.roomOptions)),
+      map((value) => this.filterRoomOptions(value, this.data.options.roomOptions)),
       shareReplay(1)
     );
   }
@@ -248,16 +255,16 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   }
 
   private updateEndTimeOptions(startTime: string): void {
-    const startIndex = this.data.timeOptions.indexOf(startTime);
+    const startIndex = this.data.options.timeOptions.indexOf(startTime);
     if (startIndex === -1) {
       this.scheduleForm.patchValue({ endTime: '' });
-      this.data.endTimeOptions = [];
+      this.data.options.endTimeOptions = [];
       return;
     }
 
-    this.data.endTimeOptions = this.data.timeOptions.slice(startIndex + 1);
+    this.data.options.endTimeOptions = this.data.options.timeOptions.slice(startIndex + 1);
     const currentEndTime = this.scheduleForm.get('endTime')?.value;
-    if (!this.data.endTimeOptions.includes(currentEndTime)) {
+    if (!this.data.options.endTimeOptions.includes(currentEndTime)) {
       this.scheduleForm.patchValue({ endTime: '' });
     }
     this.cdr.markForCheck();
@@ -272,10 +279,10 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   private setupCustomValidators(): void {
     this.scheduleForm
       .get('professor')
-      ?.setValidators(mustMatchOption(this.data.professorOptions));
+      ?.setValidators(mustMatchOption(this.data.options.professorOptions));
     this.scheduleForm
       .get('room')
-      ?.setValidators(mustMatchOption(this.data.roomOptions));
+      ?.setValidators(mustMatchOption(this.data.options.roomOptions));
     this.scheduleForm.get('professor')?.updateValueAndValidity();
     this.scheduleForm.get('room')?.updateValueAndValidity();
   }
@@ -313,12 +320,12 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     return this.schedulingService
       .checkForScheduleConflicts(
         this.data.schedule_id,
-        this.data.selectedProgramId,
-        this.data.year_level,
+        this.data.program.id,
+        this.data.academic.year_level,
         day,
         formattedStartTime || '',
         formattedEndTime || '',
-        this.data.section_id,
+        this.data.academic.section_id,
         facultyId,
         roomId
       )
@@ -376,9 +383,9 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
         formValues.day ?? null,
         formattedStartTime,
         formattedEndTime,
-        this.data.selectedProgramId,
-        this.data.year_level,
-        this.data.section_id
+        this.data.program.id,
+        this.data.academic.year_level,
+        this.data.academic.section_id
       )
       .pipe(
         tap(() => {
@@ -465,7 +472,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
 
   public resetForm(): void {
     this.scheduleForm.reset();
-    this.data.endTimeOptions = [...this.data.timeOptions];
+    this.data.options.endTimeOptions = [...this.data.options.timeOptions];
     this.selectedDay = '';
     this.originalDay = '';
     this.selectedFaculty = null;
