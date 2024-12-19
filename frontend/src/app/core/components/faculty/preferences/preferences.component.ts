@@ -23,8 +23,9 @@ import { DialogRequestAccessComponent } from '../../../../shared/dialog-request-
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { ThemeService } from '../../../services/theme/theme.service';
-import { PreferencesService, Program, Course, YearLevel } from '../../../services/faculty/preference/preferences.service';
+import { PreferencesService } from '../../../services/faculty/preference/preferences.service';
 import { CookieService } from 'ngx-cookie-service';
+import { Program, Course, YearLevel } from '../../../models/preferences.model';
 
 import { fadeAnimation, cardEntranceAnimation, rowAdditionAnimation } from '../../../animations/animations';
 

@@ -21,7 +21,8 @@ import { DialogPrefComponent } from '../../../../shared/dialog-pref/dialog-pref.
 import { DialogExportComponent } from '../../../../shared/dialog-export/dialog-export.component';
 import { DialogTogglePreferencesComponent, DialogTogglePreferencesData } from '../../../../shared/dialog-toggle-preferences/dialog-toggle-preferences.component';
 
-import { PreferencesService, ActiveSemester } from '../../../services/faculty/preference/preferences.service';
+import { PreferencesService } from '../../../services/faculty/preference/preferences.service';
+import { ActiveSemester } from '../../../models/preferences.model';
 
 import { fadeAnimation } from '../../../animations/animations';
 
