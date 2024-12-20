@@ -2,8 +2,8 @@ import { Component, Inject } from '@angular/core';
 import { CommonModule, formatDate } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { forkJoin, of, Observable } from 'rxjs';
-import { switchMap, finalize, tap } from 'rxjs/operators';
+import { of, Observable } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
