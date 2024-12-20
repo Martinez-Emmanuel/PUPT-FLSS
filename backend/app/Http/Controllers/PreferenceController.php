@@ -241,10 +241,13 @@ class PreferenceController extends Controller
                             ];
                         })->values()->toArray();
 
-                    // Fetch all courses with the same course code that are active
+                    // Fetch all courses with the same course code OR course title that are active
                     $relatedCourses = DB::table('courses')
                         ->join('course_assignments', 'courses.course_id', '=', 'course_assignments.course_id')
-                        ->where('courses.course_code', $preference->course_code)
+                        ->where(function ($query) use ($preference) {
+                            $query->where('courses.course_code', $preference->course_code)
+                                ->orWhere('courses.course_title', $preference->course_title);
+                        })
                         ->whereIn('course_assignments.curricula_program_id', function ($query) {
                             $query->select('curricula_program_id')
                                 ->from('curricula_program')
