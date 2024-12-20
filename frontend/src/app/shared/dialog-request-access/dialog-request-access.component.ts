@@ -15,16 +15,16 @@ interface DialogRequestAccessData {
 }
 
 @Component({
-    selector: 'app-dialog-request-access',
-    imports: [
-        CommonModule,
-        MatDialogModule,
-        MatButtonModule,
-        MatProgressSpinnerModule,
-        MatSymbolDirective,
-    ],
-    templateUrl: './dialog-request-access.component.html',
-    styleUrls: ['./dialog-request-access.component.scss']
+  selector: 'app-dialog-request-access',
+  imports: [
+    CommonModule,
+    MatDialogModule,
+    MatButtonModule,
+    MatProgressSpinnerModule,
+    MatSymbolDirective,
+  ],
+  templateUrl: './dialog-request-access.component.html',
+  styleUrls: ['./dialog-request-access.component.scss'],
 })
 export class DialogRequestAccessComponent {
   hasRequest: boolean;
@@ -50,19 +50,16 @@ export class DialogRequestAccessComponent {
         this.snackBar.open(
           'Request for submission access successfully sent to administrator.',
           'Close',
-          {
-            duration: 3000,
-          }
+          { duration: 3000 }
         );
-        this.dialogRef.close();
+        // Return true to indicate successful request
+        this.dialogRef.close(true);
       },
       error: () => {
         this.snackBar.open(
           'Failed to submit request for access to administrator. Try again.',
           'Close',
-          {
-            duration: 3000,
-          }
+          { duration: 3000 }
         );
         this.isLoading = false;
       },
@@ -76,19 +73,16 @@ export class DialogRequestAccessComponent {
         this.snackBar.open(
           'Request for submission access has been canceled.',
           'Close',
-          {
-            duration: 3000,
-          }
+          { duration: 3000 }
         );
-        this.dialogRef.close();
+        // Return false to indicate request cancellation
+        this.dialogRef.close(false);
       },
       error: () => {
         this.snackBar.open(
           'Request for submission access cancellation has failed. Please try again.',
           'Close',
-          {
-            duration: 3000,
-          }
+          { duration: 3000 }
         );
         this.isLoading = false;
       },

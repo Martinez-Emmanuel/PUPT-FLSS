@@ -557,14 +557,37 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   }
 
   public openRequestAccessDialog(): void {
-    this.dialog.open(DialogRequestAccessComponent, {
-      width: '25rem',
-      disableClose: true,
-      data: {
-        has_request: this.hasRequest(),
-        facultyId: this.facultyId(),
-      },
-    });
+    this.dialog
+      .open(DialogRequestAccessComponent, {
+        width: '25rem',
+        disableClose: true,
+        data: {
+          has_request: this.hasRequest(),
+          facultyId: this.facultyId(),
+        },
+      })
+      .afterClosed()
+      .subscribe((result) => {
+        if (result !== undefined) {
+          this.hasRequest.set(result);
+
+          if (this.facultyId()) {
+            this.preferencesService
+              .getPreferencesByFacultyId(this.facultyId()!)
+              .subscribe({
+                next: (resp) => {
+                  if (resp?.preferences) {
+                    this.hasRequest.set(resp.preferences.has_request === 1);
+                  }
+                },
+                error: (error) => {
+                  console.error('Error refreshing preferences:', error);
+                  this.showSnackBar('Error refreshing preferences data.');
+                },
+              });
+          }
+        }
+      });
   }
 
   /**
