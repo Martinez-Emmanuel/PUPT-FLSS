@@ -565,7 +565,13 @@ class PreferenceController extends Controller
             if ($sendEmail) {
                 $faculties = Faculty::all();
                 foreach ($faculties as $faculty) {
-                    SendFacultyPreferenceEmailJob::dispatch($faculty);
+                    // Only send email immediately if preferences are enabled now
+                    if ($finalStatus) {
+                        SendFacultyPreferenceEmailJob::dispatch($faculty);
+                    } else if ($startDate) {
+                        // Schedule the email to be sent on the start date
+                        SendFacultyPreferenceEmailJob::dispatch($faculty)->delay($startDate);
+                    }
                 }
             }
         });
@@ -649,7 +655,11 @@ class PreferenceController extends Controller
             if ($sendEmail) {
                 $faculty = Faculty::find($faculty_id);
                 if ($faculty) {
-                    SendFacultyPreferenceEmailJob::dispatch($faculty);
+                    if ($finalStatus) {
+                        SendFacultyPreferenceEmailJob::dispatch($faculty);
+                    } else if ($startDate) {
+                        SendFacultyPreferenceEmailJob::dispatch($faculty)->delay($startDate);
+                    }
                 }
             }
         });

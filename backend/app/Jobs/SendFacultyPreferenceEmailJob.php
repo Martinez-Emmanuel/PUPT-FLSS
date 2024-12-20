@@ -50,11 +50,19 @@ class SendFacultyPreferenceEmailJob implements ShouldQueue
      */
     public function handle()
     {
+        // Check if preferences are actually enabled before sending email
+        $settings = PreferencesSetting::where('faculty_id', $this->faculty->id)->first();
+
+        if (!$settings->is_enabled) {
+            // Skip sending email if preferences aren't enabled yet
+            return;
+        }
+
         $dataPreference = [
             'faculty_name' => $this->faculty->user->name,
             'email' => $this->faculty->user->email,
             'faculty_units' => $this->faculty->faculty_units,
-            'global_deadline' => $this->global_deadline ? $this->global_deadline->format('M d, Y') : 'No deadline set',
+            'global_deadline' => $this->global_deadline ? Carbon::parse($this->global_deadline)->format('M d, Y') : 'No deadline set',
             'days_left' => $this->days_left,
         ];
 
