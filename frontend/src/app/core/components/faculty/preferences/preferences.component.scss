@@ -278,7 +278,12 @@
 
       .day-time-button {
         color: var(--primary-text);
+        transition: opacity 0.3s ease;
         cursor: pointer;
+
+        &:hover {
+          opacity: var(--opacity-semi-opaque);
+        }
       }
     }
 
@@ -316,48 +321,6 @@
 
     span[mat-symbol] {
       font-size: 100%;
-    }
-  }
-
-  .table-footer {
-    @include mixins.default-transition;
-    @include mixins.flex-layout(
-      $justify: space-between,
-      $gap: var(--spacing-xs)
-    );
-    @include mixins.sticky;
-    margin-top: auto;
-    background-color: var(--neutral-bar);
-
-    .button-container {
-      @include mixins.flex-layout($gap: var(--spacing-sm));
-      padding: var(--spacing-sm) var(--spacing-sm);
-      font-weight: 500;
-      user-select: none;
-      cursor: pointer;
-      transition: transform 0.2s ease, opacity 0.2s ease;
-
-      .remove {
-        color: var(--primary-text);
-      }
-
-      .submit {
-        color: var(--secondary-text);
-      }
-
-      &:hover {
-        opacity: var(--opacity-semi-opaque);
-      }
-
-      &:active {
-        transform: scale(0.97);
-      }
-
-      &.disabled {
-        opacity: var(--opacity-half);
-        cursor: not-allowed;
-        transform: none;
-      }
     }
   }
 }
