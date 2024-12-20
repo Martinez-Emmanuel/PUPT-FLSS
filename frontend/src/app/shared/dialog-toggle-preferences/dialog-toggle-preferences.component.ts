@@ -295,6 +295,7 @@ export class DialogTogglePreferencesComponent {
     this.isProcessing = true;
 
     let operation$: Observable<any>;
+    let successMessage = '';
 
     if (this.data.type === 'all_preferences') {
       operation$ = this.preferencesService.toggleAllPreferences(
@@ -303,6 +304,7 @@ export class DialogTogglePreferencesComponent {
         null,
         false
       );
+      successMessage = 'Scheduled submission canceled successfully.';
     } else if (this.data.type === 'single_preferences') {
       operation$ = this.preferencesService.toggleSingleFacultyPreferences(
         this.data.faculty_id!,
@@ -311,6 +313,7 @@ export class DialogTogglePreferencesComponent {
         null,
         false
       );
+      successMessage = `Scheduled submission for ${this.data.facultyName} canceled successfully.`;
     } else {
       operation$ = of(null);
     }
@@ -323,7 +326,6 @@ export class DialogTogglePreferencesComponent {
       )
       .subscribe({
         next: () => {
-          const successMessage = 'Scheduled submission canceled successfully.';
           this.snackBar.open(successMessage, 'Close', {
             duration: this.SNACKBAR_DURATION,
           });
