@@ -524,8 +524,6 @@ export class PreferencesComponent implements OnInit, OnDestroy {
           facultyId: this.facultyId(),
         },
       })
-      .afterClosed()
-      .subscribe(() => this.loadInitialData());
   }
 
   /**

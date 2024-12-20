@@ -12,12 +12,19 @@
   @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
-    $justify: flex-start,
-    $gap: var(--spacing-md)
+    $justify: flex-start
   );
   @include mixins.default-transition;
   height: 100%;
-  position: relative;
+}
+
+.preferences-content-wrapper {
+  @include mixins.flex-layout(
+    $direction: column,
+    $align: stretch,
+    $gap: var(--spacing-md)
+  );
+  border: 1px solid yellow;
 }
 
 /* First row - Header & Units Cards */
