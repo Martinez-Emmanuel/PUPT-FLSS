@@ -326,6 +326,11 @@ span[mat-symbol] {
   color: white !important;
 }
 
+.mat-pseudo-checkbox-full.mat-pseudo-checkbox-checked::after,
+.mat-pseudo-checkbox-full.mat-pseudo-checkbox-indeterminate::after {
+  color: white !important;
+}
+
 /* Full Calendar Styling */
 
 // Increase border radius on table's buttons
