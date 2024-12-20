@@ -84,39 +84,33 @@
         </mat-menu>
 
         <!-- Add this block after the search input -->
-        @if (searchQuery() && filteredSearchResults().length === 0) {
-        <div id="empty-results">
-          <span mat-symbol="search_off"></span>
-          <span class="results-desc"
-            >No results found for "{{ searchQuery() }}"</span
-          >
-        </div>
-        } @else if (searchQuery() && filteredSearchResults().length > 0) {
-        <div id="search_results">
-          <h3 class="cards-label">
-            <span mat-symbol="manage_search"></span>Search Results
-          </h3>
-          <div class="courses-scroll-container">
-            <div [@cardEntranceAnimation]="filteredSearchResults().length">
-              @for (course of filteredSearchResults(); track course.course_id) {
-              <div
-                class="course-card pop"
-                (click)="addCourseToTable(course)"
-                matRipple
-              >
-                <div class="course-info">
-                  <span class="course-code">{{ course.course_code }}</span>
-                  <span class="course-title">{{ course.course_title }}</span>
+        @if (searchState() === 'searchResults') {
+          <div id="search_results">
+            <h3 class="cards-label">
+              <span mat-symbol="manage_search"></span>Search Results
+            </h3>
+            <div class="courses-scroll-container">
+              <div [@cardEntranceAnimation]="filteredSearchResults().length">
+                @for (course of filteredSearchResults(); track course.course_id) {
+                <div class="course-card pop" (click)="addCourseToTable(course)" matRipple>
+                  <div class="course-info">
+                    <span class="course-code">{{ course.course_code }}</span>
+                    <span class="course-title">{{ course.course_title }}</span>
+                  </div>
+                  <button mat-icon-button class="add-button">
+                    <span mat-symbol="add" variant="outlined" size="20px"></span>
+                  </button>
                 </div>
-                <button mat-icon-button class="add-button">
-                  <span mat-symbol="add" variant="outlined" size="20px"></span>
-                </button>
+                }
               </div>
-              }
             </div>
           </div>
-        </div>
-        } @if (showProgramSelection() && !searchQuery()) {
+          } @else if (searchState() === 'noResults') {
+          <div id="empty-results">
+            <span mat-symbol="search_off"></span>
+            <span class="results-desc">No results found for "{{ searchQuery() }}"</span>
+          </div>
+          } @if (showProgramSelection() && !searchQuery()) {
         <div id="programs_list">
           <h3 class="cards-label">
             <span mat-symbol="school"></span>Select a Program

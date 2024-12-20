@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ViewChild, ElementRef, signal, computed, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { finalize, of, Subscription, switchMap, tap, Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { finalize, of, Subscription, Subject, debounceTime, distinctUntilChanged, startWith, tap, switchMap } from 'rxjs';
 
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -98,16 +98,37 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   private searchQuerySubject = new Subject<string>();
   searchQuery = signal('');
   uniqueCourses = signal(new Map<string, Course>());
-  courses = computed(() => Array.from(this.uniqueCourses().values()));
+  allCourses = signal<Course[]>([]);
   filteredSearchResults = computed(() => {
     const query = this.searchQuery().toLowerCase().trim();
-    return query
-      ? this.courses().filter(
-          (course) =>
-            course.course_code.toLowerCase().includes(query) ||
-            course.course_title.toLowerCase().includes(query)
-        )
-      : [];
+    const selectedProgram = this.selectedProgram();
+
+    if (!query) return [];
+
+    let coursesToFilter: Course[] = [];
+
+    if (selectedProgram) {
+      const programCoursesMap = new Map<string, Course>();
+      this.populateUniqueCourses(selectedProgram, programCoursesMap);
+      coursesToFilter = Array.from(programCoursesMap.values());
+    } else {
+      coursesToFilter = this.allCourses();
+    }
+
+    const filteredCourses = coursesToFilter.filter(
+      (course) =>
+        course.course_code.toLowerCase().includes(query) ||
+        course.course_title.toLowerCase().includes(query)
+    );
+
+    const uniqueTitlesMap = new Map<string, Course>();
+    filteredCourses.forEach((course) => {
+      if (!uniqueTitlesMap.has(course.course_title.toLowerCase())) {
+        uniqueTitlesMap.set(course.course_title.toLowerCase(), course);
+      }
+    });
+
+    return Array.from(uniqueTitlesMap.values());
   });
   @ViewChild('searchInput') searchInput!: ElementRef;
 
@@ -170,6 +191,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.subscribeToThemeChanges();
+    this.setupSearchSubscription();
     this.loadInitialData();
   }
 
@@ -215,10 +237,12 @@ export class PreferencesComponent implements OnInit, OnDestroy {
             if (programsResponse) {
               this.programs.set(programsResponse.programs);
               this.activeSemesterId.set(programsResponse.active_semester_id);
-              this.uniqueCourses.set(new Map<string, Course>());
+
+              const allCoursesMap = new Map<string, Course>();
               programsResponse.programs.forEach((program) => {
-                this.populateUniqueCourses(program);
+                this.populateUniqueCourses(program, allCoursesMap);
               });
+              this.allCourses.set(Array.from(allCoursesMap.values()));
             }
           },
           error: (error) => this.handleDataLoadingError(error),
@@ -305,22 +329,26 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     this.searchState.set('courseList');
     this.selectedYearLevel.set(null);
     this.uniqueCourses.set(new Map<string, Course>());
-    this.populateUniqueCourses(program);
+    this.populateUniqueCourses(program, this.uniqueCourses());
+    this.clearSearch();
   }
 
-  private populateUniqueCourses(program: Program): void {
+  private populateUniqueCourses(
+    program: Program,
+    coursesMap: Map<string, Course>
+  ): void {
     program.year_levels.forEach((yearLevel) => {
       yearLevel.semester.courses.forEach((course) => {
-        this.uniqueCourses().set(course.course_code, course);
+        coursesMap.set(course.course_code, course);
       });
     });
-    this.uniqueCourses.set(new Map(this.uniqueCourses().entries()));
   }
 
   public backToProgramSelection(): void {
     this.searchState.set('programSelection');
     this.selectedProgram.set(undefined);
     this.selectedYearLevel.set(null);
+    this.clearSearch();
   }
 
   public filteredCourses = computed(() => {
@@ -348,6 +376,27 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   /**
    * Search Functionality
    */
+  private setupSearchSubscription() {
+    this.subscriptions.add(
+      this.searchQuerySubject
+        .pipe(startWith(''), debounceTime(300), distinctUntilChanged())
+        .subscribe((query) => {
+          this.searchQuery.set(query);
+
+          if (query) {
+            const results = this.filteredSearchResults();
+            this.searchState.set(
+              results.length > 0 ? 'searchResults' : 'noResults'
+            );
+          } else {
+            this.searchState.set(
+              this.selectedProgram() ? 'courseList' : 'programSelection'
+            );
+          }
+        })
+    );
+  }
+
   public onSearchInput(query: string): void {
     this.searchQuerySubject.next(query);
   }
@@ -365,12 +414,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   }
 
   public clearSearch(): void {
-    this.searchQuery.set('');
-    this.filteredSearchResults();
-    this.searchState.set(
-      this.selectedProgram() ? 'courseList' : 'programSelection'
-    );
-    this.searchInput.nativeElement.focus();
+    this.searchQuerySubject.next('');
   }
 
   /**
@@ -515,15 +559,14 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   }
 
   public openRequestAccessDialog(): void {
-    this.dialog
-      .open(DialogRequestAccessComponent, {
-        width: '25rem',
-        disableClose: true,
-        data: {
-          has_request: this.hasRequest(),
-          facultyId: this.facultyId(),
-        },
-      })
+    this.dialog.open(DialogRequestAccessComponent, {
+      width: '25rem',
+      disableClose: true,
+      data: {
+        has_request: this.hasRequest(),
+        facultyId: this.facultyId(),
+      },
+    });
   }
 
   /**
