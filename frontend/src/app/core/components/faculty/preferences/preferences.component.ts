@@ -572,42 +572,35 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   /**
    * Utility Functions
    */
-  public formatTimeForPayload(time: string | undefined | null): string {
+  private readonly SNACK_BAR_CONFIG = {
+    duration: 3000,
+    horizontalPosition: 'center' as const,
+    verticalPosition: 'bottom' as const,
+  };
+
+  public formatTimeForPayload(time?: string | null): string {
     if (!time) return '';
-    if (time.includes('AM') || time.includes('PM')) {
-      const [timePart, modifier] = time.split(' ');
-      let [hours, minutes] = timePart.split(':').map(Number);
+    if (!time.includes('AM') && !time.includes('PM')) return time;
 
-      if (hours === 12) {
-        hours = 0;
-      }
+    const [timePart, modifier] = time.split(' ');
+    let [hours, minutes] = timePart.split(':').map(Number);
+    hours = (hours % 12) + (modifier === 'PM' ? 12 : 0);
 
-      if (modifier === 'PM') {
-        hours += 12;
-      }
-
-      return `${hours.toString().padStart(2, '0')}:${minutes
-        .toString()
-        .padStart(2, '0')}:00`;
-    } else {
-      return time;
-    }
+    return `${hours.toString().padStart(2, '0')}:${minutes
+      .toString()
+      .padStart(2, '0')}:00`;
   }
 
   public formatSelectedDaysAndTime(element: TableData): string {
-    const selectedDays = element.preferredDays
-      .filter((pd) => pd.start_time && pd.end_time)
-      .map((pd) => pd.day);
-    return selectedDays.length > 0
-      ? selectedDays.join(', ')
-      : 'Click to select day and time';
+    return (
+      element.preferredDays
+        .filter((pd) => pd.start_time && pd.end_time)
+        .map((pd) => pd.day)
+        .join(', ') || 'Click to select day and time'
+    );
   }
 
   private showSnackBar(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 3000,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom',
-    });
+    this.snackBar.open(message, 'Close', this.SNACK_BAR_CONFIG);
   }
 }
