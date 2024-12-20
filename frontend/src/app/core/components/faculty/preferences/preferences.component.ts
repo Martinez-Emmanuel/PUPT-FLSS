@@ -222,11 +222,9 @@ export class PreferencesComponent implements OnInit, OnDestroy {
       this.preferencesService
         .getPreferencesByFacultyId(facultyId)
         .pipe(
-          tap((preferencesResponse) =>
-            this.processPreferencesResponse(preferencesResponse)
-          ),
-          switchMap((preferencesResponse) =>
-            preferencesResponse.preferences.is_enabled === 1
+          tap((resp) => this.processPreferencesResponse(resp)),
+          switchMap((resp) =>
+            resp.preferences.is_enabled === 1
               ? this.preferencesService.getPrograms()
               : of(null)
           ),
@@ -234,16 +232,16 @@ export class PreferencesComponent implements OnInit, OnDestroy {
         )
         .subscribe({
           next: (programsResponse) => {
-            if (programsResponse) {
-              this.programs.set(programsResponse.programs);
-              this.activeSemesterId.set(programsResponse.active_semester_id);
+            if (!programsResponse) return;
 
-              const allCoursesMap = new Map<string, Course>();
-              programsResponse.programs.forEach((program) => {
-                this.populateUniqueCourses(program, allCoursesMap);
-              });
-              this.allCourses.set(Array.from(allCoursesMap.values()));
-            }
+            const allCoursesMap = new Map<string, Course>();
+            programsResponse.programs.forEach((program) =>
+              this.populateUniqueCourses(program, allCoursesMap)
+            );
+
+            this.programs.set(programsResponse.programs);
+            this.activeSemesterId.set(programsResponse.active_semester_id);
+            this.allCourses.set([...allCoursesMap.values()]);
           },
           error: (error) => this.handleDataLoadingError(error),
         })
