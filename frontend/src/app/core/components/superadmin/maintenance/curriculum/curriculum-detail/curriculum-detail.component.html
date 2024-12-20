@@ -12,6 +12,7 @@
       [addIconName]="'apps'"
       [showExportDialog]="true"
       [customExportOptions]="customExportOptions"
+      [isLoading]="isManagingPrograms"
       (inputChange)="onInputChange($event)"
       (export)="onExport($event)"
       (add)="onManagePrograms()"

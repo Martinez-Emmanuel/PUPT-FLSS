@@ -2,8 +2,8 @@ import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 
-import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { forkJoin, Observable, Subject } from 'rxjs';
+import { finalize, switchMap, takeUntil, tap } from 'rxjs/operators';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -39,8 +39,9 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
   public selectedSemesters: Semester[] = [];
   public customExportOptions: { all: string; current: string } | null = null;
   private destroy$ = new Subject<void>();
-  showPreview: boolean = false;
+  public showPreview: boolean = false;
   public isLoading: boolean = true;
+  public isManagingPrograms: boolean = false;
 
   headerInputFields: InputField[] = [
     {
@@ -595,84 +596,121 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
   // ===========================
   onManagePrograms() {
     const curriculumYear = this.curriculum?.curriculum_year;
-    if (!curriculumYear) return;
+    if (!curriculumYear) {
+      this.snackBar.open('Curriculum year not found.', 'Close', {
+        duration: 3000,
+      });
+      return;
+    }
 
+    this.isManagingPrograms = true;
     const currentlySelectedProgramId = this.selectedProgram;
 
-    this.curriculumService.getAllPrograms().subscribe((allPrograms) => {
-      this.curriculumService
-        .getCurriculumByYear(curriculumYear)
-        .subscribe((curriculumDetails) => {
-          if (!curriculumDetails || !curriculumDetails.programs) return;
+    forkJoin({
+      allPrograms: this.curriculumService.getAllPrograms(),
+      curriculumDetails:
+        this.curriculumService.getCurriculumByYear(curriculumYear),
+    }).subscribe({
+      next: ({ allPrograms, curriculumDetails }) => {
+        if (!curriculumDetails || !curriculumDetails.programs) {
+          this.isManagingPrograms = false;
+          this.snackBar.open('Error loading curriculum details.', 'Close', {
+            duration: 3000,
+          });
+          return;
+        }
 
-          const associatedPrograms = new Set(
-            curriculumDetails.programs.map((program) => program.name)
-          );
+        const associatedPrograms = new Set(
+          curriculumDetails.programs.map((program) => program.name)
+        );
 
-          const dialogConfig: DialogConfig = {
-            title: 'Manage Programs',
-            isEdit: false,
-            fields: allPrograms.map((program) => ({
-              label: `${program.program_code} - ${program.program_title}`,
-              formControlName: program.program_code,
-              type: 'checkbox' as 'checkbox',
-              required: false,
-              checked: associatedPrograms.has(program.program_code),
-            })),
-            initialValue: allPrograms.reduce((acc, program) => {
-              acc[program.program_code] = associatedPrograms.has(
+        const dialogConfig: DialogConfig = {
+          title: 'Manage Programs',
+          isEdit: false,
+          fields: allPrograms.map((program) => ({
+            label: `${program.program_code} - ${program.program_title}`,
+            formControlName: program.program_code,
+            type: 'checkbox' as 'checkbox',
+            required: false,
+            checked: associatedPrograms.has(program.program_code),
+          })),
+          initialValue: allPrograms.reduce((acc, program) => {
+            acc[program.program_code] = associatedPrograms.has(
+              program.program_code
+            );
+            return acc;
+          }, {} as { [key: string]: boolean }),
+        };
+
+        this.isManagingPrograms = false;
+
+        const dialogRef = this.dialog.open(TableDialogComponent, {
+          data: dialogConfig,
+          width: '25rem',
+          disableClose: true,
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+          if (result) {
+            let programsChanged = false;
+            const programUpdates: Observable<any>[] = [];
+
+            allPrograms.forEach((program) => {
+              const isSelected = result[program.program_code];
+              const isInCurriculum = associatedPrograms.has(
                 program.program_code
               );
-              return acc;
-            }, {} as { [key: string]: boolean }),
-          };
 
-          const dialogRef = this.dialog.open(TableDialogComponent, {
-            data: dialogConfig,
-          });
-
-          dialogRef.afterClosed().subscribe((result) => {
-            if (result) {
-              let programsChanged = false;
-
-              allPrograms.forEach((program) => {
-                const isSelected = result[program.program_code];
-                const isInCurriculum = associatedPrograms.has(
-                  program.program_code
-                );
-
-                if (isSelected && !isInCurriculum) {
-                  programsChanged = true;
+              if (isSelected && !isInCurriculum) {
+                programsChanged = true;
+                programUpdates.push(
                   this.curriculumService
                     .addProgramToCurriculum(curriculumYear, program.program_id)
-                    .subscribe(() =>
-                      this.snackBar.open(
-                        `'${program.program_title}' has been added to this curriculum.`,
-                        'Close',
-                        { duration: 3000 }
-                      )
-                    );
-                } else if (!isSelected && isInCurriculum) {
-                  programsChanged = true;
+                    .pipe(
+                      tap(() => {
+                        this.snackBar.open(
+                          `'${program.program_title}' has been added to this curriculum.`,
+                          'Close',
+                          { duration: 3000 }
+                        );
+                      })
+                    )
+                );
+              } else if (!isSelected && isInCurriculum) {
+                programsChanged = true;
+                programUpdates.push(
                   this.curriculumService
                     .removeProgramFromCurriculum(
                       curriculumYear,
                       program.program_id
                     )
-                    .subscribe(() =>
-                      this.snackBar.open(
-                        `'${program.program_title}' removed from this curriculum.`,
-                        'Close',
-                        { duration: 3000 }
-                      )
-                    );
-                }
-              });
+                    .pipe(
+                      tap(() => {
+                        this.snackBar.open(
+                          `'${program.program_title}' removed from this curriculum.`,
+                          'Close',
+                          { duration: 3000 }
+                        );
+                      })
+                    )
+                );
+              }
+            });
 
-              if (programsChanged) {
-                this.curriculumService
-                  .getCurriculumByYear(curriculumYear)
-                  .subscribe((updatedCurriculum) => {
+            if (programsChanged) {
+              this.isManagingPrograms = true;
+
+              forkJoin(programUpdates)
+                .pipe(
+                  finalize(() => {
+                    this.isManagingPrograms = false;
+                  }),
+                  switchMap(() =>
+                    this.curriculumService.getCurriculumByYear(curriculumYear)
+                  )
+                )
+                .subscribe({
+                  next: (updatedCurriculum) => {
                     this.curriculum = updatedCurriculum;
 
                     const programStillExists = updatedCurriculum.programs.some(
@@ -692,11 +730,29 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                     this.updateSelectedSemesters();
                     this.updateCustomExportOptions();
                     this.cdr.detectChanges();
-                  });
-              }
+                  },
+                  error: (error) => {
+                    console.error('Error updating curriculum:', error);
+                    this.snackBar.open(
+                      'Error updating curriculum. Please refresh the page.',
+                      'Close',
+                      { duration: 3000 }
+                    );
+                  },
+                });
             }
-          });
+          }
         });
+      },
+      error: (error) => {
+        this.isManagingPrograms = false;
+        console.error('Error loading programs:', error);
+        this.snackBar.open(
+          'Error loading programs. Please try again.',
+          'Close',
+          { duration: 3000 }
+        );
+      },
     });
   }
 
