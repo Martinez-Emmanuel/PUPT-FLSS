@@ -1,6 +1,6 @@
 <div class="faculty-preferences-container">
   <!-- Display loading spinner if data is still loading -->
-  @if (isLoading) {
+  @if (isLoading()) {
   <div class="loading-wrapper">
     <app-loading></app-loading>
   </div>
@@ -12,27 +12,29 @@
       <div class="pref-description">
         Select your preferred courses and schedule for the upcoming
         <span class="highlight"
-          >A.Y. {{ academicYear }}, {{ semesterLabel }}</span
-        >. @if (isPreferencesEnabled) {
+          >A.Y. {{ academicYear() }}, {{ semesterLabel() }}</span
+        >
+        @if (isPreferencesEnabled()) {
         <p class="submission-deadline">
-          Submission Deadline: {{ submissionDeadline | date : "longDate" }} ({{
-            daysLeft === "Today" ? "Today" : daysLeft
+          Submission Deadline:
+          {{ submissionDeadline() | date : "longDate" }} ({{
+            daysLeft() === "Today" ? "Today" : daysLeft()
           }})
         </p>
         }
       </div>
     </div>
 
-    @if(isPreferencesEnabled) {
-    <div id="total_container" [class.disabled]="!isPreferencesEnabled">
+    @if(isPreferencesEnabled()) {
+    <div id="total_container" [class.disabled]="!isPreferencesEnabled()">
       <div class="total units" [@fadeAnimation]>
-        <h2>{{ totalUnits }}</h2>
+        <h2>{{ totalUnits() }}</h2>
         <span>Total Units Selected</span>
       </div>
 
       <!-- Total Hours -->
       <div class="total hours" [@fadeAnimation]>
-        <h2>{{ totalHours }}</h2>
+        <h2>{{ totalHours() }}</h2>
         <span>Total Hours Selected</span>
       </div>
     </div>
@@ -41,7 +43,7 @@
 
   <div class="preferences-row-two" [@fadeAnimation]>
     <!-- If preferences are enabled, display the preference submission UI -->
-    @if (isPreferencesEnabled) {
+    @if (isPreferencesEnabled()) {
     <!-- Courses List -->
     <div id="courses_container" [@fadeAnimation]>
       <div id="courses_search">
@@ -51,16 +53,16 @@
             matInput
             maxlength="50"
             placeholder="Enter a course code or course title"
-            [(ngModel)]="searchQuery"
-            (input)="onSearchInput()"
+            [ngModel]="searchQuery()"
+            (ngModelChange)="onSearchInput($event)"
             #searchInput
           />
           <span mat-symbol="search" matPrefix></span>
-          @if (searchQuery) {
+          @if (searchQuery()) {
           <button mat-icon-button matSuffix (click)="clearSearch()">
             <mat-icon>close</mat-icon>
           </button>
-          } @if (!showProgramSelection && !searchQuery) {
+          } @if (!showProgramSelection() && !searchQuery()) {
           <button mat-icon-button [matMenuTriggerFor]="filterMenu" matSuffix>
             <mat-icon>filter_list</mat-icon>
           </button>
@@ -69,31 +71,33 @@
       </div>
 
       <mat-menu #filterMenu="matMenu">
-        @for (year of dynamicYearLevels; track year) {
-        <button mat-menu-item (click)="filterByYear(year)">
+        @for (year of dynamicYearLevels(); track year) {
+        <button mat-menu-item (click)="selectedYearLevel.set(year)">
           Year Level: {{ year }}
         </button>
         }
         <!-- Clear filter option -->
-        <button mat-menu-item (click)="filterByYear(null)">Clear Filter</button>
+        <button mat-menu-item (click)="selectedYearLevel.set(null)">
+          Clear Filter
+        </button>
       </mat-menu>
 
       <!-- Add this block after the search input -->
-      @if (searchQuery && filteredSearchResults.length === 0) {
+      @if (searchQuery() && filteredSearchResults().length === 0) {
       <div id="empty-results">
         <span mat-symbol="search_off"></span>
         <span class="results-desc"
-          >No results found for "{{ searchQuery }}"</span
+          >No results found for "{{ searchQuery() }}"</span
         >
       </div>
-      } @else if (searchQuery && filteredSearchResults.length > 0) {
+      } @else if (searchQuery() && filteredSearchResults().length > 0) {
       <div id="search_results">
         <h3 class="cards-label">
           <span mat-symbol="manage_search"></span>Search Results
         </h3>
         <div class="courses-scroll-container">
-          <div [@cardEntranceAnimation]="filteredSearchResults.length">
-            @for (course of filteredSearchResults; track course.course_id) {
+          <div [@cardEntranceAnimation]="filteredSearchResults().length">
+            @for (course of filteredSearchResults(); track course.course_id) {
             <div
               class="course-card pop"
               (click)="addCourseToTable(course)"
@@ -111,14 +115,14 @@
           </div>
         </div>
       </div>
-      } @if (showProgramSelection && !searchQuery) {
+      } @if (showProgramSelection() && !searchQuery()) {
       <div id="programs_list">
         <h3 class="cards-label">
           <span mat-symbol="school"></span>Select a Program
         </h3>
         <div class="programs-scroll-container">
-          <div [@cardEntranceAnimation]="programs.length">
-            @for (program of programs; track program.program_id) {
+          <div [@cardEntranceAnimation]="programs().length">
+            @for (program of programs(); track program.program_id) {
             <div
               class="program-card pop"
               (click)="selectProgram(program)"
@@ -133,7 +137,7 @@
           </div>
         </div>
       </div>
-      } @else if (!showProgramSelection && !searchQuery) {
+      } @else if (!showProgramSelection() && !searchQuery()) {
       <div id="courses_list">
         <h3 class="cards-label">
           <span
@@ -141,11 +145,11 @@
             mat-symbol="arrow_back"
             (click)="backToProgramSelection()"
           ></span>
-          Select {{ selectedProgram?.program_code }} Courses
+          Select {{ selectedProgram()?.program_code }} Courses
         </h3>
         <div class="courses-scroll-container">
-          <div [@cardEntranceAnimation]="filteredCourses.length">
-            @for (course of filteredCourses; track course.course_id) {
+          <div [@cardEntranceAnimation]="filteredCourses().length">
+            @for (course of filteredCourses(); track course.course_id) {
             <div
               class="course-card pop"
               (click)="addCourseToTable(course)"
@@ -170,7 +174,7 @@
     <div id="table_container" [@fadeAnimation]>
       <table
         mat-table
-        [dataSource]="dataSource"
+        [dataSource]="dataSource()"
         class="table-main"
         class="mat-elevation-z0"
       >
@@ -184,7 +188,7 @@
               class="remove-button"
               (click)="removeCourse(element)"
             >
-              @if (isRemoving[element.course_code]) {
+              @if (isRemoving()[element.course_code]) {
               <mat-spinner class="custom-spinner" diameter="20"></mat-spinner>
               } @else {
               <span mat-symbol="do_not_disturb_on" variant="outlined"></span>
@@ -261,7 +265,7 @@
         ></tr>
 
         <tr class="mat-row" *matNoDataRow>
-          <td class="mat-cell" colspan="9">
+          <td class="mat-cell" [attr.colspan]="displayedColumns.length">
             <div class="no-data-text" [@fadeAnimation]>
               <span mat-symbol="info"></span>
               <span>No preferences added yet.</span>

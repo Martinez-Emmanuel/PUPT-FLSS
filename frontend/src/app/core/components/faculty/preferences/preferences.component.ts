@@ -1,7 +1,7 @@
-import { Component, OnInit, AfterViewInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ViewChild, ElementRef, signal, computed, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { finalize, of, Subscription, switchMap, tap } from 'rxjs';
+import { finalize, of, Subscription, switchMap, tap, Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,26 +25,14 @@ import { LoadingComponent } from '../../../../shared/loading/loading.component';
 import { ThemeService } from '../../../services/theme/theme.service';
 import { PreferencesService } from '../../../services/faculty/preference/preferences.service';
 import { CookieService } from 'ngx-cookie-service';
-import { Program, Course, YearLevel } from '../../../models/preferences.model';
+import { Program, Course, PreferredDay } from '../../../models/preferences.model';
 
 import { fadeAnimation, cardEntranceAnimation, rowAdditionAnimation } from '../../../animations/animations';
-
-interface PreferredDay {
-  day: string;
-  start_time: string;
-  end_time: string;
-}
 
 interface TableData extends Course {
   preferredDays: PreferredDay[];
   isSubmitted: boolean;
 }
-
-type SearchState =
-  | 'noResults'
-  | 'searchResults'
-  | 'programSelection'
-  | 'courseList';
 
 @Component({
   selector: 'app-preferences',
@@ -70,45 +58,66 @@ type SearchState =
   changeDetection: ChangeDetectionStrategy.OnPush,
   animations: [fadeAnimation, cardEntranceAnimation, rowAdditionAnimation],
 })
-export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
+export class PreferencesComponent implements OnInit, OnDestroy {
   // UI State
-  isLoading = true;
-  searchState: SearchState = 'programSelection';
+  isLoading = signal(true);
+  searchState = signal<
+    'programSelection' | 'courseList' | 'searchResults' | 'noResults'
+  >('programSelection');
+  showProgramSelection = computed(
+    () => this.searchState() === 'programSelection'
+  );
 
   // Data
-  academicYear = '';
-  semesterLabel = '';
-  programs: Program[] = [];
-  courses: Course[] = [];
-  filteredCourses: Course[] = [];
-  selectedProgram?: Program;
-  selectedYearLevel: number | null = null;
-  dynamicYearLevels: number[] = [];
-  allSelectedCourses: TableData[] = [];
-  isRemoving: { [course_code: string]: boolean } = {};
-  dataSource = new MatTableDataSource<TableData>([]);
+  academicYear = signal('');
+  semesterLabel = signal('');
+  programs = signal<Program[]>([]);
+  selectedProgram = signal<Program | undefined>(undefined);
+  selectedYearLevel = signal<number | null>(null);
+  dynamicYearLevels = computed(() =>
+    this.selectedProgram()
+      ? this.selectedProgram()!.year_levels.map((yl) => yl.year_level)
+      : []
+  );
 
   // Faculty Info
-  facultyId = '';
-  facultyName = '';
+  facultyId = signal<string>('');
+  facultyName = signal<string>('');
 
   // Preferences Status
-  isPreferencesEnabled = true;
-  hasRequest = false;
-  activeSemesterId: number | null = null;
-  submissionDeadline: Date | null = null;
-  daysLeft: string | number = 0;
+  isPreferencesEnabled = signal(true);
+  hasRequest = signal(false);
+  activeSemesterId = signal<number | null>(null);
+  submissionDeadline = signal<Date | null>(null);
+  daysLeft = computed(() => {
+    const deadline = this.submissionDeadline();
+    return this.calculateDaysLeft(deadline);
+  });
 
   // Search
-  searchQuery = '';
-  filteredSearchResults: Course[] = [];
+  private searchQuerySubject = new Subject<string>();
+  searchQuery = signal('');
+  uniqueCourses = signal(new Map<string, Course>());
+  courses = computed(() => Array.from(this.uniqueCourses().values()));
+  filteredSearchResults = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    return query
+      ? this.courses().filter(
+          (course) =>
+            course.course_code.toLowerCase().includes(query) ||
+            course.course_title.toLowerCase().includes(query)
+        )
+      : [];
+  });
   @ViewChild('searchInput') searchInput!: ElementRef;
 
-  // Subscriptions
-  private subscriptions = new Subscription();
-
-  // Constants
-  readonly displayedColumns: string[] = [
+  // Table Data
+  allSelectedCourses = signal<TableData[]>([]);
+  dataSource = computed(
+    () => new MatTableDataSource(this.allSelectedCourses())
+  );
+  isRemoving = signal<{ [course_code: string]: boolean }>({});
+  displayedColumns: string[] = [
     'action',
     'course_code',
     'course_title',
@@ -117,15 +126,18 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     'units',
     'preferredDayTime',
   ];
-  readonly columnLabels: { [key: string]: string } = {
-    action: '',
-    course_code: 'Course Code',
-    course_title: 'Course Title',
-    lec_hours: 'Lec',
-    lab_hours: 'Lab',
-    units: 'Units',
-    preferredDayTime: 'Preferred Day & Time',
-  };
+  totalUnits = computed(() =>
+    this.dataSource().data.reduce((total, course) => total + course.units, 0)
+  );
+  totalHours = computed(() =>
+    this.dataSource().data.reduce(
+      (total, course) =>
+        total + (course.lec_hours || 0) + (course.lab_hours || 0),
+      0
+    )
+  );
+
+  private subscriptions = new Subscription();
   readonly daysOfWeek = [
     'Monday',
     'Tuesday',
@@ -135,60 +147,53 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     'Saturday',
     'Sunday',
   ];
-
-  // ===========================
-  // Computed Properties
-  // ===========================
-
-  get totalUnits(): number {
-    return this.dataSource.data.reduce(
-      (total, course) => total + course.units,
-      0
-    );
-  }
-
-  get totalHours(): number {
-    return this.dataSource.data.reduce(
-      (total, course) =>
-        total + (course.lec_hours || 0) + (course.lab_hours || 0),
-      0
-    );
-  }
-
-  get showProgramSelection(): boolean {
-    return this.searchState === 'programSelection';
-  }
+  private isDarkTheme = signal<boolean>(false);
 
   constructor(
     private readonly themeService: ThemeService,
-    private readonly cdr: ChangeDetectorRef,
     private readonly dialog: MatDialog,
     private readonly preferencesService: PreferencesService,
     private readonly snackBar: MatSnackBar,
     private readonly cookieService: CookieService
-  ) {}
+  ) {
+    effect(() => {
+      this.dataSource().data;
+    });
+
+    this.searchQuerySubject
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe((query) => {
+        this.searchQuery.set(query);
+        this.updateSearchState(query);
+      });
+  }
 
   ngOnInit() {
     this.subscribeToThemeChanges();
-    this.loadAllData();
-  }
-
-  ngAfterViewInit() {
-    setTimeout(() => {
-      this.cdr.markForCheck();
-    }, 0);
+    this.loadInitialData();
   }
 
   ngOnDestroy() {
     this.subscriptions.unsubscribe();
+    this.searchQuerySubject.complete();
   }
 
-  // ===========================
-  // Initialization Methods
-  // ===========================
+  /**
+   * Theme Subscription
+   */
+  private subscribeToThemeChanges() {
+    this.subscriptions.add(
+      this.themeService.isDarkTheme$.subscribe((isDark) =>
+        this.isDarkTheme.set(isDark)
+      )
+    );
+  }
 
-  private loadAllData() {
-    this.isLoading = true;
+  /**
+   * Data Loading and Initialization
+   */
+  private loadInitialData() {
+    this.isLoading.set(true);
     const facultyId = this.cookieService.get('faculty_id');
 
     this.subscriptions.add(
@@ -198,23 +203,22 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
           tap((preferencesResponse) =>
             this.processPreferencesResponse(preferencesResponse)
           ),
-          switchMap((preferencesResponse) => {
-            if (preferencesResponse.preferences.is_enabled === 1) {
-              return this.preferencesService.getPrograms();
-            } else {
-              return of(null);
-            }
-          }),
-          finalize(() => {
-            this.isLoading = false;
-            this.cdr.markForCheck();
-          })
+          switchMap((preferencesResponse) =>
+            preferencesResponse.preferences.is_enabled === 1
+              ? this.preferencesService.getPrograms()
+              : of(null)
+          ),
+          finalize(() => this.isLoading.set(false))
         )
         .subscribe({
           next: (programsResponse) => {
             if (programsResponse) {
-              this.programs = programsResponse.programs;
-              this.activeSemesterId = programsResponse.active_semester_id;
+              this.programs.set(programsResponse.programs);
+              this.activeSemesterId.set(programsResponse.active_semester_id);
+              this.uniqueCourses.set(new Map<string, Course>());
+              programsResponse.programs.forEach((program) => {
+                this.populateUniqueCourses(program);
+              });
             }
           },
           error: (error) => this.handleDataLoadingError(error),
@@ -225,23 +229,21 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   private processPreferencesResponse(preferencesResponse: any) {
     const facultyPreference = preferencesResponse.preferences;
     if (facultyPreference) {
-      this.facultyId = facultyPreference.faculty_id.toString();
-      this.facultyName = facultyPreference.faculty_name;
-      this.isPreferencesEnabled = facultyPreference.is_enabled === 1;
-      this.hasRequest = facultyPreference.has_request === 1;
+      this.facultyId.set(facultyPreference.faculty_id.toString());
+      this.facultyName.set(facultyPreference.faculty_name);
+      this.isPreferencesEnabled.set(facultyPreference.is_enabled === 1);
+      this.hasRequest.set(facultyPreference.has_request === 1);
 
       const activeSemester = facultyPreference.active_semesters[0];
-      this.academicYear = activeSemester.academic_year;
-      this.semesterLabel = activeSemester.semester_label;
-      this.submissionDeadline = this.getSubmissionDeadline(activeSemester);
-      this.daysLeft = this.calculateDaysLeft(this.submissionDeadline);
+      this.academicYear.set(activeSemester.academic_year);
+      this.semesterLabel.set(activeSemester.semester_label);
+      this.submissionDeadline.set(this.getSubmissionDeadline(activeSemester));
 
-      this.allSelectedCourses = this.mapPreferencesToTableData(
-        activeSemester.courses
+      this.allSelectedCourses.set(
+        this.mapPreferencesToTableData(activeSemester.courses)
       );
-      this.updateDataSource();
     } else {
-      this.isPreferencesEnabled = true;
+      this.isPreferencesEnabled.set(true);
     }
   }
 
@@ -286,115 +288,95 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private handleDataLoadingError(error: any) {
-    console.error('Error loading data:', error);
     const errorMessage = error.url.includes('/offered-courses-sem')
       ? 'Error loading programs.'
-      : error.url.includes(`/get-preferences/${this.facultyId}`)
+      : error.url.includes(`/get-preferences/`)
       ? 'Error loading preferences.'
       : 'An unexpected error occurred.';
     this.showSnackBar(errorMessage);
-    this.isLoading = false;
-    this.cdr.markForCheck();
+    this.isLoading.set(false);
   }
 
-  private subscribeToThemeChanges() {
-    this.subscriptions.add(
-      this.themeService.isDarkTheme$.subscribe((isDark) => {
-        this.cdr.markForCheck();
-      })
-    );
+  /**
+   * Program and Course Selection
+   */
+  public selectProgram(program: Program): void {
+    this.selectedProgram.set(program);
+    this.searchState.set('courseList');
+    this.selectedYearLevel.set(null);
+    this.uniqueCourses.set(new Map<string, Course>());
+    this.populateUniqueCourses(program);
   }
 
-  // ============================
-  // Program and Course Selection
-  // ============================
-
-  selectProgram(program: Program): void {
-    this.selectedProgram = program;
-    this.searchState = 'courseList';
-    this.dynamicYearLevels = program.year_levels.map(
-      (yearLevel) => yearLevel.year_level
-    );
-    this.courses = this.getCoursesFromProgram(program);
-    this.filteredCourses = this.courses;
-    this.selectedYearLevel = null;
-    this.updateDataSource();
-    this.cdr.markForCheck();
-  }
-
-  private getCoursesFromProgram(program: Program): Course[] {
-    const uniqueCourses = new Set<string>();
-    return program.year_levels
-      .flatMap((yearLevel) => yearLevel.semester.courses)
-      .filter((course) => {
-        if (uniqueCourses.has(course.course_code)) return false;
-        uniqueCourses.add(course.course_code);
-        return true;
+  private populateUniqueCourses(program: Program): void {
+    program.year_levels.forEach((yearLevel) => {
+      yearLevel.semester.courses.forEach((course) => {
+        this.uniqueCourses().set(course.course_code, course);
       });
+    });
+    this.uniqueCourses.set(new Map(this.uniqueCourses().entries()));
   }
 
-  filterByYear(year: number | null): void {
-    this.selectedYearLevel = year;
-    this.applyYearLevelFilter();
-    this.cdr.markForCheck();
+  public backToProgramSelection(): void {
+    this.searchState.set('programSelection');
+    this.selectedProgram.set(undefined);
+    this.selectedYearLevel.set(null);
   }
 
-  backToProgramSelection(): void {
-    this.searchState = 'programSelection';
-    this.selectedProgram = undefined;
-    this.courses = [];
-    this.filteredCourses = [];
-    this.selectedYearLevel = null;
-    this.updateDataSource();
-    this.cdr.markForCheck();
-  }
+  public filteredCourses = computed(() => {
+    const yearLevel = this.selectedYearLevel();
+    const program = this.selectedProgram();
 
-  // ===========================
-  // Search Methods
-  // ===========================
-
-  onSearchInput(): void {
-    const query = this.searchQuery.toLowerCase().trim();
-    if (query) {
-      this.filteredSearchResults = this.searchCourses(query);
-      this.searchState =
-        this.filteredSearchResults.length > 0 ? 'searchResults' : 'noResults';
-    } else {
-      this.filteredSearchResults = [];
-      this.searchState = this.selectedProgram
-        ? 'courseList'
-        : 'programSelection';
+    if (!program) {
+      return [];
     }
-    this.cdr.markForCheck();
-  }
 
-  private searchCourses(query: string): Course[] {
-    const uniqueCourses = new Set<string>();
-    return this.programs
-      .flatMap((program) =>
-        program.year_levels.flatMap((yl) => yl.semester.courses)
-      )
-      .filter(
-        (course) =>
-          (course.course_code.toLowerCase().includes(query) ||
-            course.course_title.toLowerCase().includes(query)) &&
-          !uniqueCourses.has(course.course_code) &&
-          uniqueCourses.add(course.course_code)
+    if (yearLevel === null) {
+      return Array.from(this.uniqueCourses().values());
+    } else {
+      const yearLevelData = program.year_levels.find(
+        (yl) => yl.year_level === yearLevel
       );
+      return yearLevelData
+        ? yearLevelData.semester.courses.filter((course) =>
+            this.uniqueCourses().has(course.course_code)
+          )
+        : [];
+    }
+  });
+
+  /**
+   * Search Functionality
+   */
+  public onSearchInput(query: string): void {
+    this.searchQuerySubject.next(query);
   }
 
-  clearSearch(): void {
-    this.searchQuery = '';
-    this.filteredSearchResults = [];
-    this.searchState = this.selectedProgram ? 'courseList' : 'programSelection';
+  private updateSearchState(query: string): void {
+    if (query) {
+      this.searchState.set(
+        this.filteredSearchResults().length > 0 ? 'searchResults' : 'noResults'
+      );
+    } else {
+      this.searchState.set(
+        this.selectedProgram() ? 'courseList' : 'programSelection'
+      );
+    }
+  }
+
+  public clearSearch(): void {
+    this.searchQuery.set('');
+    this.filteredSearchResults();
+    this.searchState.set(
+      this.selectedProgram() ? 'courseList' : 'programSelection'
+    );
     this.searchInput.nativeElement.focus();
-    this.cdr.markForCheck();
   }
 
-  // ===========================
-  // Course Management
-  // ===========================
-  addCourseToTable(course: Course): void {
+  /**
+   * Course Management
+   */
+  public addCourseToTable(course: Course): void {
     if (this.isCourseAlreadyAdded(course)) return;
 
     const newCourse: TableData = {
@@ -406,11 +388,11 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       })),
       isSubmitted: false,
     };
-    this.allSelectedCourses.push(newCourse);
-    this.updateDataSource();
+
+    this.allSelectedCourses.update((courses) => [...courses, newCourse]);
   }
 
-  removeCourse(course: TableData): void {
+  public removeCourse(course: TableData): void {
     if (course.isSubmitted) {
       this.removeSubmittedCourse(course);
     } else {
@@ -420,29 +402,33 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private removeSubmittedCourse(course: TableData) {
     const { course_assignment_id } = course;
-    if (!this.facultyId || !this.activeSemesterId) {
+    if (!this.facultyId() || !this.activeSemesterId()) {
       this.showSnackBar('Error: Missing faculty or semester information.');
       return;
     }
 
-    this.isRemoving[course.course_code] = true;
-    this.cdr.markForCheck();
+    this.isRemoving.update((value) => ({
+      ...value,
+      [course.course_code]: true,
+    }));
 
     this.preferencesService
       .deletePreference(
         course_assignment_id,
-        this.facultyId,
-        this.activeSemesterId
+        this.facultyId()!,
+        this.activeSemesterId()!
       )
       .subscribe({
         next: () => {
-          this.allSelectedCourses = this.allSelectedCourses.filter(
-            (c) => c.course_code !== course.course_code
+          this.allSelectedCourses.update((courses) =>
+            courses.filter((c) => c.course_code !== course.course_code)
           );
-          this.updateDataSource();
-          this.isRemoving[course.course_code] = false;
+          this.isRemoving.update((value) => {
+            const updatedValue = { ...value };
+            delete updatedValue[course.course_code];
+            return updatedValue;
+          });
           this.showSnackBar('Course preference removed successfully.');
-          this.cdr.markForCheck();
         },
         error: (error) => {
           const message =
@@ -450,35 +436,43 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
               ? 'Submission is now closed. You cannot modify your preferences anymore.'
               : 'Error removing course preference.';
           this.showSnackBar(message);
-          this.isRemoving[course.course_code] = false;
-          this.cdr.markForCheck();
+          this.isRemoving.update((value) => ({
+            ...value,
+            [course.course_code]: false,
+          }));
         },
       });
   }
 
   private removeUnsubmittedCourse(course: TableData) {
-    this.allSelectedCourses = this.allSelectedCourses.filter(
-      (c) => c.course_code !== course.course_code
+    this.allSelectedCourses.update((courses) =>
+      courses.filter((c) => c.course_code !== course.course_code)
     );
-    this.updateDataSource();
     this.showSnackBar('Course preference removed successfully.');
   }
 
-  // ===========================
-  // Dialog Methods
-  // ===========================
+  private isCourseAlreadyAdded(course: Course): boolean {
+    const isAdded = this.allSelectedCourses().some(
+      (subject) => subject.course_code === course.course_code
+    );
+    if (isAdded) this.showSnackBar('This course has already been selected.');
+    return isAdded;
+  }
 
-  openDayTimeDialog(element: TableData): void {
+  /**
+   * Dialog Management
+   */
+  public openDayTimeDialog(element: TableData): void {
     this.dialog
       .open(DialogDayTimeComponent, {
         data: {
           selectedDays: element.preferredDays,
           courseCode: element.course_code,
           courseTitle: element.course_title,
-          facultyId: this.facultyId,
-          activeSemesterId: this.activeSemesterId,
+          facultyId: this.facultyId(),
+          activeSemesterId: this.activeSemesterId(),
           courseAssignmentId: element.course_assignment_id,
-          allSelectedCourses: this.allSelectedCourses,
+          allSelectedCourses: this.allSelectedCourses(),
         },
         disableClose: true,
         autoFocus: false,
@@ -486,81 +480,58 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       .afterClosed()
       .subscribe((result) => {
         if (result) {
-          const courseIndex = this.allSelectedCourses.findIndex(
+          const courseIndex = this.allSelectedCourses().findIndex(
             (c) => c.course_code === element.course_code
           );
+
           if (courseIndex !== -1) {
-            this.allSelectedCourses[courseIndex].preferredDays = result.days;
-            this.allSelectedCourses[courseIndex].isSubmitted = true;
+            this.allSelectedCourses.set(
+              this.allSelectedCourses().map((course, index) =>
+                index === courseIndex
+                  ? {
+                      ...course,
+                      preferredDays: result.days,
+                      isSubmitted: true,
+                    }
+                  : course
+              )
+            );
           }
-          this.updateDataSource();
-          this.cdr.markForCheck();
         }
       });
   }
 
-  openViewPreferencesDialog(): void {
+  public openViewPreferencesDialog(): void {
     this.dialog.open(DialogPrefComponent, {
       maxWidth: '70rem',
       width: '100%',
       data: {
-        facultyName: this.facultyName,
-        faculty_id: parseInt(this.facultyId, 10),
+        facultyName: this.facultyName(),
+        faculty_id: parseInt(this.facultyId()!, 10),
         viewOnlyTable: true,
       },
       disableClose: true,
     });
   }
 
-  openRequestAccessDialog(): void {
+  public openRequestAccessDialog(): void {
     this.dialog
       .open(DialogRequestAccessComponent, {
         width: '25rem',
         disableClose: true,
         data: {
-          has_request: this.hasRequest,
-          facultyId: this.facultyId,
+          has_request: this.hasRequest(),
+          facultyId: this.facultyId(),
         },
       })
       .afterClosed()
-      .subscribe(() => this.loadAllData());
+      .subscribe(() => this.loadInitialData());
   }
 
-  // ===========================
-  // Utility Methods
-  // ===========================
-
-  private applyYearLevelFilter(): void {
-    this.filteredCourses =
-      this.selectedYearLevel === null || !this.selectedProgram
-        ? this.courses
-        : this.selectedProgram.year_levels.find(
-            (yl: YearLevel) => yl.year_level === this.selectedYearLevel
-          )?.semester.courses || [];
-    this.cdr.markForCheck();
-  }
-
-  private isCourseAlreadyAdded(course: Course): boolean {
-    const isAdded = this.dataSource.data.some(
-      (subject) => subject.course_code === course.course_code
-    );
-    if (isAdded) this.showSnackBar('This course has already been selected.');
-    return isAdded;
-  }
-
-  private updateDataSource(): void {
-    this.dataSource.data = [...this.allSelectedCourses];
-  }
-
-  private showSnackBar(message: string): void {
-    this.snackBar.open(message, 'Close', {
-      duration: 3000,
-      horizontalPosition: 'center',
-      verticalPosition: 'bottom',
-    });
-  }
-
-  formatTimeForPayload(time: string | undefined | null): string {
+  /**
+   * Utility Functions
+   */
+  public formatTimeForPayload(time: string | undefined | null): string {
     if (!time) return '';
     if (time.includes('AM') || time.includes('PM')) {
       const [timePart, modifier] = time.split(' ');
@@ -582,7 +553,7 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  formatSelectedDaysAndTime(element: TableData): string {
+  public formatSelectedDaysAndTime(element: TableData): string {
     const selectedDays = element.preferredDays
       .filter((pd) => pd.start_time && pd.end_time)
       .map((pd) => pd.day);
@@ -591,7 +562,11 @@ export class PreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
       : 'Click to select day and time';
   }
 
-  getCellClass(column: string): string {
-    return `table-cell ${column}-cell`;
+  private showSnackBar(message: string): void {
+    this.snackBar.open(message, 'Close', {
+      duration: 3000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+    });
   }
 }
