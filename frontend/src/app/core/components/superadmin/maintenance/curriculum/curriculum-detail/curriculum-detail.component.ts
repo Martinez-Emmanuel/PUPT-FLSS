@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
 
@@ -14,8 +14,9 @@ import { TableDialogComponent, DialogConfig } from '../../../../../../shared/tab
 import { DialogExportComponent } from '../../../../../../shared/dialog-export/dialog-export.component';
 import { LoadingComponent } from '../../../../../../shared/loading/loading.component';
 import { fadeAnimation, pageFloatUpAnimation } from '../../../../../animations/animations';
-import { jsPDF } from 'jspdf'; 
-import 'jspdf-autotable'; 
+
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 import {
   CurriculumService,
@@ -38,7 +39,7 @@ import {
   styleUrls: ['./curriculum-detail.component.scss'],
   animations: [fadeAnimation, pageFloatUpAnimation],
 })
-export class CurriculumDetailComponent implements OnInit {
+export class CurriculumDetailComponent implements OnInit, OnDestroy {
   public curriculum: Curriculum | undefined;
   public selectedProgram: string | number = '';
   public selectedYear: number = 1;
@@ -66,8 +67,8 @@ export class CurriculumDetailComponent implements OnInit {
   columns = [
     { key: 'index', label: '#' },
     { key: 'course_code', label: 'Course Code' },
-    { key: 'pre_req', label: 'Pre-req' },
-    { key: 'co_req', label: 'Co-req' },
+    { key: 'pre_req', label: 'Pre-requisites' },
+    { key: 'co_req', label: 'Co-requisites' },
     { key: 'course_title', label: 'Course Title' },
     { key: 'lec_hours', label: 'Lec Hours' },
     { key: 'lab_hours', label: 'Lab Hours' },
@@ -148,6 +149,7 @@ export class CurriculumDetailComponent implements OnInit {
             this.updateCustomExportOptions();
             this.cdr.markForCheck();
           }
+          this.isLoading = false;
         },
         error: (error) => {
           console.error('Error fetching curriculum:', error);
@@ -156,9 +158,9 @@ export class CurriculumDetailComponent implements OnInit {
             'Close',
             { duration: 3000 }
           );
+          this.isLoading = false;
         }
       });
-    this.isLoading = false;
   }
   
   updateHeaderInputFields() {

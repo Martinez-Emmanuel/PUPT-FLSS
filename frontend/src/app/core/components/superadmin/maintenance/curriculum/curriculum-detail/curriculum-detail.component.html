@@ -1,4 +1,9 @@
 <div class="curriculum-detail-container">
+  @if (isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
   <!-- Table Header -->
   <div class="curriculum-header-container" [@fadeAnimation]>
     <app-table-header
@@ -14,16 +19,6 @@
     ></app-table-header>
   </div>
 
-  @if (showPreview) {
-  <div class="pdf-preview-container">
-    <button mat-button (click)="cancelPreview()">Cancel Preview</button>
-    <iframe id="pdfPreview" width="100%" height="600px"></iframe>
-  </div>
-  } @if (isLoading) {
-  <div class="loading-wrapper">
-    <app-loading></app-loading>
-  </div>
-  } @else {
   <div class="curriculum-semesters-container">
     <div class="scrollable-content">
       @for (semester of selectedSemesters; track semester.semester; let i =
