@@ -90,6 +90,9 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef
   ) {}
 
+  // ===========================
+  // Lifecycle Hooks
+  // ===========================
   ngOnInit() {
     const curriculumYear = this.route.snapshot.paramMap.get('year');
     if (curriculumYear) {
@@ -104,6 +107,9 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  // ===========================
+  // Data Fetching and Updating
+  // ===========================
   fetchCurriculum(year: string) {
     this.isLoading = true;
     const previousSelectedProgram = this.selectedProgram;
@@ -147,7 +153,10 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
         error: (error) => {
           console.error('Error fetching curriculum:', error);
           this.snackBar.open(
-            'Error fetching curriculum. Please try again.',
+            `Error fetching curriculum: ${
+              error.message ||
+              'Please check your network connection and try again.'
+            }`,
             'Close',
             { duration: 3000 }
           );
@@ -245,6 +254,9 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
     this.updateCustomExportOptions();
   }
 
+  // ===========================
+  // Course Management
+  // ===========================
   onEditCourse(course: Course, semester: Semester) {
     const dialogConfig = this.getCourseDialogConfig(course);
     const dialogRef = this.dialog.open(TableDialogComponent, {
@@ -257,9 +269,13 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
         const program = this.getProgram();
 
         if (!program) {
-          this.snackBar.open('Error: Selected program not found.', 'Close', {
-            duration: 3000,
-          });
+          this.snackBar.open(
+            'Error: Selected program not found. Please select a valid program.',
+            'Close',
+            {
+              duration: 3000,
+            }
+          );
           return;
         }
 
@@ -310,11 +326,14 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
           .updateCourse(course.course_id, updatedCourse)
           .subscribe({
             next: (response) => {
-              this.snackBar.open('Course updated successfully', 'Close', {
-                duration: 3000,
-              });
+              this.snackBar.open(
+                `Course '${course.course_code} - ${course.course_title}' updated successfully.`,
+                'Close',
+                {
+                  duration: 3000,
+                }
+              );
 
-              // **DYNAMIC UPDATE LOGIC (Edit)**
               const programIndex = this.curriculum!.programs.findIndex(
                 (p) => p.curricula_program_id === this.selectedProgram
               );
@@ -337,14 +356,13 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                       (c) => c.course_id === course.course_id
                     );
                     if (courseIndex !== -1) {
-                      // Update the course in the local data
                       this.curriculum!.programs[programIndex].year_levels[
                         yearLevelIndex
                       ].semesters[semesterIndex].courses[courseIndex] = {
                         ...this.curriculum!.programs[programIndex].year_levels[
                           yearLevelIndex
                         ].semesters[semesterIndex].courses[courseIndex],
-                        ...result, // Apply updates from the dialog result
+                        ...result,
                         course_id: course.course_id,
                         prerequisites:
                           this.getPrerequisitesOrCorequisitesByTitles(
@@ -356,7 +374,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                           ),
                       };
 
-                      // Update selectedSemesters to trigger change detection
                       this.updateSelectedSemesters();
                     }
                   }
@@ -366,7 +383,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
             error: (error) => {
               console.error('Error updating course:', error);
               this.snackBar.open(
-                'Error updating course. Please try again.',
+                `Error updating course '${course.course_code}'. Please try again.`,
                 'Close',
                 {
                   duration: 3000,
@@ -381,11 +398,14 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
   onDeleteCourse(course: Course) {
     this.curriculumService.deleteCourse(course.course_id).subscribe({
       next: () => {
-        this.snackBar.open('Course deleted successfully', 'Close', {
-          duration: 3000,
-        });
+        this.snackBar.open(
+          `Course '${course.course_code} - ${course.course_title}' deleted successfully.`,
+          'Close',
+          {
+            duration: 3000,
+          }
+        );
 
-        // **DYNAMIC UPDATE LOGIC (Delete)**
         const programIndex = this.curriculum!.programs.findIndex(
           (p) => p.curricula_program_id === this.selectedProgram
         );
@@ -401,7 +421,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                 (c) => c.course_id !== course.course_id
               );
             });
-            // Update selectedSemesters to trigger change detection
             this.updateSelectedSemesters();
           }
         }
@@ -409,7 +428,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
       error: (error) => {
         console.error('Error deleting course:', error);
         this.snackBar.open(
-          'Error deleting course. Please try again.',
+          `Error deleting course '${course.course_code}'. Please try again.`,
           'Close',
           { duration: 3000 }
         );
@@ -504,11 +523,14 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
 
         this.curriculumService.addCourse(newCourse).subscribe({
           next: (response) => {
-            this.snackBar.open('Course added successfully', 'Close', {
-              duration: 3000,
-            });
+            this.snackBar.open(
+              `Course '${result.course_code} - ${result.course_title}' added successfully.`,
+              'Close',
+              {
+                duration: 3000,
+              }
+            );
 
-            // **DYNAMIC UPDATE LOGIC (Add)**
             const programIndex = this.curriculum!.programs.findIndex(
               (p) => p.curricula_program_id === this.selectedProgram
             );
@@ -523,10 +545,9 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                   (s) => s.semester_id === semester.semester_id
                 );
                 if (semesterIndex !== -1) {
-                  // Add the new course to the local data
                   const addedCourse: Course = {
                     ...result,
-                    course_id: response.course.course_id, // Assuming the API returns the new course ID
+                    course_id: response.course.course_id,
                     prerequisites: this.getPrerequisitesOrCorequisitesByTitles(
                       result.pre_req
                     ),
@@ -538,7 +559,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                     yearLevelIndex
                   ].semesters[semesterIndex].courses.push(addedCourse);
 
-                  // Update selectedSemesters to trigger change detection
                   this.updateSelectedSemesters();
                 }
               }
@@ -570,24 +590,25 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
     return course?.course_id;
   }
 
+  // ===========================
+  // Program Management
+  // ===========================
   onManagePrograms() {
     const curriculumYear = this.curriculum?.curriculum_year;
     if (!curriculumYear) return;
 
-    // Fetch all available programs
+    const currentlySelectedProgramId = this.selectedProgram;
+
     this.curriculumService.getAllPrograms().subscribe((allPrograms) => {
-      // Fetch curriculum details to identify associated programs
       this.curriculumService
         .getCurriculumByYear(curriculumYear)
         .subscribe((curriculumDetails) => {
           if (!curriculumDetails || !curriculumDetails.programs) return;
 
-          // Get list of program codes that are associated with the selected curriculum year
           const associatedPrograms = new Set(
             curriculumDetails.programs.map((program) => program.name)
           );
 
-          // marking those already in the curriculum year as checked
           const dialogConfig: DialogConfig = {
             title: 'Manage Programs',
             isEdit: false,
@@ -612,7 +633,8 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
 
           dialogRef.afterClosed().subscribe((result) => {
             if (result) {
-              // Loop through each program in the list of all programs
+              let programsChanged = false;
+
               allPrograms.forEach((program) => {
                 const isSelected = result[program.program_code];
                 const isInCurriculum = associatedPrograms.has(
@@ -620,16 +642,18 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                 );
 
                 if (isSelected && !isInCurriculum) {
+                  programsChanged = true;
                   this.curriculumService
                     .addProgramToCurriculum(curriculumYear, program.program_id)
                     .subscribe(() =>
                       this.snackBar.open(
-                        `${program.program_title} added to curriculum`,
+                        `'${program.program_title}' has been added to this curriculum.`,
                         'Close',
                         { duration: 3000 }
                       )
                     );
                 } else if (!isSelected && isInCurriculum) {
+                  programsChanged = true;
                   this.curriculumService
                     .removeProgramFromCurriculum(
                       curriculumYear,
@@ -637,7 +661,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                     )
                     .subscribe(() =>
                       this.snackBar.open(
-                        `${program.program_title} removed from curriculum`,
+                        `'${program.program_title}' removed from this curriculum.`,
                         'Close',
                         { duration: 3000 }
                       )
@@ -645,24 +669,45 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                 }
               });
 
-              // Refresh the curriculum data to reflect the updated programs
-              this.fetchCurriculum(curriculumYear);
-              this.updateHeaderInputFields();
-              this.selectedProgram =
-                curriculumDetails.programs[0]?.curricula_program_id || '';
-              this.cdr.detectChanges();
+              if (programsChanged) {
+                this.curriculumService
+                  .getCurriculumByYear(curriculumYear)
+                  .subscribe((updatedCurriculum) => {
+                    this.curriculum = updatedCurriculum;
+
+                    const programStillExists = updatedCurriculum.programs.some(
+                      (p) =>
+                        p.curricula_program_id ===
+                        Number(currentlySelectedProgramId)
+                    );
+
+                    if (!programStillExists || programsChanged) {
+                      this.selectedProgram =
+                        updatedCurriculum.programs[0]?.curricula_program_id ||
+                        '';
+                      this.selectedYear = 1;
+                    }
+
+                    this.updateHeaderInputFields();
+                    this.updateSelectedSemesters();
+                    this.updateCustomExportOptions();
+                    this.cdr.detectChanges();
+                  });
+              }
             }
           });
         });
     });
   }
 
+  // ===========================
+  // Dialog Configuration
+  // ===========================
   private getCourseDialogConfig(
     course?: Course,
     semester?: number
   ): DialogConfig {
     const program = this.getProgram();
-    // Fetch available course titles for the dropdown
     const availableCourseTitles =
       program?.year_levels
         .flatMap((yearLevel) => yearLevel.semesters)
@@ -756,6 +801,9 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
     };
   }
 
+  // ===========================
+  // Data Processing
+  // ===========================
   populateCourseRequisites(course: Course): Course {
     const pre_req = course.prerequisites?.length
       ? course.prerequisites.map((p) => `${p.course_code} - ${p.course_title}`)
@@ -799,7 +847,9 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
       .filter((req) => req !== undefined) as CourseRequirement[];
   }
 
-  /* Utility Methods for Data Retrieval */
+  // ===========================
+  // Helper Methods
+  // ===========================
   private getProgram(): Program | undefined {
     return this.curriculum?.programs.find(
       (p) => p.curricula_program_id === Number(this.selectedProgram)
@@ -814,15 +864,14 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
     return this.curriculumService.mapSemesterToEnum(semester);
   }
 
-  //Export Function
-  //Export Function
+  // ===========================
+  // PDF Export
+  // ===========================
   onExport(option: string | undefined): void {
     if (option === 'all') {
-      // Export all programs
-      this.openPdfPreviewDialog(true); // Export all programs
+      this.openPdfPreviewDialog(true);
     } else if (option === 'current') {
-      // Export the selected program
-      this.openPdfPreviewDialog(false); // Export selected program only
+      this.openPdfPreviewDialog(false);
     }
   }
 
@@ -840,7 +889,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
     dialogRef.afterClosed().subscribe((result) => {});
   }
 
-  // Generate the PDF based on the selected option (all or single)
   generatePDF(showPreview: boolean = false, exportAll: boolean = false): void {
     const doc = new jsPDF('p', 'mm', 'letter') as any;
     const pageWidth = doc.internal.pageSize.width;
@@ -849,7 +897,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
 
     if (this.curriculum) {
       if (exportAll) {
-        // Loop through each program and specify if it’s the first program
         this.curriculum.programs.forEach((program, index) => {
           const isFirstProgram = index === 0;
           this.addProgramToPDF(doc, program, isFirstProgram);
@@ -857,7 +904,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
       } else {
         const currentProgram = this.getProgram();
         if (currentProgram) {
-          // If only exporting the current program, pass true for isFirstProgram
           this.addProgramToPDF(doc, currentProgram, true);
         } else {
           console.error('No current program available for export');
@@ -877,7 +923,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  // This function adds the program details to the PDF
   private addProgramToPDF(
     doc: any,
     program: Program,
@@ -930,7 +975,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
         );
       }
 
-      // Print the year level header
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(15);
       doc.text(`${program.name} - Year ${yearLevel.year}`, margin, currentY);
@@ -967,7 +1011,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
         doc.text(`Semester ${semester.semester}`, margin, currentY);
         currentY += 6;
 
-        // Prepare table data for courses in the semester
         const tableData = semester.courses.map((course) => {
           const processedCourse = this.populateCourseRequisites(course);
           return [
@@ -982,7 +1025,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
           ];
         });
 
-        // Render the table for the semester courses
         doc.autoTable({
           startY: currentY,
           head: [
@@ -1028,14 +1070,12 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
           margin: { left: 10, right: 10 },
         });
 
-        // Update currentY after the table, adding space below it
         currentY = (doc as any).lastAutoTable.finalY + 8;
       }
       currentY += 5;
     }
   }
 
-  // Draw the header of the PDF
   private drawHeader(
     doc: jsPDF,
     startY: number,
@@ -1048,20 +1088,16 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
     const logoUrl =
       'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
 
-    // Place the logo at the left margin
     const logoXPosition = margin;
     doc.addImage(logoUrl, 'PNG', logoXPosition, startY - 5, logoSize, logoSize);
 
-    // Calculate the center position of the page
     const centerX = pageWidth / 2;
 
     let currentY = startY;
 
-    // Set font and styles for the header text
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
 
-    // Center the main header text
     doc.text(
       'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
       centerX,
@@ -1073,7 +1109,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
 
-    // Center the address text
     doc.text('Gen. Santos Ave. Upper Bicutan, Taguig City', centerX, currentY, {
       align: 'center',
     });
@@ -1082,11 +1117,9 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
 
-    // Center the title text
     doc.text(title, centerX, currentY, { align: 'center' });
     currentY += 8;
 
-    // Draw a line under the header
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.5);
     doc.line(margin, currentY, pageWidth - margin, currentY);
