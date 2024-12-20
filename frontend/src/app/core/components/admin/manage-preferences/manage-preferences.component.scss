@@ -51,17 +51,47 @@
       text-align: center;
     }
 
-    .helper-container {
+    .scheduled-button {
+      border-radius: var(--border-radius-xl);
+      padding: var(--spacing-xs) var(--spacing-sm);
+      cursor: pointer;
+
+      &.global {
+        background-color: #e7d4d4 !important;
+        color: var(--primary-one);
+        font-weight: 500;
+      }
+
+      &.individual {
+        background-color: var(--primary-one);
+        color: white;
+        font-weight: 500;
+      }
+    }
+
+    .help-request-container {
       @include mixins.flex-layout($gap: var(--spacing-xxs));
+      padding-right: var(--spacing-md);
 
       .help-button {
+        left: var(--spacing-4xxl);
         opacity: var(--opacity-semi-opaque);
         font-size: var(--font-size-md);
         cursor: pointer;
       }
+    }
 
-      .single-toggle {
-        padding-right: var(--spacing-mdx);
+    .help-toggle-container {
+      @include mixins.flex-layout($gap: var(--spacing-xxs));
+      padding-right: var(--spacing-md);
+      position: relative;
+
+      .help-button {
+        position: absolute;
+        right: 0;
+        opacity: var(--opacity-semi-opaque);
+        font-size: var(--font-size-md);
+        cursor: pointer;
       }
     }
 

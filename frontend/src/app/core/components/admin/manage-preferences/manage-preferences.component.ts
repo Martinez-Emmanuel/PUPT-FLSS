@@ -128,10 +128,7 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
     this.loadFacultyPreferences();
     this.setupFilterPredicate();
     this.searchSubject
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged()
-      )
+      .pipe(debounceTime(300), distinctUntilChanged())
       .subscribe((searchValue) => {
         this.applyFilter(searchValue);
       });
@@ -258,7 +255,7 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
   onInputChange(inputValues: { [key: string]: any }): void {
     const searchValue = inputValues['searchFaculty'] || '';
     this.searchSubject.next(searchValue);
-}
+  }
 
   // ===========================
   // Toggle Management
@@ -343,12 +340,37 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
     );
   }
 
+  isGloballyScheduled(): boolean {
+    return this.allData.some((faculty) =>
+      faculty.active_semesters?.some(
+        (semester) =>
+          semester.global_start_date !== null ||
+          semester.global_deadline !== null
+      )
+    );
+  }
+
+  isIndividuallyScheduled(faculty: Faculty): boolean {
+    return (
+      faculty.active_semesters?.some(
+        (semester) =>
+          semester.individual_start_date !== null ||
+          semester.individual_deadline !== null
+      ) ?? false
+    );
+  }
+
   /**
    * Handles the toggle action for all preferences.
    * @param event The slide toggle change event.
    */
-  onToggleAllPreferences(event: MatSlideToggleChange): void {
-    event.source.checked = this.isToggleAllChecked;
+  onToggleAllPreferences(
+    event: MatSlideToggleChange | MouseEvent,
+    isScheduledClick = false
+  ): void {
+    if (!isScheduledClick && event instanceof MatSlideToggleChange) {
+      event.source.checked = this.isToggleAllChecked;
+    }
 
     const existingDeadline = this.allData[0]?.active_semesters?.[0]
       ?.global_deadline
@@ -379,7 +401,7 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
     });
 
     dialogRef.afterClosed().subscribe((confirmed: boolean) => {
-      if (confirmed) {
+      if (confirmed && !isScheduledClick) {
         const newStatus = this.isToggleAllChecked;
         this.filteredData.forEach(
           (faculty) => (faculty.is_enabled = newStatus)
@@ -398,9 +420,12 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
    */
   onToggleSinglePreferences(
     faculty: Faculty,
-    event: MatSlideToggleChange
+    event: MatSlideToggleChange | MouseEvent,
+    isScheduledClick = false
   ): void {
-    event.source.checked = faculty.is_enabled;
+    if (!isScheduledClick && event instanceof MatSlideToggleChange) {
+      event.source.checked = faculty.is_enabled;
+    }
 
     const activeSemester = faculty.active_semesters?.[0];
     const existingStartDate =
@@ -430,7 +455,7 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
     });
 
     dialogRef.afterClosed().subscribe((confirmed: boolean) => {
-      if (confirmed) {
+      if (confirmed && !isScheduledClick) {
         faculty.is_enabled = !faculty.is_enabled;
 
         this.preferencesService.getPreferences().subscribe((response) => {
@@ -787,20 +812,28 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
     const isIndividualDisabled =
       this.isToggleAllChecked || this.isGlobalStartDateSet;
 
+    const isGloballyScheduled = this.isGloballyScheduled();
+    const isIndividuallyScheduled = this.isIndividuallyScheduled(faculty);
+
     const globalTooltip =
-      this.hasIndividualDeadlines && !this.isToggleAllChecked
+      isGloballyScheduled && !this.isToggleAllChecked
+        ? 'Preferences submission is scheduled'
+        : this.hasIndividualDeadlines && !this.isToggleAllChecked
         ? 'Global preferences toggle is disabled because individual deadlines are set'
         : `${
             this.isToggleAllChecked ? 'Disable' : 'Enable'
           } preferences submission for ALL faculty`;
 
-    const individualTooltip = this.isGlobalStartDateSet
-      ? 'Global submission start date has been set – individual changes disabled'
-      : this.isToggleAllChecked
-      ? 'Global preferences submission is active – individual changes disabled'
-      : `${
-          faculty.is_enabled ? 'Disable' : 'Enable'
-        } preferences submission for ${faculty.facultyName} only`;
+    const individualTooltip =
+      isIndividuallyScheduled && !faculty.is_enabled
+        ? 'Preferences submission is scheduled'
+        : this.isGlobalStartDateSet
+        ? 'Global submission start date has been set – individual changes disabled'
+        : this.isToggleAllChecked
+        ? 'Global preferences submission is active – individual changes disabled'
+        : `${
+            faculty.is_enabled ? 'Disable' : 'Enable'
+          } preferences submission for ${faculty.facultyName} only`;
 
     return {
       isGlobalDisabled,
