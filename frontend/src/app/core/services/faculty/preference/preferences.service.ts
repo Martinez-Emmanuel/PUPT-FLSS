@@ -185,13 +185,15 @@ export class PreferencesService {
   toggleAllPreferences(
     status: boolean,
     deadline: string | null,
-    startDate: string | null
+    startDate: string | null,
+    sendEmail: boolean
   ): Observable<any> {
     return this.http
       .post(`${this.baseUrl}/toggle-all-preferences`, {
         status,
         global_deadline: deadline,
         global_start_date: startDate,
+        send_email: sendEmail,
       })
       .pipe(
         tap(() => {
@@ -205,30 +207,15 @@ export class PreferencesService {
   }
 
   /**
-   * Sends an email to all faculty members to submit their preferences.
-   */
-  sendPreferencesEmailToAll(): Observable<any> {
-    const url = `${this.baseUrl}/email-all-faculty-preferences`;
-    return this.http.post(url, {}).pipe(
-      tap(() => {
-        console.log('Preference-related email sent to all faculty.');
-      }),
-      catchError((error) => {
-        console.error('Error sending email to all faculty:', error);
-        return throwError(() => error);
-      })
-    );
-  }
-
-  /**
    * Toggles the preference status for a specific faculty member
-   * and refreshes preferences cache upon success..
+   * and refreshes preferences cache upon success.
    */
   toggleSingleFacultyPreferences(
     faculty_id: number,
     status: boolean,
     individual_deadline: string | null,
-    individual_start_date: string | null
+    individual_start_date: string | null,
+    sendEmail: boolean
   ): Observable<any> {
     return this.http
       .post(`${this.baseUrl}/toggle-single-preferences`, {
@@ -236,6 +223,7 @@ export class PreferencesService {
         status,
         individual_deadline,
         individual_start_date,
+        send_email: sendEmail,
       })
       .pipe(
         tap(() => {
@@ -249,27 +237,6 @@ export class PreferencesService {
           return throwError(() => error);
         })
       );
-  }
-
-  /**
-   * Sends an email to a specific faculty member to submit their preferences.
-   */
-  sendPreferencesEmailToFaculty(faculty_id: number): Observable<any> {
-    const url = `${this.baseUrl}/email-single-faculty-preferences`;
-    return this.http.post(url, { faculty_id }).pipe(
-      tap(() => {
-        console.log(
-          `Preference-related email sent to faculty ID ${faculty_id}.`
-        );
-      }),
-      catchError((error) => {
-        console.error(
-          `Error sending email to faculty ID ${faculty_id}:`,
-          error
-        );
-        return throwError(() => error);
-      })
-    );
   }
 
   /**

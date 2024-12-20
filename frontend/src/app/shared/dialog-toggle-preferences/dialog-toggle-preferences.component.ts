@@ -300,14 +300,16 @@ export class DialogTogglePreferencesComponent {
       operation$ = this.preferencesService.toggleAllPreferences(
         false,
         null,
-        null
+        null,
+        false
       );
     } else if (this.data.type === 'single_preferences') {
       operation$ = this.preferencesService.toggleSingleFacultyPreferences(
         this.data.faculty_id!,
         false,
         null,
-        null
+        null,
+        false
       );
     } else {
       operation$ = of(null);
@@ -339,54 +341,7 @@ export class DialogTogglePreferencesComponent {
   }
 
   /**
-   * Handles single preference toggle operation
-   */
-  private handleSinglePreferenceOperation(): Observable<any> {
-    const newStatus = !this.data.currentState;
-
-    let formattedStartDate: string | null = null;
-    if (newStatus && this.startDate) {
-      const date = new Date(this.startDate);
-      date.setHours(0, 0, 0, 0);
-      formattedStartDate = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
-    }
-
-    let formattedDeadline: string | null = null;
-    if (newStatus && this.submissionDeadline) {
-      const date = new Date(this.submissionDeadline);
-      date.setHours(23, 59, 59, 999);
-      formattedDeadline = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
-    }
-
-    return this.preferencesService
-      .toggleSingleFacultyPreferences(
-        this.data.faculty_id!,
-        newStatus,
-        formattedDeadline,
-        formattedStartDate
-      )
-      .pipe(
-        switchMap(() => {
-          if (this.sendEmail) {
-            return this.preferencesService
-              .sendPreferencesEmailToFaculty(this.data.faculty_id!)
-              .pipe(
-                tap(() => {
-                  this.snackBar.open(
-                    `Email sent to ${this.data.facultyName}`,
-                    'Close',
-                    { duration: this.SNACKBAR_DURATION }
-                  );
-                })
-              );
-          }
-          return of(null);
-        })
-      );
-  }
-
-  /**
-   * Handles all preferences toggle operation
+   * Handles the confirmation action based on dialog type
    */
   private handleAllPreferencesOperation(): Observable<any> {
     const newStatus = !this.data.currentState;
@@ -405,18 +360,38 @@ export class DialogTogglePreferencesComponent {
       formattedDeadline = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
     }
 
-    const togglePreferences$ = this.preferencesService.toggleAllPreferences(
+    return this.preferencesService.toggleAllPreferences(
       newStatus,
       formattedDeadline,
-      formattedStartDate
+      formattedStartDate,
+      this.sendEmail
     );
+  }
 
-    const emailNotification$ =
-      this.sendEmail && newStatus
-        ? this.preferencesService.sendPreferencesEmailToAll()
-        : of(null);
+  private handleSinglePreferenceOperation(): Observable<any> {
+    const newStatus = !this.data.currentState;
 
-    return forkJoin([togglePreferences$, emailNotification$]);
+    let formattedStartDate: string | null = null;
+    if (newStatus && this.startDate) {
+      const date = new Date(this.startDate);
+      date.setHours(0, 0, 0, 0);
+      formattedStartDate = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
+    }
+
+    let formattedDeadline: string | null = null;
+    if (newStatus && this.submissionDeadline) {
+      const date = new Date(this.submissionDeadline);
+      date.setHours(23, 59, 59, 999);
+      formattedDeadline = formatDate(date, 'yyyy-MM-dd HH:mm:ss', 'en-US');
+    }
+
+    return this.preferencesService.toggleSingleFacultyPreferences(
+      this.data.faculty_id!,
+      newStatus,
+      formattedDeadline,
+      formattedStartDate,
+      this.sendEmail
+    );
   }
 
   /**
