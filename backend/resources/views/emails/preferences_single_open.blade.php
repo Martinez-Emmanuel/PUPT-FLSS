@@ -6,6 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Faculty Preferences Submission</title>
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,0">
     <style type="text/css">
         @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700&display=swap');
 
@@ -13,7 +15,7 @@
             margin: 0;
             padding: 20px;
             background-color: #fff5f5;
-            font-family: 'Inter Tight', Arial, sans-serif;
+            font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
             line-height: 1.6;
         }
 
@@ -50,6 +52,7 @@
             font-size: 24px;
             font-weight: 600;
             letter-spacing: 0.5px;
+            padding: 0;
         }
 
         .content {
@@ -65,12 +68,17 @@
             font-weight: 500;
         }
 
+        p {
+
+            text-align: justify;
+        }
+
         .deadline-box {
             background-color: rgb(242, 224, 224);
-            border-left: 4px solid #800000;
+            border-left: 6px solid #800000;
             padding: 15px 20px;
             margin: 25px 0;
-            border-radius: 4px;
+            border-radius: 6px;
         }
 
         .deadline-text {
@@ -107,57 +115,54 @@
             font-size: 14px;
             color: #666666;
             font-style: italic;
-            margin-top: 20px;
+            margin: 0;
         }
 
         .footer {
             text-align: center;
             font-size: 14px;
             color: #666666;
-            padding: 25px 40px;
-            background-color: #ffffff;
+            padding: 15px 40px;
+            background-color: rgb(239, 228, 228);
         }
 
         .footer-divider {
-            border-top: 1px solid #e0e0e0;
+            border-top: 1px solid rgb(224, 196, 196);
             margin: 20px 0;
         }
 
-        .contact-info {
-            margin-bottom: 15px;
-        }
-
-        .contact-info a {
+        .important-note a {
             color: #800000;
             text-decoration: none;
             font-weight: 500;
         }
 
-        .contact-info a:hover {
+        .important-note a:hover {
             text-decoration: underline;
         }
 
         .copyright {
+            text-align: center;
             font-size: 13px;
-            color: #888888;
+            color: rgb(132, 94, 94);
             font-weight: 400;
         }
     </style>
 </head>
 
 <body>
-
     <div class="container">
-        <!-- Header Section -->
         <div class="header">
             <img src="https://images.pupt-flss.com/pup_logo_white_bg.png" alt="PUP Logo" class="logo">
-            <h1>Faculty Preferences Submission</h1>
+            <h1>PUP Taguig</h1>
+            <h1>Faculty Loading and Scheduling System</h1>
         </div>
 
-        <!-- Content Section -->
         <div class="content">
             <p class="greeting"><b>Dear {{ $faculty_name }},</b></p>
-            <p>We would like to inform you that the submission for your load and schedule preferences is now open.</p>
+
+            <p>We hope this email finds you well. We would like to inform you that the <b>submission is now open</b> for
+                your load and schedule preferences for the upcoming semester.</p>
             <div class="deadline-box">
                 <p class="deadline-text">Submission Deadline: {{ $deadline }}</p>
                 @if ($days_left !== null)
@@ -166,24 +171,19 @@
                 @endif
             </div>
 
-            <p>If you have any questions, feel free to reach out to our support team.</p>
-        </div>
+            <p>Please take a moment to log in to the system and provide your preferences at your earliest convenience.
+                Your input is highly valued and helps ensure a smooth scheduling process.</p>
 
-        <!-- Button Section -->
-        <div class="button-container">
-            <a href="http://localhost:4200/faculty/login" class="button">Set Preferences</a>
-        </div>
-
-        <!-- Footer Section -->
-        <div class="footer">
-            <div class="contact-info">
-                <strong>Need Assistance?</strong><br>
-                Email: <a href="mailto:pupt.flss2025@gmail.com">pupt.flss2025@gmail.com</a><br>
-                Office Hours: Monday to Friday, 8:00 AM - 5:00 PM
+            <div class="button-container">
+                <a href="https://pupt-flss.com" class="button">Submit Preferences Now</a>
             </div>
 
-            <div class="footer-divider"></div>
+            <p class="important-note">Note: If you experience any technical difficulties or have questions about the
+                submission process, please don't hesitate to contact our support team at <a
+                    href="mailto:pupt.flss2025@gmail.com">pupt.flss2025@gmail.com</a></p>
+        </div>
 
+        <div class="footer">
             <p class="copyright">
                 © 2024 Polytechnic University of the Philippines - Taguig Branch<br>
                 Faculty Loading and Scheduling System<br>
@@ -191,7 +191,6 @@
             </p>
         </div>
     </div>
-
 </body>
 
 </html>

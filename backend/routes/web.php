@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\PreferenceController;
+use App\Http\Controllers\EmailController;
 use Carbon\Carbon;
 
 /*
@@ -92,3 +93,6 @@ Route::get('/test-change-request', function () {
     ];
     return view('emails.change_request', $data);
 });
+
+Route::get('/preferences-all-open-email', [EmailController::class, 'testAll']);
+Route::get('/preferences-single-open-email', [EmailController::class, 'testSingle']);

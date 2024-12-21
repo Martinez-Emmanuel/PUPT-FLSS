@@ -170,5 +170,23 @@ class EmailController extends Controller
             'message' => 'Admin notifications are being sent asynchronously',
         ], 200);
     }
+
+    public function testSingle()
+    {
+        return view('emails.preferences_single_open', [
+            'faculty_name' => 'Juan Dela Cruz',
+            'deadline' => 'Nov 23, 2024',
+            'days_left' => 5,
+        ]);
+    }
+
+    public function testAll()
+    {
+        return view('emails.preferences_all_open', [
+            'faculty_name' => 'Juan Dela Cruz',
+            'deadline' => 'Nov 23, 2024',
+            'days_left' => 5,
+        ]);
+    }
     
 }
