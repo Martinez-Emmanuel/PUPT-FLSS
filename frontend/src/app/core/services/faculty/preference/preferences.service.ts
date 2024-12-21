@@ -154,31 +154,6 @@ export class PreferencesService {
   }
 
   /**
-   * Deletes all preferences for a specific faculty and active semester,
-   * then clears the cache upon success.
-   */
-  deleteAllPreferences(
-    facultyId: string,
-    activeSemesterId: number
-  ): Observable<any> {
-    const params = new HttpParams()
-      .set('faculty_id', facultyId)
-      .set('active_semester_id', activeSemesterId.toString());
-
-    const url = `${this.baseUrl}/delete-all-preferences`;
-    return this.http.delete(url, { params }).pipe(
-      tap(() => this.clearCaches(facultyId)),
-      catchError((error) => {
-        console.error(
-          `Error deleting all preferences for faculty ID ${facultyId}:`,
-          error
-        );
-        return throwError(() => error);
-      })
-    );
-  }
-
-  /**
    * Toggles the preferences status for all faculty members and
    * refreshes preferences cache upon success.
    */
