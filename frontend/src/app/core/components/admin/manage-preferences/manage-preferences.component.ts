@@ -110,6 +110,7 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
   // Preferences state
   hasAnyPreferences = false;
   hasIndividualDeadlines = false;
+  facultyScheduledState = new Map<number, boolean>();
 
   // Search Subject
   private searchSubject = new Subject<string>();
@@ -185,6 +186,7 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
           this.updateIndividualDeadlinesState();
           this.checkGlobalStartDate();
           this.checkIndividualStartDate();
+          this.initializeScheduledFacultyState();
           this.isLoading.next(false);
         },
         (error) => {
@@ -351,6 +353,19 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
   }
 
   isIndividuallyScheduled(faculty: Faculty): boolean {
+    return this.facultyScheduledState.get(faculty.faculty_id) ?? false;
+  }
+
+  initializeScheduledFacultyState(): void {
+    this.allData.forEach((faculty: Faculty) => {
+      this.facultyScheduledState.set(
+        faculty.faculty_id,
+        this.calculateIsIndividuallyScheduled(faculty)
+      );
+    });
+  }
+
+  calculateIsIndividuallyScheduled(faculty: Faculty): boolean {
     return (
       faculty.active_semesters?.some(
         (semester) =>
@@ -456,19 +471,19 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
 
     dialogRef.afterClosed().subscribe((confirmed: boolean) => {
       if (confirmed && !isScheduledClick) {
-        faculty.is_enabled = !faculty.is_enabled;
-
         this.preferencesService.getPreferences().subscribe((response) => {
           const updatedFaculty = response?.preferences?.find(
             (item: any) => item.faculty_id === faculty.faculty_id
           );
-          if (updatedFaculty) {
-            faculty.active_semesters = updatedFaculty.active_semesters;
-          }
 
-          this.updateDisplayedData();
-          this.checkToggleAllState();
-          this.cdr.markForCheck();
+          if (updatedFaculty) {
+            faculty.is_enabled = updatedFaculty.is_enabled === 1;
+            faculty.active_semesters = updatedFaculty.active_semesters;
+
+            this.updateDisplayedData();
+            this.checkToggleAllState();
+            this.cdr.detectChanges();
+          }
         });
       }
     });
