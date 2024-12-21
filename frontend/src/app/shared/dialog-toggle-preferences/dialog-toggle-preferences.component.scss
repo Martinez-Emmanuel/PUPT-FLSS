@@ -126,6 +126,10 @@
     @include mixins.flex-layout($direction: column, $gap: var(--spacing-xs));
     margin-bottom: var(--spacing-sm);
 
+    svg {
+      width: 70%;
+    }
+
     span[mat-symbol] {
       font-size: var(--font-size-4xl);
       @include mixins.gradient-primary-text(315deg);
