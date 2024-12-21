@@ -23,6 +23,9 @@ class SendFacultyPreferenceEmailJob implements ShouldQueue
     protected $individual_deadline;
     protected $global_deadline;
 
+    public $tries = 5;
+    public $timeout = 120;
+
     /**
      * Create a new job instance.
      *
