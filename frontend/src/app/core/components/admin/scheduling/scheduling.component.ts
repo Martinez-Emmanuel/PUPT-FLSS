@@ -538,7 +538,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                 academicYear: this.activeYear || academicYearOptions[0] || '',
                 semester: this.activeSemesterLabel || semesterOptions[0] || '',
                 startDate: this.startDate ? new Date(this.startDate) : null,
-                endDate: this.endDate ? new Date(this.endDate) : null,    
+                endDate: this.endDate ? new Date(this.endDate) : null,
               },
             },
             disableClose: true,
@@ -641,6 +641,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                         switchMap((activeYearData) => {
                           this.activeYear = result.academicYear;
                           this.activeSemester = selectedSemesterObj.semester_id;
+                          this.startDate = activeYearData.startDate;
+                          this.endDate = activeYearData.endDate;
                           return this.schedulingService.getActiveYearLevelsCurricula();
                         }),
                         tap((programsData) => {
