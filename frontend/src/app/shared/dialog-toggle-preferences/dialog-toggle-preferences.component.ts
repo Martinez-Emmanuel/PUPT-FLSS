@@ -33,15 +33,27 @@ export interface DialogTogglePreferencesData {
   hasSecondaryText?: boolean;
 }
 
+export class CustomDateAdapter extends NativeDateAdapter {
+  override format(date: Date, displayFormat: Object): string {
+    if (displayFormat === 'input') {
+      const day = date.getDate();
+      const month = date.toLocaleString('en-US', { month: 'long' });
+      const year = date.getFullYear();
+      return `${month} ${day}, ${year}`;
+    }
+    return date.toDateString();
+  }
+}
+
 export const MY_DATE_FORMATS = {
   parse: {
-    dateInput: 'MM/DD/YYYY',
+    dateInput: 'MM/dd/yyyy',
   },
   display: {
-    dateInput: 'MM/DD/YYYY',
-    monthYearLabel: 'MMM YYYY',
-    dateA11yLabel: 'LL',
-    monthYearA11yLabel: 'MMMM YYYY',
+    dateInput: 'input',
+    monthYearLabel: 'MMMM yyyy',
+    dateA11yLabel: 'MMMM d, yyyy',
+    monthYearA11yLabel: 'MMMM yyyy',
   },
 };
 
@@ -62,7 +74,7 @@ export const MY_DATE_FORMATS = {
   ],
   providers: [
     MatDatepickerModule,
-    { provide: DateAdapter, useClass: NativeDateAdapter },
+    { provide: DateAdapter, useClass: CustomDateAdapter },
     { provide: MAT_DATE_LOCALE, useValue: 'en-US' },
     { provide: MAT_DATE_FORMATS, useValue: MY_DATE_FORMATS },
   ],

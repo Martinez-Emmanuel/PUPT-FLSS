@@ -1250,8 +1250,8 @@
       </div>
       <div class="scheduled-pref-text">
         Preferences submission is currently scheduled to open from
-        <strong>{{ startDate | date }}</strong> until
-        <strong>{{ submissionDeadline | date }}</strong
+        <strong>{{ startDate | date : "MMMM d, yyyy" }}</strong> until
+        <strong>{{ submissionDeadline | date : "MMMM d, yyyy" }}</strong
         >.
       </div>
     </div>
