@@ -342,6 +342,10 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
     );
   }
 
+  /**
+   * Checks if preferences are globally scheduled.
+   * @returns True if globally scheduled, false otherwise.
+   */
   isGloballyScheduled(): boolean {
     return this.allData.some((faculty) =>
       faculty.active_semesters?.some(
@@ -352,10 +356,18 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
     );
   }
 
+  /**
+   * Checks if preferences are individually scheduled for a faculty.
+   * @param faculty - The faculty to check.
+   * @returns True if individually scheduled, false otherwise.
+   */
   isIndividuallyScheduled(faculty: Faculty): boolean {
     return this.facultyScheduledState.get(faculty.faculty_id) ?? false;
   }
 
+  /**
+   * Initializes the scheduled state for each faculty.
+   */
   initializeScheduledFacultyState(): void {
     this.allData.forEach((faculty: Faculty) => {
       this.facultyScheduledState.set(
@@ -365,6 +377,11 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
     });
   }
 
+  /**
+   * Calculates if preferences are individually scheduled for a faculty.
+   * @param faculty - The faculty to check.
+   * @returns True if individually scheduled, false otherwise.
+   */
   calculateIsIndividuallyScheduled(faculty: Faculty): boolean {
     return (
       faculty.active_semesters?.some(
@@ -812,11 +829,22 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
   // Utility Methods
   // ===========================
 
+  /**
+   * Gets the tooltip for the toggle based on the type and faculty.
+   * @param type - The type of toggle ('global' or 'individual').
+   * @param faculty - The faculty to check (optional).
+   * @returns The tooltip string.
+   */
   public getTooltip(type: 'global' | 'individual', faculty?: Faculty): string {
     const state = this.getToggleState(faculty || this.allData[0]);
     return type === 'global' ? state.globalTooltip : state.individualTooltip;
   }
 
+  /**
+   * Gets the toggle state for a faculty.
+   * @param faculty - The faculty to check.
+   * @returns The toggle state.
+   */
   public getToggleState(faculty: Faculty): ToggleState {
     const isGlobalDisabled =
       (this.hasIndividualDeadlines &&
