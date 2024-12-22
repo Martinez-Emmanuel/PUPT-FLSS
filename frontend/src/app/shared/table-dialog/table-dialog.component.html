@@ -129,8 +129,9 @@
               ? form.get('startDate')?.value
               : null
           "
+          readonly
+          (click)="picker.open()"
         />
-        <mat-hint>MM/DD/YYYY</mat-hint>
         <mat-datepicker-toggle
           matIconSuffix
           [for]="picker"
