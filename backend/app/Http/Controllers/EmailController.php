@@ -109,4 +109,10 @@ class EmailController extends Controller
         ]);
     }
 
+    public function testSchedulePublished()
+    {
+        return view('emails.load_schedule_published', [
+            'faculty_name' => 'Juan Dela Cruz',
+        ]);
+    }
 }

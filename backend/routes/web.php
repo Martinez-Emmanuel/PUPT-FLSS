@@ -96,3 +96,4 @@ Route::get('/test-change-request', function () {
 
 Route::get('/preferences-all-open-email', [EmailController::class, 'testAll']);
 Route::get('/preferences-single-open-email', [EmailController::class, 'testSingle']);
+Route::get('/test-schedule-published', [EmailController::class, 'testSchedulePublished']);
