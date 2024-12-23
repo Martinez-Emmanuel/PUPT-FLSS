@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, Inject, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, Output, EventEmitter, Inject, ChangeDetectionStrategy, ChangeDetectorRef, Injectable } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -21,6 +21,7 @@ import { AdminService } from '../../core/services/superadmin/management/admin/ad
 import { TwoDigitInputDirective } from '../../core/imports/two-digit-input.directive';
 
 // Custom date adapter to format dates as "January 1, 2000"
+@Injectable()
 class CustomDateAdapter extends NativeDateAdapter {
   override format(date: Date, displayFormat: Object): string {
     const months = [
