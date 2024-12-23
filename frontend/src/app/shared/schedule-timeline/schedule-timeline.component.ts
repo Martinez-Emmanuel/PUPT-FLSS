@@ -29,10 +29,10 @@ type Day =
   | 'Sunday';
 
 @Component({
-    selector: 'app-schedule-timeline',
-    imports: [CommonModule],
-    templateUrl: './schedule-timeline.component.html',
-    styleUrls: ['./schedule-timeline.component.scss']
+  selector: 'app-schedule-timeline',
+  imports: [CommonModule],
+  templateUrl: './schedule-timeline.component.html',
+  styleUrls: ['./schedule-timeline.component.scss'],
 })
 export class ScheduleTimelineComponent implements OnInit {
   @Input() scheduleData: any;
@@ -69,25 +69,29 @@ export class ScheduleTimelineComponent implements OnInit {
   private processScheduleData() {
     if (Array.isArray(this.scheduleData) && this.scheduleData.length > 0) {
       this.scheduleData.forEach((schedule: any) => {
-        const startTime = this.convertTimeToMinutes(schedule.start_time);
-        const endTime = this.convertTimeToMinutes(schedule.end_time);
-        const startSlot = this.findTimeSlotIndex(startTime);
-        const duration = Math.ceil((endTime - startTime) / 30);
-        const adjustedDuration =
-          (endTime - startTime) % 30 === 0 ? duration + 1 : duration;
+        if (schedule.start_time && schedule.end_time) {
+          const startTime = this.convertTimeToMinutes(schedule.start_time);
+          const endTime = this.convertTimeToMinutes(schedule.end_time);
+          const startSlot = this.findTimeSlotIndex(startTime);
+          const duration = Math.ceil((endTime - startTime) / 30);
+          const adjustedDuration =
+            (endTime - startTime) % 30 === 0 ? duration + 1 : duration;
 
-        this.scheduleBlocks.push({
-          day: schedule.day,
-          startSlot: startSlot,
-          duration: adjustedDuration,
-          courseCode: schedule.course_details.course_code,
-          courseTitle: schedule.course_details.course_title,
-          roomCode: schedule.room_code,
-          facultyName: schedule.faculty_name,
-          program: schedule.program_code,
-          yearLevel: schedule.year_level,
-          section: schedule.section_name,
-        });
+          this.scheduleBlocks.push({
+            day: schedule.day,
+            startSlot: startSlot,
+            duration: adjustedDuration,
+            courseCode: schedule.course_details.course_code,
+            courseTitle: schedule.course_details.course_title,
+            roomCode: schedule.room_code,
+            facultyName: schedule.faculty_name,
+            program: schedule.program_code,
+            yearLevel: schedule.year_level,
+            section: schedule.section_name,
+          });
+        } else {
+          return;
+        }
       });
     } else {
       console.warn(
@@ -98,6 +102,9 @@ export class ScheduleTimelineComponent implements OnInit {
   }
 
   private convertTimeToMinutes(time: string): number {
+    if (!time) {
+      return 0;
+    }
     const [hours, minutes] = time.split(':').map(Number);
     return hours * 60 + minutes;
   }
@@ -168,7 +175,6 @@ export class ScheduleTimelineComponent implements OnInit {
     return '';
   }
 
-  
   private getBlockColors(day: Day) {
     const dayColors: Record<
       Day,

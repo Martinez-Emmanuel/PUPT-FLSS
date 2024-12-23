@@ -16,12 +16,12 @@ import { MatSymbolDirective } from '../../../../imports/mat-symbol.directive';
 
 import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
 import { TableDialogComponent, DialogConfig, DialogFieldConfig } from '../../../../../shared/table-dialog/table-dialog.component';
+import { DialogViewScheduleComponent } from '../../../../../shared/dialog-view-schedule/dialog-view-schedule.component';
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
 
 import { ReportsService } from '../../../../services/admin/reports/reports.service';
 
 import { fadeAnimation } from '../../../../animations/animations';
-import { DialogViewScheduleComponent } from '../../../../../shared/dialog-view-schedule/dialog-view-schedule.component';
 
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
