@@ -427,7 +427,6 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
     });
 
     this.selectedDay = preference.day;
-    this.originalDay = preference.day;
     this.scheduleForm.markAllAsTouched();
     this.cdr.markForCheck();
   }
