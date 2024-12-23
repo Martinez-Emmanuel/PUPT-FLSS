@@ -243,11 +243,22 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
   }
 
   onInputChange(values: { [key: string]: any }) {
-    if (values['program'] !== undefined) {
+    let programChanged = false;
+
+    if (
+      values['program'] !== undefined &&
+      values['program'] !== this.selectedProgram
+    ) {
+      programChanged = true;
       this.selectedProgram = values['program'];
     }
+
     if (values['yearLevel'] !== undefined) {
       this.selectedYear = values['yearLevel'];
+    }
+
+    if (programChanged) {
+      this.selectedYear = 1;
     }
 
     this.updateHeaderInputFields();
