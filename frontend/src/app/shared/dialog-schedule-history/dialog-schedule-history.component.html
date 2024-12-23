@@ -9,13 +9,13 @@
       <p>View your past load and schedule from previous semesters</p>
     </div>
 
-    @if (!hasNoScheduleHistory) {
     <div class="field-section">
       <mat-form-field appearance="fill" class="no-subscript">
         <mat-label>Academic Year</mat-label>
         <mat-select
           [(ngModel)]="selectedYear"
           (selectionChange)="onYearChange()"
+          [disabled]="!academicYears.length"
         >
           @for (year of academicYears; track year.academic_year_id) {
           <mat-option [value]="year.academic_year_id">
@@ -30,17 +30,16 @@
         <mat-select
           [(ngModel)]="selectedSemester"
           (selectionChange)="onSemesterChange()"
-          [disabled]="!selectedYear"
+          [disabled]="!semesters.length"
         >
-          @for (semester of semesters; track semester.semester_id) {
-          <mat-option [value]="semester.semester_id">
+          @for (semester of semesters; track semester.active_semester_id) {
+          <mat-option [value]="semester.active_semester_id">
             {{ semester.semester_number }}
           </mat-option>
           }
         </mat-select>
       </mat-form-field>
     </div>
-    }
   </div>
 
   @if (isLoading$ | async) {
