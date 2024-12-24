@@ -96,8 +96,6 @@ Route::middleware('auth:sanctum')->group(function () {
     /**
      * Email
      */
-    Route::post('/email-all-faculty-preferences', [EmailController::class, 'emailAllFacultyPreferences']);
-    Route::post('/email-single-faculty-preferences', [EmailController::class, 'emailSingleFacultyPreferences']);
     Route::post('/email-all-faculty-pref-submitted', [EmailController::class, 'emailPrefSubmitted']);
     Route::post('/email-all-faculty-schedule', [EmailController::class, 'emailAllFacultySchedule']);
     Route::post('/email-single-faculty-schedule', [EmailController::class, 'emailSingleFacultySchedule']);

@@ -16,8 +16,8 @@ class SendFacultyScheduleEmailJob implements ShouldQueue
 
     protected $faculty;
 
-    public $tries = 5;
-    public $timeout = 120;
+    public $tries = 10;
+    public $timeout = 300;
 
     /**
      * Create a new job instance.

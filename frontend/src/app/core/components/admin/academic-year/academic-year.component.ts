@@ -21,19 +21,19 @@ import { AcademicYear, Program, YearLevel } from '../../../models/scheduling.mod
 import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
 
 @Component({
-    selector: 'app-academic-year',
-    imports: [
-        CommonModule,
-        TableHeaderComponent,
-        MatTableModule,
-        MatButtonModule,
-        MatIconModule,
-        LoadingComponent,
-        MatSymbolDirective,
-    ],
-    templateUrl: './academic-year.component.html',
-    styleUrls: ['./academic-year.component.scss'],
-    animations: [fadeAnimation, pageFloatUpAnimation]
+  selector: 'app-academic-year',
+  imports: [
+    CommonModule,
+    TableHeaderComponent,
+    MatTableModule,
+    MatButtonModule,
+    MatIconModule,
+    LoadingComponent,
+    MatSymbolDirective,
+  ],
+  templateUrl: './academic-year.component.html',
+  styleUrls: ['./academic-year.component.scss'],
+  animations: [fadeAnimation, pageFloatUpAnimation],
 })
 export class AcademicYearComponent implements OnInit, OnDestroy {
   programs: Program[] = [];
@@ -249,10 +249,10 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
   }
 
   /**
-   * Open dialog to manage year levels for a specific program.
+   * Open dialog to manage curriculum for a specific program.
    * @param program - The program to manage.
    */
-  onManageYearLevels(program: Program) {
+  onManageCurriculum(program: Program) {
     const fields: DialogFieldConfig[] = [];
 
     console.log('Fetched Program ID:', program.program_id);
@@ -319,7 +319,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
 
       const dialogRef = this.dialog.open(TableDialogComponent, {
         data: {
-          title: `Manage ${program.program_code} Year Levels`,
+          title: `Manage ${program.program_code} Curriculum`,
           fields,
           isEdit: true,
           initialValue,

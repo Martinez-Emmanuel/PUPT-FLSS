@@ -39,10 +39,10 @@ class PreferencesSetting extends Model
      */
     protected $casts = [
         'is_enabled' => 'boolean',
-        'global_deadline' => 'date',
-        'individual_deadline' => 'date',
-        'global_start_date' => 'date',
-        'individual_start_date' => 'date',
+        'global_deadline' => 'datetime:Y-m-d H:i:s',
+        'individual_deadline' => 'datetime:Y-m-d H:i:s',
+        'global_start_date' => 'datetime:Y-m-d H:i:s',
+        'individual_start_date' => 'datetime:Y-m-d H:i:s',
         'has_request' => 'boolean',
     ];
 

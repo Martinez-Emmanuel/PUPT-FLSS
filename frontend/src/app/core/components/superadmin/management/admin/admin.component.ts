@@ -1,11 +1,10 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
-
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
 
 import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
@@ -15,33 +14,37 @@ import { LoadingComponent } from '../../../../../shared/loading/loading.componen
 import { AdminService, User } from '../../../../services/superadmin/management/admin/admin.service';
 
 import { fadeAnimation } from '../../../../animations/animations';
+import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 
 @Component({
-    selector: 'app-admin',
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        TableGenericComponent,
-        TableHeaderComponent,
-        LoadingComponent,
-    ],
-    templateUrl: './admin.component.html',
-    styleUrls: ['./admin.component.scss'],
-    animations: [fadeAnimation],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-admin',
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TableGenericComponent,
+    TableHeaderComponent,
+    LoadingComponent,
+  ],
+  templateUrl: './admin.component.html',
+  styleUrls: ['./admin.component.scss'],
+  animations: [fadeAnimation],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class AdminComponent implements OnInit {
+export class AdminComponent implements OnInit, OnDestroy {
   adminStatuses = ['Active', 'Inactive'];
   selectedAdminIndex: number | null = null;
 
   admins: User[] = [];
   filteredAdmins: User[] = [];
   isLoading = true;
+  
+  searchControl = new FormControl('');
+  private destroy$ = new Subject<void>();
 
   columns = [
     { key: 'index', label: '#' },
     { key: 'code', label: 'Admin Code' },
-    { key: 'name', label: 'Name' },
+    { key: 'fullName', label: 'Name' },
     { key: 'passwordDisplay', label: 'Password' },
     { key: 'role', label: 'Role' },
     { key: 'status', label: 'Status' },
@@ -50,7 +53,7 @@ export class AdminComponent implements OnInit {
   displayedColumns: string[] = [
     'index',
     'code',
-    'name',
+    'fullName',
     'passwordDisplay',
     'role',
     'status',
@@ -74,49 +77,79 @@ export class AdminComponent implements OnInit {
 
   ngOnInit() {
     this.fetchAdmins();
+    this.setupSearch();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   fetchAdmins() {
     this.isLoading = true;
-    this.adminService.getAdmins().subscribe({
-      next: (admins) => {
-        this.admins = admins.map((admin) => ({
-          ...admin,
-          passwordDisplay: '••••••••',
-        }));
-        this.filteredAdmins = [...this.admins];
-        this.isLoading = false;
-        this.cdr.markForCheck();
-      },
-      error: () => {
-        this.snackBar.open(
-          'Error fetching admins. Please try again.',
-          'Close',
-          {
-            duration: 3000,
-          }
-        );
-        this.isLoading = false;
-        this.cdr.markForCheck();
-      },
-    });
+    this.adminService
+      .getAdmins()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (admins) => {
+          this.admins = admins.map((admin) => ({
+            ...admin,
+            fullName: `${admin.last_name}, ${admin.first_name} ${
+              admin.middle_name ?? ''
+            } ${admin.suffix_name ?? ''}`,
+            passwordDisplay: '••••••••',
+          }));
+          this.filteredAdmins = [...this.admins];
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        },
+        error: () => {
+          this.snackBar.open(
+            'Error fetching admins. Please try again.',
+            'Close',
+            {
+              duration: 3000,
+            }
+          );
+          this.isLoading = false;
+          this.cdr.markForCheck();
+        },
+      });
+  }
+
+  setupSearch() {
+    this.searchControl.valueChanges
+      .pipe(
+        debounceTime(300),
+        distinctUntilChanged(),
+        takeUntil(this.destroy$)
+      )
+      .subscribe((searchTerm) => {
+        this.onSearch(searchTerm || '');
+      });
   }
 
   onSearch(searchTerm: string) {
-    if (!searchTerm) {
+    const lowerSearch = searchTerm.toLowerCase();
+
+    if (!lowerSearch) {
       this.filteredAdmins = [...this.admins];
     } else {
-      const lowerSearch = searchTerm.toLowerCase();
       this.filteredAdmins = this.admins.filter(
         (admin) =>
           admin.code.toLowerCase().includes(lowerSearch) ||
-          admin.name.toLowerCase().includes(lowerSearch) ||
+          admin.fullName.toLowerCase().includes(lowerSearch) ||
           admin.role.toLowerCase().includes(lowerSearch) ||
           admin.status.toLowerCase().includes(lowerSearch)
       );
     }
-    console.log('Filtered Admins:', this.filteredAdmins);
     this.cdr.markForCheck();
+  }
+
+  onInputChange(values: { [key: string]: any }) {
+    if (values['search'] !== undefined) {
+      this.onSearch(values['search']);
+    }
   }
 
   private getDialogConfig(admin?: User): DialogConfig {
@@ -133,10 +166,36 @@ export class AdminComponent implements OnInit {
           disabled: !!admin,
         },
         {
-          label: 'Name',
-          formControlName: 'name',
+          label: 'Last Name',
+          formControlName: 'last_name',
           type: 'text',
           maxLength: 50,
+          required: true,
+        },
+        {
+          label: 'First Name',
+          formControlName: 'first_name',
+          type: 'text',
+          maxLength: 50,
+          required: true,
+        },
+        {
+          label: 'Middle Name',
+          formControlName: 'middle_name',
+          type: 'text',
+          maxLength: 50,
+        },
+        {
+          label: 'Suffix',
+          formControlName: 'suffix_name',
+          type: 'text',
+          maxLength: 50,
+        },
+        {
+          label: 'Email',
+          formControlName: 'email',
+          type: 'text',
+          maxLength: 100,
           required: true,
         },
         {
@@ -183,8 +242,9 @@ export class AdminComponent implements OnInit {
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
         const { confirmPassword, ...adminData } = result;
+        const { name, ...rest } = adminData;
 
-        this.adminService.addAdmin(adminData).subscribe({
+        this.adminService.addAdmin(rest).subscribe({
           next: (newAdmin) => {
             this.snackBar.open('Admin added successfully', 'Close', {
               duration: 3000,

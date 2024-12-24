@@ -1,28 +1,9 @@
-import {
-  Component,
-  Output,
-  EventEmitter,
-  Inject,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-} from '@angular/core';
-import {
-  FormBuilder,
-  FormGroup,
-  Validators,
-  ReactiveFormsModule,
-  AbstractControl,
-  ValidationErrors,
-  ValidatorFn,
-} from '@angular/forms';
+import { Component, Output, EventEmitter, Inject, ChangeDetectionStrategy, ChangeDetectorRef, Injectable } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
-import {
-  MAT_DIALOG_DATA,
-  MatDialogRef,
-  MatDialogModule,
-} from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -34,10 +15,47 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { provideNativeDateAdapter } from '@angular/material/core';
+import { DateAdapter, MAT_DATE_FORMATS, NativeDateAdapter, provideNativeDateAdapter } from '@angular/material/core';
 
 import { AdminService } from '../../core/services/superadmin/management/admin/admin.service';
 import { TwoDigitInputDirective } from '../../core/imports/two-digit-input.directive';
+
+// Custom date adapter to format dates as "January 1, 2000"
+@Injectable()
+class CustomDateAdapter extends NativeDateAdapter {
+  override format(date: Date, displayFormat: Object): string {
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    return `${
+      months[date.getMonth()]
+    } ${date.getDate()}, ${date.getFullYear()}`;
+  }
+}
+
+// Custom date formats
+const CUSTOM_DATE_FORMATS = {
+  parse: {
+    dateInput: { month: 'long', year: 'numeric', day: 'numeric' },
+  },
+  display: {
+    dateInput: 'customInput',
+    monthYearLabel: { year: 'numeric', month: 'short' },
+    dateA11yLabel: { year: 'numeric', month: 'long', day: 'numeric' },
+    monthYearA11yLabel: { year: 'numeric', month: 'long' },
+  },
+};
 
 export interface DialogFieldConfig {
   label: string;
@@ -75,28 +93,32 @@ export interface DialogConfig {
 }
 
 @Component({
-    selector: 'app-table-dialog',
-    templateUrl: './table-dialog.component.html',
-    styleUrls: ['./table-dialog.component.scss'],
-    providers: [provideNativeDateAdapter()],
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        MatFormFieldModule,
-        MatInputModule,
-        MatSelectModule,
-        MatButtonModule,
-        MatTooltipModule,
-        MatDialogModule,
-        MatRadioModule,
-        MatCheckboxModule,
-        MatAutocompleteModule,
-        MatProgressSpinnerModule,
-        MatIconModule,
-        MatDatepickerModule,
-        TwoDigitInputDirective,
-    ],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-table-dialog',
+  templateUrl: './table-dialog.component.html',
+  styleUrls: ['./table-dialog.component.scss'],
+  providers: [
+    provideNativeDateAdapter(),
+    { provide: DateAdapter, useClass: CustomDateAdapter },
+    { provide: MAT_DATE_FORMATS, useValue: CUSTOM_DATE_FORMATS },
+  ],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatTooltipModule,
+    MatDialogModule,
+    MatRadioModule,
+    MatCheckboxModule,
+    MatAutocompleteModule,
+    MatProgressSpinnerModule,
+    MatIconModule,
+    MatDatepickerModule,
+    TwoDigitInputDirective,
+  ],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TableDialogComponent {
   form!: FormGroup;
@@ -227,15 +249,28 @@ export class TableDialogComponent {
   }
 
   public hasFormChanged(): boolean {
-    return (
-      JSON.stringify(this.form.getRawValue()) !==
-      JSON.stringify(this.initialFormValues)
-    );
+    // When editing, password fields are not required, so we need to ignore them when checking for changes
+    if (this.data.isEdit) {
+      const currentValues = { ...this.form.getRawValue() };
+      const initialValues = { ...this.initialFormValues };
+      delete currentValues.password;
+      delete currentValues.confirmPassword;
+      delete initialValues.password;
+      delete initialValues.confirmPassword;
+
+      return JSON.stringify(currentValues) !== JSON.stringify(initialValues);
+    } else {
+      // When adding, we need to check all fields
+      return (
+        JSON.stringify(this.form.getRawValue()) !==
+        JSON.stringify(this.initialFormValues)
+      );
+    }
   }
 
   private addFormControl(field: DialogFieldConfig): void {
     const validators = this.getValidators(field);
-    let initialValue = this.data.initialValue?.[field.formControlName] || '';
+    let initialValue = this.data.initialValue?.[field.formControlName];
 
     // Modify this section to properly handle array values for multiselect
     if (field.type === 'multiselect') {
@@ -254,23 +289,34 @@ export class TableDialogComponent {
       initialValue = new Date(initialValue);
     }
 
-    const control = this.fb.control(initialValue, { validators });
-
-    if (field.disabled) {
-      control.disable();
+    // When editing, password fields are not required
+    if (
+      this.data.isEdit &&
+      (field.formControlName === 'password' ||
+        field.formControlName === 'confirmPassword')
+    ) {
+      const control = this.fb.control(initialValue);
+      this.form.addControl(field.formControlName, control);
+    } else {
+      const control = this.fb.control(initialValue, { validators });
+      this.form.addControl(field.formControlName, control);
+      if (field.confirmPassword) {
+        control.setValidators([
+          ...validators,
+          this.passwordMatchValidator.bind(this),
+        ]);
+      }
     }
 
-    this.form.addControl(field.formControlName, control);
+    const formControl = this.form.get(field.formControlName);
+    if (formControl) {
+      if (field.disabled) {
+        formControl.disable();
+      }
 
-    if (field.type === 'autocomplete') {
-      this.initAutocompleteOptions(field);
-    }
-
-    if (field.confirmPassword) {
-      control.setValidators([
-        ...validators,
-        this.passwordMatchValidator.bind(this),
-      ]);
+      if (field.type === 'autocomplete') {
+        this.initAutocompleteOptions(field);
+      }
     }
   }
 
@@ -450,6 +496,12 @@ export class TableDialogComponent {
       }
 
       const formValue = this.form.getRawValue();
+
+      if (formValue.last_name && formValue.first_name) {
+        formValue.name = `${formValue.last_name}, ${formValue.first_name} ${
+          formValue.middle_name || ''
+        } ${formValue.suffix_name || ''}`.trim();
+      }
 
       const minimumSpinnerDuration = 500;
       const startTime = Date.now();

@@ -25,26 +25,27 @@ interface AcademicYear {
 }
 
 interface Semester {
+  active_semester_id: number;
   semester_id: number;
   semester_number: string;
 }
 
 @Component({
-    selector: 'app-dialog-schedule-history',
-    imports: [
-        CommonModule,
-        MatDialogModule,
-        MatFormFieldModule,
-        MatSelectModule,
-        MatButtonModule,
-        MatSymbolDirective,
-        FormsModule,
-        LoadingComponent,
-        FacultyScheduleTimetableComponent,
-    ],
-    templateUrl: './dialog-schedule-history.component.html',
-    styleUrls: ['./dialog-schedule-history.component.scss'],
-    animations: [fadeAnimation]
+  selector: 'app-dialog-schedule-history',
+  imports: [
+    CommonModule,
+    MatDialogModule,
+    MatFormFieldModule,
+    MatSelectModule,
+    MatButtonModule,
+    MatSymbolDirective,
+    FormsModule,
+    LoadingComponent,
+    FacultyScheduleTimetableComponent,
+  ],
+  templateUrl: './dialog-schedule-history.component.html',
+  styleUrls: ['./dialog-schedule-history.component.scss'],
+  animations: [fadeAnimation],
 })
 export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -135,7 +136,7 @@ export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
 
     if (selectedYear?.semesters.length) {
       this.semesters = selectedYear.semesters;
-      this.selectedSemester = this.semesters[0].semester_id;
+      this.selectedSemester = this.semesters[0].active_semester_id;
       this.onSemesterChange();
     } else {
       this.resetSelections();
@@ -159,7 +160,6 @@ export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
     this.reportsService
       .getFacultyScheduleHistory(
         facultyId,
-        this.selectedYear!,
         this.selectedSemester!
       )
       .pipe(

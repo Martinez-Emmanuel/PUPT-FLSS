@@ -2,8 +2,8 @@ import { Component, OnInit, AfterViewInit, ViewChild, ChangeDetectorRef } from '
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-import { BehaviorSubject } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { BehaviorSubject, Subject } from 'rxjs';
+import { filter, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSlideToggleModule, MatSlideToggleChange } from '@angular/material/slide-toggle';
@@ -19,9 +19,10 @@ import { TableHeaderComponent, InputField } from '../../../../shared/table-heade
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 import { DialogPrefComponent } from '../../../../shared/dialog-pref/dialog-pref.component';
 import { DialogExportComponent } from '../../../../shared/dialog-export/dialog-export.component';
-import { DialogActionComponent, DialogActionData } from '../../../../shared/dialog-action/dialog-action.component';
+import { DialogTogglePreferencesComponent, DialogTogglePreferencesData } from '../../../../shared/dialog-toggle-preferences/dialog-toggle-preferences.component';
 
-import { PreferencesService, ActiveSemester } from '../../../services/faculty/preference/preferences.service';
+import { PreferencesService } from '../../../services/faculty/preference/preferences.service';
+import { ActiveSemester } from '../../../models/preferences.model';
 
 import { fadeAnimation } from '../../../animations/animations';
 
@@ -39,8 +40,15 @@ interface Faculty {
   active_semesters?: ActiveSemester[];
 }
 
+interface ToggleState {
+  isGlobalDisabled: boolean;
+  isIndividualDisabled: boolean;
+  globalTooltip: string;
+  individualTooltip: string;
+}
+
 @Component({
-  selector: 'app-faculty-pref',
+  selector: 'app-manage-preferences',
   imports: [
     CommonModule,
     TableHeaderComponent,
@@ -55,11 +63,11 @@ interface Faculty {
     MatSnackBarModule,
     MatSymbolDirective,
   ],
-  templateUrl: './faculty-pref.component.html',
-  styleUrls: ['./faculty-pref.component.scss'],
+  templateUrl: './manage-preferences.component.html',
+  styleUrls: ['./manage-preferences.component.scss'],
   animations: [fadeAnimation],
 })
-export class FacultyPrefComponent implements OnInit, AfterViewInit {
+export class ManagePreferencesComponent implements OnInit, AfterViewInit {
   inputFields: InputField[] = [
     {
       type: 'text',
@@ -102,6 +110,10 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   // Preferences state
   hasAnyPreferences = false;
   hasIndividualDeadlines = false;
+  facultyScheduledState = new Map<number, boolean>();
+
+  // Search Subject
+  private searchSubject = new Subject<string>();
 
   @ViewChild(MatPaginator) paginator?: MatPaginator;
 
@@ -116,6 +128,11 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
     this.preferencesService.clearPreferencesCache();
     this.loadFacultyPreferences();
     this.setupFilterPredicate();
+    this.searchSubject
+      .pipe(debounceTime(300), distinctUntilChanged())
+      .subscribe((searchValue) => {
+        this.applyFilter(searchValue);
+      });
   }
 
   ngAfterViewInit(): void {
@@ -169,6 +186,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
           this.updateIndividualDeadlinesState();
           this.checkGlobalStartDate();
           this.checkIndividualStartDate();
+          this.initializeScheduledFacultyState();
           this.isLoading.next(false);
         },
         (error) => {
@@ -238,7 +256,7 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
    */
   onInputChange(inputValues: { [key: string]: any }): void {
     const searchValue = inputValues['searchFaculty'] || '';
-    this.applyFilter(searchValue);
+    this.searchSubject.next(searchValue);
   }
 
   // ===========================
@@ -250,7 +268,13 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
    */
   checkToggleAllState(): void {
     const allEnabled = this.filteredData.every((faculty) => faculty.is_enabled);
-    this.isToggleAllChecked = allEnabled;
+    const isGlobalDeadlineSet = this.allData.some((faculty) =>
+      faculty.active_semesters?.some(
+        (semester) => semester.global_deadline !== null
+      )
+    );
+
+    this.isToggleAllChecked = allEnabled && isGlobalDeadlineSet;
 
     this.isAnyIndividualToggleOn = this.filteredData.some(
       (faculty) => faculty.is_enabled
@@ -319,11 +343,66 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   }
 
   /**
+   * Checks if preferences are globally scheduled.
+   * @returns True if globally scheduled, false otherwise.
+   */
+  isGloballyScheduled(): boolean {
+    return this.allData.some((faculty) =>
+      faculty.active_semesters?.some(
+        (semester) =>
+          semester.global_start_date !== null ||
+          semester.global_deadline !== null
+      )
+    );
+  }
+
+  /**
+   * Checks if preferences are individually scheduled for a faculty.
+   * @param faculty - The faculty to check.
+   * @returns True if individually scheduled, false otherwise.
+   */
+  isIndividuallyScheduled(faculty: Faculty): boolean {
+    return this.facultyScheduledState.get(faculty.faculty_id) ?? false;
+  }
+
+  /**
+   * Initializes the scheduled state for each faculty.
+   */
+  initializeScheduledFacultyState(): void {
+    this.allData.forEach((faculty: Faculty) => {
+      this.facultyScheduledState.set(
+        faculty.faculty_id,
+        this.calculateIsIndividuallyScheduled(faculty)
+      );
+    });
+  }
+
+  /**
+   * Calculates if preferences are individually scheduled for a faculty.
+   * @param faculty - The faculty to check.
+   * @returns True if individually scheduled, false otherwise.
+   */
+  calculateIsIndividuallyScheduled(faculty: Faculty): boolean {
+    return (
+      faculty.active_semesters?.some(
+        (semester) =>
+          semester.individual_start_date !== null ||
+          semester.individual_deadline !== null
+      ) ?? false
+    );
+  }
+
+  /**
    * Handles the toggle action for all preferences.
    * @param event The slide toggle change event.
    */
-  onToggleAllPreferences(event: MatSlideToggleChange): void {
-    event.source.checked = this.isToggleAllChecked;
+  onToggleAllPreferences(
+    event: MatSlideToggleChange | MouseEvent,
+    isScheduledClick = false
+  ): void {
+    if (!isScheduledClick && event instanceof MatSlideToggleChange) {
+      event.source.checked = this.isToggleAllChecked;
+    }
 
     const existingDeadline = this.allData[0]?.active_semesters?.[0]
       ?.global_deadline
@@ -337,25 +416,24 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
 
     const hasIndividualDeadlines = this.hasIndividualDeadlines;
 
-    const dialogData: DialogActionData = {
+    const dialogData: DialogTogglePreferencesData = {
       type: 'all_preferences',
       academicYear: this.allData[0]?.active_semesters?.[0]?.academic_year || '',
       semester: this.allData[0]?.active_semesters?.[0]?.semester_label || '',
       currentState: this.isToggleAllChecked,
-      hasSecondaryText: false,
       global_deadline: existingDeadline,
       global_start_date: existingStartDate,
       hasIndividualDeadlines: hasIndividualDeadlines,
     };
 
-    const dialogRef = this.dialog.open(DialogActionComponent, {
+    const dialogRef = this.dialog.open(DialogTogglePreferencesComponent, {
       data: dialogData,
       disableClose: true,
       autoFocus: false,
     });
 
     dialogRef.afterClosed().subscribe((confirmed: boolean) => {
-      if (confirmed) {
+      if (confirmed && !isScheduledClick) {
         const newStatus = this.isToggleAllChecked;
         this.filteredData.forEach(
           (faculty) => (faculty.is_enabled = newStatus)
@@ -374,9 +452,12 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
    */
   onToggleSinglePreferences(
     faculty: Faculty,
-    event: MatSlideToggleChange
+    event: MatSlideToggleChange | MouseEvent,
+    isScheduledClick = false
   ): void {
-    event.source.checked = faculty.is_enabled;
+    if (!isScheduledClick && event instanceof MatSlideToggleChange) {
+      event.source.checked = faculty.is_enabled;
+    }
 
     const activeSemester = faculty.active_semesters?.[0];
     const existingStartDate =
@@ -388,39 +469,38 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
       activeSemester?.global_deadline ||
       null;
 
-    const dialogData: DialogActionData = {
+    const dialogData: DialogTogglePreferencesData = {
       type: 'single_preferences',
       academicYear: activeSemester?.academic_year || '',
       semester: activeSemester?.semester_label || '',
       currentState: faculty.is_enabled,
-      hasSecondaryText: false,
       facultyName: faculty.facultyName,
       faculty_id: faculty.faculty_id,
       individual_start_date: existingStartDate,
       individual_deadline: existingDeadline,
     };
 
-    const dialogRef = this.dialog.open(DialogActionComponent, {
+    const dialogRef = this.dialog.open(DialogTogglePreferencesComponent, {
       data: dialogData,
       disableClose: true,
       autoFocus: false,
     });
 
     dialogRef.afterClosed().subscribe((confirmed: boolean) => {
-      if (confirmed) {
-        faculty.is_enabled = !faculty.is_enabled;
-
+      if (confirmed && !isScheduledClick) {
         this.preferencesService.getPreferences().subscribe((response) => {
           const updatedFaculty = response?.preferences?.find(
             (item: any) => item.faculty_id === faculty.faculty_id
           );
-          if (updatedFaculty) {
-            faculty.active_semesters = updatedFaculty.active_semesters;
-          }
 
-          this.updateDisplayedData();
-          this.checkToggleAllState();
-          this.cdr.markForCheck();
+          if (updatedFaculty) {
+            faculty.is_enabled = updatedFaculty.is_enabled === 1;
+            faculty.active_semesters = updatedFaculty.active_semesters;
+
+            this.updateDisplayedData();
+            this.checkToggleAllState();
+            this.cdr.detectChanges();
+          }
         });
       }
     });
@@ -750,31 +830,59 @@ export class FacultyPrefComponent implements OnInit, AfterViewInit {
   // ===========================
 
   /**
-   * Gets the tooltip text for a single faculty toggle.
+   * Gets the tooltip for the toggle based on the type and faculty.
+   * @param type - The type of toggle ('global' or 'individual').
+   * @param faculty - The faculty to check (optional).
+   * @returns The tooltip string.
    */
-  getSingleToggleTooltip(faculty: Faculty): string {
-    if (this.isGlobalStartDateSet) {
-      return 'Global submission start date has been set – individual changes disabled';
-    }
-    if (this.isToggleAllChecked) {
-      return `Global preferences submission is active 
-      – individual changes disabled`;
-    }
-    return `${
-      faculty.is_enabled ? 'Disable' : 'Enable'
-    } preferences submission for ${faculty.facultyName} only`;
+  public getTooltip(type: 'global' | 'individual', faculty?: Faculty): string {
+    const state = this.getToggleState(faculty || this.allData[0]);
+    return type === 'global' ? state.globalTooltip : state.individualTooltip;
   }
 
   /**
-   * Gets the tooltip text for the "Toggle All" checkbox.
+   * Gets the toggle state for a faculty.
+   * @param faculty - The faculty to check.
+   * @returns The toggle state.
    */
-  getAllToggleTooltip(isEnabled: boolean): string {
-    if (this.hasIndividualDeadlines && !this.isToggleAllChecked) {
-      return `Global preferences toggle is disabled 
-        because individual deadlines are set`;
-    }
-    return `${
-      isEnabled ? 'Disable' : 'Enable'
-    } preferences submission for ALL faculty`;
+  public getToggleState(faculty: Faculty): ToggleState {
+    const isGlobalDisabled =
+      (this.hasIndividualDeadlines &&
+        !this.isToggleAllChecked &&
+        this.isEnabled) ||
+      this.isIndividualStartDateSet;
+
+    const isIndividualDisabled =
+      this.isToggleAllChecked || this.isGlobalStartDateSet;
+
+    const isGloballyScheduled = this.isGloballyScheduled();
+    const isIndividuallyScheduled = this.isIndividuallyScheduled(faculty);
+
+    const globalTooltip =
+      isGloballyScheduled && !this.isToggleAllChecked
+        ? 'Preferences submission is scheduled'
+        : this.hasIndividualDeadlines && !this.isToggleAllChecked
+        ? 'Global preferences toggle is disabled because individual deadlines are set'
+        : `${
+            this.isToggleAllChecked ? 'Disable' : 'Enable'
+          } preferences submission for ALL faculty`;
+
+    const individualTooltip =
+      isIndividuallyScheduled && !faculty.is_enabled
+        ? 'Preferences submission is scheduled'
+        : this.isGlobalStartDateSet
+        ? 'Global submission start date has been set – individual changes disabled'
+        : this.isToggleAllChecked
+        ? 'Global preferences submission is active – individual changes disabled'
+        : `${
+            faculty.is_enabled ? 'Disable' : 'Enable'
+          } preferences submission for ${faculty.facultyName} only`;
+
+    return {
+      isGlobalDisabled,
+      isIndividualDisabled,
+      globalTooltip,
+      individualTooltip,
+    };
   }
 }

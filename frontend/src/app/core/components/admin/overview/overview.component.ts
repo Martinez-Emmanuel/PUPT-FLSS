@@ -10,6 +10,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 import { DialogActionComponent, DialogActionData } from '../../../../shared/dialog-action/dialog-action.component';
+import { DialogTogglePreferencesComponent, DialogTogglePreferencesData } from '../../../../shared/dialog-toggle-preferences/dialog-toggle-preferences.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { OverviewService, OverviewDetails } from '../../../services/admin/overview/overview.service';
@@ -166,7 +167,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
     ? new Date(this.globalStartDate)
     : null;
 
-    const dialogData: DialogActionData = {
+    const dialogData: DialogTogglePreferencesData = {
       type: 'all_preferences',
       academicYear: this.activeYear,
       semester: this.activeSemester,
@@ -176,7 +177,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
       global_start_date: StartDate,
     };
 
-    const dialogRef = this.dialog.open(DialogActionComponent, {
+    const dialogRef = this.dialog.open(DialogTogglePreferencesComponent, {
       data: dialogData,
       disableClose: true,
       autoFocus: false,

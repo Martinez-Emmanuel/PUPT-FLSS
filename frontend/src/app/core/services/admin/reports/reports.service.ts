@@ -88,13 +88,11 @@ export class ReportsService {
    */
   getFacultyScheduleHistory(
     facultyId: number,
-    academicYearId: number,
-    semesterId: number
+    activeSemesterId: number
   ): Observable<any> {
     const url = `${this.baseUrl}/faculty-schedule-history/${facultyId}`;
     const params = {
-      academic_year_id: academicYearId.toString(),
-      semester_id: semesterId.toString(),
+      active_semester_id: activeSemesterId.toString(),
     };
     return this.http.get(url, { params }).pipe(catchError(this.handleError));
   }

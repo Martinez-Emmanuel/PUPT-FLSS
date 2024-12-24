@@ -1,0 +1,142 @@
+@use "../../../styles/mixins";
+
+:host ::ng-deep {
+  .mat-mdc-checkbox .mat-internal-form-field {
+    display: flex;
+    flex-direction: row-reverse;
+  }
+
+  .mat-mdc-form-field:not(.has-hint) {
+    .mat-mdc-form-field-subscript-wrapper {
+      display: none !important;
+    }
+  }
+}
+
+:host {
+  @include mixins.custom-spinner;
+}
+
+.dialog-action-container {
+  @include mixins.flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-lg)
+  );
+  padding: var(--spacing-lg);
+  max-width: var(--dialog-base);
+}
+
+/* Dialog Title */
+.dialog-title {
+  margin: 0;
+  color: var(--primary-text);
+  font-size: var(--font-size-xl);
+  font-weight: 500;
+}
+
+/* Dialog Content */
+.dialog-content {
+  @include mixins.flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-md)
+  );
+
+  .main-text {
+    margin: 0;
+    line-height: var(--line-height-md);
+    text-align: justify;
+
+    .confirm-disable {
+      padding: var(--spacing-xs);
+      border-radius: var(--border-radius-sm);
+      background-color: var(--primary-fade);
+      color: var(--primary-text);
+      font-size: var(--font-size-sm);
+      line-height: var(--line-height-sm);
+    }
+  }
+
+  .checkbox-container {
+    margin: var(--spacing-sm) 0;
+
+    .email-checkbox {
+      width: 100%;
+      background-color: var(--neutral-light);
+      border-radius: var(--spacing-xs);
+      padding: var(--spacing-xxxs);
+
+      .checkbox-content {
+        @include mixins.flex-layout($gap: var(--spacing-xs));
+        font-size: var(--font-size-md);
+
+        span[mat-symbol] {
+          @include mixins.flex-layout;
+          font-size: var(--font-size-lg);
+          padding-left: var(--spacing-xxs);
+        }
+      }
+    }
+
+    &.email {
+      @include mixins.flex-layout($gap: var(--spacing-xs));
+    }
+  }
+}
+
+/* Dialog Buttons */
+.dialog-buttons {
+  @include mixins.flex-layout(
+    $align: stretch,
+    $justify: flex-end,
+    $gap: var(--spacing-sm)
+  );
+  padding-bottom: var(--spacing-xxs);
+
+  .action-button {
+    @include mixins.gradient-primary(315deg);
+  }
+
+  .disabled-button {
+    opacity: var(--opacity-semi-opaque);
+    color: var(--neutral-base) !important;
+    background: var(--neutral-fade) !important;
+  }
+
+  .close {
+    color: var(--primary-text);
+  }
+}
+
+.date-picker {
+  width: 100%;
+
+  mat-form-field {
+    width: 100%;
+  }
+}
+
+.scheduled-preferences {
+  text-align: center;
+
+  .scheduled-pref-icon {
+    @include mixins.flex-layout($direction: column, $gap: var(--spacing-xs));
+    margin-bottom: var(--spacing-sm);
+
+    svg {
+      width: 70%;
+    }
+
+    span[mat-symbol] {
+      font-size: var(--font-size-4xl);
+      @include mixins.gradient-primary-text(315deg);
+    }
+  }
+
+  .scheduled-pref-text {
+    line-height: var(--line-height-md);
+  }
+}

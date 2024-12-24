@@ -37,21 +37,21 @@ import {
 import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
 
 @Component({
-    selector: 'app-scheduling',
-    imports: [
-        CommonModule,
-        TableHeaderComponent,
-        LoadingComponent,
-        MatTableModule,
-        MatButtonModule,
-        MatIconModule,
-        MatTooltipModule,
-        MatProgressSpinnerModule,
-        MatSymbolDirective,
-    ],
-    templateUrl: './scheduling.component.html',
-    styleUrls: ['./scheduling.component.scss'],
-    animations: [fadeAnimation, pageFloatUpAnimation]
+  selector: 'app-scheduling',
+  imports: [
+    CommonModule,
+    TableHeaderComponent,
+    LoadingComponent,
+    MatTableModule,
+    MatButtonModule,
+    MatIconModule,
+    MatTooltipModule,
+    MatProgressSpinnerModule,
+    MatSymbolDirective,
+  ],
+  templateUrl: './scheduling.component.html',
+  styleUrls: ['./scheduling.component.scss'],
+  animations: [fadeAnimation, pageFloatUpAnimation],
 })
 export class SchedulingComponent implements OnInit, OnDestroy {
   schedules: Schedule[] = [];
@@ -175,7 +175,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         this.activeSemester = activeSemester;
         this.startDate = startDate;
         this.endDate = endDate;
-        console.log('Active Semester Set:', this.activeSemester);
       }),
       map(() => void 0),
       catchError((error) => {
@@ -303,7 +302,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     );
 
     if (!selectedProgram) {
-      console.log('No program found.');
       this.schedules = [];
       return;
     }
@@ -331,7 +329,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     );
 
     if (!selectedYearLevelObj) {
-      console.log('No year level found.');
       this.schedules = [];
       return;
     }
@@ -359,7 +356,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     );
 
     if (!selectedSection) {
-      console.log('No section found.');
       this.schedules = [];
       return;
     }
@@ -381,21 +377,12 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     yearLevel: number,
     sectionId: number
   ): Observable<Schedule[]> {
-    console.log(
-      `Fetching courses for Program ID: ${programId}, 
-      Year Level: ${yearLevel},
-      Section ID: ${sectionId}`
-    );
-
     return this.schedulingService.populateSchedules().pipe(
       tap((response: PopulateSchedulesResponse) => {
-        console.log('Response', response);
-
         const program = response.programs.find(
           (p) => p.program_id === programId
         );
         if (!program) {
-          console.error('Program not found');
           this.schedules = [];
           return;
         }
@@ -404,7 +391,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           (yl) => yl.year_level === yearLevel
         );
         if (!yearLevelData) {
-          console.error('Year level not found');
           this.schedules = [];
           return;
         }
@@ -413,7 +399,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           (s) => s.semester === response.semester_id
         );
         if (!semesterData) {
-          console.error('Semester not found');
           this.schedules = [];
           return;
         }
@@ -422,7 +407,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           (s) => s.section_per_program_year_id === sectionId
         );
         if (!sectionData) {
-          console.error('Section not found');
           this.schedules = [];
           return;
         }
@@ -472,7 +456,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         });
 
         this.cdr.detectChanges();
-        console.log('Final Schedules:', this.schedules);
       }),
       map(() => this.schedules),
       catchError((error) => {
@@ -505,7 +488,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         tap((academicYears: AcademicYear[]) => {
           if (!academicYears.length) {
-            console.error('No academic years available');
             return;
           }
 
@@ -555,8 +537,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
               initialValue: {
                 academicYear: this.activeYear || academicYearOptions[0] || '',
                 semester: this.activeSemesterLabel || semesterOptions[0] || '',
-                startDate: this.startDate || null,
-                endDate: this.endDate || null,
+                startDate: this.startDate ? new Date(this.startDate) : null,
+                endDate: this.endDate ? new Date(this.endDate) : null,
               },
             },
             disableClose: true,
@@ -659,6 +641,8 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                         switchMap((activeYearData) => {
                           this.activeYear = result.academicYear;
                           this.activeSemester = selectedSemesterObj.semester_id;
+                          this.startDate = activeYearData.startDate;
+                          this.endDate = activeYearData.endDate;
                           return this.schedulingService.getActiveYearLevelsCurricula();
                         }),
                         tap((programsData) => {
@@ -761,8 +745,14 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         const program = this.programOptions.find(
           (p) => p.display === this.selectedProgram
         );
-        const selectedProgramInfo = `${schedule.program_code} ${schedule.year}-${schedule.section}`;
+
+        const selectedProgramInfo = `${schedule?.program_code} ${this.selectedYear}-${this.selectedSection}`;
         const selectedCourseInfo = `${schedule.course_code} - ${schedule.course_title}`;
+        const section = this.sectionOptions.find(
+          (s) => s.section_name === schedule.section
+        );
+
+        const sectionId = section ? section.section_id : null;
 
         // =======================
         // Updated SuggestedFaculty
@@ -787,9 +777,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
             (f) => f.faculty_id === pref.faculty_id
           );
           if (!facultyDetails) {
-            console.warn(
-              `Faculty details not found for faculty_id: ${pref.faculty_id}`
-            );
             return;
           }
 
@@ -828,20 +815,32 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           width: '100%',
           disableClose: true,
           data: {
-            selectedProgramId: program?.id,
-            year_level: this.selectedYear,
-            section_id: this.selectedSection,
-            dayOptions: this.dayOptions,
-            timeOptions: this.timeOptions,
-            endTimeOptions: this.timeOptions,
-            professorOptions: professorOptions,
-            roomOptions: roomOptions,
+            program: {
+              id: program?.id || 0,
+              info: selectedProgramInfo,
+            },
+            academic: {
+              year_level: this.selectedYear,
+              section_id: sectionId || 0,
+            },
+            options: {
+              dayOptions: this.dayOptions,
+              timeOptions: this.timeOptions,
+              endTimeOptions: this.timeOptions,
+              professorOptions: professorOptions,
+              roomOptions: roomOptions,
+            },
             facultyOptions: faculty.faculty,
             roomOptionsList: availableRooms,
             selectedProgramInfo: selectedProgramInfo,
             selectedCourseInfo: selectedCourseInfo,
             suggestedFaculty: suggestedFaculty,
-            existingSchedule: schedule,
+            existingSchedule: {
+              day: schedule.day,
+              time: schedule.time,
+              professor: schedule.professor,
+              room: schedule.room,
+            },
             schedule_id: schedule.schedule_id,
             course_id: schedule.course_id,
           },
@@ -981,7 +980,6 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
   private handleError(message: string) {
     return (error: any): void => {
-      console.error(`${message}:`, error);
       this.snackBar.open(`${message}. Please try again.`, 'Close', {
         duration: 3000,
       });

@@ -49,6 +49,7 @@
   --spacing-2xl: 2.5rem;
   --spacing-3xl: 3rem;
   --spacing-4xl: 4rem;
+  --spacing-4xxl: 4.5rem;
 
   // Border Radius
   --border-radius-base: 0.25rem;
@@ -323,6 +324,11 @@ span[mat-symbol] {
 }
 
 [mat-flat-button] {
+  color: white !important;
+}
+
+.mat-pseudo-checkbox-full.mat-pseudo-checkbox-checked::after,
+.mat-pseudo-checkbox-full.mat-pseudo-checkbox-indeterminate::after {
   color: white !important;
 }
 

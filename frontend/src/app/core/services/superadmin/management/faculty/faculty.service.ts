@@ -8,7 +8,10 @@ import { environment } from '../../../../../../environments/environment.dev';
 
 export interface User {
   id: string;
-  name: string;
+  last_name: string;
+  first_name: string;
+  middle_name: string;
+  suffix_name: string;
   code: string;
   role: string;
   email: string;
@@ -21,6 +24,10 @@ export interface User {
 
 export interface Faculty {
   id: string;
+  last_name: string;
+  first_name: string;
+  middle_name: string;
+  suffix_name: string;
   name: string;
   code: string;
   email: string;
@@ -50,7 +57,13 @@ export class FacultyService {
           .filter((user) => user.role === 'faculty')
           .map((user) => ({
             id: user.id.toString(),
-            name: user.name,
+            last_name: user.last_name,
+            first_name: user.first_name,
+            middle_name: user.middle_name,
+            suffix_name: user.suffix_name,
+            name: `${user.last_name}, ${user.first_name}${
+              user.middle_name ? ' ' + user.middle_name : ''
+            }${user.suffix_name ? ' ' + user.suffix_name : ''}`,
             code: user.code,
             email: user.email || '',
             faculty_type: user.faculty?.faculty_type || '',
@@ -70,8 +83,14 @@ export class FacultyService {
     return this.http.post<Faculty>(`${this.baseUrl}/addAccount`, faculty);
   }
 
-  updateFaculty(id: string, faculty: Omit<Faculty, 'code'>): Observable<Faculty> {
-    return this.http.put<Faculty>(`${this.baseUrl}/updateAccount/${id}`, faculty);
+  updateFaculty(
+    id: string,
+    faculty: Omit<Faculty, 'code'>
+  ): Observable<Faculty> {
+    return this.http.put<Faculty>(
+      `${this.baseUrl}/updateAccount/${id}`,
+      faculty
+    );
   }
 
   deleteFaculty(id: string): Observable<void> {

@@ -108,7 +108,7 @@ export const cardSwipeAnimation = trigger('cardSwipeAnimation', [
       filter: 'blur(4px)',
     }),
     animate(
-      '600ms cubic-bezier(0.23, 1, 0.32, 1)',
+      '500ms cubic-bezier(0.23, 1, 0.32, 1)',
       style({
         transform: 'translateX(0) translateY(0) scale(1)',
         opacity: 1,
@@ -125,7 +125,7 @@ export const cardSwipeAnimation = trigger('cardSwipeAnimation', [
       filter: 'blur(4px)',
     }),
     animate(
-      '600ms cubic-bezier(0.23, 1, 0.32, 1)',
+      '500ms cubic-bezier(0.23, 1, 0.32, 1)',
       style({
         transform: 'translateX(0) translateY(0) scale(1)',
         opacity: 1,

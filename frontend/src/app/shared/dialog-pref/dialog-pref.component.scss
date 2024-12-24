@@ -64,6 +64,7 @@
       .custom-cell {
         padding: var(--spacing-xs);
         text-align: center;
+        white-space: pre-line;
       }
 
       .no-data-cell {

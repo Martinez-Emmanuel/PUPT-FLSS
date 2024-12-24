@@ -1,4 +1,9 @@
 <div class="curriculum-detail-container">
+  @if (isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
   <!-- Table Header -->
   <div class="curriculum-header-container" [@fadeAnimation]>
     <app-table-header
@@ -7,45 +12,35 @@
       [addIconName]="'apps'"
       [showExportDialog]="true"
       [customExportOptions]="customExportOptions"
+      [isLoading]="isManagingPrograms"
       (inputChange)="onInputChange($event)"
-      (export)="onExport($event)" 
+      (export)="onExport($event)"
       (add)="onManagePrograms()"
       [selectedValues]="{ program: selectedProgram, yearLevel: selectedYear }"
     ></app-table-header>
   </div>
 
-  @if (showPreview) {
-    <div class="pdf-preview-container">
-      <button mat-button (click)="cancelPreview()">Cancel Preview</button>
-      <iframe id="pdfPreview" width="100%" height="600px"></iframe>
-    </div>
-  }
-
-  @if (isLoading) {
-    <div class="loading-wrapper">
-      <app-loading></app-loading>
-    </div>
-  } @else {
-    <div class="curriculum-semesters-container">
-      <div class="scrollable-content">
-        @for (semester of selectedSemesters; track semester.semester; let i = $index) {
-          <div class="semester-container" [@pageFloatUpAnimation]>
-            <app-table-generic
-              [columns]="columns"
-              [data]="semester.courses"
-              [tableName]="'course/s'"
-              [displayedColumns]="displayedColumns"
-              [showTableHeading]="true"
-              [tableHeadingTitle]="getSemesterDisplay(semester.semester)"
-              [tableHeadingButtonText]="'Add Course'"
-              [tableHeadingButtonIcon]="'add'"
-              (tableHeadingButtonClick)="onAddCourse(semester)"
-              (edit)="onEditCourse($event,semester)"
-              (delete)="onDeleteCourse($event)"
-            ></app-table-generic>
-          </div>
-        }
+  <div class="curriculum-semesters-container">
+    <div class="scrollable-content">
+      @for (semester of selectedSemesters; track semester.semester; let i =
+      $index) {
+      <div class="semester-container" [@pageFloatUpAnimation]>
+        <app-table-generic
+          [columns]="columns"
+          [data]="semester.courses"
+          [tableName]="'course/s'"
+          [displayedColumns]="displayedColumns"
+          [showTableHeading]="true"
+          [tableHeadingTitle]="getSemesterDisplay(semester.semester)"
+          [tableHeadingButtonText]="'Add Course'"
+          [tableHeadingButtonIcon]="'add'"
+          (tableHeadingButtonClick)="onAddCourse(semester)"
+          (edit)="onEditCourse($event, semester)"
+          (delete)="onDeleteCourse($event)"
+        ></app-table-generic>
       </div>
+      }
     </div>
+  </div>
   }
 </div>

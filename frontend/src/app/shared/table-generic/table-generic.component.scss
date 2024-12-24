@@ -2,7 +2,7 @@
 
 .table-heading {
   @include mixins.flex-layout($align: center, $justify: space-between);
-  margin-bottom: 1rem;
+  margin: var(--spacing-xxs) 0;
 
   .heading-title {
     color: var(--primary-one);

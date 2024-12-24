@@ -4,65 +4,9 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject, throwError } from 'rxjs';
 import { map, shareReplay, tap, take, catchError } from 'rxjs/operators';
 
+import { PreferredDay, Program, AssignedCoursesResponse } from '../../../../core/models/preferences.model';
+
 import { environment } from '../../../../../environments/environment.dev';
-
-export interface PreferredDay {
-  day: string;
-  start_time: string;
-  end_time: string;
-}
-
-export interface Course {
-  course_assignment_id: number;
-  course_id: number;
-  course_code: string;
-  pre_req: string;
-  co_req: string;
-  course_title: string;
-  lec_hours: number;
-  lab_hours: number;
-  units: number;
-  tuition_hours: number;
-  preferred_days?: PreferredDay[];
-}
-export interface ActiveSemester {
-  active_semester_id: number;
-  academic_year_id: number;
-  academic_year: string;
-  semester_id: number;
-  semester_label: string;
-  courses: Course[];
-  global_deadline?: Date | null;
-  individual_deadline?: Date | null;
-  global_start_date?: Date | null;
-  individual_start_date?: Date | null;
-}
-
-export interface SemesterDetails {
-  semester: number;
-  courses: Course[];
-}
-
-export interface YearLevel {
-  year_level: number;
-  curriculum_id: number;
-  curriculum_year: string;
-  semester: SemesterDetails;
-}
-
-export interface Program {
-  program_id: number;
-  program_code: string;
-  program_title: string;
-  year_levels: YearLevel[];
-}
-
-export interface AssignedCoursesResponse {
-  active_semester_id: number;
-  academic_year_id: number;
-  semester_id: number;
-  programs: Program[];
-}
 
 @Injectable({
   providedIn: 'root',
@@ -210,44 +154,21 @@ export class PreferencesService {
   }
 
   /**
-   * Deletes all preferences for a specific faculty and active semester,
-   * then clears the cache upon success.
-   */
-  deleteAllPreferences(
-    facultyId: string,
-    activeSemesterId: number
-  ): Observable<any> {
-    const params = new HttpParams()
-      .set('faculty_id', facultyId)
-      .set('active_semester_id', activeSemesterId.toString());
-
-    const url = `${this.baseUrl}/delete-all-preferences`;
-    return this.http.delete(url, { params }).pipe(
-      tap(() => this.clearCaches(facultyId)),
-      catchError((error) => {
-        console.error(
-          `Error deleting all preferences for faculty ID ${facultyId}:`,
-          error
-        );
-        return throwError(() => error);
-      })
-    );
-  }
-
-  /**
    * Toggles the preferences status for all faculty members and
    * refreshes preferences cache upon success.
    */
   toggleAllPreferences(
     status: boolean,
     deadline: string | null,
-    startDate: string | null
+    startDate: string | null,
+    sendEmail: boolean
   ): Observable<any> {
     return this.http
       .post(`${this.baseUrl}/toggle-all-preferences`, {
         status,
         global_deadline: deadline,
         global_start_date: startDate,
+        send_email: sendEmail,
       })
       .pipe(
         tap(() => {
@@ -261,30 +182,15 @@ export class PreferencesService {
   }
 
   /**
-   * Sends an email to all faculty members to submit their preferences.
-   */
-  sendPreferencesEmailToAll(): Observable<any> {
-    const url = `${this.baseUrl}/email-all-faculty-preferences`;
-    return this.http.post(url, {}).pipe(
-      tap(() => {
-        console.log('Preference-related email sent to all faculty.');
-      }),
-      catchError((error) => {
-        console.error('Error sending email to all faculty:', error);
-        return throwError(() => error);
-      })
-    );
-  }
-
-  /**
    * Toggles the preference status for a specific faculty member
-   * and refreshes preferences cache upon success..
+   * and refreshes preferences cache upon success.
    */
   toggleSingleFacultyPreferences(
     faculty_id: number,
     status: boolean,
     individual_deadline: string | null,
-    individual_start_date: string | null
+    individual_start_date: string | null,
+    sendEmail: boolean
   ): Observable<any> {
     return this.http
       .post(`${this.baseUrl}/toggle-single-preferences`, {
@@ -292,6 +198,7 @@ export class PreferencesService {
         status,
         individual_deadline,
         individual_start_date,
+        send_email: sendEmail,
       })
       .pipe(
         tap(() => {
@@ -305,27 +212,6 @@ export class PreferencesService {
           return throwError(() => error);
         })
       );
-  }
-
-  /**
-   * Sends an email to a specific faculty member to submit their preferences.
-   */
-  sendPreferencesEmailToFaculty(faculty_id: number): Observable<any> {
-    const url = `${this.baseUrl}/email-single-faculty-preferences`;
-    return this.http.post(url, { faculty_id }).pipe(
-      tap(() => {
-        console.log(
-          `Preference-related email sent to faculty ID ${faculty_id}.`
-        );
-      }),
-      catchError((error) => {
-        console.error(
-          `Error sending email to faculty ID ${faculty_id}:`,
-          error
-        );
-        return throwError(() => error);
-      })
-    );
   }
 
   /**

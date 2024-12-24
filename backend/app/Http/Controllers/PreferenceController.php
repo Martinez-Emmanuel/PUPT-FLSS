@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendFacultyPreferenceEmailJob;
 use App\Models\ActiveSemester;
 use App\Models\Faculty;
 use App\Models\FacultyNotification;
@@ -11,6 +12,7 @@ use App\Models\PreferencesSetting;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class PreferenceController extends Controller
 {
@@ -241,10 +243,13 @@ class PreferenceController extends Controller
                             ];
                         })->values()->toArray();
 
-                    // Fetch all courses with the same course code that are active
+                    // Fetch all courses with the same course code OR course title that are active
                     $relatedCourses = DB::table('courses')
                         ->join('course_assignments', 'courses.course_id', '=', 'course_assignments.course_id')
-                        ->where('courses.course_code', $preference->course_code)
+                        ->where(function ($query) use ($preference) {
+                            $query->where('courses.course_code', $preference->course_code)
+                                ->orWhere('courses.course_title', $preference->course_title);
+                        })
                         ->whereIn('course_assignments.curricula_program_id', function ($query) {
                             $query->select('curricula_program_id')
                                 ->from('curricula_program')
@@ -490,18 +495,21 @@ class PreferenceController extends Controller
         // Step 1: Validate the input
         $validated = $request->validate([
             'status' => 'required|boolean',
-            'global_deadline' => 'nullable|date|after:today',
+            'global_deadline' => 'nullable|date',
             'global_start_date' => 'nullable|date',
+            'send_email' => 'required|boolean',
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $sendEmail = $validated['send_email'];
+
+        DB::transaction(function () use ($validated, $sendEmail) {
             $status = $validated['status'];
-            $global_deadline = $status ? $validated['global_deadline'] : null;
-            $global_start_date = $status ? $validated['global_start_date'] : null;
+            $global_deadline = $status && $validated['global_deadline'] ? Carbon::parse($validated['global_deadline'])->endOfDay() : null;
+            $global_start_date = $status && $validated['global_start_date'] ? Carbon::parse($validated['global_start_date'])->startOfDay() : null;
 
             // Current date and start date
             $currentDate = Carbon::now();
-            $startDate = $global_start_date ? Carbon::parse($global_start_date) : null;
+            $startDate = $global_start_date;
 
             // Determine final status
             $finalStatus = false;
@@ -553,6 +561,27 @@ class PreferenceController extends Controller
             })->toArray();
 
             FacultyNotification::insert($notifications);
+
+            // Dispatch email jobs if sendEmail is true
+            if ($sendEmail) {
+                $faculties = Faculty::all();
+                foreach ($faculties as $faculty) {
+                    // Only send email immediately if preferences are enabled now
+                    if ($finalStatus) {
+                        SendFacultyPreferenceEmailJob::dispatch($faculty->id);
+                    } else if ($startDate) {
+                        // Schedule the email to be sent on the start date
+                        SendFacultyPreferenceEmailJob::dispatch($faculty->id)->delay($startDate);
+                    }
+                }
+            }
+
+            Log::info('Global Deadline (before email):', [
+                'deadline' => $global_deadline,
+                'days_left' => $startDate && $global_deadline
+                ? $startDate->diffInDays($global_deadline)
+                : 'Start date or deadline not set',
+            ]);
         });
 
         return response()->json([
@@ -573,19 +602,21 @@ class PreferenceController extends Controller
         $validated = $request->validate([
             'faculty_id' => 'required|integer|exists:faculty,id',
             'status' => 'required|boolean',
-            'individual_deadline' => 'nullable|date|after:today',
+            'individual_deadline' => 'nullable|date',
             'individual_start_date' => 'nullable|date',
+            'send_email' => 'required|boolean',
         ]);
 
-        DB::transaction(function () use ($validated) {
-            $faculty_id = $validated['faculty_id'];
-            $status = $validated['status'];
-            $individual_deadline = $status ? $validated['individual_deadline'] : null;
-            $individual_start_date = $status ? $validated['individual_start_date'] : null;
+        $faculty_id = $validated['faculty_id'];
+        $status = $validated['status'];
+        $individual_deadline = $status && $validated['individual_deadline'] ? Carbon::parse($validated['individual_deadline'])->endOfDay() : null;
+        $individual_start_date = $status && $validated['individual_start_date'] ? Carbon::parse($validated['individual_start_date'])->startOfDay() : null;
+        $sendEmail = $validated['send_email'];
 
+        DB::transaction(function () use ($validated, $faculty_id, $status, $individual_deadline, $individual_start_date, $sendEmail) {
             // Current date and start date
             $currentDate = Carbon::now();
-            $startDate = $individual_start_date ? Carbon::parse($individual_start_date) : null;
+            $startDate = $individual_start_date;
 
             // Determine final status
             $finalStatus = false;
@@ -627,6 +658,25 @@ class PreferenceController extends Controller
                 'message' => $message,
                 'is_read' => 0,
             ]);
+
+            // Dispatch email job if sendEmail is true
+            if ($sendEmail) {
+                $faculty = Faculty::find($faculty_id);
+                if ($faculty) {
+                    if ($finalStatus) {
+                        SendFacultyPreferenceEmailJob::dispatch($faculty_id, true);
+                    } else if ($startDate) {
+                        SendFacultyPreferenceEmailJob::dispatch($faculty_id, true)->delay($startDate);
+                    }
+                }
+            }
+
+            Log::info('Individual Deadline (before email):', [
+                'deadline' => $individual_deadline,
+                'days_left' => $startDate && $individual_deadline
+                ? $startDate->diffInDays($individual_deadline)
+                : 'Start date or deadline not set',
+            ]);
         });
 
         return response()->json([
@@ -635,7 +685,7 @@ class PreferenceController extends Controller
             'is_enabled' => $validated['status'],
             'individual_deadline' => $validated['individual_deadline'],
             'individual_start_date' => $validated['individual_start_date'],
-            'updated_preference' => PreferencesSetting::find($validated['faculty_id']),
+            'updated_preference' => PreferencesSetting::where('faculty_id', $validated['faculty_id'])->first(),
         ], 200);
     }
 

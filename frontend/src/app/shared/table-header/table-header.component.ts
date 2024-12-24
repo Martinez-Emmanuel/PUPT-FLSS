@@ -11,6 +11,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDialog } from '@angular/material/dialog';
 import { MatRippleModule } from '@angular/material/core';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { TableDialogComponent } from '../../shared/table-dialog/table-dialog.component';
 
@@ -33,7 +34,8 @@ export interface InputField {
     MatRippleModule,
     ReactiveFormsModule,
     MatSelectModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './table-header.component.html',
   styleUrls: ['./table-header.component.scss'],
@@ -54,6 +56,7 @@ export class TableHeaderComponent implements OnInit, OnChanges {
   @Input() activeYear = '';
   @Input() activeSemester = '';
   @Input() tooltipMessage = '';
+  @Input() isLoading: boolean = false;
 
   @Output() add = new EventEmitter<void>();
   @Output() inputChange = new EventEmitter<{ [key: string]: any }>();
@@ -90,6 +93,10 @@ export class TableHeaderComponent implements OnInit, OnChanges {
 
     this.form.valueChanges.subscribe((value) => {
       this.inputChange.emit(value);
+
+      if (value['academicYear'] === '__add__') {
+        this.addAcademicYear.emit();
+      }
     });
   }
 
@@ -129,27 +136,26 @@ export class TableHeaderComponent implements OnInit, OnChanges {
     this.form.get(key)?.setValue('');
     this.inputChange.emit(this.form.value);
   }
-  
+
   trackByOptionKey(index: number, option: any): string {
     return `${option.key}-${index}`;
   }
 
   trackByField(index: number, field: any): string {
-    return field.key;  // Use a unique identifier (e.g., field.key)
+    return field.key; // Use a unique identifier (e.g., field.key)
   }
-  
+
   trackByOption(index: number, option: string): string {
-    return option;  // If options are simple strings, use the string itself
+    return option; // If options are simple strings, use the string itself
   }
-  
+
   trackByKey(index: number, item: any): any {
     // If the item is an object with a key, return the key
     if (item && typeof item === 'object' && 'key' in item) {
       return item.key;
     }
-    
+
     // If the item is a primitive, return the item itself
     return item;
   }
-
 }

@@ -27,7 +27,10 @@ class AccountController extends Controller
         try {
             // Validate the incoming request
             $validatedData = $request->validate([
-                'name' => 'required|string|max:255',
+                'last_name' => 'required|string|max:255',
+                'first_name' => 'required|string|max:255',
+                'middle_name' => 'nullable|string|max:255',
+                'suffix_name' => 'nullable|string|max:255',
                 'code' => 'required|string|max:255|unique:users',
                 'email' => 'required|email|unique:users',
                 'role' => 'required|in:super_admin,admin,faculty',
@@ -39,7 +42,10 @@ class AccountController extends Controller
 
             // Create the user record without bcrypt
             $user = User::create([
-                'name' => $validatedData['name'],
+                'last_name' => $validatedData['last_name'],
+                'first_name' => $validatedData['first_name'],
+                'middle_name' => $validatedData['middle_name'],
+                'suffix_name' => $validatedData['suffix_name'],
                 'code' => $validatedData['code'],
                 'email' => $validatedData['email'],
                 'role' => $validatedData['role'],
@@ -88,7 +94,10 @@ class AccountController extends Controller
     public function update(Request $request, User $user)
     {
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'suffix_name' => 'nullable|string|max:255',
             'email' => 'required|email|unique:users,email,' . $user->id,
             'role' => 'required|in:super_admin,admin,faculty',
             'faculty_type' => 'required_if:role,faculty',
@@ -99,7 +108,10 @@ class AccountController extends Controller
 
         // Update user details
         $user->update([
-            'name' => $validatedData['name'],
+            'last_name' => $validatedData['last_name'],
+            'first_name' => $validatedData['first_name'],
+            'middle_name' => $validatedData['middle_name'],
+            'suffix_name' => $validatedData['suffix_name'],
             'email' => $validatedData['email'],
             'role' => $validatedData['role'],
             'status' => $validatedData['status'],
@@ -151,7 +163,10 @@ class AccountController extends Controller
     {
         // Validate the incoming request
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
+            'last_name' => 'required|string|max:255',
+            'first_name' => 'required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'suffix_name' => 'nullable|string|max:255',
             'code' => 'required|string|max:255|unique:users',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:8',
@@ -161,7 +176,10 @@ class AccountController extends Controller
 
         // Create the user with the role provided in the request
         $admin = User::create([
-            'name' => $validatedData['name'],
+            'last_name' => $validatedData['last_name'],
+            'first_name' => $validatedData['first_name'],
+            'middle_name' => $validatedData['middle_name'],
+            'suffix_name' => $validatedData['suffix_name'],
             'code' => $validatedData['code'],
             'email' => $validatedData['email'],
             'role' => $validatedData['role'], // Role comes from the request
@@ -176,7 +194,10 @@ class AccountController extends Controller
     {
         // Validate the incoming request
         $validatedData = $request->validate([
-            'name' => 'sometimes|required|string|max:255',
+            'last_name' => 'sometimes|required|string|max:255',
+            'first_name' => 'sometimes|required|string|max:255',
+            'middle_name' => 'nullable|string|max:255',
+            'suffix_name' => 'nullable|string|max:255',
             'code' => 'sometimes|required|string|max:255|unique:users,code,' . $admin->id,
             'email' => 'sometimes|required|email|unique:users,email,' . $admin->id,
             'password' => 'sometimes|string|min:8',
@@ -188,9 +209,24 @@ class AccountController extends Controller
         $changedFields = [];
 
         // Check each field for changes and update if necessary
-        if (isset($validatedData['name'])) {
-            $admin->name = $validatedData['name'];
-            $changedFields[] = 'name';
+        if (isset($validatedData['last_name']) && $admin->last_name != $validatedData['last_name']) {
+            $admin->last_name = $validatedData['last_name'];
+            $changedFields[] = 'last_name';
+        }
+
+        if (isset($validatedData['first_name']) && $admin->first_name != $validatedData['first_name']) {
+            $admin->first_name = $validatedData['first_name'];
+            $changedFields[] = 'first_name';
+        }
+
+        if (isset($validatedData['middle_name']) && $admin->middle_name != $validatedData['middle_name']) {
+            $admin->middle_name = $validatedData['middle_name'];
+            $changedFields[] = 'middle_name';
+        }
+
+        if (isset($validatedData['suffix_name']) && $admin->suffix_name != $validatedData['suffix_name']) {
+            $admin->suffix_name = $validatedData['suffix_name'];
+            $changedFields[] = 'suffix_name';
         }
 
         if (isset($validatedData['code']) && $admin->code != $validatedData['code']) {
@@ -243,5 +279,4 @@ class AccountController extends Controller
 
         return response()->json(null, 204);
     }
-
 }

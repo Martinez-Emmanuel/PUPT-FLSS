@@ -13,30 +13,30 @@ class CheckPreferencesDeadline extends Command
 
     public function handle()
     {
-        $today = Carbon::now()->format('Y-m-d');
+        $today = Carbon::now('Asia/Manila');
 
-        // Enable preferences and clear the global start dates
+        // Enable preferences IF NOT ALREADY ENABLED and it's past the global start date
         PreferencesSetting::query()
             ->where('is_enabled', false)
-            ->where('global_start_date', '<=', $today)
+            ->whereDate('global_start_date', '<=', $today->copy()->startOfDay())
+            ->whereNotNull('global_start_date') // Add this condition
             ->update([
                 'is_enabled' => true,
-                'global_start_date' => null,
             ]);
 
-        // Enable preferences and clear individual start dates
+        // Enable preferences IF NOT ALREADY ENABLED and it's past the individual start date
         PreferencesSetting::query()
             ->where('is_enabled', false)
-            ->where('individual_start_date', '<=', $today)
+            ->whereDate('individual_start_date', '<=', $today->copy()->startOfDay())
+            ->whereNotNull('individual_start_date') // Add this condition
             ->update([
                 'is_enabled' => true,
-                'individual_start_date' => null,
             ]);
 
         // Disable preferences and clear the global deadlines
         PreferencesSetting::query()
             ->where('is_enabled', true)
-            ->where('global_deadline', '<', $today)
+            ->whereDate('global_deadline', '<', $today)
             ->update([
                 'is_enabled' => false,
                 'global_deadline' => null,
@@ -45,7 +45,7 @@ class CheckPreferencesDeadline extends Command
         // Disable preferences and clear individual deadlines
         PreferencesSetting::query()
             ->where('is_enabled', true)
-            ->where('individual_deadline', '<', $today)
+            ->whereDate('individual_deadline', '<', $today)
             ->update([
                 'is_enabled' => false,
                 'individual_deadline' => null,

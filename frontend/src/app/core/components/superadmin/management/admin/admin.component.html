@@ -11,7 +11,7 @@
       [searchLabel]="'Search Admins'"
       [addButtonLabel]="'Add Admin'"
       [inputFields]="headerInputFields"
-      (search)="onSearch($event)"
+      (inputChange)="onInputChange($event)"
       (add)="openAddAdminDialog()"
     ></app-table-header>
   </div>

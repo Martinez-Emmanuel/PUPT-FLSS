@@ -20,7 +20,9 @@ class ExternalController extends Controller
                 'academic_years.year_end',
                 'semesters.semester',
                 'active_semesters.academic_year_id',
-                'active_semesters.active_semester_id'
+                'active_semesters.active_semester_id',
+                'active_semesters.start_date',
+                'active_semesters.end_date'
             )
             ->first();
 
@@ -155,6 +157,8 @@ class ExternalController extends Controller
                 'academic_year_start' => $activeSemester->year_start,
                 'academic_year_end' => $activeSemester->year_end,
                 'semester' => $activeSemester->semester,
+                'start_date' => $activeSemester->start_date,
+                'end_date' => $activeSemester->end_date,
                 'faculties' => array_values($faculties),
             ],
         ]);

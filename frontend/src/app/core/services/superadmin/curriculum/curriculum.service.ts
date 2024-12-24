@@ -1,25 +1,24 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import {BehaviorSubject, Observable, of, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { environment } from '../../../../../environments/environment.dev';
-
 
 export interface Course {
   course_id: number;
   course_code: string;
-  prerequisites?: CourseRequirement[]; 
-  corequisites?: CourseRequirement[];  
+  prerequisites?: CourseRequirement[];
+  corequisites?: CourseRequirement[];
   course_title: string;
   lec_hours: number;
   lab_hours: number;
   units: number;
   tuition_hours: number;
   semester_id?: number;
-  pre_req?: string[] | string; //updated to handle array 
-  co_req?: string[] | string;  
+  pre_req?: string[] | string;
+  co_req?: string[] | string;
 }
 
-export interface CourseRequirement { 
+export interface CourseRequirement {
   course_id: number;
   course_code: string;
   course_title: string;
@@ -71,38 +70,48 @@ export class CurriculumService {
 
   // Fetch all details based on curriculum year
   getCurriculumByYear(curriculumYear: string): Observable<Curriculum> {
-    return this.http.get<Curriculum>(`${this.baseUrl}/curricula-details/${curriculumYear}`);
+    return this.http.get<Curriculum>(
+      `${this.baseUrl}/curricula-details/${curriculumYear}`
+    );
   }
 
-  // For Programs 
+  // For Programs
 
   // Fetch all programs associated to the Curriculum Year
   getProgramsByCurriculumYear(curriculumYear: string): Observable<Program[]> {
-    return this.http.get<Program[]>(`${this.baseUrl}/programs-by-curriculum-year/${curriculumYear}`);
+    return this.http.get<Program[]>(
+      `${this.baseUrl}/programs-by-curriculum-year/${curriculumYear}`
+    );
   }
-  
+
   // Fetch all programs
   getAllPrograms(): Observable<Program[]> {
-    return this.http.get<Program[]>(`${this.baseUrl}/programs`); 
+    return this.http.get<Program[]>(`${this.baseUrl}/programs`);
   }
-  
+
   // Add the program to specific Curriculum year
-  addProgramToCurriculum(curriculumYear: string, programId: number): Observable<any> {
+  addProgramToCurriculum(
+    curriculumYear: string,
+    programId: number
+  ): Observable<any> {
     return this.http.post(`${this.baseUrl}/addProgramToCurriculum`, {
       curriculum_year: curriculumYear,
-      program_id: programId
+      program_id: programId,
     });
   }
 
   // Delete a program in specific curriculum year
-  removeProgramFromCurriculum(curriculumYear: string, programId: number): Observable<any> {
+  removeProgramFromCurriculum(
+    curriculumYear: string,
+    programId: number
+  ): Observable<any> {
     return this.http.post(`${this.baseUrl}/removeProgramFromCurriculum`, {
       curriculum_year: curriculumYear,
-      program_id: programId
+      program_id: programId,
     });
   }
 
-  // Map semester number to string 
+  // Map semester number to string
   mapSemesterToEnum(semesterNumber: number): string {
     switch (semesterNumber) {
       case 1:
@@ -124,23 +133,30 @@ export class CurriculumService {
   }
 
   // Update Curriculum
-  updateCurriculum(id: number, curriculum: Partial<Curriculum>): Observable<any> {
+  updateCurriculum(
+    id: number,
+    curriculum: Partial<Curriculum>
+  ): Observable<any> {
     return this.http.put(`${this.baseUrl}/updateCurriculum/${id}`, curriculum);
   }
 
   // Delete Curriculum
   deleteCurriculum(curriculum_year: string): Observable<any> {
-    return this.http.post(`${this.baseUrl}/deleteCurriculum`, { curriculum_year });
+    return this.http.post(`${this.baseUrl}/deleteCurriculum`, {
+      curriculum_year,
+    });
   }
 
   // For copying an existing curriculum
-  copyCurriculum(curriculumId: number, newCurriculumYear: string): Observable<any> {
+  copyCurriculum(
+    curriculumId: number,
+    newCurriculumYear: string
+  ): Observable<any> {
     return this.http.post(`${this.baseUrl}/copyCurriculum`, {
-      curriculum_id: curriculumId,  // ID of the curriculum to copy
-      new_curriculum_year: newCurriculumYear // New year for the copied curriculum
+      curriculum_id: curriculumId,
+      new_curriculum_year: newCurriculumYear,
     });
   }
-  
 
   // For Course (inside the curriculum year)
   //Add course
@@ -173,5 +189,4 @@ export class CurriculumService {
     }
     return throwError(() => new Error('Curriculum not found'));
   }
-
 }

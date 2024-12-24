@@ -312,7 +312,7 @@ export class DialogPrefComponent implements OnInit {
               )} - ${this.convertTo12HourFormat(pref.end_time)}`;
         return `${pref.day} (${time})`;
       })
-      .join(', ');
+      .join('\n');
   }
 
   /**
