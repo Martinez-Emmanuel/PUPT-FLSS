@@ -64,7 +64,6 @@ class NotifyAdminOfPreferenceChangeJob implements ShouldQueue
                 'first_name' => $this->admin->first_name,
                 'middle_name' => $this->admin->middle_name,
             ],
-            'admin_dashboard_link' => 'https://app.pupt-flss.com/admin-dashboard',
         ];
     
         // Send email to the admin
