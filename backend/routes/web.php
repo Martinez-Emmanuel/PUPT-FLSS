@@ -25,7 +25,10 @@ Route::get('/', function () {
 // Test preferences submitted email
 Route::get('/test-preferences-submitted', function () {
     $data = [
-        'faculty_name' => 'Juan Dela Cruz',
+        'faculty_name' => 'Juan Dela Cruz', // Example faculty name
+        'email' => 'juan.delacruz@example.com', // Sample email
+        'status' => 'Pending', // Example status
+        'message' => 'Your preferences have been successfully submitted and are currently under review. Once approved, you will receive a confirmation email notifying you of the updated status of your preferences. Please be patient as this process may take some time.', // Sample status message
     ];
     return view('emails.preferences_submitted', $data);
 });
@@ -88,8 +91,7 @@ Route::get('/test-change-request', function () {
             'first_name' => 'Marissa',
             'middle_name'=> 'L.',
             'email' => 'marissa.ferrer@example.com',
-        ],
-        'admin_dashboard_link' => 'https://app.pupt-flss.com/admin-dashboard',
+        ]
     ];
     return view('emails.change_request', $data);
 });
