@@ -2,25 +2,38 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\SendFacultyScheduleEmailJob;
-use App\Models\Faculty;
 use Illuminate\Http\Request;
+use App\Models\Faculty;
 use Illuminate\Support\Facades\Mail;
 
 class EmailController extends Controller
 {
-
-    protected function sendPreferencesSubmittedNotification($faculty)
+    /**
+     * Send email to a specific faculty when pref submission is success.
+     */
+    public function successSubmissionPreferences(Request $request)
     {
+        $request->validate([
+            'faculty_id' => 'required|integer|exists:faculty,id',
+        ]);
+
+        $faculty = Faculty::with('user')->find($request->faculty_id);
+
+        if (!$faculty) {
+            return response()->json(['message' => 'Faculty not found'], 404);
+        }
+
         $data = [
-            'faculty_name' => $faculty->user->name,
-            'email' => $faculty->user->email,
+            'faculty_name' => $faculty->user->first_name . ' ' . $faculty->user->last_name,
+            'email' => $faculty->user->email, 
         ];
 
         Mail::send('emails.preferences_submitted', $data, function ($message) use ($data) {
             $message->to($data['email'])
-                ->subject('Your Load & Schedule Preferences has been submitted successfully');
+                    ->subject('Your Load & Schedule Preferences have been submitted successfully');
         });
+
+        return response()->json(['message' => 'Notification sent successfully'], 200);
     }
 
     /**
