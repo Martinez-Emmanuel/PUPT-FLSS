@@ -24,6 +24,9 @@ use Illuminate\Support\Facades\Route;
 | Authentication Routes
 |----------------------------
  */
+
+
+
 Route::post('login', [AuthController::class, 'login'])->name('login');
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
@@ -99,8 +102,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/email-all-faculty-pref-submitted', [EmailController::class, 'emailPrefSubmitted']);
     Route::post('/email-all-faculty-schedule', [EmailController::class, 'emailAllFacultySchedule']);
     Route::post('/email-single-faculty-schedule', [EmailController::class, 'emailSingleFacultySchedule']);
+    Route::post('/email-single-success-send', [EmailController::class,'successSubmissionPreferences']);
     Route::post('/email-admins-pref-change', [EmailController::class, 'notifyAdminsOfPreferenceChange']);
-
     /**
      * Faculty Notification
      */
