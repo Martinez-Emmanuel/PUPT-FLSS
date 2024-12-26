@@ -3,54 +3,79 @@
 
 <head>
   <meta charset="utf-8" />
-  <title>PUPT–FLSS</title>
-  <base href="/" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Streamlining scheduling for faculty, programs, and rooms in PUP Taguig." />
 
+  <!-- Primary Meta Tags -->
+  <title>PUPT–FLSS | Faculty Loading and Scheduling System</title>
+  <meta name="description"
+    content="Streamlining scheduling for faculty, programs, and rooms in PUP Taguig. Efficient academic resource management system." />
+  <meta name="keywords" content="PUP Taguig, scheduling system, faculty load, academic scheduling, FLSS" />
+  <meta name="theme-color" content="#800000" />
+
+  <!-- Security Headers -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <!-- <meta http-equiv="Content-Security-Policy" content=" default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' http://127.0.0.1:8000 http://localhost:8000; script-src 'self' 'unsafe-inline' 'unsafe-eval'; worker-src 'self'; frame-src 'self'; media-src 'self'; form-action 'self'; " /> -->
+
+  <!-- Favicon and App Icons -->
   <link rel="icon" type="image/x-icon" href="assets/images/pup_taguig_logo.svg" />
 
-  <meta property="og:title" content="PUPT–FLSS" />
+  <!-- Base URL -->
+  <base href="/" />
+
+  <!-- Open Graph / Social Media -->
+  <meta property="og:title" content="PUPT–FLSS | Faculty Load and Schedule System" />
   <meta property="og:description" content="Streamlining scheduling for faculty, programs, and rooms in PUP Taguig." />
   <meta property="og:image" content="assets/images/pup_taguig_logo.svg" />
   <meta property="og:url" content="https://app.pupt-flss.com" />
   <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="PUPT–FLSS" />
+  <meta property="og:locale" content="en_PH" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="PUPT–FLSS | Faculty Load and Schedule System" />
+  <meta name="twitter:description" content="Streamlining scheduling for faculty, programs, and rooms in PUP Taguig." />
+  <meta name="twitter:image" content="assets/images/pup_taguig_logo.svg" />
+
+  <!-- Performance Optimizations -->
+  <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+  <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-  <link rel="preload"
-    href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap" as="style"
+  <!-- Fonts with display swap -->
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap"
     onload="this.onload=null;this.rel='stylesheet'" />
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Round&display=swap"
+    onload="this.onload=null;this.rel='stylesheet'" />
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+    onload="this.onload=null;this.rel='stylesheet'" />
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap"
+    onload="this.onload=null;this.rel='stylesheet'" />
+
+  <!-- Font fallbacks -->
   <noscript>
     <link rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap" />
-  </noscript>
-
-  <link rel="preload" href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Round" as="style"
-    onload="this.onload=null;this.rel='stylesheet'" />
-  <noscript>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons|Material+Icons+Round" />
-  </noscript>
-
-  <link rel="preload"
-    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-    as="style" onload="this.onload=null;this.rel='stylesheet'" />
-  <noscript>
     <link rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
-  </noscript>
-
-  <link rel="preload"
-    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-    as="style" onload="this.onload=null;this.rel='stylesheet'" />
-  <noscript>
     <link rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
   </noscript>
 </head>
 
 <body>
+  <noscript>
+    <p>
+      Please enable JavaScript to use the PUPT Faculty Load and Schedule
+      System.
+    </p>
+  </noscript>
   <app-root></app-root>
 </body>
 
