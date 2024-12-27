@@ -22,7 +22,6 @@ import { ThemeService } from '../../core/services/theme/theme.service';
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
-  standalone: true,
   imports: [
     CommonModule,
     SlideshowComponent,
@@ -32,7 +31,6 @@ import { ThemeService } from '../../core/services/theme/theme.service';
     MatProgressSpinnerModule,
     MatRippleModule,
     MatTooltipModule,
-    DialogAdminLoginComponent,
   ],
 })
 export class LoginComponent implements OnInit, OnDestroy {
