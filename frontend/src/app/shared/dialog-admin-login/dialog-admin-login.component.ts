@@ -48,24 +48,11 @@ export class DialogAdminLoginComponent implements OnInit {
 
   ngOnInit(): void {
     this.initForm();
-    this.loginForm.get('password')!.valueChanges.subscribe((value) => {
-      this.passwordHasValue = !!value;
-      if (!value) {
-        this.showPassword = false;
-      }
-    });
   }
 
   initForm(): void {
     this.loginForm = this.formBuilder.group({
-      code: [
-        '',
-        [
-          Validators.required,
-          Validators.minLength(12),
-          Validators.maxLength(12),
-        ],
-      ],
+      email: ['', [Validators.required, Validators.email]],
       password: [
         '',
         [
@@ -75,10 +62,14 @@ export class DialogAdminLoginComponent implements OnInit {
         ],
       ],
     });
+
+    this.loginForm.get('password')?.valueChanges.subscribe((value) => {
+      this.passwordHasValue = !!value;
+    });
   }
 
-  get code() {
-    return this.loginForm.get('code');
+  get email() {
+    return this.loginForm.get('email');
   }
 
   get password() {
@@ -86,24 +77,20 @@ export class DialogAdminLoginComponent implements OnInit {
   }
 
   togglePasswordVisibility(): void {
-    if (this.passwordHasValue) {
-      this.showPassword = !this.showPassword;
-    }
+    this.showPassword = !this.showPassword;
   }
 
   onSubmit(): void {
     if (this.loginForm.valid) {
       this.isLoading = true;
-      const { code, password } = this.loginForm.value;
-      this.authService.login(code, password).subscribe({
+      const { email, password } = this.loginForm.value;
+
+      this.authService.login(email, password).subscribe({
         next: (response) => {
           this.handleLoginSuccess(response);
         },
         error: (error) => {
           this.handleLoginError(error);
-        },
-        complete: () => {
-          this.isLoading = false;
         },
       });
     }

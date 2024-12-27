@@ -12,9 +12,9 @@ export class AuthService {
 
   constructor(private http: HttpClient, private cookieService: CookieService) {}
 
-  login(code: string, password: string): Observable<any> {
+  login(email: string, password: string): Observable<any> {
     const loginData = {
-      code: code,
+      email: email,
       password: password,
     };
     return this.http.post(`${this.baseUrl}/login`, loginData);
@@ -54,8 +54,8 @@ export class AuthService {
       'Strict'
     );
     this.cookieService.set(
-      'user_code',
-      user.code,
+      'user_email',
+      user.email,
       expiryDate,
       '/',
       '',

@@ -1,8 +1,8 @@
 <div class="dialog-login-container">
   <!--Dialog Title-->
   <div class="dialog-login-title">
-    <h1 class="title-text">Administrator Login</h1>
-    <p class="title-desc">Enter your account code and password to start.</p>
+    <h1 class="title-text">Admin Login</h1>
+    <p class="title-desc">Enter your account email and password to start.</p>
   </div>
 
   <!--Dialog Form-->
@@ -11,31 +11,29 @@
       <div class="field-container">
         <div class="input-container">
           <span
-            mat-symbol="person"
+            mat-symbol="email"
             class="input-icon"
-            [matTooltip]="'Account Code'"
+            [matTooltip]="'Email Address'"
           ></span>
           <input
-            type="text"
-            placeholder="Account Code"
+            type="email"
+            placeholder="Email Address"
             class="login-input"
-            id="code"
-            formControlName="code"
-            autocomplete="username"
-            minlength="12"
-            maxlength="12"
+            id="email"
+            formControlName="email"
+            autocomplete="email"
           />
         </div>
-        @if (code && code.invalid && (code.dirty || code.touched)) {
+        @if (email && email.invalid && (email.dirty || email.touched)) {
         <div
           class="error-message slide-down"
-          [ngClass]="{ show: code.invalid }"
+          [ngClass]="{ show: email.invalid }"
         >
           <span mat-symbol="error"></span>
-          @if (code.errors?.['required']) {
-          <span>Account Code is required.</span>
-          } @if (code.errors?.['minlength'] || code.errors?.['maxlength']) {
-          <span>Account Code is invalid.</span>
+          @if (email.errors?.['required']) {
+          <span>Email is required.</span>
+          } @if (email.errors?.['email']) {
+          <span>Please enter a valid email address.</span>
           }
         </div>
         }
@@ -79,9 +77,9 @@
           @if (password.errors?.['required']) {
           <span>Account Password is required.</span>
           } @if (password.errors?.['minlength']) {
-          <span>Password must be at least 8 characters.</span>
+          <span>Password is too short.</span>
           } @if (password.errors?.['maxlength']) {
-          <span>Password cannot exceed 40 characters.</span>
+          <span>Password is too long.</span>
           }
         </div>
         }
