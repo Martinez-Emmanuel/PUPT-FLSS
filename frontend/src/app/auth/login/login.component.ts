@@ -100,33 +100,8 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   checkHRISHealthAndLogin(): void {
-    this.isLoading = true;
-    console.log('Checking health of HRIS system...');
-
-    this.http
-      .get('https://pup-hris-site-here.placeholder', { observe: 'response' })
-      .subscribe({
-        next: (response) => {
-          console.log('HRIS system health check response:', response);
-          if (response.status >= 200 && response.status < 300) {
-            console.log('HRIS system is healthy. Redirecting to HRIS login...');
-            this.isLoading = false;
-            window.location.href = 'https://pup-hris-site-here.placeholder';
-          } else {
-            console.warn(
-              'HRIS system status is not 2xx. Opening login dialog...'
-            );
-            this.openLoginDialog();
-          }
-        },
-        error: (error) => {
-          console.error('Error checking HRIS system health:', error);
-          this.openLoginDialog();
-        },
-        complete: () => {
-          console.log('HRIS system health check completed.');
-        },
-      });
+    console.log('Opening HRIS login dialog...');
+    this.openLoginDialog();
   }
 
   openLoginDialog(): void {

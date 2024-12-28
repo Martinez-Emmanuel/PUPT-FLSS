@@ -85,7 +85,7 @@ export class DialogAdminLoginComponent implements OnInit {
       this.isLoading = true;
       const { email, password } = this.loginForm.value;
 
-      this.authService.login(email, password).subscribe({
+      this.authService.flssLogin(email, password).subscribe({
         next: (response) => {
           this.handleLoginSuccess(response);
         },

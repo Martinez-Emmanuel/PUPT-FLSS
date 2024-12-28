@@ -1,6 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -50,7 +55,7 @@ export class DialogFacultyLoginComponent implements OnInit {
     this.initForm();
   }
 
-  initForm(): void {
+  private initForm(): void {
     this.loginForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
       password: [
@@ -76,28 +81,73 @@ export class DialogFacultyLoginComponent implements OnInit {
     return this.loginForm.get('password');
   }
 
-  togglePasswordVisibility(): void {
+  public togglePasswordVisibility(): void {
     this.showPassword = !this.showPassword;
   }
 
-  onSubmit(): void {
+  public onCloseClick(): void {
+    this.dialogRef.close();
+  }
+
+  public onSubmitClick(): void {
     if (this.loginForm.valid) {
       this.isLoading = true;
       const { email, password } = this.loginForm.value;
 
-      this.authService.login(email, password).subscribe({
-        next: (response) => {
-          this.handleLoginSuccess(response);
+      this.authService.checkHrisHealth().subscribe({
+        next: (isHealthy) => {
+          if (isHealthy) {
+            this.tryHrisLogin(email, password);
+          } else {
+            this.fallbackToFlssLogin(email, password);
+          }
         },
-        error: (error) => {
-          this.handleLoginError(error);
+        error: () => {
+          this.fallbackToFlssLogin(email, password);
         },
       });
     }
   }
 
-  onCloseClick(): void {
-    this.dialogRef.close();
+  private tryHrisLogin(email: string, password: string): void {
+    this.authService.hrisLogin(email, password).subscribe({
+      next: (hrisResponse) => {
+        // Validate the token
+        this.authService
+          .validateHrisToken(hrisResponse.access_token)
+          .subscribe({
+            next: (validationResponse) => {
+              if (validationResponse.active) {
+                const facultyData = hrisResponse.faculty_data;
+                const hrisToken = hrisResponse.access_token;
+                this.authService
+                  .processFacultyData(facultyData, hrisToken)
+                  .subscribe({
+                    next: (flssResponse: any) => {
+                      this.handleLoginSuccess(flssResponse);
+                    },
+                    error: (error) => this.handleLoginError(error),
+                  });
+              } else {
+                this.handleLoginError({
+                  error: { message: 'Invalid HRIS token' },
+                });
+              }
+            },
+            error: (error) => this.handleLoginError(error),
+          });
+      },
+      error: (error) => {
+        this.handleLoginError(error);
+      },
+    });
+  }
+
+  private fallbackToFlssLogin(email: string, password: string): void {
+    this.authService.flssLogin(email, password).subscribe({
+      next: (response) => this.handleLoginSuccess(response),
+      error: (error) => this.handleLoginError(error),
+    });
   }
 
   private handleLoginSuccess(response: any): void {
@@ -125,6 +175,31 @@ export class DialogFacultyLoginComponent implements OnInit {
     this.router.navigateByUrl(redirectUrl, { replaceUrl: true });
   }
 
+  private handleLogoutSuccess(message?: string): void {
+    this.authService.clearCookies();
+    this.dialogRef.close();
+    if (message) {
+      alert(message);
+    }
+    this.router.navigate(['/login']);
+  }
+
+  private onAutoLogout(): void {
+    if (this.authService.getToken()) {
+      this.authService.logout().subscribe({
+        next: () =>
+          this.handleLogoutSuccess('Session expired. Please log in again.'),
+        error: () =>
+          this.handleLogoutSuccess('Session expired. Please log in again.'),
+      });
+    } else {
+      this.handleLogoutSuccess('Session expired. Please log in again.');
+    }
+  }
+
+  // =======================
+  // Error handling methods
+  // =======================
   private handleLoginError(error: any): void {
     console.error('Login failed', error);
     const errorMessage = this.getErrorMessage(error);
@@ -138,27 +213,6 @@ export class DialogFacultyLoginComponent implements OnInit {
       horizontalPosition: 'center',
       verticalPosition: 'bottom',
     });
-  }
-  onAutoLogout(): void {
-    if (this.authService.getToken()) {
-      this.authService.logout().subscribe({
-        next: () =>
-          this.handleLogoutSuccess('Session expired. Please log in again.'),
-        error: () =>
-          this.handleLogoutSuccess('Session expired. Please log in again.'),
-      });
-    } else {
-      this.handleLogoutSuccess('Session expired. Please log in again.');
-    }
-  }
-
-  private handleLogoutSuccess(message?: string): void {
-    this.authService.clearCookies();
-    this.dialogRef.close();
-    if (message) {
-      alert(message);
-    }
-    this.router.navigate(['/login']);
   }
 
   private getErrorMessage(error: any): string {

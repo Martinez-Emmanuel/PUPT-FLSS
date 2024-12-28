@@ -10,6 +10,7 @@ use App\Http\Controllers\EmailController;
 use App\Http\Controllers\External\V1\ExternalController;
 use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\FacultyNotificationController;
+use App\Http\Controllers\OAuthController;
 use App\Http\Controllers\PreferenceController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\ReportsController;
@@ -197,3 +198,6 @@ Route::prefix('external')->group(function () {
         });
     });
 });
+
+// OAuth routes
+Route::post('/oauth/process-faculty', [OAuthController::class, 'processFaculty']);

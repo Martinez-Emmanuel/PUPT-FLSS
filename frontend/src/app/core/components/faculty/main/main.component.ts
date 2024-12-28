@@ -85,7 +85,7 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private loadFacultyInfo(): void {
     this.facultyName = this.cookieService.get('user_name');
-    this.facultyEmail = this.cookieService.get('faculty_email');
+    this.facultyEmail = this.cookieService.get('user_email');
   }
 
   toggleDropdown(event: Event) {

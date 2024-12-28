@@ -66,7 +66,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     this.facultyName = this.cookieService.get('user_name');
     this.facultyId = this.cookieService.get('faculty_id');
     this.facultyType = this.cookieService.get('faculty_type');
-    this.facultyEmail = this.cookieService.get('faculty_email');
+    this.facultyEmail = this.cookieService.get('user_email');
   }
 
   /**

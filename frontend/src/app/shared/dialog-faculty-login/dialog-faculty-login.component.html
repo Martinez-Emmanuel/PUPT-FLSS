@@ -7,7 +7,7 @@
 
   <!--Dialog Form-->
   <div class="dialog-login-content">
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmitClick()">
       <div class="field-container">
         <div class="input-container">
           <span
@@ -99,7 +99,7 @@
         'button-disabled': isLoading || loginForm.invalid
       }"
       [disabled]="loginForm.invalid || isLoading"
-      (click)="onSubmit()"
+      (click)="onSubmitClick()"
     >
       @if(!isLoading){ Log In } @if(isLoading) {
       <mat-spinner
