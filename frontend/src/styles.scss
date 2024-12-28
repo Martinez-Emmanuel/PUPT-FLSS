@@ -235,6 +235,41 @@ span[mat-symbol] {
   width: var(--dialog-small);
 }
 
+.custom-cell {
+  padding: var(--spacing-xs);
+  text-align: center;
+
+  .faculty-type {
+    width: fit-content;
+    padding: var(--spacing-xxs) var(--spacing-sm);
+    border-radius: var(--border-radius-xl);
+    font-size: var(--font-size-xsx);
+    font-weight: 500;
+    margin: 0 auto;
+    display: inline-block;
+
+    &.full-time {
+      background-color: var(--blue-fade-lighter);
+      color: var(--blue-primary);
+    }
+
+    &.designee {
+      background-color: var(--pink-fade-lighter);
+      color: var(--pink-primary);
+    }
+
+    &.part-time {
+      background-color: var(--purple-fade-lighter);
+      color: var(--purple-primary);
+    }
+
+    &.temporary {
+      background-color: var(--aqua-fade-lighter);
+      color: var(--aqua-primary);
+    }
+  }
+}
+
 .custom-paginator {
   @include mixins.default-transition;
   padding: var(--spacing-sm) 0 !important;

@@ -33,10 +33,10 @@ import { fadeAnimation } from '../../../../animations/animations';
 export class FacultyComponent implements OnInit, OnDestroy {
   facultyStatuses = ['Active', 'Inactive'];
   facultyTypes = [
-    'Full-time (Permanent)',
-    'Full-time (Temporary)',
-    'Full-time (Designee)',
-    'Part-time',
+    'Full-Time',
+    'Part-Time',
+    'Temporary',
+    'Designee',
   ];
   selectedFacultyIndex: number | null = null;
 
