@@ -319,7 +319,7 @@ class PreferenceController extends Controller
 
     public function getRequestNotifications()
     {
-        // Get active semester
+        
         $activeSemester = ActiveSemester::with(['academicYear', 'semester'])
             ->where('is_active', 1)
             ->first();
@@ -341,7 +341,6 @@ class PreferenceController extends Controller
             ->join('users', 'faculty.user_id', '=', 'users.id')
             ->get();
 
-        // Transform the data into the required format
         $notifications = $facultyRequests->map(function ($faculty) {
             // Construct full name
             $facultyName = trim(implode(' ', array_filter([
@@ -359,6 +358,7 @@ class PreferenceController extends Controller
 
         return response()->json($notifications, 200);
     }
+    
     /**
      * Retrieves preferences for a specific faculty based on their faculty_id.
      */
