@@ -24,9 +24,6 @@ use Illuminate\Support\Facades\Route;
 | Authentication Routes
 |----------------------------
  */
-Route::get('/request-notifications', [PreferenceController::class, 'getRequestNotifications']);
-
-
 Route::post('login', [AuthController::class, 'login'])->name('login');
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
@@ -123,7 +120,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/toggle-single-preferences', [PreferenceController::class, 'toggleSinglePreferences']);
     Route::post('/request-access', [PreferenceController::class, 'requestAccess']);
     Route::post('/cancel-request-access', [PreferenceController::class, 'cancelRequestAccess']);
-
+    
+    /**
+     * Admin Notification
+     */
+    Route::get('/request-notifications', [PreferenceController::class, 'getRequestNotifications']);
+    
     /**
      * Programs
      */
