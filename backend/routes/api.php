@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Route;
 | Authentication Routes
 |----------------------------
  */
-
+Route::get('/request-notifications', [PreferenceController::class, 'getRequestNotifications']);
 
 
 Route::post('login', [AuthController::class, 'login'])->name('login');
