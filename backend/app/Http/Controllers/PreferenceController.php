@@ -352,7 +352,7 @@ class PreferenceController extends Controller
             return [
                 'faculty_id' => $faculty->faculty_id,
                 'faculty_name' => $facultyName,
-                'message' => "$facultyName has requested to reopen their schedule"
+                'message' => "$facultyName has requested to reopen their preferences submission.", 
             ];
         });
 
