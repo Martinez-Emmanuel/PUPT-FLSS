@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Mail;
 
 class EmailController extends Controller
 {
-   
     /**
      * Send email to a specific faculty to view their load and schedule.
      */
