@@ -131,6 +131,17 @@
         .important-note a:hover {
             text-decoration: underline;
         }
+        .button {
+            text-decoration: none;
+            color: #ffffff !important;
+            background-color: #800000;
+            padding: 14px 32px;
+            border-radius: 9999px;
+            font-size: 16px;
+            font-weight: bold;
+            display: inline-block;
+            text-align: center;
+        }
 
         .copyright {
             text-align: center;
@@ -179,8 +190,9 @@
                 </tr>
             </table>
 
+       <!-- Button Section -->
             <div class="button-container">
-                <a href="https://beta.pupt-flss.com" class="button">Review Request</a>
+                <a href="https://beta.pupt-flss.com/" class="button" style="text-decoration: none; color: white; background-color: #800000; padding: 14px 32px; border-radius: 9999px; font-size: 16px; display: inline-block; text-align: center;">Visit PUPT-FLSS Now</a>
             </div>
             <!-- Important Note -->
             <p class="important-note">Note: If you experience any technical difficulties or have questions about the
