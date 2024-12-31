@@ -22,6 +22,16 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
+// Test Faculty Deadline Email Template
+Route::get('/faculty-deadline', function () {
+    $data = [
+        'faculty_name' => 'Juan Dela Cruz',
+        'deadline' => '2024-12-30 23:59:59'
+    ];
+
+    return view('emails.faculty_deadline_warning', $data);
+});
 // Test preferences submitted email
 Route::get('/test-preferences-submitted', function () {
     $data = [
