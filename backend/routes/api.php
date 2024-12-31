@@ -105,6 +105,11 @@ Route::middleware('auth:sanctum')->group(function () {
      */
     Route::get('/faculty-notifications', [FacultyNotificationController::class, 'getFacultyNotifications']);
     Route::post('/faculty-notifications/{id}/read', [FacultyNotificationController::class, 'markAsRead']);
+    // Notify faculties with deadlines approaching in 24 hours
+    Route::get('/notify-faculty-deadlines-single', [EmailController::class, 'notifyFacultyBeforeDeadlineSingle']);
+    // Test single faculty deadline notification
+    Route::post('/test-faculty-notification', [EmailController::class, 'singleDeadlineNotification']);
+    Route::get('/notify-global-deadline', [EmailController::class, 'notifyGlobalFacultyDeadline']);
 
     /**
      * Preferences
