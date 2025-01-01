@@ -1,32 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
+import { CustomSpinnerComponent } from '../../shared/custom-spinner/custom-spinner.component';
 
 import { AuthService } from '../../core/services/auth/auth.service';
 
 @Component({
   selector: 'app-callback',
-  template: `
-    <div class="callback-container">
-      <mat-spinner></mat-spinner>
-      <p>Processing login...</p>
-    </div>
-  `,
-  styles: [
-    `
-      .callback-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        gap: 20px;
-      }
-    `,
-  ],
-  standalone: true,
-  imports: [MatProgressSpinnerModule],
+  templateUrl: './callback.component.html',
+  styleUrls: ['./callback.component.scss'],
+  imports: [CustomSpinnerComponent],
 })
 export class CallbackComponent implements OnInit {
   constructor(

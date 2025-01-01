@@ -162,3 +162,20 @@ export const showHideFieldsAnimation = trigger('showHideFieldsAnimation', [
     animate('300ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
   ]),
 ]);
+
+export const slideTextAnimation = trigger('slideText', [
+  state(
+    'connecting',
+    style({
+      transform: 'translateY(0%)',
+    })
+  ),
+  state(
+    'redirecting',
+    style({
+      transform: 'translateY(-100%)',
+    })
+  ),
+  transition('connecting => redirecting', [animate('0.6s ease-in-out')]),
+  transition('redirecting => connecting', [animate('0.6s ease-in-out')]),
+]);

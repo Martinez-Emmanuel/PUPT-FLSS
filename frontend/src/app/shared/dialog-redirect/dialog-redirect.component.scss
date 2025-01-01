@@ -1,0 +1,44 @@
+@use "../../../styles/mixins.scss";
+
+.dialog-redirect-container {
+  padding: var(--spacing-xl);
+  min-width: var(--dialog-xs);
+
+  .content {
+    @include mixins.flex-layout($direction: column, $gap: var(--spacing-md));
+
+    .spinner-container {
+      position: relative;
+      width: var(--spacing-3xl);
+      height: auto;
+    }
+
+    .text-outer-container {
+      height: var(--spacing-lg);
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .text-inner-container {
+      height: var(--spacing-lg);
+      position: absolute;
+      width: 100%;
+    }
+
+    .text-panel {
+      @include mixins.flex-layout($gap: var(--spacing-xxs));
+      height: var(--spacing-lg);
+      line-height: 1.25rem;
+      color: var(--primary-lighter);
+      margin: 0;
+      width: 100%;
+      text-wrap: nowrap;
+
+      span[mat-symbol] {
+        font-size: var(--font-size-mdx);
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, Renderer2, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { Subject, Observable, takeUntil } from 'rxjs';
+import { Subject, Observable, takeUntil, forkJoin, timer } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,6 +14,7 @@ import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 import { SlideshowComponent } from '../../shared/slideshow/slideshow.component';
 import { DialogFacultyLoginComponent } from '../../shared/dialog-faculty-login/dialog-faculty-login.component';
 import { DialogAdminLoginComponent } from '../../shared/dialog-admin-login/dialog-admin-login.component';
+import { DialogRedirectComponent } from '../../shared/dialog-redirect/dialog-redirect.component';
 
 import { ThemeService } from '../../core/services/theme/theme.service';
 import { AuthService } from '../../core/services/auth/auth.service';
@@ -51,14 +52,13 @@ export class LoginComponent implements OnInit, OnDestroy {
   currentBackgroundImage: string;
 
   isDarkTheme$: Observable<boolean>;
-  isLoading = false;
 
   constructor(
     private renderer: Renderer2,
     private elementRef: ElementRef,
     private themeService: ThemeService,
     private dialog: MatDialog,
-    private authService: AuthService,
+    private authService: AuthService
   ) {
     this.isDarkTheme$ = this.themeService.isDarkTheme$;
     this.currentBackgroundImage = `url(${this.backgroundImages[0]})`;
@@ -99,41 +99,37 @@ export class LoginComponent implements OnInit, OnDestroy {
     }
   }
 
-  checkHRISHealthAndLogin(): void {
-    this.isLoading = true;
+  handleFacultyLogin(): void {
+    const dialogRef = this.dialog.open(DialogRedirectComponent, {
+      disableClose: true,
+      data: { checkingHris: true },
+    });
 
-    this.authService.checkHrisHealth().subscribe({
-      next: (isHealthy) => {
+    forkJoin([this.authService.checkHrisHealth(), timer(2000)]).subscribe({
+      next: ([isHealthy]) => {
         if (isHealthy) {
-          // HRIS is available, proceed with OAuth
-          this.authService.initiateHrisLogin();
+          dialogRef.componentInstance.updateState(false, true);
         } else {
-          // HRIS is down, open local login dialog
-          this.isLoading = false;
+          dialogRef.close();
           this.openFacultyLoginDialog();
         }
       },
       error: (error) => {
-        // Error checking HRIS health, fallback to local login
         console.error('Error checking HRIS health:', error);
-        this.isLoading = false;
+        dialogRef.close();
         this.openFacultyLoginDialog();
       },
     });
   }
 
   openFacultyLoginDialog(): void {
-    const dialogRef = this.dialog.open(DialogFacultyLoginComponent, {
+    this.dialog.open(DialogFacultyLoginComponent, {
       disableClose: true,
-    });
-
-    dialogRef.afterClosed().subscribe(() => {
-      this.isLoading = false;
     });
   }
 
   openAdminLoginDialog(): void {
-    const dialogRef = this.dialog.open(DialogAdminLoginComponent, {
+    this.dialog.open(DialogAdminLoginComponent, {
       disableClose: true,
     });
   }

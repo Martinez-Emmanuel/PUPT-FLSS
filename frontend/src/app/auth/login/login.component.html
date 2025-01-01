@@ -86,25 +86,12 @@
       <button
         mat-flat-button
         class="login-button faculty"
-        [ngClass]="{
-          'button-enabled': !isLoading,
-          'button-disabled': isLoading
-        }"
-        [disabled]="isLoading"
-        (click)="checkHRISHealthAndLogin()"
+        (click)="handleFacultyLogin()"
       >
-        @if(!isLoading) {
         <span class="button-text">
           <span mat-symbol="school"></span>
           Faculty Login
         </span>
-        } @else {
-        <mat-spinner
-          diameter="30"
-          strokeWidth="2.75"
-          class="custom-spinner"
-        ></mat-spinner>
-        }
       </button>
 
       <!--Admin Login-->

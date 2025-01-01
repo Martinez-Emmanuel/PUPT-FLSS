@@ -1,0 +1,11 @@
+@use "../../../styles/mixins.scss";
+
+.callback-container {
+  @include mixins.flex-layout($direction: column, $gap: var(--spacing-md));
+  height: 100vh;
+}
+
+.callback-text {
+  font-weight: 500;
+  color: var(--primary-one);
+}
