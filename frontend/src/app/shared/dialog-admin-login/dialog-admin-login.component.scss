@@ -11,7 +11,8 @@
     $justify: flex-start,
     $gap: var(--spacing-md)
   );
-  padding: var(--spacing-xl);
+  padding: var(--spacing-lgx);
+  max-width: var(--dialog-smx);
 }
 
 .dialog-login-title {
@@ -39,7 +40,7 @@
 
   .field-container {
     position: relative;
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--spacing-lgx);
 
     &.has-error .input-container .login-input {
       border-color: var(--primary-one);

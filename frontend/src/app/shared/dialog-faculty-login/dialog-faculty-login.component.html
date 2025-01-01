@@ -5,6 +5,14 @@
     <p class="title-desc">Enter your account email and password to start.</p>
   </div>
 
+  <div class="health-message-container">
+    <span mat-symbol="wifi_tethering_off"></span>
+    <p class="message-text">
+      HRIS is currently unavailable. Please use your FLSS backup credentials to
+      continue.
+    </p>
+  </div>
+
   <!--Dialog Form-->
   <div class="dialog-login-content">
     <form [formGroup]="loginForm" (ngSubmit)="onSubmitClick()">
