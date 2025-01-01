@@ -1,6 +1,5 @@
 import { Component, OnInit, OnDestroy, Renderer2, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
 
 import { Subject, Observable, takeUntil } from 'rxjs';
 
@@ -17,6 +16,7 @@ import { DialogFacultyLoginComponent } from '../../shared/dialog-faculty-login/d
 import { DialogAdminLoginComponent } from '../../shared/dialog-admin-login/dialog-admin-login.component';
 
 import { ThemeService } from '../../core/services/theme/theme.service';
+import { AuthService } from '../../core/services/auth/auth.service';
 
 @Component({
   selector: 'app-login',
@@ -57,8 +57,8 @@ export class LoginComponent implements OnInit, OnDestroy {
     private renderer: Renderer2,
     private elementRef: ElementRef,
     private themeService: ThemeService,
-    private http: HttpClient,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private authService: AuthService,
   ) {
     this.isDarkTheme$ = this.themeService.isDarkTheme$;
     this.currentBackgroundImage = `url(${this.backgroundImages[0]})`;
@@ -100,18 +100,34 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   checkHRISHealthAndLogin(): void {
-    console.log('Opening HRIS login dialog...');
-    this.openLoginDialog();
+    this.isLoading = true;
+
+    this.authService.checkHrisHealth().subscribe({
+      next: (isHealthy) => {
+        if (isHealthy) {
+          // HRIS is available, proceed with OAuth
+          this.authService.initiateHrisLogin();
+        } else {
+          // HRIS is down, open local login dialog
+          this.isLoading = false;
+          this.openFacultyLoginDialog();
+        }
+      },
+      error: (error) => {
+        // Error checking HRIS health, fallback to local login
+        console.error('Error checking HRIS health:', error);
+        this.isLoading = false;
+        this.openFacultyLoginDialog();
+      },
+    });
   }
 
-  openLoginDialog(): void {
+  openFacultyLoginDialog(): void {
     const dialogRef = this.dialog.open(DialogFacultyLoginComponent, {
       disableClose: true,
     });
 
-    this.isLoading = false;
-
-    dialogRef.afterClosed().subscribe((result) => {
+    dialogRef.afterClosed().subscribe(() => {
       this.isLoading = false;
     });
   }

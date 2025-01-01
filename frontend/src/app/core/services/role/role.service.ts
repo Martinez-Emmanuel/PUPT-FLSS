@@ -18,6 +18,7 @@ export class RoleService {
   }
 
   getHomeUrlForRole(userRole: string): UrlTree {
-    return this.router.createUrlTree([this.roleHomeMap[userRole] || '/home']);
+    const homeUrl = this.roleHomeMap[userRole] || '/login';
+    return this.router.createUrlTree([homeUrl]);
   }
 }

@@ -34,6 +34,7 @@ import { RoleService } from '../../core/services/role/role.service';
     MatSymbolDirective,
     CommonModule,
   ],
+  standalone: true,
 })
 export class DialogFacultyLoginComponent implements OnInit {
   loginForm!: FormGroup;
@@ -89,59 +90,18 @@ export class DialogFacultyLoginComponent implements OnInit {
     this.dialogRef.close();
   }
 
+  // Simplified onSubmitClick() to directly use FLSS login
   public onSubmitClick(): void {
     if (this.loginForm.valid) {
       this.isLoading = true;
       const { email, password } = this.loginForm.value;
 
-      this.authService.checkHrisHealth().subscribe({
-        next: (isHealthy) => {
-          if (isHealthy) {
-            this.tryHrisLogin(email, password);
-          } else {
-            this.fallbackToFlssLogin(email, password);
-          }
-        },
-        error: () => {
-          this.fallbackToFlssLogin(email, password);
-        },
-      });
+      // Directly call FLSS login since HRIS is assumed to be down
+      this.fallbackToFlssLogin(email, password);
     }
   }
 
-  private tryHrisLogin(email: string, password: string): void {
-    this.authService.hrisLogin(email, password).subscribe({
-      next: (hrisResponse) => {
-        // Validate the token
-        this.authService
-          .validateHrisToken(hrisResponse.access_token)
-          .subscribe({
-            next: (validationResponse) => {
-              if (validationResponse.active) {
-                const facultyData = hrisResponse.faculty_data;
-                const hrisToken = hrisResponse.access_token;
-                this.authService
-                  .processFacultyData(facultyData, hrisToken)
-                  .subscribe({
-                    next: (flssResponse: any) => {
-                      this.handleLoginSuccess(flssResponse);
-                    },
-                    error: (error) => this.handleLoginError(error),
-                  });
-              } else {
-                this.handleLoginError({
-                  error: { message: 'Invalid HRIS token' },
-                });
-              }
-            },
-            error: (error) => this.handleLoginError(error),
-          });
-      },
-      error: (error) => {
-        this.handleLoginError(error);
-      },
-    });
-  }
+  // Removed tryHrisLogin() as it's not needed
 
   private fallbackToFlssLogin(email: string, password: string): void {
     this.authService.flssLogin(email, password).subscribe({
@@ -164,15 +124,20 @@ export class DialogFacultyLoginComponent implements OnInit {
       return;
     }
 
-    this.authService.setToken(response.token, response.expires_at);
+    // Set expiry date for cookies
+    const expiryDate = new Date(response.expires_at);
+
+    // Set token and user info
+    this.authService.setSanctumToken(response.token, response.expires_at);
     this.authService.setUserInfo(response.user, response.expires_at);
 
-    const expirationTime = new Date(response.expires_at).getTime() - Date.now();
+    // Set auto logout timer
+    const expirationTime = expiryDate.getTime() - Date.now();
     setTimeout(() => this.onAutoLogout(), expirationTime);
 
-    const redirectUrl = this.roleService.getHomeUrlForRole(response.user.role);
+    // Close dialog and navigate
     this.dialogRef.close();
-    this.router.navigateByUrl(redirectUrl, { replaceUrl: true });
+    this.router.navigateByUrl('/faculty/home', { replaceUrl: true });
   }
 
   private handleLogoutSuccess(message?: string): void {
@@ -217,11 +182,14 @@ export class DialogFacultyLoginComponent implements OnInit {
 
   private getErrorMessage(error: any): string {
     if (error.status === 401 || error.status === 403) {
-      return 'Invalid credentials. Please check your faculty code and password.';
+      return 'Invalid credentials. Please check your email and password.';
     } else if (error.status === 0) {
-      return 'Unable to connect to the server. Please check your internet connection.';
+      return 'Unable to connect to the server. Please try again later.';
     } else {
-      return 'An unexpected error occurred. Please try again later.';
+      return (
+        error.error?.message ||
+        'An unexpected error occurred. Please try again later.'
+      );
     }
   }
 }

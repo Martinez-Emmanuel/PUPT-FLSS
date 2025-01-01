@@ -36,6 +36,13 @@ export const routes: Routes = [
       import('./auth/login/login.component').then((m) => m.LoginComponent),
     canActivate: [UnauthGuard],
   },
+  {
+    path: 'auth/callback',
+    loadComponent: () =>
+      import('./auth/callback/callback.component').then(
+        (m) => m.CallbackComponent
+      ),
+  },
   ...authenticatedRoutes.map((route) => ({
     ...route,
     canActivate: [AuthGuard],

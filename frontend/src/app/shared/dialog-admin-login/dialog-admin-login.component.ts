@@ -114,12 +114,18 @@ export class DialogAdminLoginComponent implements OnInit {
       return;
     }
 
-    this.authService.setToken(response.token, response.expires_at);
+    // Set expiry date for cookies
+    const expiryDate = new Date(response.expires_at);
+
+    // Set token and user info
+    this.authService.setSanctumToken(response.token, response.expires_at);
     this.authService.setUserInfo(response.user, response.expires_at);
 
-    const expirationTime = new Date(response.expires_at).getTime() - Date.now();
+    // Set auto logout timer
+    const expirationTime = expiryDate.getTime() - Date.now();
     setTimeout(() => this.onAutoLogout(), expirationTime);
 
+    // Close dialog and navigate to appropriate admin home page
     const redirectUrl = this.roleService.getHomeUrlForRole(response.user.role);
     this.dialogRef.close();
     this.router.navigateByUrl(redirectUrl, { replaceUrl: true });
