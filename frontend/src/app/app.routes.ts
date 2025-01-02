@@ -9,7 +9,7 @@ const authenticatedRoutes: Routes = [
       import('./core/components/faculty/faculty.routes').then(
         (m) => m.FACULTY_ROUTES
       ),
-    data: { role: 'faculty' },
+    data: { role: 'faculty', animation: 'faculty' },
   },
   {
     path: 'admin',
@@ -35,6 +35,7 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./auth/login/login.component').then((m) => m.LoginComponent),
     canActivate: [UnauthGuard],
+    data: { animation: 'login' },
   },
   {
     path: 'auth/callback',
@@ -42,6 +43,7 @@ export const routes: Routes = [
       import('./auth/callback/callback.component').then(
         (m) => m.CallbackComponent
       ),
+    data: { animation: 'callback' },
   },
   ...authenticatedRoutes.map((route) => ({
     ...route,

@@ -6,6 +6,7 @@ import {
   state,
   query,
   stagger,
+  group,
 } from '@angular/animations';
 
 // Anmation 1: Simple Fade - used in route transitions
@@ -178,4 +179,99 @@ export const slideTextAnimation = trigger('slideText', [
   ),
   transition('connecting => redirecting', [animate('0.6s ease-in-out')]),
   transition('redirecting => connecting', [animate('0.6s ease-in-out')]),
+]);
+
+export const routeAnimation = trigger('routeAnimation', [
+  transition('callback => faculty, * => login, login => *', [
+    style({ position: 'relative' }),
+    query(
+      ':enter, :leave',
+      [
+        style({
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+        }),
+      ],
+      { optional: true }
+    ),
+    query(
+      ':enter',
+      [
+        style({
+          transform: 'translateX(50%)',
+          opacity: 0,
+        }),
+      ],
+      { optional: true }
+    ),
+    query(
+      ':leave',
+      [
+        style({
+          transform: 'translateX(0)',
+          opacity: 1,
+        }),
+      ],
+      { optional: true }
+    ),
+    group([
+      query(
+        ':leave',
+        [
+          animate(
+            '650ms cubic-bezier(.72,.11,.23,.99)',
+            style({
+              transform: 'translateX(-50%)',
+              opacity: 0,
+            })
+          ),
+        ],
+        { optional: true }
+      ),
+      query(
+        ':enter',
+        [
+          animate(
+            '650ms cubic-bezier(.72,.11,.23,.99)',
+            style({
+              transform: 'translateX(0)',
+              opacity: 1,
+            })
+          ),
+        ],
+        { optional: true }
+      ),
+    ]),
+  ]),
+  // Default fade animation for other routes
+  transition('* <=> *', [
+    style({ position: 'relative' }),
+    query(
+      ':enter, :leave',
+      [
+        style({
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+        }),
+      ],
+      { optional: true }
+    ),
+    query(':enter', [style({ opacity: 0 })], { optional: true }),
+    query(
+      ':leave',
+      [animate('200ms cubic-bezier(0.4, 0, 0.2, 1)', style({ opacity: 0 }))],
+      { optional: true }
+    ),
+    query(
+      ':enter',
+      [animate('300ms cubic-bezier(0.4, 0, 0.2, 1)', style({ opacity: 1 }))],
+      { optional: true }
+    ),
+  ]),
 ]);
