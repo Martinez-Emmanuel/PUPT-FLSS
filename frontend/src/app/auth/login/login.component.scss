@@ -59,7 +59,7 @@
     $direction: column,
     $align: center,
     $justify: flex-start,
-    $gap: var(--spacing-lg)
+    $gap: var(--spacing-md)
   );
   padding: var(--spacing-2xl);
   flex: 40%;
@@ -111,9 +111,9 @@
       $direction: column,
       $align: center,
       $justify: center,
-      $gap: var(--spacing-xl)
+      $gap: var(--spacing-lgx)
     );
-    padding: var(--spacing-xl) 0;
+    padding: var(--spacing-md) 0;
     width: inherit;
 
     .feature-item {
@@ -236,6 +236,24 @@
         text-align: center;
       }
     }
+  }
+
+  .login-main-section .features-section {
+    padding: var(--spacing-lg) 0;
+  }
+
+  .login-main-section .features-section .feature-item.extra {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 1440px) {
+  .login-image-section {
+    flex: 50%;
+  }
+
+  .login-main-section {
+    padding: var(--spacing-lg);
   }
 }
 
