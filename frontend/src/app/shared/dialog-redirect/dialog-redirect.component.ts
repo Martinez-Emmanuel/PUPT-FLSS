@@ -49,7 +49,7 @@ export class DialogRedirectComponent implements OnInit {
     setTimeout(() => {
       this.dialogRef.close();
       this.authService.initiateHrisLogin();
-    }, 3000);
+    }, 2000);
   }
 
   get currentTextState(): 'connecting' | 'redirecting' {

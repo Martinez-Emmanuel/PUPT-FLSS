@@ -2,13 +2,15 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 
-import { Observable, of } from 'rxjs';
-import { catchError, map, tap, switchMap, finalize } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { map, tap, switchMap, finalize } from 'rxjs/operators';
 
 import { CookieService } from 'ngx-cookie-service';
 
 import { environment } from '../../../../environments/environment.dev';
 import { environmentOAuth } from '../../../../environments/env.auth';
+
+import { HrisHealthService } from '../health/hris-health.service';
 
 interface OAuthTokenResponse {
   access_token: string;
@@ -30,17 +32,15 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private cookieService: CookieService,
-    private router: Router
+    private router: Router,
+    private hrisHealthService: HrisHealthService,
   ) {}
 
   // ==============================
   // OAuth-based HRIS auth methods
   // ==============================
   checkHrisHealth(): Observable<boolean> {
-    return this.http.get(`${this.hrisUrl}/health`).pipe(
-      map(() => true),
-      catchError(() => of(false))
-    );
+    return this.hrisHealthService.checkHealth();
   }
 
   // Initiate OAuth flow
@@ -140,7 +140,11 @@ export class AuthService {
 
   validateHrisToken(token: string): Observable<any> {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-    return this.http.post(`${this.hrisUrl}/api/oauth/validate`, {}, { headers });
+    return this.http.post(
+      `${this.hrisUrl}/api/oauth/validate`,
+      {},
+      { headers }
+    );
   }
 
   processFacultyData(facultyData: any, hrisToken: string): Observable<any> {
