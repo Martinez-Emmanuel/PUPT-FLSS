@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendFacultyFirstLoginPasswordJob;
 use App\Models\Faculty;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\PersonalAccessToken;
 
 class OAuthController extends Controller
@@ -16,14 +18,13 @@ class OAuthController extends Controller
             $facultyData = $request->input('faculty_data');
             $hrisToken = $request->input('hris_token');
 
-            // Begin transaction
             DB::beginTransaction();
 
-            // Check if user exists by faculty code
             $user = User::where('code', $facultyData['faculty_code'])->first();
 
             if (!$user) {
-                // Create new user if not exists
+                $password = Str::password(12);
+
                 $user = new User();
                 $user->fill([
                     'first_name' => $facultyData['first_name'],
@@ -34,16 +35,17 @@ class OAuthController extends Controller
                     'email' => $facultyData['Email'],
                     'role' => 'faculty',
                     'status' => $facultyData['status'],
-                    'password' => bcrypt(uniqid()),
+                    'password' => $password,
                 ]);
                 $user->save();
 
-                // Create faculty record
                 $faculty = new Faculty();
                 $faculty->user_id = $user->id;
                 $faculty->faculty_type = $facultyData['faculty_type'];
                 $faculty->faculty_units = 0;
                 $faculty->save();
+
+                SendFacultyFirstLoginPasswordJob::dispatch($user, $password);
             }
 
             // Generate token for FLSS
@@ -57,7 +59,6 @@ class OAuthController extends Controller
 
             DB::commit();
 
-            // Return response with user data and token
             return response()->json([
                 'token' => $token,
                 'user' => [

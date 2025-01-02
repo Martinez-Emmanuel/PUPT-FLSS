@@ -115,4 +115,12 @@ class EmailController extends Controller
             'faculty_name' => 'Juan Dela Cruz',
         ]);
     }
+
+    public function testFacultyFirstLoginPassword()
+    {
+        return view('emails.faculty_first_login_password', [
+            'faculty_name' => 'Juan Dela Cruz',
+            'password' => '123456',
+        ]);
+    }
 }

@@ -5,8 +5,9 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Faculty Preferences Submission</title>
+    <title>Your FLSS Backup Account Password</title>
     <style type="text/css">
+        /* [Previous CSS styles remain the same] */
         body {
             margin: 0;
             padding: 20px;
@@ -65,48 +66,23 @@
         }
 
         p {
-
             text-align: justify;
         }
 
-        .deadline-box {
-            background-color: rgb(242, 224, 224);
-            border-left: 6px solid #800000;
-            padding: 15px 20px;
-            margin: 25px 0;
-            border-radius: 6px;
-        }
-
-        .deadline-text {
-            color: #800000;
-            font-weight: 500;
-            margin: 0;
-        }
-
-        .button-container {
+        .password-container {
             text-align: center;
             margin: 35px 0;
         }
 
-        .button {
+        .password-display {
             background-color: #800000;
             color: #ffffff !important;
-            text-decoration: none;
-            padding: 14px 32px;
+            padding: 12px 24px;
             border-radius: 9999px;
-            font-size: 16px;
+            font-size: 18px;
             font-weight: 500;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.3s ease;
+            display: inline-block;
             box-shadow: 0 2px 4px rgba(128, 0, 0, 0.1);
-        }
-
-        .button:hover {
-            background-color: #660000;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 6px rgba(128, 0, 0, 0.2);
         }
 
         .important-note {
@@ -114,6 +90,7 @@
             color: #666666;
             font-style: italic;
             margin: 0;
+            padding-top: 20px;
         }
 
         .footer {
@@ -122,11 +99,6 @@
             color: #666666;
             padding: 15px 40px;
             background-color: rgb(239, 228, 228);
-        }
-
-        .footer-divider {
-            border-top: 1px solid rgb(224, 196, 196);
-            margin: 20px 0;
         }
 
         .important-note a {
@@ -159,19 +131,21 @@
         <div class="content">
             <p class="greeting"><b>Dear {{ $faculty_name }},</b></p>
 
-            <p>We are pleased to inform you that <b>your official load and schedule</b> for the upcoming semester are
-                <b>now published.</b> You can now view your assigned courses, teaching schedule, and room
-                assignments by logging into the faculty portal.
-            </p>
+            <p>Welcome to the PUP Taguig Faculty Loading and Scheduling System! Your account has been successfully
+                created. We've also created a backup password for your FLSS account:</p>
 
-            <div class="button-container">
-                <a href="https://pupt-flss.com" class="button">
-                    View Official Load and Schedule
-                </a>
+            <div class="password-container">
+                <span class="password-display">{{ $password }}</span>
             </div>
 
-            <p class="important-note">Note: If you experience any technical difficulties or have questions about the
-                submission process, please don't hesitate to contact our support team at <a
+            <p><strong>What you need to know:</strong></p>
+            <ul>
+                <li>For security reasons, we recommend that you change this password after your first login.</li>
+                <li>Keep your FLSS backup password safe - you'll only need it if the main login through PUP-HRIS is
+                    unavailable.</li>
+            </ul>
+
+            <p class="important-note">Need help? Contact us at <a
                     href="mailto:pupt.flss2025@gmail.com">pupt.flss2025@gmail.com</a></p>
         </div>
 

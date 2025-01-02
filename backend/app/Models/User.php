@@ -11,7 +11,7 @@ use Laravel\Sanctum\HasApiTokens;
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
-    
+
     protected $fillable = [
         'first_name',
         'middle_name',
@@ -22,6 +22,11 @@ class User extends Authenticatable
         'password',
         'role',
         'status',
+    ];
+
+    protected $hidden = [
+        'password',
+        'remember_token',
     ];
 
     /**
@@ -41,34 +46,32 @@ class User extends Authenticatable
     }
 
     /**
-     * New accessor to get the formatted name 
+     * Accessor to get the formatted name
      * Format: last_name, first_name middle_name suffix_name
      */
     public function getFormattedNameAttribute()
     {
         $formattedName = $this->last_name;
         $formattedName .= ', ' . $this->first_name;
-        
+
         if ($this->middle_name) {
             $formattedName .= ' ' . $this->middle_name;
         }
-        
+
         if ($this->suffix_name) {
             $formattedName .= ' ' . $this->suffix_name;
         }
-        
+
         return $formattedName;
     }
 
     /**
      * Hash the password before saving to the database.
+     * Only hash if the password is not already hashed.
      */
     public function setPasswordAttribute($value)
     {
-        if (!Hash::needsRehash($value)) {
-            $value = Hash::make($value);
-        }
-        $this->attributes['password'] = $value;
+        $this->attributes['password'] = Hash::make($value);
     }
 
     public function faculty()
