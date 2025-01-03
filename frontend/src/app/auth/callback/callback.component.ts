@@ -5,10 +5,14 @@ import { Subject, finalize, timer } from 'rxjs';
 import { switchMap, takeUntil } from 'rxjs/operators';
 
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
 
 import { CustomSpinnerComponent } from '../../shared/custom-spinner/custom-spinner.component';
+import { AccessDeniedDialogComponent } from './access-denied-dialog/access-denied-dialog.component';
 
 import { AuthService } from '../../core/services/auth/auth.service';
+
+import { environmentOAuth } from '../../../environments/env.auth';
 
 @Component({
   selector: 'app-callback',
@@ -18,12 +22,21 @@ import { AuthService } from '../../core/services/auth/auth.service';
 })
 export class CallbackComponent implements OnInit, OnDestroy {
   private unsubscribe$ = new Subject<void>();
+  loadingText = 'Processing your request...';
+  private originalOAuthParams?: {
+    client_id: string;
+    redirect_uri: string;
+    state: string;
+    response_type: string;
+    user_id: string;
+  };
 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
     private authService: AuthService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit() {
@@ -31,6 +44,24 @@ export class CallbackComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.unsubscribe$))
       .subscribe((params) => {
         const { code, state, error } = params;
+
+        // Store the original state if available
+        if (state) {
+          try {
+            const decodedState = JSON.parse(atob(state));
+            if (decodedState.originalParams) {
+              this.originalOAuthParams = decodedState.originalParams;
+            }
+          } catch (e) {
+            console.error('Failed to decode state:', e);
+          }
+        }
+
+        if (error === 'access_denied') {
+          this.loadingText = 'Processing';
+          this.showAccessDeniedDialog();
+          return;
+        }
 
         if (error) {
           this.handleError(error);
@@ -42,6 +73,7 @@ export class CallbackComponent implements OnInit, OnDestroy {
           return;
         }
 
+        this.loadingText = 'Almost there! Finishing your login';
         const minimumDelay = timer(3000);
 
         this.authService
@@ -76,5 +108,37 @@ export class CallbackComponent implements OnInit, OnDestroy {
       verticalPosition: 'top',
     });
     this.router.navigate(['/login']);
+  }
+
+  private returnToConsent() {
+    if (this.originalOAuthParams) {
+      const params = new URLSearchParams({
+        client_id: this.originalOAuthParams.client_id,
+        redirect_uri: this.originalOAuthParams.redirect_uri,
+        state: this.originalOAuthParams.state,
+        response_type: this.originalOAuthParams.response_type,
+        user_id: this.originalOAuthParams.user_id,
+      });
+
+      window.location.href = `${
+        environmentOAuth.hrisFrontendUrl
+      }/auth/oauth/consent?${params.toString()}`;
+    } else {
+      this.authService.initiateHrisLogin();
+    }
+  }
+
+  private showAccessDeniedDialog() {
+    const dialogRef = this.dialog.open(AccessDeniedDialogComponent, {
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result === 'retry') {
+        this.returnToConsent();
+      } else {
+        this.router.navigate(['/login']);
+      }
+    });
   }
 }
