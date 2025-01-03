@@ -152,6 +152,18 @@
             text-decoration: underline;
         }
 
+        .button {
+            text-decoration: none;
+            color: #ffffff !important;
+            background-color: #800000;
+            padding: 14px 32px;
+            border-radius: 9999px;
+            font-size: 16px;
+            font-weight: bold;
+            display: inline-block;
+            text-align: center;
+        }
+
         .copyright {
             text-align: center;
             font-size: 13px;
@@ -170,42 +182,40 @@
             <h1>Faculty Loading and Scheduling System</h1>
         </div>
 
-        <!-- Content Section -->
         <div class="content">
-            <p class="greeting"><strong>Dear {{ $faculty_name }},</strong></p>
-            <p>Your preferences have been <strong style="color: green;">successfully</strong> submitted and are currently under review.</p>
-
-            <!-- Pending Status Section -->
+            <p><strong>Dear {{ $faculty_name }},</strong></p>
+            <p>This is a gentle reminder that your preferences submission deadline is:</p>
             <div class="status-container">
-                <p class="status-title">Status: Pending</p>
-                <p class="status-description">
-                    Your submission is currently under review by our team. Once approved, you will receive a confirmation
-                    email notifying you of the updated status of your preferences. Please be patient as this process may take some time.
-                </p>
+            <p class="status-title">Action Required: Review Preferences</p>
+            <p>
+                <strong style="color: red;">Deadline: {{ $deadline }}</strong>
+            </p>
+            <p class="status-description">
+                You have <strong>24 hours</strong> remaining to review and finalize your preferences. 
+                Please make sure to verify your submission before the deadline to ensure everything is correct.
+            </p>
             </div>
-
-            <p>Thank you for submitting your preferences. If you have any questions or need further assistance, please feel free to contact us.</p>
-
-            <!-- Button Section -->
+            <div>
             <div class="button-container">
-            <a href="https://beta.pupt-flss.com/" class="button" style="text-decoration: none; color: white; background-color: #800000; padding: 14px 32px; border-radius: 9999px; font-size: 16px; display: inline-block; text-align: center;">Visit PUPT-FLSS Now</a>
+            <a href="https://beta.pupt-flss.com/" class="button">Visit PUPT-FLSS Now</a>
             </div>
 
-
-            <!-- Important Note -->
             <p class="important-note">Note: If you experience any technical difficulties or have questions about the
                 submission process, please don't hesitate to contact our support team at <a
                     href="mailto:pupt.flss2025@gmail.com">pupt.flss2025@gmail.com</a>.</p>
+            </div>
         </div>
-
-        <div class="footer">
+            <div class="footer">
             <p class="copyright">
                 © 2024 Polytechnic University of the Philippines - Taguig Branch<br>
                 Faculty Loading and Scheduling System<br>
                 All rights reserved.
             </p>
         </div>
+        </div>
     </div>
 </body>
+
+
 
 </html>

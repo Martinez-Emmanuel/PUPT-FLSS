@@ -75,5 +75,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Faculty::class, 'user_id');
     }
+        public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
 }

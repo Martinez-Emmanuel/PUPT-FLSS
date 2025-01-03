@@ -100,12 +100,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/email-all-faculty-schedule', [EmailController::class, 'emailAllFacultySchedule']);
     Route::post('/email-single-faculty-schedule', [EmailController::class, 'emailSingleFacultySchedule']);
     Route::post('/email-admins-pref-change', [EmailController::class, 'notifyAdminsOfPreferenceChange']);
-
     /**
      * Faculty Notification
      */
     Route::get('/faculty-notifications', [FacultyNotificationController::class, 'getFacultyNotifications']);
     Route::post('/faculty-notifications/{id}/read', [FacultyNotificationController::class, 'markAsRead']);
+    // Notify faculties with deadlines approaching in 24 hours
+    Route::get('/notify-faculty-deadlines-single', [EmailController::class, 'notifyFacultyBeforeDeadlineSingle']);
+    // Test single faculty deadline notification
+    Route::post('/test-faculty-notification', [EmailController::class, 'singleDeadlineNotification']);
+    Route::get('/notify-global-deadline', [EmailController::class, 'notifyGlobalFacultyDeadline']);
 
     /**
      * Preferences
@@ -120,7 +124,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/toggle-single-preferences', [PreferenceController::class, 'toggleSinglePreferences']);
     Route::post('/request-access', [PreferenceController::class, 'requestAccess']);
     Route::post('/cancel-request-access', [PreferenceController::class, 'cancelRequestAccess']);
-
+    
+    /**
+     * Admin Notification
+     */
+    Route::get('/request-notifications', [PreferenceController::class, 'getRequestNotifications']);
+    
     /**
      * Programs
      */

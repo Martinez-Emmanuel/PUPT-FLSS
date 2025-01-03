@@ -2,27 +2,114 @@
 
 namespace App\Http\Controllers;
 
-use App\Jobs\SendFacultyScheduleEmailJob;
-use App\Models\Faculty;
 use Illuminate\Http\Request;
+use App\Models\Faculty;
 use Illuminate\Support\Facades\Mail;
+use Carbon\Carbon;
+use App\Models\PreferencesSetting;
+use Illuminate\Support\Facades\Log;
+use App\Jobs\NotifyFacultyDeadlineSingleJob; 
+use App\Jobs\NotifyGlobalFacultyDeadlineJob;
 
 class EmailController extends Controller
 {
 
-    protected function sendPreferencesSubmittedNotification($faculty)
+    /**
+     * Send email to a specific faculty before their deadline for testing only.
+     */
+    public function notifyFacultyBeforeDeadlineSingle()
     {
-        $data = [
-            'faculty_name' => $faculty->user->name,
-            'email' => $faculty->user->email,
-        ];
+        $tomorrow = Carbon::now('Asia/Manila')->addDay()->startOfDay();
 
-        Mail::send('emails.preferences_submitted', $data, function ($message) use ($data) {
-            $message->to($data['email'])
-                ->subject('Your Load & Schedule Preferences has been submitted successfully');
-        });
+        // Fetch faculties with deadlines exactly 24 hours away
+        $faculties = PreferencesSetting::with('faculty.user')
+            ->whereNotNull('individual_deadline')
+            ->whereDate('individual_deadline', $tomorrow)
+            ->get();
+
+        if ($faculties->isEmpty()) {
+            Log::info('No faculties have deadlines in the next 24 hours.');
+            return response()->json([
+                'message' => 'No faculties with deadlines in the next 24 hours.'
+            ], 200);
+        }
+
+        foreach ($faculties as $preference) {
+            if ($preference->faculty && $preference->faculty->user) {
+                NotifyFacultyDeadlineSingleJob::dispatch($preference->faculty);
+                Log::info("Notification dispatched for faculty ID: {$preference->faculty->id}");
+            }
+        }
+
+        return response()->json([
+            'message' => 'Faculty deadline notifications dispatched successfully.',
+            'notified_count' => $faculties->count(),
+        ], 200);
+    }
+    /**
+     * Send email to a specific faculty before their deadline for testing only.
+     */
+    public function singleDeadlineNotification(Request $request)
+    {
+        $facultyId = $request->input('faculty_id');
+
+        $preference = PreferencesSetting::with('faculty.user')
+            ->where('faculty_id', $facultyId)
+            ->whereNotNull('individual_deadline')
+            ->first();
+
+        if (!$preference) {
+            return response()->json([
+                'message' => 'Faculty with this ID does not have an individual deadline.'
+            ], 404);
+        }
+
+        if (!$preference->faculty || !$preference->faculty->user) {
+            return response()->json([
+                'message' => 'Faculty details are incomplete or missing.'
+            ], 404);
+        }
+
+        NotifyFacultyDeadlineSingleJob::dispatch($preference->faculty);
+        Log::info("Test notification dispatched for faculty ID: {$preference->faculty->id}");
+
+        return response()->json([
+            'message' => 'Test faculty notification dispatched successfully.',
+            'faculty_id' => $facultyId,
+        ], 200);
     }
 
+    /**
+     * Send email to all faculty before their deadline for testing only.
+     */
+    public function notifyGlobalFacultyDeadline()
+    {
+        $tomorrow = Carbon::now('Asia/Manila')->addDay()->startOfDay();
+
+        $globalSettings = PreferencesSetting::with('faculty.user')
+            ->whereNotNull('global_deadline')
+            ->whereDate('global_deadline', $tomorrow)
+            ->get();
+
+        if ($globalSettings->isEmpty()) {
+            Log::info('✅ No global deadline notifications required.');
+            return response()->json([
+                'message' => 'No global deadline notifications required.'
+            ], 200);
+        }
+
+        foreach ($globalSettings as $setting) {
+            if ($setting->faculty && $setting->faculty->user) {
+                NotifyGlobalFacultyDeadlineJob::dispatch($setting->faculty);
+                Log::info("✅ Notification dispatched for global deadline, faculty ID: {$setting->faculty->id}");
+            }
+        }
+
+        return response()->json([
+            'message' => '✅ Global faculty deadline notifications dispatched successfully.',
+            'notified_count' => $globalSettings->count(),
+        ], 200);
+    }
     /**
      * Send email to a specific faculty to view their load and schedule.
      */
