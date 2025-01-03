@@ -222,7 +222,7 @@ export const routeAnimation = trigger('routeAnimation', [
         ':leave',
         [
           animate(
-            '650ms cubic-bezier(.72,.11,.23,.99)',
+            '600ms cubic-bezier(.72,.11,.23,.99)',
             style({
               transform: 'translateX(-50%)',
               opacity: 0,
@@ -235,7 +235,7 @@ export const routeAnimation = trigger('routeAnimation', [
         ':enter',
         [
           animate(
-            '650ms cubic-bezier(.72,.11,.23,.99)',
+            '600ms cubic-bezier(.72,.11,.23,.99)',
             style({
               transform: 'translateX(0)',
               opacity: 1,

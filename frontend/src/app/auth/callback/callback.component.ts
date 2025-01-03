@@ -53,7 +53,9 @@ export class CallbackComponent implements OnInit, OnDestroy {
               this.originalOAuthParams = decodedState.originalParams;
             }
           } catch (e) {
-            console.error('Failed to decode state:', e);
+            console.debug(
+              'State is not a complex object, continuing with simple state validation'
+            );
           }
         }
 
