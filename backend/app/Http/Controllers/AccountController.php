@@ -2,115 +2,117 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\WebhookController;
 use App\Models\Faculty;
-use App\Models\PreferencesSetting;
 use App\Models\User;
 use Illuminate\Http\Request;
 
 class AccountController extends Controller
 {
+    protected $webhookController;
 
-    // public function __construct()
-    // {
-    //     $this->middleware('auth');
-    //     $this->middleware('super_admin');
-    // }
+    /**
+     * AccountController constructor.
+     * @param WebhookController $webhookController
+     * The webhook controller instance to be injected
+     */
+    public function __construct(WebhookController $webhookController)
+    {
+        $this->webhookController = $webhookController;
+    }
 
+    /**
+     * GET all users with their faculty relationships
+     */
     public function index()
     {
         $users = User::with('faculty')->get();
         return response()->json($users);
     }
 
+    /**
+     * =================================
+     * Faculty Account Management
+     * =================================
+     */
+
+    /**
+     * CREATE new faculty account with optional faculty details
+     */
     public function store(Request $request)
     {
-        try {
-            // Validate the incoming request
-            $validatedData = $request->validate([
-                'last_name' => 'required|string|max:255',
-                'first_name' => 'required|string|max:255',
-                'middle_name' => 'nullable|string|max:255',
-                'suffix_name' => 'nullable|string|max:255',
-                'code' => 'required|string|max:255|unique:users',
-                'email' => 'required|email|unique:users',
-                'role' => 'required|in:super_admin,admin,faculty',
-                'faculty_type' => 'required_if:role,faculty',
-                'faculty_units' => 'required_if:role,faculty',
-                'password' => 'required|string|min:8',
-                'status' => 'required|in:Active,Inactive',
+        $validatedData = $request->validate([
+            'first_name' => 'required|string',
+            'middle_name' => 'nullable|string',
+            'last_name' => 'required|string',
+            'suffix_name' => 'nullable|string',
+            'code' => 'required|string|unique:users',
+            'email' => 'required|email|unique:users',
+            'role' => 'required|string',
+            'status' => 'required|string',
+            'faculty_type' => 'required_if:role,faculty|string',
+            'faculty_units' => 'required_if:role,faculty|numeric',
+            'password' => 'required|string',
+        ]);
+
+        $user = User::create([
+            'first_name' => $validatedData['first_name'],
+            'middle_name' => $validatedData['middle_name'],
+            'last_name' => $validatedData['last_name'],
+            'suffix_name' => $validatedData['suffix_name'],
+            'code' => $validatedData['code'],
+            'email' => $validatedData['email'],
+            'role' => $validatedData['role'],
+            'status' => $validatedData['status'],
+            'password' => $validatedData['password'],
+        ]);
+
+        if ($validatedData['role'] === 'faculty') {
+            $user->faculty()->create([
+                'faculty_type' => $validatedData['faculty_type'],
+                'faculty_units' => $validatedData['faculty_units'],
             ]);
 
-            // Create the user record without bcrypt
-            $user = User::create([
-                'last_name' => $validatedData['last_name'],
+            // Send webhook to HRIS about new faculty
+            $facultyData = [
+                'faculty_code' => $validatedData['code'],
                 'first_name' => $validatedData['first_name'],
                 'middle_name' => $validatedData['middle_name'],
-                'suffix_name' => $validatedData['suffix_name'],
-                'code' => $validatedData['code'],
+                'last_name' => $validatedData['last_name'],
+                'name_extension' => $validatedData['suffix_name'],
                 'email' => $validatedData['email'],
-                'role' => $validatedData['role'],
-                'password' => $validatedData['password'], // No bcrypt
                 'status' => $validatedData['status'],
-            ]);
+                'faculty_type' => $validatedData['faculty_type'],
+            ];
 
-            // If the user role is 'faculty', create the related faculty record
-            if ($validatedData['role'] === 'faculty') {
-                $faculty = Faculty::create([
-                    'user_id' => $user->id,
-                    'faculty_type' => $validatedData['faculty_type'],
-                    'faculty_units' => $validatedData['faculty_units'],
-                ]);
-
-                PreferencesSetting::create([
-                    'faculty_id' => $faculty->id,
-                    'is_enabled' => 0,
-                ]);
-            }
-
-            // Return a success response with the created user data
-            return response()->json([
-                'status' => 'success',
-                'message' => 'User created successfully',
-                'data' => $user->load('faculty'),
-            ], 201);
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // Return a structured validation error response
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Validation error occurred',
-                'errors' => $e->errors(),
-            ], 422);
-        } catch (\Exception $e) {
-            // General error response for any other failures
-            return response()->json([
-                'status' => 'error',
-                'message' => 'An unexpected error occurred',
-                'error_details' => $e->getMessage(),
-            ], 500);
+            $this->webhookController->sendFacultyWebhook('faculty.created', $facultyData);
         }
+
+        return response()->json($user->load('faculty'), 201);
     }
 
+    /**
+     * UPDATE existing faculty account and faculty details
+     */
     public function update(Request $request, User $user)
     {
         $validatedData = $request->validate([
-            'last_name' => 'required|string|max:255',
-            'first_name' => 'required|string|max:255',
-            'middle_name' => 'nullable|string|max:255',
-            'suffix_name' => 'nullable|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'role' => 'required|in:super_admin,admin,faculty',
-            'faculty_type' => 'required_if:role,faculty',
-            'faculty_units' => 'required_if:role,faculty',
-            'password' => 'sometimes|string|min:8',
-            'status' => 'sometimes|required|in:Active,Inactive',
+            'first_name' => 'required|string',
+            'middle_name' => 'nullable|string',
+            'last_name' => 'required|string',
+            'suffix_name' => 'nullable|string',
+            'email' => 'required|email',
+            'role' => 'required|string',
+            'status' => 'required|string',
+            'faculty_type' => 'required_if:role,faculty|string',
+            'faculty_units' => 'required_if:role,faculty|numeric',
+            'password' => 'nullable|string',
         ]);
 
-        // Update user details
         $user->update([
-            'last_name' => $validatedData['last_name'],
             'first_name' => $validatedData['first_name'],
             'middle_name' => $validatedData['middle_name'],
+            'last_name' => $validatedData['last_name'],
             'suffix_name' => $validatedData['suffix_name'],
             'email' => $validatedData['email'],
             'role' => $validatedData['role'],
@@ -126,6 +128,20 @@ class AccountController extends Controller
                     'faculty_units' => $validatedData['faculty_units'],
                 ]
             );
+
+            // Send webhook to HRIS about faculty update
+            $facultyData = [
+                'faculty_code' => $user->code,
+                'first_name' => $validatedData['first_name'],
+                'middle_name' => $validatedData['middle_name'],
+                'last_name' => $validatedData['last_name'],
+                'name_extension' => $validatedData['suffix_name'],
+                'email' => $validatedData['email'],
+                'status' => $validatedData['status'],
+                'faculty_type' => $validatedData['faculty_type'],
+            ];
+
+            $this->webhookController->sendFacultyWebhook('faculty.updated', $facultyData);
         } else {
             // If the user is no longer a faculty, delete the faculty record
             if ($user->faculty) {
@@ -141,6 +157,9 @@ class AccountController extends Controller
         return response()->json($user->load('faculty'));
     }
 
+    /**
+     * DELETE a faculty user account
+     */
     public function destroy(User $user)
     {
         if ($user->faculty) {
@@ -151,7 +170,15 @@ class AccountController extends Controller
         return response()->json(null, 204);
     }
 
-    //For Admin
+    /**
+     * =================================
+     * Admin Account Management
+     * =================================
+     */
+
+    /**
+     * GET all admin and superadmin accounts
+     */
     public function indexAdmins()
     {
         // Fetch users with roles 'admin' or 'super_admin'
@@ -159,9 +186,11 @@ class AccountController extends Controller
         return response()->json($admins);
     }
 
+    /**
+     * CREATE new admin/superadmin account
+     */
     public function storeAdmin(Request $request)
     {
-        // Validate the incoming request
         $validatedData = $request->validate([
             'last_name' => 'required|string|max:255',
             'first_name' => 'required|string|max:255',
@@ -170,11 +199,10 @@ class AccountController extends Controller
             'code' => 'required|string|max:255|unique:users',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:8',
-            'role' => 'required|in:admin,superadmin', // Restrict role to admin or super_admin
+            'role' => 'required|in:admin,superadmin',
             'status' => 'required|in:Active,Inactive',
         ]);
 
-        // Create the user with the role provided in the request
         $admin = User::create([
             'last_name' => $validatedData['last_name'],
             'first_name' => $validatedData['first_name'],
@@ -182,17 +210,19 @@ class AccountController extends Controller
             'suffix_name' => $validatedData['suffix_name'],
             'code' => $validatedData['code'],
             'email' => $validatedData['email'],
-            'role' => $validatedData['role'], // Role comes from the request
-            'password' => $validatedData['password'], // Hash the password
-            'status' => $validatedData['status'], // Set status
+            'role' => $validatedData['role'],
+            'password' => $validatedData['password'],
+            'status' => $validatedData['status'],
         ]);
 
         return response()->json($admin, 201);
     }
 
+    /**
+     * UPDATE admin/superadmin account details
+     */
     public function updateAdmin(Request $request, User $admin)
     {
-        // Validate the incoming request
         $validatedData = $request->validate([
             'last_name' => 'sometimes|required|string|max:255',
             'first_name' => 'sometimes|required|string|max:255',
@@ -205,7 +235,6 @@ class AccountController extends Controller
             'status' => 'sometimes|required|in:Active,Inactive',
         ]);
 
-        // Initialize an array to store fields that have changed
         $changedFields = [];
 
         // Check each field for changes and update if necessary
@@ -268,7 +297,9 @@ class AccountController extends Controller
         ]);
     }
 
-    // Delete an admin
+    /**
+     * DELETE an admin/superadmin account
+     */
     public function destroyAdmin(User $admin)
     {
         if ($admin->role !== 'admin' && $admin->role !== 'superadmin') {

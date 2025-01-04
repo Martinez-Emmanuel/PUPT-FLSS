@@ -1,0 +1,254 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Faculty;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+
+class WebhookController extends Controller
+{
+    protected $hrisWebhookUrl;
+    protected $webhookSecret;
+    protected $maxPayloadSize;
+
+    public function __construct()
+    {
+        $this->hrisWebhookUrl = env('HRIS_WEBHOOK_URL', 'http://localhost:3000/api/webhooks/faculty');
+        $this->webhookSecret = env('WEBHOOK_SECRET');
+        $this->maxPayloadSize = 1024 * 1024; // 1MB limit
+        Log::info('WebhookController initialized with URL: ' . $this->hrisWebhookUrl);
+    }
+
+    /**
+     * Handle incoming webhooks from HRIS
+     */
+    public function handleFacultyWebhook(Request $request)
+    {
+        try {
+            Log::info('Received webhook from HRIS', [
+                'headers' => $request->headers->all(),
+                'body' => $request->all(),
+            ]);
+
+            $signature = $request->header('X-HRIS-Secret');
+            if (!$signature) {
+                Log::error('No signature provided in headers');
+                return response()->json(['error' => 'No signature provided'], 401);
+            }
+
+            Log::debug('Received signature: ' . $signature);
+            Log::debug('Raw content for verification:', ['content' => $request->getContent()]);
+
+            // Verify signature using raw content
+            if (!$this->verifySignature($request->getContent(), $signature)) {
+                Log::error('Invalid signature', [
+                    'received' => $signature,
+                    'expected' => $this->generateSignature($request->getContent()),
+                ]);
+                return response()->json(['error' => 'Invalid signature'], 401);
+            }
+
+            Log::info('Signature verified successfully');
+
+            $payload = $request->json()->all();
+            $event = $payload['event'] ?? null;
+            $facultyData = $payload['faculty_data'] ?? null;
+
+            if (!$event || !$facultyData) {
+                Log::error('Invalid payload structure', ['payload' => $payload]);
+                return response()->json(['error' => 'Invalid payload'], 400);
+            }
+
+            Log::info('Processing webhook', [
+                'event' => $event,
+                'faculty_data' => $facultyData,
+            ]);
+
+            if ($event === 'faculty.updated') {
+                $this->handleFacultyUpdate($facultyData);
+            }
+
+            Log::info('Webhook processed successfully');
+            return response()->json(['status' => 'success']);
+        } catch (\Exception $e) {
+            Log::error('Error handling webhook:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return response()->json(['error' => 'Internal server error'], 500);
+        }
+    }
+
+    /**
+     * Send webhook to HRIS for faculty updates
+     */
+    public function sendFacultyWebhook($event, $facultyData)
+    {
+        $maxRetries = 5;
+        $retryDelay = 1000;
+        $attempt = 1;
+
+        while ($attempt <= $maxRetries) {
+            try {
+                if (!$this->webhookSecret) {
+                    Log::error('Cannot send webhook: Webhook secret is not set');
+                    return false;
+                }
+
+                Log::info("Webhook attempt {$attempt} of {$maxRetries}", [
+                    'event' => $event,
+                    'faculty_data' => $facultyData,
+                    'webhook_url' => $this->hrisWebhookUrl,
+                ]);
+
+                $payload = [
+                    'event' => $event,
+                    'faculty_data' => $facultyData,
+                ];
+
+                $jsonPayload = json_encode($payload);
+                Log::debug('JSON payload for signature:', ['payload' => $jsonPayload]);
+
+                $signature = $this->generateSignature($jsonPayload);
+                if (!$signature) {
+                    Log::error('Cannot send webhook: Failed to generate signature');
+                    return false;
+                }
+
+                Log::info('Generated signature: ' . $signature);
+                Log::info('Sending webhook to: ' . $this->hrisWebhookUrl);
+
+                $response = Http::timeout(10)->withHeaders([
+                    'Content-Type' => 'application/json',
+                    'x-hris-secret' => $signature,
+                ])->post($this->hrisWebhookUrl, $payload);
+
+                if (!$response->successful()) {
+                    throw new \Exception('Webhook request failed: ' . $response->status() . ' ' . json_encode($response->json()));
+                }
+
+                Log::info('Webhook sent successfully', [
+                    'status' => $response->status(),
+                    'response' => $response->json(),
+                ]);
+
+                return true;
+            } catch (\Exception $e) {
+                Log::error("Webhook attempt {$attempt} failed:", [
+                    'error' => $e->getMessage(),
+                    'attempt' => $attempt,
+                    'max_retries' => $maxRetries,
+                ]);
+
+                if ($attempt === $maxRetries) {
+                    Log::error('All webhook attempts failed', [
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString(),
+                        'url' => $this->hrisWebhookUrl,
+                    ]);
+                    return false;
+                }
+
+                $sleepTime = ($retryDelay * pow(2, $attempt - 1)) / 1000;
+                sleep($sleepTime);
+                $attempt++;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Handle faculty updates from HRIS
+     */
+    protected function handleFacultyUpdate(array $facultyData)
+    {
+        try {
+            return \DB::transaction(function () use ($facultyData) {
+                $requiredFields = ['faculty_code', 'first_name', 'last_name', 'email', 'status', 'faculty_type'];
+                foreach ($requiredFields as $field) {
+                    if (!isset($facultyData[$field]) || empty($facultyData[$field])) {
+                        throw new \InvalidArgumentException("Missing required field: {$field}");
+                    }
+                }
+
+                $user = User::where('code', $facultyData['faculty_code'])
+                    ->lockForUpdate()
+                    ->first();
+
+                if (!$user) {
+                    Log::error('User not found for faculty update', ['faculty_code' => $facultyData['faculty_code']]);
+                    return false;
+                }
+
+                // Update user data
+                $user->update([
+                    'first_name' => $facultyData['first_name'],
+                    'middle_name' => $facultyData['middle_name'],
+                    'last_name' => $facultyData['last_name'],
+                    'suffix_name' => $facultyData['name_extension'],
+                    'email' => $facultyData['email'],
+                    'status' => $facultyData['status'],
+                ]);
+
+                // Update faculty data
+                $user->faculty()->update([
+                    'faculty_type' => $facultyData['faculty_type'],
+                ]);
+
+                Log::info('Faculty updated successfully via webhook', [
+                    'faculty_code' => $facultyData['faculty_code'],
+                ]);
+
+                return true;
+            });
+        } catch (\Exception $e) {
+            Log::error('Error updating faculty:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'faculty_data' => $facultyData,
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Generate HMAC signature for payload
+     */
+    protected function generateSignature($payload)
+    {
+        if (!$this->webhookSecret) {
+            Log::error('Webhook secret is not set');
+            return null;
+        }
+
+        // Convert to JSON string if not already a string
+        $data = is_string($payload) ? $payload : json_encode($payload);
+        Log::debug('Generating signature for payload:', ['payload' => $data]);
+
+        $signature = hash_hmac('sha256', $data, $this->webhookSecret);
+        Log::debug('Generated signature:', ['signature' => $signature]);
+        return $signature;
+    }
+
+    /**
+     * Verify webhook signature
+     */
+    protected function verifySignature($payload, $signature)
+    {
+        if (!$signature || !$this->webhookSecret) {
+            Log::error('Missing signature or webhook secret');
+            return false;
+        }
+        $expectedSignature = $this->generateSignature($payload);
+        Log::debug('Signature comparison:', [
+            'received' => $signature,
+            'expected' => $expectedSignature,
+            'secret' => $this->webhookSecret,
+        ]);
+        return hash_equals($expectedSignature, $signature);
+    }
+}
