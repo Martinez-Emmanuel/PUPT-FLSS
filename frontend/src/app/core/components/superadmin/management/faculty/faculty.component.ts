@@ -32,12 +32,7 @@ import { fadeAnimation } from '../../../../animations/animations';
 })
 export class FacultyComponent implements OnInit, OnDestroy {
   facultyStatuses = ['Active', 'Inactive'];
-  facultyTypes = [
-    'Full-Time',
-    'Part-Time',
-    'Temporary',
-    'Designee',
-  ];
+  facultyTypes = ['Full-Time', 'Part-Time', 'Temporary', 'Designee'];
   selectedFacultyIndex: number | null = null;
 
   faculty: Faculty[] = [];
@@ -363,6 +358,7 @@ export class FacultyComponent implements OnInit, OnDestroy {
    * Deletes a faculty member.
    * @param faculty The faculty member to delete.
    */
+  /*
   deleteFaculty(faculty: Faculty) {
     const facultyId = faculty.id;
 
@@ -392,4 +388,5 @@ export class FacultyComponent implements OnInit, OnDestroy {
         }
       });
   }
+  */
 }

@@ -160,15 +160,17 @@ class AccountController extends Controller
     /**
      * DELETE a faculty user account
      */
+    /*
     public function destroy(User $user)
     {
-        if ($user->faculty) {
-            $user->faculty->delete();
-        }
-        $user->delete();
-
-        return response()->json(null, 204);
+    if ($user->faculty) {
+    $user->faculty->delete();
     }
+    $user->delete();
+
+    return response()->json(null, 204);
+    }
+     */
 
     /**
      * =================================
