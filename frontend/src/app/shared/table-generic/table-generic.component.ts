@@ -1,13 +1,4 @@
-import {
-  Component,
-  Input,
-  OnInit,
-  AfterViewInit,
-  ViewChild,
-  Output,
-  EventEmitter,
-  TemplateRef,
-} from '@angular/core';
+import { Component, Input, OnInit, AfterViewInit, ViewChild, Output, EventEmitter, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
@@ -50,6 +41,7 @@ export class TableGenericComponent<T> implements OnInit, AfterViewInit {
   @Input() showViewButton: boolean = false;
   @Input() showDeleteButton: boolean = true;
   @Input() isHeaderSticky: boolean = true;
+  @Input() disableEdit: boolean = false;
 
   @Input() showTableHeading: boolean = false;
   @Input() tableHeadingTitle: string = '';

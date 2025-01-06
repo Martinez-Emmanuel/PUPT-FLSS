@@ -71,8 +71,8 @@ export class HrisHealthService {
   private readonly MAX_RETRIES = 5;
   private readonly INITIAL_RETRY_DELAY_MS = 500;
   private readonly TIMEOUT_MS = 5000;
-  private readonly MEMORY_WARNING_THRESHOLD = 90;
-  private readonly CPU_WARNING_THRESHOLD = 90;
+  private readonly MEMORY_WARNING_THRESHOLD = 95;
+  private readonly CPU_WARNING_THRESHOLD = 95;
 
   constructor(private http: HttpClient) {}
 

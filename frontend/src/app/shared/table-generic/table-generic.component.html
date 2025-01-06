@@ -85,6 +85,8 @@
             mat-button
             class="sec-ripple edit-button"
             (click)="onEdit(element)"
+            [disabled]="disableEdit"
+            [ngClass]="{ 'disabled-button': disableEdit }"
           >
             <mat-icon>edit</mat-icon>
             <span>Edit</span>

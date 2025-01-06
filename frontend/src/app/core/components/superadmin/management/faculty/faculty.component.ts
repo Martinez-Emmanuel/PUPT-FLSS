@@ -1,18 +1,44 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
-import { catchError, debounceTime, distinctUntilChanged, of, Subject, takeUntil } from 'rxjs';
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  of,
+  Subject,
+  takeUntil,
+  interval,
+} from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSymbolDirective } from '../../../../imports/mat-symbol.directive';
 
-import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
+import {
+  TableDialogComponent,
+  DialogConfig,
+} from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
-import { InputField, TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
+import {
+  InputField,
+  TableHeaderComponent,
+} from '../../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
 
-import { FacultyService, Faculty } from '../../../../services/superadmin/management/faculty/faculty.service';
+import {
+  FacultyService,
+  Faculty,
+} from '../../../../services/superadmin/management/faculty/faculty.service';
+import { HrisHealthService } from '../../../../services/health/hris-health.service';
 
 import { fadeAnimation } from '../../../../animations/animations';
 
@@ -24,6 +50,8 @@ import { fadeAnimation } from '../../../../animations/animations';
     TableGenericComponent,
     TableHeaderComponent,
     LoadingComponent,
+    MatProgressSpinnerModule,
+    MatSymbolDirective,
   ],
   templateUrl: './faculty.component.html',
   styleUrls: ['./faculty.component.scss'],
@@ -38,6 +66,7 @@ export class FacultyComponent implements OnInit, OnDestroy {
   faculty: Faculty[] = [];
   filteredFaculty: Faculty[] = [];
   isLoading = true;
+  isHrisHealthy = false;
 
   searchControl = new FormControl('');
   private destroy$ = new Subject<void>();
@@ -75,12 +104,14 @@ export class FacultyComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private facultyService: FacultyService
+    private facultyService: FacultyService,
+    private hrisHealthService: HrisHealthService
   ) {}
 
   ngOnInit() {
     this.fetchFaculty();
     this.setupSearch();
+    this.setupHrisHealthCheck();
   }
 
   ngOnDestroy() {
@@ -252,6 +283,15 @@ export class FacultyComponent implements OnInit, OnDestroy {
    * Opens the dialog to add a new faculty member.
    */
   openAddFacultyDialog() {
+    if (this.isHrisHealthy) {
+      this.snackBar.open(
+        'Faculty details can only be added in HRIS when the system is online. Please add faculty in HRIS.',
+        'Close',
+        { duration: 5000 }
+      );
+      return;
+    }
+
     const config = this.getDialogConfig();
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: config,
@@ -291,6 +331,15 @@ export class FacultyComponent implements OnInit, OnDestroy {
    * @param faculty The faculty member to edit.
    */
   openEditFacultyDialog(faculty: Faculty) {
+    if (this.isHrisHealthy) {
+      this.snackBar.open(
+        'Faculty details can only be modified in HRIS when the system is online. Please make changes in HRIS.',
+        'Close',
+        { duration: 5000 }
+      );
+      return;
+    }
+
     this.selectedFacultyIndex = this.faculty.indexOf(faculty);
     const config = this.getDialogConfig(faculty);
 
@@ -389,4 +438,36 @@ export class FacultyComponent implements OnInit, OnDestroy {
       });
   }
   */
+
+  /**
+   * Sets up an interval to periodically check the health of the HRIS system.
+   */
+  private setupHrisHealthCheck() {
+    this.checkHrisHealth();
+
+    interval(30000)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.checkHrisHealth();
+      });
+  }
+
+  /**
+   * Checks the health of the HRIS system and updates the `isHrisHealthy` flag.
+   * Marks the component for change detection.
+   */
+  private checkHrisHealth() {
+    this.cdr.markForCheck();
+
+    this.hrisHealthService
+      .checkHealth()
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError(() => of(false))
+      )
+      .subscribe((isHealthy) => {
+        this.isHrisHealthy = isHealthy;
+        this.cdr.markForCheck();
+      });
+  }
 }

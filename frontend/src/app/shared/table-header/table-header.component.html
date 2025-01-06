@@ -89,6 +89,7 @@
       mat-flat-button
       class="custom-mat-button add-button"
       [disabled]="buttonDisabled"
+      [ngClass]="{ 'disabled-button': buttonDisabled }"
       (click)="onAdd()"
     >
       <div class="button-wrapper">
