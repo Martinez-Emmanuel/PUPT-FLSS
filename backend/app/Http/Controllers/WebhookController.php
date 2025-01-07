@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendFacultyUpdateWebhook;
 use App\Models\Faculty;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 class WebhookController extends Controller
 {
+
     protected $hrisWebhookUrl;
     protected $webhookSecret;
     protected $maxPayloadSize;
@@ -23,7 +25,11 @@ class WebhookController extends Controller
     }
 
     /**
-     * Handle incoming webhooks from HRIS
+     * Handle incoming webhooks from the HRIS system for faculty updates.
+     *
+     * @param Request $request The incoming HTTP request containing the webhook payload.
+     * @return \Illuminate\Http\JsonResponse A JSON response indicating the status of the webhook processing.
+     * @throws \Exception If there is an error processing the webhook.
      */
     public function handleFacultyWebhook(Request $request)
     {
@@ -56,22 +62,34 @@ class WebhookController extends Controller
             $payload = $request->json()->all();
             $event = $payload['event'] ?? null;
             $facultyData = $payload['faculty_data'] ?? null;
+            $webhookId = $payload['webhook_id'] ?? null;
 
-            if (!$event || !$facultyData) {
+            if (!$event || !$facultyData || !$webhookId) {
                 Log::error('Invalid payload structure', ['payload' => $payload]);
                 return response()->json(['error' => 'Invalid payload'], 400);
             }
 
+            // Check if we've already processed this webhook
+            $processedKey = 'processed_webhook:' . $webhookId;
+            if (Cache::has($processedKey)) {
+                Log::info('Webhook already processed', ['webhook_id' => $webhookId]);
+                return response()->json(['status' => 'already processed'], 409);
+            }
+
             Log::info('Processing webhook', [
+                'webhook_id' => $webhookId,
                 'event' => $event,
                 'faculty_data' => $facultyData,
             ]);
 
             if ($event === 'faculty.updated') {
                 $this->handleFacultyUpdate($facultyData);
+
+                // Mark webhook as processed after successful update
+                Cache::put($processedKey, true, now()->addDays(30));
             }
 
-            Log::info('Webhook processed successfully');
+            Log::info('Webhook processed successfully', ['webhook_id' => $webhookId]);
             return response()->json(['status' => 'success']);
         } catch (\Exception $e) {
             Log::error('Error handling webhook:', [
@@ -83,86 +101,48 @@ class WebhookController extends Controller
     }
 
     /**
-     * Send webhook to HRIS for faculty updates
+     * Send outgoing webhooks to the HRIS system for faculty updates.
+     *
+     * @param string $event The type of event that triggered the webhook (e.g., 'faculty.updated').
+     * @param array $facultyData The data related to the faculty update.
+     * @return bool True if the webhook job was dispatched successfully, false otherwise.
+     *
+     * This method dispatches a `SendFacultyUpdateWebhook` job to handle the asynchronous sending of the webhook.
+     * It logs the event and faculty data being sent.
+     * It returns false if the webhook secret is not set or if there is an error dispatching the job.
      */
     public function sendFacultyWebhook($event, $facultyData)
     {
-        $maxRetries = 5;
-        $retryDelay = 1000;
-        $attempt = 1;
-
-        while ($attempt <= $maxRetries) {
-            try {
-                if (!$this->webhookSecret) {
-                    Log::error('Cannot send webhook: Webhook secret is not set');
-                    return false;
-                }
-
-                Log::info("Webhook attempt {$attempt} of {$maxRetries}", [
-                    'event' => $event,
-                    'faculty_data' => $facultyData,
-                    'webhook_url' => $this->hrisWebhookUrl,
-                ]);
-
-                $payload = [
-                    'event' => $event,
-                    'faculty_data' => $facultyData,
-                ];
-
-                $jsonPayload = json_encode($payload);
-                Log::debug('JSON payload for signature:', ['payload' => $jsonPayload]);
-
-                $signature = $this->generateSignature($jsonPayload);
-                if (!$signature) {
-                    Log::error('Cannot send webhook: Failed to generate signature');
-                    return false;
-                }
-
-                Log::info('Generated signature: ' . $signature);
-                Log::info('Sending webhook to: ' . $this->hrisWebhookUrl);
-
-                $response = Http::timeout(10)->withHeaders([
-                    'Content-Type' => 'application/json',
-                    'x-hris-secret' => $signature,
-                ])->post($this->hrisWebhookUrl, $payload);
-
-                if (!$response->successful()) {
-                    throw new \Exception('Webhook request failed: ' . $response->status() . ' ' . json_encode($response->json()));
-                }
-
-                Log::info('Webhook sent successfully', [
-                    'status' => $response->status(),
-                    'response' => $response->json(),
-                ]);
-
-                return true;
-            } catch (\Exception $e) {
-                Log::error("Webhook attempt {$attempt} failed:", [
-                    'error' => $e->getMessage(),
-                    'attempt' => $attempt,
-                    'max_retries' => $maxRetries,
-                ]);
-
-                if ($attempt === $maxRetries) {
-                    Log::error('All webhook attempts failed', [
-                        'error' => $e->getMessage(),
-                        'trace' => $e->getTraceAsString(),
-                        'url' => $this->hrisWebhookUrl,
-                    ]);
-                    return false;
-                }
-
-                $sleepTime = ($retryDelay * pow(2, $attempt - 1)) / 1000;
-                sleep($sleepTime);
-                $attempt++;
+        try {
+            if (!$this->webhookSecret) {
+                Log::error('Cannot send webhook: Webhook secret is not set');
+                return false;
             }
-        }
 
-        return false;
+            Log::info('Dispatching webhook job', [
+                'event' => $event,
+                'faculty_data' => $facultyData,
+            ]);
+
+            SendFacultyUpdateWebhook::dispatch($event, $facultyData);
+            return true;
+        } catch (\Exception $e) {
+            Log::error('Error dispatching webhook job:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return false;
+        }
     }
 
     /**
-     * Handle faculty updates from HRIS
+     * Handle faculty updates received from the HRIS webhook.
+     *
+     * @param array $facultyData The data of the faculty member being updated.
+     * @return bool True if the faculty was updated successfully, false otherwise.
+     *
+     * @throws \InvalidArgumentException If any required fields are missing from the faculty data.
+     * @throws \Exception If there is an error during the database transaction.
      */
     protected function handleFacultyUpdate(array $facultyData)
     {
@@ -216,7 +196,10 @@ class WebhookController extends Controller
     }
 
     /**
-     * Generate HMAC signature for payload
+     * Generate an HMAC-SHA256 signature for the given payload using the webhook secret.
+     *
+     * @param mixed $payload The payload to sign. Can be a string or an array.
+     * @return string|null The generated signature, or null if the webhook secret is not set.
      */
     protected function generateSignature($payload)
     {
@@ -235,7 +218,11 @@ class WebhookController extends Controller
     }
 
     /**
-     * Verify webhook signature
+     * Verify the signature of a webhook payload.
+     *
+     * @param mixed $payload The payload to verify. Can be a string or an array.
+     * @param string $signature The signature received in the webhook request.
+     * @return bool True if the signature is valid, false otherwise.
      */
     protected function verifySignature($payload, $signature)
     {
