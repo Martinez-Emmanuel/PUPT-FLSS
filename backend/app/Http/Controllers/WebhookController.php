@@ -39,6 +39,17 @@ class WebhookController extends Controller
                 'body' => $request->all(),
             ]);
 
+            $payloadSize = strlen($request->getContent());
+            if ($payloadSize > $this->maxPayloadSize) {
+                Log::error('Payload too large', ['size' => $payloadSize]);
+                return response()->json(['error' => 'Payload too large'], 413);
+            }
+
+            if (!$request->isJson()) {
+                Log::error('Invalid content type', ['content_type' => $request->header('Content-Type')]);
+                return response()->json(['error' => 'Invalid content type'], 415);
+            }
+
             $signature = $request->header('X-HRIS-Secret');
             if (!$signature) {
                 Log::error('No signature provided in headers');
@@ -85,7 +96,7 @@ class WebhookController extends Controller
             if ($event === 'faculty.updated') {
                 $this->handleFacultyUpdate($facultyData);
 
-                // Mark webhook as processed after successful update
+                // Mark webhook as processed with 30-day expiry
                 Cache::put($processedKey, true, now()->addDays(30));
             }
 

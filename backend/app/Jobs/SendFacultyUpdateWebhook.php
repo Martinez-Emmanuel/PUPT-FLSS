@@ -76,6 +76,7 @@ class SendFacultyUpdateWebhook implements ShouldQueue
     protected $facultyData;
     protected $webhookUrl;
     protected $webhookSecret;
+    protected $timeout = 30;
 
     /**
      * Create a new job instance.
@@ -157,7 +158,7 @@ class SendFacultyUpdateWebhook implements ShouldQueue
                 return;
             }
 
-            $response = Http::timeout(10)
+            $response = Http::timeout($this->timeout)
                 ->withHeaders([
                     'Content-Type' => 'application/json',
                     'x-hris-secret' => $signature,
@@ -170,11 +171,12 @@ class SendFacultyUpdateWebhook implements ShouldQueue
                     'webhook_id' => $this->webhookId,
                     'status' => $response->status(),
                     'body' => $response->body(),
+                    'attempt' => $this->attempts(),
                 ]);
 
-                // For certain status codes, we might want to not retry
-                if (in_array($response->status(), [400, 401, 403])) {
-                    $this->fail(new \Exception('Webhook request failed with status ' . $response->status()));
+                if ($response->status() >= 400 && $response->status() < 500
+                    && !in_array($response->status(), [408, 429])) {
+                    $this->fail(new \Exception("Webhook request failed with client error {$response->status()}"));
                     return;
                 }
 
@@ -187,7 +189,7 @@ class SendFacultyUpdateWebhook implements ShouldQueue
                     return;
                 }
 
-                throw new \Exception('Webhook request failed with status ' . $response->status());
+                throw new \Exception("Webhook request failed with status {$response->status()}");
             }
 
             Log::info('Webhook sent successfully', [
