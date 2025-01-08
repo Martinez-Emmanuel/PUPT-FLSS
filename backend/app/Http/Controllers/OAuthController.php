@@ -24,6 +24,7 @@ class OAuthController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'faculty_data' => 'required|array',
+            'faculty_data.UserID' => 'required|integer',
             'faculty_data.faculty_code' => 'required|string',
             'faculty_data.first_name' => 'required|string',
             'faculty_data.middle_name' => 'nullable|string',
@@ -51,7 +52,8 @@ class OAuthController extends Controller
             $facultyData = $request->input('faculty_data');
             $hrisToken = $request->input('hris_token');
 
-            $user = User::where('code', $facultyData['faculty_code'])->first();
+            $faculty = Faculty::where('hris_user_id', $facultyData['UserID'])->first();
+            $user = $faculty ? $faculty->user : null;
 
             if (!$user) {
                 $password = Str::password(12, true, true, true, false);
@@ -75,6 +77,7 @@ class OAuthController extends Controller
 
                 $faculty = new Faculty();
                 $faculty->user_id = $user->id;
+                $faculty->hris_user_id = $facultyData['UserID'];
                 $faculty->faculty_type = $facultyData['faculty_type'];
                 $faculty->faculty_units = 0;
 

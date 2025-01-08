@@ -14,10 +14,11 @@ return new class extends Migration
         Schema::create('faculty', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
+            $table->unsignedBigInteger('hris_user_id')->unique();
             $table->string('faculty_type', 50);
             $table->string('faculty_units');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->index('user_id');
+            $table->index(['user_id', 'hris_user_id']);
             $table->timestamps();
         });
     }
