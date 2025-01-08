@@ -52,6 +52,7 @@ class OAuthController extends Controller
             $facultyData = $request->input('faculty_data');
             $hrisToken = $request->input('hris_token');
 
+            // Only look up by HRIS UserID
             $faculty = Faculty::where('hris_user_id', $facultyData['UserID'])->first();
             $user = $faculty ? $faculty->user : null;
 
@@ -106,6 +107,7 @@ class OAuthController extends Controller
             Log::info('Faculty processed successfully via OAuth', [
                 'user_id' => $user->id,
                 'faculty_code' => $facultyData['faculty_code'],
+                'hris_user_id' => $facultyData['UserID'],
             ]);
 
             return response()->json([
@@ -131,6 +133,7 @@ class OAuthController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'faculty_code' => $facultyData['faculty_code'] ?? null,
+                'hris_user_id' => $facultyData['UserID'] ?? null,
             ]);
 
             return response()->json([

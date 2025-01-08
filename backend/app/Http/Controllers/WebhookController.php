@@ -155,12 +155,16 @@ class WebhookController extends Controller
                     }
                 }
 
-                $user = User::where('code', $facultyData['faculty_code'])
-                    ->lockForUpdate()
-                    ->first();
+                $user = User::where('code', $facultyData['faculty_code'])->first();
 
                 if (!$user) {
                     Log::error('User not found for faculty update', ['faculty_code' => $facultyData['faculty_code']]);
+                    return false;
+                }
+
+                $faculty = $user->faculty;
+                if (!$faculty) {
+                    Log::error('Faculty record not found for user', ['user_id' => $user->id]);
                     return false;
                 }
 
@@ -174,13 +178,25 @@ class WebhookController extends Controller
                     'status' => $facultyData['status'],
                 ]);
 
-                // Update faculty data
-                $user->faculty()->update([
+                // Update faculty data and hris_user_id if provided
+                $facultyUpdateData = [
                     'faculty_type' => $facultyData['faculty_type'],
-                ]);
+                ];
+
+                // If HRIS sends back the UserID, update it
+                if (isset($facultyData['hris_user_id'])) {
+                    $facultyUpdateData['hris_user_id'] = $facultyData['hris_user_id'];
+                    Log::info('Updating faculty with HRIS UserID', [
+                        'faculty_code' => $facultyData['faculty_code'],
+                        'hris_user_id' => $facultyData['hris_user_id'],
+                    ]);
+                }
+
+                $faculty->update($facultyUpdateData);
 
                 Log::info('Faculty updated successfully via webhook', [
                     'faculty_code' => $facultyData['faculty_code'],
+                    'hris_user_id' => $faculty->hris_user_id,
                 ]);
 
                 return true;

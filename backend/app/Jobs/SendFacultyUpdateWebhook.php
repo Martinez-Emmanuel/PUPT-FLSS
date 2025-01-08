@@ -123,6 +123,16 @@ class SendFacultyUpdateWebhook implements ShouldQueue
                 return;
             }
 
+            if (isset($this->facultyData['faculty_code'])) {
+                $faculty = \App\Models\Faculty::whereHas('user', function ($query) {
+                    $query->where('code', $this->facultyData['faculty_code']);
+                })->first();
+
+                if ($faculty && $faculty->hris_user_id) {
+                    $this->facultyData['hris_user_id'] = $faculty->hris_user_id;
+                }
+            }
+
             Log::info('Sending webhook to HRIS', [
                 'webhook_id' => $this->webhookId,
                 'event' => $this->event,
@@ -216,8 +226,7 @@ class SendFacultyUpdateWebhook implements ShouldQueue
      */
     protected function getIdempotencyKey(): string
     {
-        // Create a unique key based on the content and type of the webhook
-        return 'webhook:' . md5($this->event . ':' . json_encode($this->facultyData));
+        return 'webhook:' . md5($this->webhookId . ':' . $this->event . ':' . json_encode($this->facultyData));
     }
 
     /**
@@ -225,7 +234,6 @@ class SendFacultyUpdateWebhook implements ShouldQueue
      */
     protected function markAsProcessed(string $key): void
     {
-        // Cache the result for 30 days
         Cache::put($key, true, now()->addDays(30));
     }
 }
