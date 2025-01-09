@@ -130,8 +130,13 @@ export class HomeComponent implements OnInit, AfterViewInit {
     this.facultyNotifService.getFacultyNotifications().subscribe({
       next: (response) => {
         this.notifications = response.notifications.map(notification => ({
-          ...notification,
-          timestamp: new Date(notification.created_at).toLocaleString(),
+          faculty_notifications_id: notification.faculty_notifications_id,
+          faculty_id: notification.faculty_id,
+          message: notification.message,
+          created_at: notification.created_at,
+          updated_at: notification.updated_at,
+          is_read: notification.is_read,
+          timestamp: new Date(notification.created_at).toLocaleString()
         }));
         this.changeDetectorRef.detectChanges();
       },
