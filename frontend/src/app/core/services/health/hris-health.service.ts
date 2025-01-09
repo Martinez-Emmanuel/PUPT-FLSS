@@ -90,7 +90,7 @@ export class HrisHealthService {
       return of(this.healthCheckCache!.status);
     }
 
-    return this.http.get<HealthCheckResponse>(`${this.hrisUrl}/health`).pipe(
+    return this.http.get<HealthCheckResponse>(`${this.hrisUrl}/api/health`).pipe(
       timeout(this.TIMEOUT_MS),
       map((response) => {
         const isHealthy = this.evaluateHealthStatus(response);
