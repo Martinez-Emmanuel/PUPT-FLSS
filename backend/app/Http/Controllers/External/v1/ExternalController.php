@@ -37,12 +37,35 @@ class ExternalController extends Controller
             return response()->json(['message' => 'No active semester found.'], 404);
         }
 
+        // Check if there are any published schedules for the active semester
+        $hasPublishedSchedules = DB::table('faculty_schedule_publication')
+            ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
+            ->where('semesters.semester', '=', $activeSemester->semester)
+            ->where('faculty_schedule_publication.is_published', '=', 1)
+            ->exists();
+
+        if (!$hasPublishedSchedules) {
+            return response()->json([
+                'message' => "PUP Taguig faculty load and schedules for " . "A.Y. " .
+                $activeSemester->year_start . "-" . $activeSemester->year_end .
+                ", " . $this->formatSemesterLabel($activeSemester->semester) .
+                " is not yet published.",
+            ]);
+        }
+
         // Step 2: Prepare a subquery to get schedules for the current semester and academic year
         $schedulesSub = DB::table('schedules')
             ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
             ->join('course_assignments', 'course_assignments.course_assignment_id', '=', 'section_courses.course_assignment_id')
             ->join('semesters as ca_semesters', 'ca_semesters.semester_id', '=', 'course_assignments.semester_id')
             ->join('sections_per_program_year', 'sections_per_program_year.sections_per_program_year_id', '=', 'section_courses.sections_per_program_year_id')
+            ->join('faculty_schedule_publication', function ($join) {
+                $join->on('faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
+                    ->where('faculty_schedule_publication.is_published', '=', 1);
+            })
             ->where('ca_semesters.semester', '=', $activeSemester->semester)
             ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id)
             ->select(
@@ -240,6 +263,25 @@ class ExternalController extends Controller
             return response()->json(['message' => 'No active semester found.'], 404);
         }
 
+        // First check if there are any published schedules for the active semester
+        $hasPublishedSchedules = DB::table('faculty_schedule_publication')
+            ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
+            ->where('semesters.semester', '=', $activeSemester->semester)
+            ->where('faculty_schedule_publication.is_published', '=', 1)
+            ->exists();
+
+        if (!$hasPublishedSchedules) {
+            return response()->json([
+                'message' => "PUP Taguig faculty load and schedules for " . "A.Y. " .
+                $activeSemester->year_start . "-" . $activeSemester->year_end .
+                ", " . $this->formatSemesterLabel($activeSemester->semester) .
+                " is not yet published.",
+            ]);
+        }
+
         // Get faculty schedules - starting with faculty table
         $schedules = DB::table('faculty')
             ->join('schedules', 'faculty.id', '=', 'schedules.faculty_id')
@@ -249,6 +291,11 @@ class ExternalController extends Controller
             ->join('sections_per_program_year', 'sections_per_program_year.sections_per_program_year_id', '=', 'section_courses.sections_per_program_year_id')
             ->join('programs', 'programs.program_id', '=', 'sections_per_program_year.program_id')
             ->join('semesters as ca_semesters', 'ca_semesters.semester_id', '=', 'course_assignments.semester_id')
+            ->join('faculty_schedule_publication', function ($join) {
+                $join->on('faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
+                    ->on('faculty_schedule_publication.faculty_id', '=', 'faculty.id')
+                    ->where('faculty_schedule_publication.is_published', '=', 1);
+            })
             ->where('ca_semesters.semester', '=', $activeSemester->semester)
             ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id)
             ->whereNotNull('schedules.day')
@@ -333,6 +380,25 @@ class ExternalController extends Controller
             return response()->json(['message' => 'No active semester found.'], 404);
         }
 
+        // First check if there are any published schedules for the active semester
+        $hasPublishedSchedules = DB::table('faculty_schedule_publication')
+            ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
+            ->where('semesters.semester', '=', $activeSemester->semester)
+            ->where('faculty_schedule_publication.is_published', '=', 1)
+            ->exists();
+
+        if (!$hasPublishedSchedules) {
+            return response()->json([
+                'message' => "PUP Taguig faculty load and schedules for " . "A.Y. " .
+                $activeSemester->year_start . "-" . $activeSemester->year_end .
+                ", " . $this->formatSemesterLabel($activeSemester->semester) .
+                " is not yet published.",
+            ]);
+        }
+
         // Get faculty course assignments
         $courses = DB::table('faculty')
             ->join('schedules', 'faculty.id', '=', 'schedules.faculty_id')
@@ -340,6 +406,11 @@ class ExternalController extends Controller
             ->join('course_assignments', 'course_assignments.course_assignment_id', '=', 'section_courses.course_assignment_id')
             ->join('courses', 'courses.course_id', '=', 'course_assignments.course_id')
             ->join('semesters as ca_semesters', 'ca_semesters.semester_id', '=', 'course_assignments.semester_id')
+            ->join('faculty_schedule_publication', function ($join) {
+                $join->on('faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
+                    ->on('faculty_schedule_publication.faculty_id', '=', 'faculty.id')
+                    ->where('faculty_schedule_publication.is_published', '=', 1);
+            })
             ->where('ca_semesters.semester', '=', $activeSemester->semester)
             ->select(
                 'faculty.hris_user_id as user_login_id',
