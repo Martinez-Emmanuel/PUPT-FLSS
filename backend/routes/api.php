@@ -126,12 +126,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/toggle-single-preferences', [PreferenceController::class, 'toggleSinglePreferences']);
     Route::post('/request-access', [PreferenceController::class, 'requestAccess']);
     Route::post('/cancel-request-access', [PreferenceController::class, 'cancelRequestAccess']);
-    
+
     /**
      * Admin Notification
      */
     Route::get('/request-notifications', [PreferenceController::class, 'getRequestNotifications']);
-    
+
     /**
      * Programs
      */
@@ -205,6 +205,17 @@ Route::prefix('external')->group(function () {
         // Version 1
         Route::prefix('v1')->group(function () {
             Route::get('/pupt-faculty-schedules', [ExternalController::class, 'ECRSFacultySchedules']);
+        });
+    });
+
+    /**
+     * Faculty Academic Requirements Management System (FARMS)
+     */
+    Route::prefix('farms')->middleware(['check.hmac:farms'])->group(function () {
+        // Version 1
+        Route::prefix('v1')->group(function () {
+            Route::get('/farms-course-schedules', [ExternalController::class, 'FARMSCourseSchedules']);
+            Route::get('/farms-course-files', [ExternalController::class, 'FARMSCourseFiles']);
         });
     });
 });

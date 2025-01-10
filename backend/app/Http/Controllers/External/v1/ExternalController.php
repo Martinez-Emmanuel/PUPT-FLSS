@@ -163,4 +163,159 @@ class ExternalController extends Controller
             ],
         ]);
     }
+
+    public function FARMSCourseSchedules()
+    {
+        // Retrieve the current active semester and academic year
+        $activeSemester = DB::table('active_semesters')
+            ->join('academic_years', 'active_semesters.academic_year_id', '=', 'academic_years.academic_year_id')
+            ->join('semesters', 'active_semesters.semester_id', '=', 'semesters.semester_id')
+            ->where('active_semesters.is_active', 1)
+            ->select(
+                'academic_years.year_start',
+                'academic_years.year_end',
+                'semesters.semester',
+                'active_semesters.academic_year_id'
+            )
+            ->first();
+
+        if (!$activeSemester) {
+            return response()->json(['message' => 'No active semester found.'], 404);
+        }
+
+        // Get faculty schedules - starting with faculty table
+        $schedules = DB::table('faculty')
+            ->join('schedules', 'faculty.id', '=', 'schedules.faculty_id')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'course_assignments.course_assignment_id', '=', 'section_courses.course_assignment_id')
+            ->join('courses', 'courses.course_id', '=', 'course_assignments.course_id')
+            ->join('sections_per_program_year', 'sections_per_program_year.sections_per_program_year_id', '=', 'section_courses.sections_per_program_year_id')
+            ->join('programs', 'programs.program_id', '=', 'sections_per_program_year.program_id')
+            ->join('semesters as ca_semesters', 'ca_semesters.semester_id', '=', 'course_assignments.semester_id')
+            ->where('ca_semesters.semester', '=', $activeSemester->semester)
+            ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id)
+            ->whereNotNull('schedules.day')
+            ->whereNotNull('schedules.start_time')
+            ->whereNotNull('schedules.end_time')
+            ->select(
+                'schedules.schedule_id as course_schedule_id',
+                'faculty.hris_user_id as user_login_id',
+                'programs.program_title as program',
+                'courses.course_code',
+                'courses.course_title as course_subjects',
+                'sections_per_program_year.year_level',
+                'sections_per_program_year.section_name',
+                'section_courses.section_course_id',
+                'schedules.day',
+                'schedules.start_time',
+                'schedules.end_time'
+            )
+            ->orderBy('faculty.hris_user_id')
+            ->orderBy('section_courses.section_course_id')
+            ->orderBy('schedules.day')
+            ->orderBy('schedules.start_time')
+            ->get();
+
+        // Group schedules by faculty and course
+        $groupedSchedules = $schedules->groupBy(function ($schedule) {
+            // Create a unique key combining faculty, course, and section
+            return $schedule->user_login_id . '_' .
+            $schedule->course_code . '_' .
+            $schedule->year_level . '-' . $schedule->section_name;
+        })->map(function ($courseSchedules) {
+            $firstSchedule = $courseSchedules->first();
+
+            // Combine all schedules for this course
+            $combinedSchedule = $courseSchedules
+                ->sortBy(['day', 'start_time'])
+                ->map(function ($schedule) {
+                    return $schedule->day . ' ' .
+                    date("H:i", strtotime($schedule->start_time)) . ' - ' .
+                    date("H:i", strtotime($schedule->end_time));
+                })->implode(', ');
+
+            return [
+                'course_schedule_id' => $firstSchedule->course_schedule_id,
+                'user_login_id' => $firstSchedule->user_login_id,
+                'program' => $firstSchedule->program,
+                'course_code' => $firstSchedule->course_code,
+                'course_subjects' => $firstSchedule->course_subjects,
+                'year_section' => $firstSchedule->year_level . '-' . $firstSchedule->section_name,
+                'schedule' => $combinedSchedule,
+            ];
+        })
+            ->sortBy('user_login_id')
+            ->values();
+
+        return response()->json([
+            'course_schedules' => $groupedSchedules,
+        ]);
+    }
+
+    public function FARMSCourseFiles()
+    {
+        // Retrieve the current active semester and academic year
+        $activeSemester = DB::table('active_semesters')
+            ->join('academic_years', 'active_semesters.academic_year_id', '=', 'academic_years.academic_year_id')
+            ->join('semesters', 'active_semesters.semester_id', '=', 'semesters.semester_id')
+            ->where('active_semesters.is_active', 1)
+            ->select(
+                'academic_years.year_start',
+                'academic_years.year_end',
+                'semesters.semester',
+                'active_semesters.academic_year_id'
+            )
+            ->first();
+
+        if (!$activeSemester) {
+            return response()->json(['message' => 'No active semester found.'], 404);
+        }
+
+        // Get faculty course assignments
+        $courses = DB::table('faculty')
+            ->join('schedules', 'faculty.id', '=', 'schedules.faculty_id')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'course_assignments.course_assignment_id', '=', 'section_courses.course_assignment_id')
+            ->join('courses', 'courses.course_id', '=', 'course_assignments.course_id')
+            ->join('semesters as ca_semesters', 'ca_semesters.semester_id', '=', 'course_assignments.semester_id')
+            ->where('ca_semesters.semester', '=', $activeSemester->semester)
+            ->select(
+                'faculty.hris_user_id as user_login_id',
+                'schedules.schedule_id as course_schedule_id',
+                'courses.course_title as subject'
+            )
+            ->distinct()
+            ->orderBy('faculty.hris_user_id')
+            ->orderBy('schedules.schedule_id')
+            ->get()
+            ->map(function ($course) use ($activeSemester) {
+                return [
+                    'user_login_id' => $course->user_login_id,
+                    'course_schedule_id' => $course->course_schedule_id,
+                    'semester' => $this->formatSemesterLabel($activeSemester->semester),
+                    'school_year' => $activeSemester->year_start . '-' . $activeSemester->year_end,
+                    'subject' => $course->subject,
+                ];
+            });
+
+        return response()->json([
+            'courses_files' => $courses,
+        ]);
+    }
+
+    /**
+     * Format semester number into a readable label
+     *
+     * @param int $semesterNumber The semester number (1, 2, or 3)
+     * @return string Formatted semester label
+     */
+    private function formatSemesterLabel(int $semesterNumber): string
+    {
+        return match ($semesterNumber) {
+            1 => 'First Semester',
+            2 => 'Second Semester',
+            3 => 'Summer Semester',
+            default => 'Unknown Semester'
+        };
+    }
 }
