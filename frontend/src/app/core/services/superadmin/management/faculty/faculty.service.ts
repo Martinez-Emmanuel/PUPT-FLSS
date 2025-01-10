@@ -93,7 +93,9 @@ export class FacultyService {
     );
   }
 
+  /*
   deleteFaculty(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/deleteAccount/${id}`);
   }
+  */
 }

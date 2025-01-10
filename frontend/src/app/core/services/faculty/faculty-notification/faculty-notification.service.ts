@@ -7,10 +7,10 @@ import { catchError, tap } from 'rxjs/operators';
 import { environment } from '../../../../../environments/environment.dev';
 
 export interface Notification {
-  id: number;
+  faculty_notifications_id: number;
   faculty_id: number;
   message: string;
-  is_read: boolean;
+  is_read: number;
   created_at: string;
   updated_at: string;
   timestamp?: string;

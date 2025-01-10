@@ -16,6 +16,7 @@ class Faculty extends Authenticatable
 
     protected $fillable = [
         'user_id',
+        'hris_user_id',
         'faculty_type',
         'faculty_units',
         'faculty_password',

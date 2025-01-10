@@ -1,4 +1,6 @@
+<!-- login.component.html -->
 <div class="login-container" [style.background-image]="currentBackgroundImage">
+  <!--Login Image Section-->
   <div class="login-image-section">
     <app-slideshow
       [images]="slideshowImages"
@@ -7,9 +9,11 @@
     >
     </app-slideshow>
   </div>
-  <div class="login-form-section">
-    <!-- Login Header -->
-    <div id="login_header">
+
+  <!--Main Section-->
+  <div class="login-main-section">
+    <!-- Header Section -->
+    <div class="header-section">
       <img
         src="assets/images/pup_taguig_logo.svg"
         alt="University Logo"
@@ -23,146 +27,101 @@
       </div>
     </div>
 
-    <!-- Login Form -->
-    <div id="login_form">
-      <!-- Form Header -->
-      <div id="form_header">
-        <h1>Log In</h1>
-        <p>Enter your account code and password to start your session.</p>
+    <!-- Features Section -->
+    <div class="features-section">
+      <div class="feature-item">
+        <div class="feature-icon-wrapper">
+          <span mat-symbol="edit_calendar"></span>
+        </div>
+        <div class="feature-content">
+          <h3>Efficient Scheduling</h3>
+          <p>
+            Real-time conflict detection with integrated faculty preferences for
+            seamless scheduling decisions
+          </p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon-wrapper">
+          <span mat-symbol="analytics"></span>
+        </div>
+        <div class="feature-content">
+          <h3>Automated Reports</h3>
+          <p>
+            Instantly generate schedule reports for faculty, programs, and rooms
+            with a single click
+          </p>
+        </div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon-wrapper">
+          <span mat-symbol="manage_accounts"></span>
+        </div>
+        <div class="feature-content">
+          <h3>Unified Faculty Portal</h3>
+          <p>
+            Submit teaching preferences and access official schedules seamlessly
+            in one unified platform
+          </p>
+        </div>
       </div>
 
-      <!-- Form Fields -->
-      <form
-        id="form_fields"
-        [formGroup]="loginForm"
-        (ngSubmit)="onSubmit()"
-        (keydown.enter)="onEnterPressed()"
-      >
-        <div class="input-group">
-          <div class="input-container">
-            <span
-              mat-symbol="person"
-              class="input-icon"
-              [matTooltip]="'Account Code'"
-            ></span>
-            <input
-              type="text"
-              placeholder="Account Code"
-              class="login-input"
-              id="code"
-              formControlName="code"
-              autocomplete="username"
-              minlength="12"
-              maxlength="12"
-            />
-          </div>
-          @if (code && code.invalid && (code.dirty || code.touched)) {
-          <div
-            class="error-message slide-down"
-            [ngClass]="{ show: code.invalid }"
-          >
-            <span mat-symbol="error"></span>
-            @if (code.errors?.['required']) {
-            <span>Account Code is required.</span>
-            } @if (code.errors?.['minlength'] || code.errors?.['maxlength']) {
-            <span>Account Code is invalid.</span>
-            }
-          </div>
-          }
+      <div class="feature-item extra">
+        <div class="feature-icon-wrapper">
+          <span mat-symbol="database"></span>
         </div>
-
-        <div class="input-group">
-          <div class="input-container">
-            <span
-              mat-symbol="lock"
-              class="input-icon"
-              [matTooltip]="'Account Password'"
-            ></span>
-            <input
-              [type]="showPassword ? 'text' : 'password'"
-              placeholder="Password"
-              class="login-input"
-              id="password"
-              formControlName="password"
-              autocomplete="current-password"
-              minlength="8"
-              maxlength="40"
-            />
-            @if (passwordHasValue) {
-            <mat-icon
-              matRipple
-              class="password-visibility-toggle"
-              (click)="togglePasswordVisibility()"
-            >
-              {{ showPassword ? "visibility_off" : "visibility" }}
-            </mat-icon>
-            }
-          </div>
-
-          @if (password && password.invalid && (password.dirty ||
-          password.touched)) {
-          <div
-            class="error-message slide-down"
-            [ngClass]="{ show: password.invalid }"
-          >
-            <span mat-symbol="error"></span>
-            @if (password.errors?.['required']) {
-            <span>Account Password is required.</span>
-            } @if (password.errors?.['minlength']) {
-            <span>Password must be at least 8 characters.</span>
-            } @if (password.errors?.['maxlength']) {
-            <span>Password cannot exceed 40 characters.</span>
-            }
-          </div>
-          }
+        <div class="feature-content">
+          <h3>Comprehensive Data Management</h3>
+          <p>
+            Seamlessly manage curricula, program structures, and room resources
+            in one integrated system
+          </p>
         </div>
-      </form>
-
-      <!-- Log In Button -->
-      <div id="login_button">
-        <button
-          mat-flat-button
-          class="custom-mat-button"
-          [ngClass]="{
-            'button-enabled': loginForm.valid && !isLoading,
-            'button-disabled': !loginForm.valid || isLoading
-          }"
-          [disabled]="loginForm.invalid || isLoading"
-          (click)="onSubmit()"
-        >
-          @if(!isLoading) {
-          <span>Log In</span>
-          } @if(!isLoading) {
-          <mat-icon fontSet="material-icons-round">login</mat-icon>
-          } @if(isLoading) {
-          <mat-spinner
-            diameter="30"
-            strokeWidth="2.75"
-            class="custom-spinner"
-          ></mat-spinner>
-          }
-        </button>
       </div>
     </div>
 
-    <div id="login_misc">
-      <div id="terms_text">
-        <span>
-          By using this service, you understand and agree to the PUP Taguig
-          Faculty Loading & Scheduling System
+    <!-- Buttons Section -->
+    <div class="buttons-section">
+      <!--Faculty Login-->
+      <button
+        mat-flat-button
+        class="login-button faculty"
+        (click)="handleFacultyLogin()"
+      >
+        <span class="button-text">
+          <span mat-symbol="school"></span>
+          Faculty Login
         </span>
-        <a>Terms of Use</a> and <a>Privacy Statement</a>.
-      </div>
+      </button>
 
-      <!-- Switch Theme Button -->
-      <div id="switch_theme_container">
-        <button mat-button id="switch_theme" (click)="toggleTheme()">
-          <mat-icon>
-            {{ (isDarkTheme$ | async) ? "dark_mode" : "light_mode" }}
-          </mat-icon>
-          <span> {{ (isDarkTheme$ | async) ? "Dark" : "Light" }} Theme </span>
-        </button>
-      </div>
+      <!--Admin Login-->
+      <button
+        mat-flat-button
+        class="login-button ter-ripple admin"
+        (click)="openAdminLoginDialog()"
+      >
+        <span class="button-text">
+          <span mat-symbol="admin_panel_settings"></span>
+          Admin Login
+        </span>
+      </button>
+    </div>
+
+    <!-- Toggle Theme Section -->
+    <div class="toggle-theme-section">
+      <button
+        mat-button
+        class="toggle-button"
+        [ngClass]="
+          (isDarkTheme | async) ? 'dark-theme sec-ripple' : 'light-theme'
+        "
+        (click)="toggleTheme()"
+      >
+        <mat-icon>
+          {{ (isDarkTheme | async) ? "dark_mode" : "light_mode" }}
+        </mat-icon>
+        <span> {{ (isDarkTheme | async) ? "Dark" : "Light" }} Theme </span>
+      </button>
     </div>
   </div>
 </div>

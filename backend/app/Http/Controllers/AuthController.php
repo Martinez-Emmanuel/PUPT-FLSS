@@ -14,16 +14,12 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $loginUserData = $request->validate([
-            'code' => [
-                'required',
-                'string',
-                'regex:/^[A-Za-z0-9]{12}$/',
-            ],
+            'email' => 'required|string|email',
             'password' => 'required|string|min:8|max:40',
         ]);
 
         // Check if the user exists and the password is correct
-        $user = User::where('code', $loginUserData['code'])->first();
+        $user = User::where('email', $loginUserData['email'])->first();
 
         if (!$user || !Hash::check($loginUserData['password'], $user->password)) {
             return response()->json(['message' => 'Invalid Credentials'], 401);
@@ -39,7 +35,7 @@ class AuthController extends Controller
         $userData = json_encode([
             'id' => $user->id,
             'name' => $user->name,
-            'code' => $user->code,
+            'email' => $user->email,
             'role' => $user->role,
             'faculty' => $faculty ? [
                 'faculty_id' => $faculty->id,

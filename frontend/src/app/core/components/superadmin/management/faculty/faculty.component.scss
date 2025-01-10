@@ -1,5 +1,30 @@
 @use "../../../../../../styles/mixins";
 
+.hris-status-banner {
+  @include mixins.flex-layout(
+    $align: center,
+    $justify: center,
+    $gap: var(--spacing-xs)
+  );
+  padding: var(--spacing-xs) var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-weight: 500;
+  transition: all 0.3s ease;
+
+  &.online {
+    background-color: var(--green-fade);
+    color: var(--green-primary);
+    border: 1px solid var(--green-primary);
+  }
+
+  &.offline {
+    background-color: var(--primary-fade);
+    color: var(--primary-text);
+    border: 1px solid var(--primary-text);
+  }
+}
+
 .faculty-management-container {
   @include mixins.default-transition;
   display: flex;

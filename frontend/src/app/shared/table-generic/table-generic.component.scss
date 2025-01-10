@@ -102,6 +102,10 @@
     .delete-button {
       color: var(--primary-text);
     }
+
+    .disabled-button {
+      opacity: var(--opacity-semi-opaque);
+    }
   }
 
   .custom-table-paginator {

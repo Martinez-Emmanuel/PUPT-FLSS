@@ -9,7 +9,6 @@ import {
 
 @Directive({
   selector: '[mat-symbol]',
-  standalone: true,
 })
 export class MatSymbolDirective implements OnInit, OnChanges {
   @Input('mat-symbol') name: string = '';

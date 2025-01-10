@@ -208,9 +208,11 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   }
 
   private setupAutocomplete(): void {
-    const professorOptions: ProfessorOption[] = this.data.options.professorOptions.map(
-      (name, index) => ({ id: index, name: name })
-    );
+    const professorOptions: ProfessorOption[] =
+      this.data.options.professorOptions.map((name, index) => ({
+        id: index,
+        name: name,
+      }));
 
     this.filteredProfessors$ = this.scheduleForm
       .get('professor')!
@@ -222,7 +224,9 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
 
     this.filteredRooms$ = this.scheduleForm.get('room')!.valueChanges.pipe(
       startWith(''),
-      map((value) => this.filterRoomOptions(value, this.data.options.roomOptions)),
+      map((value) =>
+        this.filterRoomOptions(value, this.data.options.roomOptions)
+      ),
       shareReplay(1)
     );
   }
@@ -262,7 +266,9 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.data.options.endTimeOptions = this.data.options.timeOptions.slice(startIndex + 1);
+    this.data.options.endTimeOptions = this.data.options.timeOptions.slice(
+      startIndex + 1
+    );
     const currentEndTime = this.scheduleForm.get('endTime')?.value;
     if (!this.data.options.endTimeOptions.includes(currentEndTime)) {
       this.scheduleForm.patchValue({ endTime: '' });
@@ -497,5 +503,15 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
 
   public formatTimeForDisplay(time: string): string {
     return this.scheduleValidationService.formatTimeForDisplay(time);
+  }
+
+  public getFacultyTypeClass(facultyType: string): Record<string, boolean> {
+    const type = facultyType.toLowerCase();
+    return {
+      'full-time': type.includes('full-time'),
+      designee: type.includes('designee'),
+      'part-time': type.includes('part-time'),
+      temporary: type.includes('temporary'),
+    };
   }
 }

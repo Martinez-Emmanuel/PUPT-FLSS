@@ -5,12 +5,29 @@
   </div>
   } @else {
 
+  <!-- HRIS Status Banner -->
+  <div
+    class="hris-status-banner"
+    [ngClass]="{ online: isHrisHealthy, offline: !isHrisHealthy }"
+  >
+    <span [mat-symbol]="isHrisHealthy ? 'cloud_done' : 'cloud_off'"></span>
+    <span
+      >HRIS is {{ isHrisHealthy ? "online" : "offline" }}.
+      {{
+        isHrisHealthy
+          ? "Faculty management is read-only. Please make changes in HRIS."
+          : "Faculty can be managed here while HRIS is offline."
+      }}</span
+    >
+  </div>
+
   <!-- Table Header -->
   <div class="faculty-header-container" [@fadeAnimation]>
     <app-table-header
       [searchLabel]="'Search Faculty'"
       [addButtonLabel]="'Add Faculty'"
       [inputFields]="headerInputFields"
+      [buttonDisabled]="isHrisHealthy"
       (inputChange)="onInputChange($event)"
       (add)="openAddFacultyDialog()"
     ></app-table-header>
@@ -24,8 +41,9 @@
       [tableName]="'faculty'"
       [displayedColumns]="displayedColumns"
       [showViewButton]="false"
+      [showDeleteButton]="false"
+      [disableEdit]="isHrisHealthy"
       (edit)="openEditFacultyDialog($event)"
-      (delete)="deleteFaculty($event)"
     ></app-table-generic>
   </div>
 

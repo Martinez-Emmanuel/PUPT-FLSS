@@ -314,18 +314,23 @@
         font-weight: 500;
 
         &.full-time {
-          background-color: var(--blue-fade);
+          background-color: var(--blue-fade-lighter);
           color: var(--blue-primary);
         }
 
-        &.full-time-designee {
-          background-color: var(--aqua-fade);
-          color: var(--aqua-primary);
+        &.designee {
+          background-color: var(--pink-fade-lighter);
+          color: var(--pink-primary);
         }
 
         &.part-time {
-          background-color: var(--purple-fade);
+          background-color: var(--purple-fade-lighter);
           color: var(--purple-primary);
+        }
+
+        &.temporary {
+          background-color: var(--aqua-fade-lighter);
+          color: var(--aqua-primary);
         }
       }
 

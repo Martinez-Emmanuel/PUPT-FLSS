@@ -48,7 +48,6 @@ interface DialogData {
   ],
   templateUrl: './dialog-day-time.component.html',
   styleUrls: ['./dialog-day-time.component.scss'],
-  standalone: true,
   animations: [showHideFieldsAnimation],
 })
 export class DialogDayTimeComponent implements OnInit {

@@ -7,13 +7,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Faculty Preferences Submission</title>
     <style type="text/css">
-        @import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700&display=swap');
-
         body {
             margin: 0;
             padding: 20px;
             background-color: #fff5f5;
-            font-family: 'Inter Tight', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
             line-height: 1.6;
         }
 

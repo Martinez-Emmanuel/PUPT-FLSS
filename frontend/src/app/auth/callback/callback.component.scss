@@ -1,0 +1,33 @@
+@use "../../../styles/mixins.scss";
+
+.callback-container {
+  @include mixins.flex-layout($direction: column, $gap: var(--spacing-md));
+  height: 100vh;
+}
+
+.callback-text {
+  color: var(--primary-one);
+
+  &:after {
+    content: "";
+    animation: ellipsis 2s infinite;
+  }
+}
+
+@keyframes ellipsis {
+  0% {
+    content: "";
+  }
+  16% {
+    content: ".";
+  }
+  50% {
+    content: "..";
+  }
+  83% {
+    content: "...";
+  }
+  100% {
+    content: "";
+  }
+}

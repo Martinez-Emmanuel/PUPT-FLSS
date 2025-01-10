@@ -1,7 +1,6 @@
--- PUPT-FLSS 2025 Official Database Schema (Version 1.9)
+-- PUPT-FLSS 2025 Official Database Schema (Version 1.9.1)
 -- Key Changes from the previous version:
--- (+) Add `preference_days` table
--- (*) Modify `preferences` table
+-- (+) Add `hris_user_id` to `faculty` table
 
 -- Table structure for table `users`
 CREATE TABLE `users` (
@@ -47,14 +46,17 @@ CREATE TABLE `academic_years` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Table structure for table `faculty`
-CREATE TABLE `faculty` (
+CREATE TABLE faculty (
   `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` bigint(20) UNSIGNED NOT NULL,
-  `faculty_email` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `hris_user_id` bigint(20) UNSIGNED DEFAULT NULL,
   `faculty_type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `faculty_unit` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `faculty_units` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `faculty_faculty_email_unique` (`faculty_email`),
+  UNIQUE KEY `faculty_hris_user_id_unique` (`hris_user_id`),
+  KEY `faculty_user_id_hris_user_id_index` (`user_id`, `hris_user_id`),
   KEY `faculty_user_id_foreign` (`user_id`),
   CONSTRAINT `faculty_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

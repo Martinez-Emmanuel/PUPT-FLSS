@@ -1,0 +1,113 @@
+// ==============================
+// CUBE GRID SPINNER STYLING
+// ==============================
+
+.cube-grid {
+  position: relative;
+  margin: 0 auto;
+}
+
+.cube {
+  width: 33%;
+  height: 33%;
+  float: left;
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  animation: scale-delay 1.3s infinite cubic-bezier(0.455, 0.03, 0.515, 0.955);
+}
+
+.cube:nth-child(1) {
+  animation-delay: 0.2s;
+}
+.cube:nth-child(2) {
+  animation-delay: 0.3s;
+}
+.cube:nth-child(3) {
+  animation-delay: 0.4s;
+}
+.cube:nth-child(4) {
+  animation-delay: 0.1s;
+}
+.cube:nth-child(5) {
+  animation-delay: 0.2s;
+}
+.cube:nth-child(6) {
+  animation-delay: 0.3s;
+}
+.cube:nth-child(7) {
+  animation-delay: 0s;
+}
+.cube:nth-child(8) {
+  animation-delay: 0.1s;
+}
+.cube:nth-child(9) {
+  animation-delay: 0.2s;
+}
+
+@keyframes scale-delay {
+  0%,
+  70%,
+  100% {
+    transform: scale3D(1, 1, 1);
+  }
+  35% {
+    transform: scale3D(0.001, 0.001, 1);
+  }
+}
+
+// ==============================
+// CIRCULAR SPINNER STYLING
+// ==============================
+.custom-spinner {
+  &.circular-spinner {
+    .circular {
+      animation: container-rotate 2.5s linear infinite;
+
+      .path {
+        stroke-dasharray: 187;
+        stroke-dashoffset: 0;
+        transform-origin: center;
+        stroke-linecap: round;
+        animation: stroke-dash 2.5s cubic-bezier(0.65, 0, 0.35, 1) infinite,
+          stroke-rotate 2.5s linear infinite;
+        will-change: transform;
+      }
+    }
+  }
+}
+
+@keyframes container-rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes stroke-rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes stroke-dash {
+  0% {
+    stroke-dasharray: 1, 200;
+    stroke-dashoffset: 0;
+  }
+  25% {
+    stroke-dasharray: 100, 200;
+    stroke-dashoffset: -25px;
+  }
+  50% {
+    stroke-dasharray: 120, 200;
+    stroke-dashoffset: -60px;
+  }
+  75% {
+    stroke-dasharray: 90, 200;
+    stroke-dashoffset: -90px;
+  }
+  100% {
+    stroke-dasharray: 90, 200;
+    stroke-dashoffset: -125px;
+  }
+}
