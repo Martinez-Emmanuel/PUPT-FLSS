@@ -5,9 +5,16 @@ namespace App\Http\Controllers\External\V1;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class ExternalController extends Controller
 {
+    /**
+     * For: E-Class Record System (ECRS)
+     * Retrieves faculty schedules for ECRS integration.
+     * Returns faculty details with their assigned schedules for the current active semester.
+     */
     public function ECRSFacultySchedules()
     {
         // Step 1: Retrieve the current active semester with academic year details
@@ -164,6 +171,56 @@ class ExternalController extends Controller
         ]);
     }
 
+    /**
+     * For: E-Class Record System (ECRS)
+     * Notifies ECRS about schedule publication changes.
+     * Only sends notification when schedules are being published (not unpublished).
+     */
+    public static function ECRSScheduleChange(string $action, bool $isPublished, ?int $facultyId = null): void
+    {
+        if (!$isPublished) {
+            return;
+        }
+
+        $ecrsApiUrl = 'https://api-ecrs.puptcapstone.com/send-notice';
+
+        try {
+            $ecrsResponse = Http::post($ecrsApiUrl);
+
+            $logContext = [
+                'status' => $ecrsResponse->status(),
+                'response' => $ecrsResponse->json(),
+                'action' => $action,
+                'is_published' => $isPublished,
+            ];
+
+            if ($facultyId) {
+                $logContext['faculty_id'] = $facultyId;
+            }
+
+            if ($ecrsResponse->successful()) {
+                Log::info('Successfully notified ECRS about schedule publication', $logContext);
+            } else {
+                Log::warning('Failed to notify ECRS about schedule publication', [
+                     ...$logContext,
+                    'response_body' => $ecrsResponse->body(),
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error while notifying ECRS about schedule publication', [
+                'error' => $e->getMessage(),
+                'action' => $action,
+                'is_published' => $isPublished,
+                'faculty_id' => $facultyId,
+            ]);
+        }
+    }
+
+    /**
+     * For: Faculty Academic Requirements Management System (FARMS)
+     * Retrieves course schedules for FARMS integration.
+     * Returns grouped schedules by faculty and course for the current active semester.
+     */
     public function FARMSCourseSchedules()
     {
         // Retrieve the current active semester and academic year
@@ -252,6 +309,11 @@ class ExternalController extends Controller
         ]);
     }
 
+    /**
+     * For: Faculty Academic Requirements Management System (FARMS)
+     * Retrieves course files information for FARMS integration.
+     * Returns faculty course assignments with semester details.
+     */
     public function FARMSCourseFiles()
     {
         // Retrieve the current active semester and academic year
@@ -304,10 +366,8 @@ class ExternalController extends Controller
     }
 
     /**
-     * Format semester number into a readable label
-     *
-     * @param int $semesterNumber The semester number (1, 2, or 3)
-     * @return string Formatted semester label
+     * Helper method
+     * Converts semester number to readable text format.
      */
     private function formatSemesterLabel(int $semesterNumber): string
     {

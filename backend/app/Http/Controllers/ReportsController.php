@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\External\V1\ExternalController;
 use App\Models\AcademicYear;
 use App\Models\ActiveSemester;
 use App\Models\Faculty;
@@ -967,6 +968,7 @@ class ReportsController extends Controller
         })->toArray();
 
         FacultyNotification::insert($notifications);
+        ExternalController::ECRSScheduleChange('toggleAllSchedules', $isPublished);
 
         // Step 10: Return a response
         return response()->json([
@@ -1053,6 +1055,8 @@ class ReportsController extends Controller
             'message' => $message,
             'is_read' => 0,
         ]);
+
+        ExternalController::ECRSScheduleChange('toggleSingleSchedule', $isPublished, $facultyId);
 
         // Step 9: Return a success response
         return response()->json([
