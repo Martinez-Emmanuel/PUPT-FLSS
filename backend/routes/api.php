@@ -214,8 +214,8 @@ Route::prefix('external')->group(function () {
     Route::prefix('farms')->middleware(['check.hmac:farms'])->group(function () {
         // Version 1
         Route::prefix('v1')->group(function () {
-            Route::get('/farms-course-schedules', [ExternalController::class, 'FARMSCourseSchedules']);
-            Route::get('/farms-course-files', [ExternalController::class, 'FARMSCourseFiles']);
+            Route::get('/course-schedules', [ExternalController::class, 'FARMSCourseSchedules']);
+            Route::get('/course-files', [ExternalController::class, 'FARMSCourseFiles']);
         });
     });
 });
