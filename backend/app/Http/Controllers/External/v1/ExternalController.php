@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\External\V1;
+namespace App\Http\Controllers\External\v1;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;

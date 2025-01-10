@@ -7,7 +7,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CurriculumController;
 use App\Http\Controllers\CurriculumDetailsController;
 use App\Http\Controllers\EmailController;
-use App\Http\Controllers\External\V1\ExternalController;
+use App\Http\Controllers\External\v1\ExternalController;
 use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\FacultyNotificationController;
 use App\Http\Controllers\OAuthController;
