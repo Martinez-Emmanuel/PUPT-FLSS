@@ -68,6 +68,14 @@ export const SUPERADMIN_ROUTES: Routes = [
           ),
         data: { pageTitle: 'Rooms' },
       },
+      {
+        path: 'buildings',
+        loadComponent: () =>
+          import('./maintenance/buildings/buildings.component').then(
+            (m) => m.BuildingsComponent
+          ),
+        data: { pageTitle: 'Buildings' },
+      },
       { path: '**', redirectTo: 'admin' },
     ],
   },

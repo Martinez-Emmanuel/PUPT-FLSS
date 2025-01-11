@@ -3,6 +3,7 @@
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BuildingController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CurriculumController;
 use App\Http\Controllers\CurriculumDetailsController;
@@ -70,6 +71,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/update-sections', [AcademicYearController::class, 'updateSections']);
     Route::delete('/remove-program', [AcademicYearController::class, 'removeProgramFromAcademicYear']);
     Route::get('/offered-courses-sem', [AcademicYearController::class, 'getOfferedCoursesBySem']);
+
+    /**
+     * Buildings
+     */
+    Route::apiResource('buildings', BuildingController::class);
 
     /**
      * Course
