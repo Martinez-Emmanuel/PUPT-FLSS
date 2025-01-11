@@ -1,9 +1,9 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
 
 import { BehaviorSubject, Subject } from 'rxjs';
-import { takeUntil, finalize } from 'rxjs/operators';
+import { takeUntil, finalize, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -36,6 +36,7 @@ export class BuildingsComponent implements OnInit, OnDestroy {
 
   private buildingsSubject = new BehaviorSubject<Building[]>([]);
   buildings$ = this.buildingsSubject.asObservable();
+  private allBuildings: Building[] = [];
 
   columns = [
     { key: 'index', label: '#' },
@@ -55,11 +56,11 @@ export class BuildingsComponent implements OnInit, OnDestroy {
   ];
 
   headerInputFields: InputField[] = [
-    { key: 'building_name', label: 'Building Name', type: 'text' },
-    { key: 'floor_levels', label: 'Floor Levels', type: 'number' },
+    { key: 'search', label: 'Search Buildings', type: 'text' },
   ];
 
   isLoading = true;
+  searchControl = new FormControl('');
 
   private destroy$ = new Subject<void>();
 
@@ -72,6 +73,7 @@ export class BuildingsComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.fetchBuildings();
+    this.setupSearch();
   }
 
   ngOnDestroy() {
@@ -92,6 +94,7 @@ export class BuildingsComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (buildings) => {
+          this.allBuildings = buildings;
           this.buildingsSubject.next(buildings);
         },
         error: (error) => {
@@ -103,25 +106,27 @@ export class BuildingsComponent implements OnInit, OnDestroy {
       });
   }
 
-  onInputChange(values: { [key: string]: any }) {
-    console.log('Input values changed:', values);
+  setupSearch() {
+    this.searchControl.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe((searchTerm: string | null) => {
+        const term = searchTerm ? searchTerm.trim().toLowerCase() : '';
+        if (term) {
+          const filteredBuildings = this.allBuildings.filter(
+            (building: Building) =>
+              building.building_name.toLowerCase().includes(term)
+          );
+          this.buildingsSubject.next(filteredBuildings);
+        } else {
+          this.buildingsSubject.next(this.allBuildings);
+        }
+      });
   }
 
-  onSearch(searchTerm: string) {
-    if (!searchTerm) {
-      this.fetchBuildings();
-      return;
+  onInputChange(values: { [key: string]: any }) {
+    if (values['search'] !== undefined) {
+      this.searchControl.setValue(values['search']);
     }
-
-    const buildings = this.buildingsSubject.value;
-    const filteredBuildings = buildings.filter((building) =>
-      Object.values(building).some(
-        (value) =>
-          value &&
-          value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    );
-    this.buildingsSubject.next(filteredBuildings);
   }
 
   getDialogConfig(building?: Building): DialogConfig {

@@ -1,9 +1,9 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
 
 import { BehaviorSubject, Subject, Observable } from 'rxjs';
-import { takeUntil, map, finalize } from 'rxjs/operators';
+import { takeUntil, map, finalize, debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -42,6 +42,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
 
   private roomsSubject = new BehaviorSubject<Room[]>([]);
   rooms$ = this.roomsSubject.asObservable();
+  private allRooms: Room[] = [];
 
   private buildingsSubject = new BehaviorSubject<Building[]>([]);
   buildings$ = this.buildingsSubject.asObservable();
@@ -68,11 +69,13 @@ export class RoomsComponent implements OnInit, OnDestroy {
   ];
 
   headerInputFields: InputField[] = [
-    { key: 'room_code', label: 'Room Code', type: 'text' },
-    { key: 'capacity', label: 'Capacity', type: 'number' },
+    { key: 'search', label: 'Search Rooms', type: 'text' },
+    // { key: 'room_code', label: 'Room Code', type: 'text' },
+    // { key: 'capacity', label: 'Capacity', type: 'number' },
   ];
 
   isLoading = true;
+  searchControl = new FormControl('');
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -85,6 +88,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.fetchBuildings();
+    this.setupSearch();
   }
 
   ngOnDestroy() {
@@ -114,6 +118,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (rooms) => {
+          this.allRooms = rooms;
           this.roomsSubject.next(rooms);
         },
         error: (error) => {
@@ -150,29 +155,36 @@ export class RoomsComponent implements OnInit, OnDestroy {
       });
   }
 
+  setupSearch() {
+    this.searchControl.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe((searchTerm: string | null) => {
+        const term = searchTerm ? searchTerm.trim().toLowerCase() : '';
+        if (term) {
+          const filteredRooms = this.allRooms.filter(
+            (room: Room) =>
+              room.room_code.toLowerCase().includes(term) ||
+              room.building?.building_name.toLowerCase().includes(term) ||
+              room.room_type.toLowerCase().includes(term) ||
+              room.floor_level.toLowerCase().includes(term) ||
+              room.status.toLowerCase().includes(term) ||
+              room.capacity.toString().includes(term)
+          );
+          this.roomsSubject.next(filteredRooms);
+        } else {
+          this.roomsSubject.next(this.allRooms);
+        }
+      });
+  }
+
   getFloorLevels(buildingId: number): Observable<number[]> {
     return this.roomService.getFloorLevels(buildingId);
   }
 
   onInputChange(values: { [key: string]: any }) {
-    console.log('Input values changed:', values);
-  }
-
-  onSearch(searchTerm: string) {
-    if (!searchTerm) {
-      this.fetchRooms();
-      return;
+    if (values['search'] !== undefined) {
+      this.searchControl.setValue(values['search']);
     }
-
-    const rooms = this.roomsSubject.value;
-    const filteredRooms = rooms.filter((room) =>
-      Object.values(room).some(
-        (value) =>
-          value &&
-          value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-      )
-    );
-    this.roomsSubject.next(filteredRooms);
   }
 
   getDialogConfig(room?: Room): DialogConfig {
