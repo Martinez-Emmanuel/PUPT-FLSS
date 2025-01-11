@@ -16,7 +16,7 @@ class Room extends Model
         'room_code',
         'building_id',
         'floor_level',
-        'room_type',
+        'room_type_id',
         'capacity',
         'status',
     ];
@@ -29,5 +29,10 @@ class Room extends Model
     public function schedules()
     {
         return $this->hasMany(Schedule::class, 'room_id', 'room_id');
+    }
+
+    public function roomType()
+    {
+        return $this->belongsTo(RoomType::class, 'room_type_id', 'room_type_id');
     }
 }

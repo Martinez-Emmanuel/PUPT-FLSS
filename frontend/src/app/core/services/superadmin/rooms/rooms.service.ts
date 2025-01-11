@@ -6,17 +6,20 @@ import { map } from 'rxjs/operators';
 
 import { environment } from '../../../../../environments/environment.dev';
 
-import { Building } from '../buildings/buildings.service';
-
 export interface Room {
-  room_id?: number;
+  room_id: number;
   room_code: string;
   building_id: number;
-  building?: Building;
   floor_level: string;
-  room_type: string;
+  room_type_id: number;
   capacity: number;
   status: string;
+  created_at: string;
+  updated_at: string;
+  building?: {
+    building_id: number;
+    building_name: string;
+  };
 }
 
 @Injectable({

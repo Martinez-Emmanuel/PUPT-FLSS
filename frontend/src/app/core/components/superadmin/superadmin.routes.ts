@@ -62,11 +62,24 @@ export const SUPERADMIN_ROUTES: Routes = [
       },
       {
         path: 'rooms',
-        loadComponent: () =>
-          import('./maintenance/rooms/rooms.component').then(
-            (m) => m.RoomsComponent
-          ),
-        data: { pageTitle: 'Rooms' },
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./maintenance/rooms/rooms.component').then(
+                (m) => m.RoomsComponent
+              ),
+            data: { pageTitle: 'Rooms' },
+          },
+          {
+            path: 'types',
+            loadComponent: () =>
+              import(
+                './maintenance/rooms/room-types/room-types.component'
+              ).then((m) => m.RoomTypesComponent),
+            data: { pageTitle: 'Room Types' },
+          },
+        ],
       },
       {
         path: 'buildings',

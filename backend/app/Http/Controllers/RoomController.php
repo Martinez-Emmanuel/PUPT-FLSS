@@ -47,7 +47,7 @@ class RoomController extends Controller
             'room_code' => 'required|string|max:255|unique:rooms,room_code',
             'building_id' => 'required|exists:buildings,building_id',
             'floor_level' => 'required|string|max:255',
-            'room_type' => 'required|string|max:255',
+            'room_type_id' => 'required|exists:room_types,room_type_id',
             'capacity' => 'required|integer|min:1',
             'status' => 'required|string|max:255',
         ]);
@@ -72,7 +72,7 @@ class RoomController extends Controller
             'room_code' => 'required|string|max:255|unique:rooms,room_code,' . $id . ',room_id',
             'building_id' => 'required|exists:buildings,building_id',
             'floor_level' => 'required|string|max:255',
-            'room_type' => 'required|string|max:255',
+            'room_type_id' => 'required|exists:room_types,room_type_id',
             'capacity' => 'required|integer|min:1',
             'status' => 'required|string|max:255',
         ]);

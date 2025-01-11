@@ -1,9 +1,29 @@
-import { Component, Output, EventEmitter, Inject, ChangeDetectionStrategy, ChangeDetectorRef, Injectable } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import {
+  Component,
+  Output,
+  EventEmitter,
+  Inject,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Injectable,
+} from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  AbstractControl,
+  ValidationErrors,
+  ValidatorFn,
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogRef,
+  MatDialogModule,
+} from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -15,7 +35,12 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { DateAdapter, MAT_DATE_FORMATS, NativeDateAdapter, provideNativeDateAdapter } from '@angular/material/core';
+import {
+  DateAdapter,
+  MAT_DATE_FORMATS,
+  NativeDateAdapter,
+  provideNativeDateAdapter,
+} from '@angular/material/core';
 
 import { AdminService } from '../../core/services/superadmin/management/admin/admin.service';
 import { TwoDigitInputDirective } from '../../core/imports/two-digit-input.directive';
@@ -189,6 +214,16 @@ export class TableDialogComponent {
     // Add building change listener for floor level options update
     const buildingControl = this.form.get('building_id');
     const floorLevelControl = this.form.get('floor_level');
+    const roomTypeControl = this.form.get('room_type_id');
+
+    if (roomTypeControl) {
+      roomTypeControl.valueChanges.subscribe((value) => {
+        if (value === 'configure') {
+          this.dialogRef.close();
+          this.router.navigate(['/superadmin/rooms/types']);
+        }
+      });
+    }
 
     if (buildingControl && floorLevelControl) {
       buildingControl.valueChanges.subscribe((buildingId) => {

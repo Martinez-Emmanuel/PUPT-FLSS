@@ -1,0 +1,33 @@
+<div class="room-types-container">
+  @if (isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
+  <!--Table Header-->
+  <div class="room-types-header-container" [@fadeAnimation]>
+    <app-table-header
+      title="Room Types"
+      [inputFields]="headerInputFields"
+      [addButtonLabel]="'Add Room Type'"
+      [showExportButton]="false"
+      (inputChange)="onInputChange($event)"
+      (add)="openAddRoomTypeDialog()"
+    ></app-table-header>
+  </div>
+
+  <!-- Common Table -->
+  <div class="room-types-table-container" [@fadeAnimation]>
+    <app-table-generic
+      [tableName]="'room/types'"
+      [data]="(roomTypes$ | async) || []"
+      [columns]="columns"
+      [displayedColumns]="displayedColumns"
+      (edit)="openEditRoomTypeDialog($any($event))"
+      (delete)="deleteRoomType($any($event))"
+    >
+      ></app-table-generic
+    >
+  </div>
+  }
+</div>
