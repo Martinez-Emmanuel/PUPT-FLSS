@@ -2,33 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\Building;
 use App\Models\Room;
-use App\Models\Schedule;
+use Illuminate\Http\Request;
 
 class RoomController extends Controller
 {
     // Fetch all rooms
     public function getRooms()
     {
-        $rooms = Room::all();
+        $rooms = Room::with('building')->get();
         return response()->json([
             'success' => true,
             'message' => 'Rooms fetched successfully.',
-            'data' => $rooms
+            'data' => $rooms,
         ], 200);
     }
 
     // Get all rooms (with a wrapper)
     public function getAllRooms()
     {
-        $rooms = Room::all();
+        $rooms = Room::with('building')->get();
 
         $response = $rooms->map(function ($room) {
             return [
                 'room_id' => $room->room_id,
                 'room_code' => $room->room_code,
-                'location' => $room->location,
+                'building_name' => $room->building->building_name,
                 'floor_level' => $room->floor_level,
                 'room_type' => $room->room_type,
                 'capacity' => $room->capacity,
@@ -45,74 +45,78 @@ class RoomController extends Controller
         // Validate the incoming request data
         $validated = $request->validate([
             'room_code' => 'required|string|max:255|unique:rooms,room_code',
-            'location' => 'required|string|max:255',
+            'building_id' => 'required|exists:buildings,building_id',
             'floor_level' => 'required|string|max:255',
             'room_type' => 'required|string|max:255',
-            'capacity' => 'required|integer|min:1|max:999',
+            'capacity' => 'required|integer|min:1',
             'status' => 'required|string|max:255',
         ]);
 
         // Create a new room
-        $room = Room::create([
-            'room_code' => $validated['room_code'],
-            'location' => $validated['location'],
-            'floor_level' => $validated['floor_level'],
-            'room_type' => $validated['room_type'],
-            'capacity' => $validated['capacity'],
-            'status' => $validated['status'],
-        ]);
+        $room = Room::create($validated);
 
-        // Return a JSON response
         return response()->json([
             'success' => true,
-            'message' => 'Room created successfully!',
-            'data' => $room
+            'message' => 'Room added successfully.',
+            'data' => $room,
         ], 201);
     }
 
-    // Update an existing room
+    // Update room
     public function updateRoom(Request $request, $id)
     {
         $room = Room::findOrFail($id);
 
-        $validatedData = $request->validate([
-            'room_code' => 'required|string|unique:rooms,room_code,' . $room->room_id . ',room_id',
-            'location' => 'required|string',
-            'floor_level' => 'required|string',
-            'room_type' => 'required|string',
-            'capacity' => 'required|integer|min:1|max:999',
-            'status' => 'required|string',
+        // Validate the incoming request data
+        $validated = $request->validate([
+            'room_code' => 'required|string|max:255|unique:rooms,room_code,' . $id . ',room_id',
+            'building_id' => 'required|exists:buildings,building_id',
+            'floor_level' => 'required|string|max:255',
+            'room_type' => 'required|string|max:255',
+            'capacity' => 'required|integer|min:1',
+            'status' => 'required|string|max:255',
         ]);
 
-        $room->update($validatedData);
+        // Update the room
+        $room->update($validated);
 
         return response()->json([
             'success' => true,
-            'message' => 'Room updated successfully!',
-            'data' => $room
+            'message' => 'Room updated successfully.',
+            'data' => $room,
         ], 200);
     }
 
-    // Delete a room
+    // Delete room
     public function deleteRoom($id)
     {
         $room = Room::findOrFail($id);
-    
-        // Check if the room is used in scheduling
-        $schedulesCount = Schedule::where('room_id', $room->room_id)->count();
-        if ($schedulesCount > 0) {
+
+        // Check if room has any schedules
+        if ($room->schedules()->count() > 0) {
             return response()->json([
                 'success' => false,
-                'message' => 'Room with assigned schedules cannot be deleted.',
+                'message' => 'Cannot delete room. It has associated schedules.',
             ], 400);
         }
-    
-        // Proceed with deletion if room is not used in any schedule
+
+        // Delete the room
         $room->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Room deleted successfully!'
+            'message' => 'Room deleted successfully.',
+        ], 200);
+    }
+
+    // Get available floor levels for a building
+    public function getFloorLevels($buildingId)
+    {
+        $building = Building::findOrFail($buildingId);
+        $floorLevels = range(1, $building->floor_levels);
+        return response()->json([
+            'success' => true,
+            'data' => $floorLevels,
         ], 200);
     }
 }

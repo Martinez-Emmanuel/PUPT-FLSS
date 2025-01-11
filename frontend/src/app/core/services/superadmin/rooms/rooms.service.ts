@@ -6,10 +6,13 @@ import { map } from 'rxjs/operators';
 
 import { environment } from '../../../../../environments/environment.dev';
 
+import { Building } from '../buildings/buildings.service';
+
 export interface Room {
   room_id?: number;
   room_code: string;
-  location: string;
+  building_id: number;
+  building?: Building;
   floor_level: string;
   room_type: string;
   capacity: number;
@@ -32,6 +35,14 @@ export class RoomService {
       .pipe(map((response) => response.data));
   }
 
+  getFloorLevels(buildingId: number): Observable<number[]> {
+    return this.http
+      .get<{ success: boolean; data: number[] }>(
+        `${this.baseUrl}/rooms/floor-levels/${buildingId}`
+      )
+      .pipe(map((response) => response.data));
+  }
+
   addRoom(room: Room): Observable<Room> {
     return this.http
       .post<{ success: boolean; message: string; data: Room }>(
@@ -50,9 +61,11 @@ export class RoomService {
       .pipe(map((response) => response.data));
   }
 
-  deleteRoom(id: number): Observable<{ success: boolean; message: string }> {
-    return this.http.delete<{ success: boolean; message: string }>(
-      `${this.baseUrl}/rooms/${id}`
-    );
+  deleteRoom(id: number): Observable<void> {
+    return this.http
+      .delete<{ success: boolean; message: string }>(
+        `${this.baseUrl}/rooms/${id}`
+      )
+      .pipe(map(() => void 0));
   }
 }

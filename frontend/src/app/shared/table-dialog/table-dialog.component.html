@@ -65,7 +65,11 @@
               [formControlName]="field.formControlName"
             >
               @for (option of field.options; track option) {
-              <mat-option [value]="option">{{ option }}</mat-option>
+              <mat-option
+                [value]="isSelectOption(option) ? option.value : option"
+              >
+                {{ isSelectOption(option) ? option.label : option }}
+              </mat-option>
               }
             </mat-select>
           </ng-container>
@@ -99,7 +103,11 @@
               [formControlName]="data.fields[i + 1].formControlName"
             >
               @for (option of data.fields[i + 1].options; track option) {
-              <mat-option [value]="option">{{ option }}</mat-option>
+              <mat-option
+                [value]="isSelectOption(option) ? option.value : option"
+              >
+                {{ isSelectOption(option) ? option.label : option }}
+              </mat-option>
               }
             </mat-select>
           </ng-container>
@@ -163,8 +171,8 @@
         } @case ('select') {
         <mat-select [formControlName]="field.formControlName">
           @for (option of field.options; track option) {
-          <mat-option [value]="option">
-            {{ option }}
+          <mat-option [value]="isSelectOption(option) ? option.value : option">
+            {{ isSelectOption(option) ? option.label : option }}
           </mat-option>
           }
         </mat-select>
