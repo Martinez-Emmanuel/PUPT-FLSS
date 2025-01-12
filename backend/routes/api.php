@@ -74,6 +74,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/offered-courses-sem', [AcademicYearController::class, 'getOfferedCoursesBySem']);
 
     /**
+     * Admin
+     */
+    Route::get('/admins', [AccountController::class, 'indexAdmins']);
+    Route::post('/admins', [AccountController::class, 'storeAdmin']);
+    Route::put('/admins/{admin}', [AccountController::class, 'updateAdmin']);
+    Route::delete('/admins/{admin}', [AccountController::class, 'destroyAdmin']);
+
+    /**
      * Buildings
      */
     Route::apiResource('buildings', BuildingController::class);
@@ -109,14 +117,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/email-all-faculty-schedule', [EmailController::class, 'emailAllFacultySchedule']);
     Route::post('/email-single-faculty-schedule', [EmailController::class, 'emailSingleFacultySchedule']);
     Route::post('/email-admins-pref-change', [EmailController::class, 'notifyAdminsOfPreferenceChange']);
+
+    /**
+     * Faculty
+     */
+    Route::get('/faculty', [FacultyController::class, 'index']);
+    Route::post('/faculty', [FacultyController::class, 'store']);
+    Route::put('/faculty/{user}', [FacultyController::class, 'update']);
+    Route::delete('/faculty/{user}', [FacultyController::class, 'destroy']);
+
     /**
      * Faculty Notification
      */
     Route::get('/faculty-notifications', [FacultyNotificationController::class, 'getFacultyNotifications']);
     Route::post('/faculty-notifications/{id}/read', [FacultyNotificationController::class, 'markAsRead']);
-    // Notify faculties with deadlines approaching in 24 hours
     Route::get('/notify-faculty-deadlines-single', [EmailController::class, 'notifyFacultyBeforeDeadlineSingle']);
-    // Test single faculty deadline notification
     Route::post('/test-faculty-notification', [EmailController::class, 'singleDeadlineNotification']);
     Route::get('/notify-global-deadline', [EmailController::class, 'notifyGlobalFacultyDeadline']);
 

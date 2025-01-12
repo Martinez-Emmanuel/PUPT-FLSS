@@ -47,30 +47,28 @@ export class FacultyService {
   constructor(private http: HttpClient) {}
 
   getFaculty(): Observable<Faculty[]> {
-    return this.http.get<User[]>(`${this.baseUrl}/showAccounts`).pipe(
+    return this.http.get<User[]>(`${this.baseUrl}/faculty`).pipe(
       map((users) => {
         if (!Array.isArray(users)) {
           throw new Error('Unexpected response format');
         }
 
-        return users
-          .filter((user) => user.role === 'faculty')
-          .map((user) => ({
-            id: user.id.toString(),
-            last_name: user.last_name,
-            first_name: user.first_name,
-            middle_name: user.middle_name,
-            suffix_name: user.suffix_name,
-            name: `${user.last_name}, ${user.first_name}${
-              user.middle_name ? ' ' + user.middle_name : ''
-            }${user.suffix_name ? ' ' + user.suffix_name : ''}`,
-            code: user.code,
-            email: user.email || '',
-            faculty_type: user.faculty?.faculty_type || '',
-            faculty_units: user.faculty?.faculty_units ?? 0,
-            status: user.status || 'Active',
-            role: user.role,
-          }));
+        return users.map((user) => ({
+          id: user.id.toString(),
+          last_name: user.last_name,
+          first_name: user.first_name,
+          middle_name: user.middle_name,
+          suffix_name: user.suffix_name,
+          name: `${user.last_name}, ${user.first_name}${
+            user.middle_name ? ' ' + user.middle_name : ''
+          }${user.suffix_name ? ' ' + user.suffix_name : ''}`,
+          code: user.code,
+          email: user.email || '',
+          faculty_type: user.faculty?.faculty_type || '',
+          faculty_units: user.faculty?.faculty_units ?? 0,
+          status: user.status || 'Active',
+          role: user.role,
+        }));
       }),
       catchError((error) => {
         console.error('Error fetching faculty:', error);
@@ -80,22 +78,17 @@ export class FacultyService {
   }
 
   addFaculty(faculty: Faculty): Observable<Faculty> {
-    return this.http.post<Faculty>(`${this.baseUrl}/addAccount`, faculty);
+    return this.http.post<Faculty>(`${this.baseUrl}/faculty`, faculty);
   }
 
   updateFaculty(
     id: string,
     faculty: Omit<Faculty, 'code'>
   ): Observable<Faculty> {
-    return this.http.put<Faculty>(
-      `${this.baseUrl}/updateAccount/${id}`,
-      faculty
-    );
+    return this.http.put<Faculty>(`${this.baseUrl}/faculty/${id}`, faculty);
   }
 
-  /*
   deleteFaculty(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/deleteAccount/${id}`);
+    return this.http.delete<void>(`${this.baseUrl}/faculty/${id}`);
   }
-  */
 }
