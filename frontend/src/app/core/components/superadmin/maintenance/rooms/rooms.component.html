@@ -21,14 +21,12 @@
     @if (rooms$ | async; as rooms) {
     <app-table-generic
       [tableName]="'room/s'"
-      [data]="(rooms$ | async) || []"
+      [data]="rooms"
       [columns]="columns"
       [displayedColumns]="displayedColumns"
       (edit)="openEditRoomDialog($event)"
       (delete)="deleteRoom($event)"
-    >
-      ></app-table-generic
-    >
+    ></app-table-generic>
     }
   </div>
   }

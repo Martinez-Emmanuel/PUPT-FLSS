@@ -85,14 +85,20 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (roomTypes) => {
-          this.allRoomTypes = roomTypes;
-          this.roomTypesSubject.next(roomTypes);
+          this.allRoomTypes = roomTypes || [];
+          this.roomTypesSubject.next(roomTypes || []);
         },
-        error: (error: unknown) => {
+        error: (error) => {
           console.error('Error fetching room types:', error);
-          this.snackBar.open('Error fetching room types', 'Close', {
-            duration: 3000,
-          });
+          this.snackBar.open(
+            'Error loading room types. Please try again.',
+            'Close',
+            {
+              duration: 3000,
+            }
+          );
+          this.isLoading = false;
+          this.cdr.markForCheck();
         },
       });
   }
@@ -106,24 +112,21 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
           return;
         }
 
+        const term = searchTerm.toLowerCase();
         const filteredRoomTypes = this.allRoomTypes.filter((roomType) =>
-          roomType.type_name.toLowerCase().includes(searchTerm.toLowerCase())
+          roomType.type_name.toLowerCase().includes(term)
         );
         this.roomTypesSubject.next(filteredRoomTypes);
       });
   }
 
   onInputChange(values: { [key: string]: any }) {
-    this.searchControl.setValue(values['search'] || '');
+    if (values['search'] !== undefined) {
+      this.searchControl.setValue(values['search']);
+    }
   }
 
   getDialogConfig(roomType?: RoomType): DialogConfig {
-    const initialValue = roomType
-      ? {
-          type_name: roomType.type_name,
-        }
-      : undefined;
-
     return {
       title: roomType ? 'Edit Room Type' : 'Add Room Type',
       fields: [
@@ -136,7 +139,11 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
         },
       ],
       isEdit: !!roomType,
-      initialValue,
+      initialValue: roomType
+        ? {
+            type_name: roomType.type_name,
+          }
+        : undefined,
     };
   }
 
@@ -151,17 +158,25 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
           .createRoomType(result)
           .pipe(takeUntil(this.destroy$))
           .subscribe({
-            next: () => {
-              this.snackBar.open('Room type added successfully', 'Close', {
-                duration: 3000,
-              });
+            next: (response) => {
+              this.snackBar.open(
+                response.message || 'Room type added successfully',
+                'Close',
+                {
+                  duration: 3000,
+                }
+              );
               this.fetchRoomTypes();
             },
-            error: (error: unknown) => {
+            error: (error) => {
               console.error('Error adding room type:', error);
-              this.snackBar.open('Error adding room type', 'Close', {
-                duration: 3000,
-              });
+              this.snackBar.open(
+                error.message || 'Error adding room type',
+                'Close',
+                {
+                  duration: 3000,
+                }
+              );
             },
           });
       }
@@ -179,17 +194,25 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
           .updateRoomType(roomType.room_type_id, result)
           .pipe(takeUntil(this.destroy$))
           .subscribe({
-            next: () => {
-              this.snackBar.open('Room type updated successfully', 'Close', {
-                duration: 3000,
-              });
+            next: (response) => {
+              this.snackBar.open(
+                response.message || 'Room type updated successfully',
+                'Close',
+                {
+                  duration: 3000,
+                }
+              );
               this.fetchRoomTypes();
             },
-            error: (error: unknown) => {
+            error: (error) => {
               console.error('Error updating room type:', error);
-              this.snackBar.open('Error updating room type', 'Close', {
-                duration: 3000,
-              });
+              this.snackBar.open(
+                error.message || 'Error updating room type',
+                'Close',
+                {
+                  duration: 3000,
+                }
+              );
             },
           });
       }
@@ -201,17 +224,25 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
       .deleteRoomType(roomType.room_type_id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: () => {
-          this.snackBar.open('Room type deleted successfully', 'Close', {
-            duration: 3000,
-          });
+        next: (response) => {
+          this.snackBar.open(
+            response.message || 'Room type deleted successfully',
+            'Close',
+            {
+              duration: 3000,
+            }
+          );
           this.fetchRoomTypes();
         },
-        error: (error: Error) => {
+        error: (error) => {
           console.error('Error deleting room type:', error);
-          this.snackBar.open(error.message, 'Close', {
-            duration: 3000,
-          });
+          this.snackBar.open(
+            error.message || 'Error deleting room type',
+            'Close',
+            {
+              duration: 3000,
+            }
+          );
         },
       });
   }

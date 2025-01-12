@@ -1,26 +1,56 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 
-import { BehaviorSubject, Subject, Observable } from 'rxjs';
-import { takeUntil, map, finalize, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { BehaviorSubject, Subject, Observable, combineLatest } from 'rxjs';
+import {
+  takeUntil,
+  map,
+  finalize,
+  debounceTime,
+  distinctUntilChanged,
+  switchMap,
+} from 'rxjs/operators';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
-import { TableDialogComponent, DialogConfig, SelectOption } from '../../../../../shared/table-dialog/table-dialog.component';
-import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
+import {
+  TableDialogComponent,
+  DialogConfig,
+  SelectOption,
+} from '../../../../../shared/table-dialog/table-dialog.component';
+import {
+  TableHeaderComponent,
+  InputField,
+} from '../../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
 import { DialogExportComponent } from '../../../../../shared/dialog-export/dialog-export.component';
 
-import { Room, RoomService } from '../../../../services/superadmin/rooms/rooms.service';
-import { Building, BuildingsService } from '../../../../services/superadmin/buildings/buildings.service';
-import { RoomType, RoomTypesService } from '../../../../services/superadmin/room-types/room-types.service';
+import {
+  RoomWithDetails,
+  RoomService,
+} from '../../../../services/superadmin/rooms/rooms.service';
+import {
+  Building,
+  BuildingsService,
+} from '../../../../services/superadmin/buildings/buildings.service';
+import {
+  RoomType,
+  RoomTypesService,
+} from '../../../../services/superadmin/room-types/room-types.service';
 
 import { fadeAnimation } from '../../../../animations/animations';
 
 import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 @Component({
   selector: 'app-rooms',
@@ -37,9 +67,9 @@ import jsPDF from 'jspdf';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RoomsComponent implements OnInit, OnDestroy {
-  private roomsSubject = new BehaviorSubject<Room[]>([]);
+  private roomsSubject = new BehaviorSubject<RoomWithDetails[]>([]);
   rooms$ = this.roomsSubject.asObservable();
-  private allRooms: Room[] = [];
+  private allRooms: RoomWithDetails[] = [];
 
   private buildingsSubject = new BehaviorSubject<Building[]>([]);
   buildings$ = this.buildingsSubject.asObservable();
@@ -82,12 +112,11 @@ export class RoomsComponent implements OnInit, OnDestroy {
     private roomTypesService: RoomTypesService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
-    this.fetchBuildings();
-    this.fetchRoomTypes();
+    this.fetchInitialData();
     this.setupSearch();
   }
 
@@ -96,24 +125,35 @@ export class RoomsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  fetchRooms() {
+  private fetchInitialData() {
     this.isLoading = true;
-    this.roomService
-      .getRooms()
+
+    combineLatest([
+      this.buildingsService.getBuildings(),
+      this.roomTypesService.getRoomTypes(),
+    ])
       .pipe(
         takeUntil(this.destroy$),
-        map((rooms) => {
-          const buildings = this.buildingsSubject.value;
-          const roomTypes = this.roomTypesSubject.value;
-          return rooms.map((room) => ({
-            ...room,
-            building_name:
-              buildings.find((b) => b.building_id === room.building_id)
-                ?.building_name || '',
-            room_type_name:
-              roomTypes.find((rt) => rt.room_type_id === room.room_type_id)
-                ?.type_name || '',
-          }));
+        switchMap(([buildings, roomTypes]) => {
+          this.buildingsSubject.next(buildings);
+          this.roomTypesSubject.next(roomTypes);
+
+          return this.roomService.getRooms().pipe(
+            map((rooms) =>
+              rooms.map(
+                (room): RoomWithDetails => ({
+                  ...room,
+                  building_name:
+                    buildings.find((b) => b.building_id === room.building_id)
+                      ?.building_name || '',
+                  room_type_name:
+                    roomTypes.find(
+                      (rt) => rt.room_type_id === room.room_type_id
+                    )?.type_name || '',
+                })
+              )
+            )
+          );
         }),
         finalize(() => {
           this.isLoading = false;
@@ -126,50 +166,8 @@ export class RoomsComponent implements OnInit, OnDestroy {
           this.roomsSubject.next(rooms);
         },
         error: (error) => {
-          console.error('Error fetching rooms:', error);
-          this.snackBar.open('Error fetching rooms', 'Close', {
-            duration: 3000,
-          });
-        },
-      });
-  }
-
-  fetchBuildings() {
-    this.isLoading = true;
-    this.buildingsService
-      .getBuildings()
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => {
-          this.cdr.markForCheck();
-        })
-      )
-      .subscribe({
-        next: (buildings) => {
-          this.buildingsSubject.next(buildings);
-          this.fetchRooms();
-        },
-        error: (error: unknown) => {
-          this.isLoading = false;
-          console.error('Error fetching buildings:', error);
-          this.snackBar.open('Error fetching buildings', 'Close', {
-            duration: 3000,
-          });
-        },
-      });
-  }
-
-  fetchRoomTypes() {
-    this.roomTypesService
-      .getRoomTypes()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (roomTypes) => {
-          this.roomTypesSubject.next(roomTypes);
-        },
-        error: (error: unknown) => {
-          console.error('Error fetching room types:', error);
-          this.snackBar.open('Error fetching room types', 'Close', {
+          console.error('Error fetching data:', error);
+          this.snackBar.open('Error fetching data', 'Close', {
             duration: 3000,
           });
         },
@@ -179,31 +177,23 @@ export class RoomsComponent implements OnInit, OnDestroy {
   setupSearch() {
     this.searchControl.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
-      .subscribe((searchTerm: string | null) => {
-        const term = searchTerm ? searchTerm.trim().toLowerCase() : '';
-        if (term) {
-          const roomTypes = this.roomTypesSubject.value;
-          const filteredRooms = this.allRooms.filter(
-            (room: Room) =>
-              room.room_code.toLowerCase().includes(term) ||
-              (room.building?.building_name || '')
-                .toLowerCase()
-                .includes(term) ||
-              (
-                roomTypes.find(
-                  (rt: RoomType) => rt.room_type_id === room.room_type_id
-                )?.type_name || ''
-              )
-                .toLowerCase()
-                .includes(term) ||
-              room.floor_level.toLowerCase().includes(term) ||
-              room.status.toLowerCase().includes(term) ||
-              room.capacity.toString().includes(term)
-          );
-          this.roomsSubject.next(filteredRooms);
-        } else {
+      .subscribe((searchTerm) => {
+        if (!searchTerm) {
           this.roomsSubject.next(this.allRooms);
+          return;
         }
+
+        const term = searchTerm.toLowerCase();
+        const filteredRooms = this.allRooms.filter(
+          (room) =>
+            room.room_code.toLowerCase().includes(term) ||
+            room.building_name.toLowerCase().includes(term) ||
+            room.room_type_name.toLowerCase().includes(term) ||
+            room.floor_level.toLowerCase().includes(term) ||
+            room.status.toLowerCase().includes(term) ||
+            room.capacity.toString().includes(term)
+        );
+        this.roomsSubject.next(filteredRooms);
       });
   }
 
@@ -217,7 +207,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
     }
   }
 
-  getDialogConfig(room?: Room): DialogConfig {
+  getDialogConfig(room?: RoomWithDetails): DialogConfig {
     const buildings = this.buildingsSubject.value;
     const roomTypes = this.roomTypesSubject.value;
     const buildingId = room?.building_id;
@@ -249,9 +239,10 @@ export class RoomsComponent implements OnInit, OnDestroy {
     const roomTypeOptions: SelectOption[] = [
       {
         value: 'configure',
-        label: 'Configure room types',
+        label: 'Click to configure room types...',
         metadata: {
           isConfig: true,
+          icon: 'settings',
         },
       },
       ...roomTypes.map((rt) => ({
@@ -347,7 +338,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
               this.snackBar.open('Room added successfully', 'Close', {
                 duration: 3000,
               });
-              this.fetchRooms();
+              this.fetchInitialData();
             },
             error: (error) => {
               console.error('Error adding room:', error);
@@ -360,7 +351,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
     });
   }
 
-  openEditRoomDialog(room: Room) {
+  openEditRoomDialog(room: RoomWithDetails) {
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: this.getDialogConfig(room),
     });
@@ -375,7 +366,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
               this.snackBar.open('Room updated successfully', 'Close', {
                 duration: 3000,
               });
-              this.fetchRooms();
+              this.fetchInitialData();
             },
             error: (error) => {
               console.error('Error updating room:', error);
@@ -388,7 +379,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
     });
   }
 
-  deleteRoom(room: Room) {
+  deleteRoom(room: RoomWithDetails) {
     this.roomService
       .deleteRoom(room.room_id!)
       .pipe(takeUntil(this.destroy$))
@@ -397,7 +388,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
           this.snackBar.open('Room deleted successfully', 'Close', {
             duration: 3000,
           });
-          this.fetchRooms();
+          this.fetchInitialData();
         },
         error: (error) => {
           const errorMessage = error.error?.message || 'Error deleting room';
@@ -461,8 +452,9 @@ export class RoomsComponent implements OnInit, OnDestroy {
       const bodyData = rooms.map((room, index) => [
         (index + 1).toString(),
         room.room_code,
-        room.building?.building_name,
+        room.building_name,
         room.floor_level,
+        room.room_type_name,
         room.capacity.toString(),
         room.status,
       ]);
@@ -501,7 +493,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
           0: { cellWidth: 15 }, // # (index)
           1: { cellWidth: 30 }, // Room Code
           2: { cellWidth: 40 }, // Location
-          3: { cellWidth: 30 }, // Floor Level
+          3: { cellWidth: 25 }, // Floor Level
           4: { cellWidth: 40 }, // Room Type
           5: { cellWidth: 20 }, // Capacity
           6: { cellWidth: 25 }, // Status

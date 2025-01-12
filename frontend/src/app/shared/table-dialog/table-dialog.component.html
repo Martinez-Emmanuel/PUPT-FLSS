@@ -175,7 +175,13 @@
         } @case ('select') {
         <mat-select [formControlName]="field.formControlName">
           @for (option of field.options; track option) {
-          <mat-option [value]="isSelectOption(option) ? option.value : option">
+          <mat-option
+            [value]="isSelectOption(option) ? option.value : option"
+            [class.config-option]="isSelectOption(option) && option.metadata?.['isConfig']"
+          >
+            @if (isSelectOption(option) && option.metadata?.['isConfig']) {
+            <mat-icon>settings</mat-icon>
+            }
             {{ isSelectOption(option) ? option.label : option }}
           </mat-option>
           }

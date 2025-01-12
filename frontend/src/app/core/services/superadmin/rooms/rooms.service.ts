@@ -16,10 +16,11 @@ export interface Room {
   status: string;
   created_at: string;
   updated_at: string;
-  building?: {
-    building_id: number;
-    building_name: string;
-  };
+}
+
+export interface RoomWithDetails extends Room {
+  building_name: string;
+  room_type_name: string;
 }
 
 @Injectable({
@@ -46,7 +47,7 @@ export class RoomService {
       .pipe(map((response) => response.data));
   }
 
-  addRoom(room: Room): Observable<Room> {
+  addRoom(room: Partial<Room>): Observable<Room> {
     return this.http
       .post<{ success: boolean; message: string; data: Room }>(
         `${this.baseUrl}/addRoom`,
@@ -55,7 +56,7 @@ export class RoomService {
       .pipe(map((response) => response.data));
   }
 
-  updateRoom(id: number, room: Room): Observable<Room> {
+  updateRoom(id: number, room: Partial<Room>): Observable<Room> {
     return this.http
       .put<{ success: boolean; message: string; data: Room }>(
         `${this.baseUrl}/rooms/${id}`,

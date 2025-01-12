@@ -12,10 +12,14 @@ import { TableGenericComponent } from '../../../../../shared/table-generic/table
 import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
+import { DialogExportComponent } from '../../../../../shared/dialog-export/dialog-export.component';
 
 import { Building, BuildingsService } from '../../../../services/superadmin/buildings/buildings.service';
 
 import { fadeAnimation } from '../../../../animations/animations';
+
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 @Component({
   selector: 'app-buildings',
@@ -32,8 +36,6 @@ import { fadeAnimation } from '../../../../animations/animations';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class BuildingsComponent implements OnInit, OnDestroy {
-  selectedBuildingIndex: number | null = null;
-
   private buildingsSubject = new BehaviorSubject<Building[]>([]);
   buildings$ = this.buildingsSubject.asObservable();
   private allBuildings: Building[] = [];
@@ -73,7 +75,7 @@ export class BuildingsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  fetchBuildings() {
+  private fetchBuildings() {
     this.isLoading = true;
     this.buildingsService
       .getBuildings()
@@ -86,19 +88,25 @@ export class BuildingsComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: (buildings) => {
-          this.allBuildings = buildings;
-          this.buildingsSubject.next(buildings);
+          this.allBuildings = buildings || [];
+          this.buildingsSubject.next(buildings || []);
         },
         error: (error) => {
           console.error('Error fetching buildings:', error);
-          this.snackBar.open('Error fetching buildings', 'Close', {
-            duration: 3000,
-          });
+          this.snackBar.open(
+            'Error loading buildings. Please try again.',
+            'Close',
+            {
+              duration: 3000,
+            }
+          );
+          this.isLoading = false;
+          this.cdr.markForCheck();
         },
       });
   }
 
-  setupSearch() {
+  private setupSearch() {
     this.searchControl.valueChanges
       .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((searchTerm: string | null) => {
@@ -106,7 +114,8 @@ export class BuildingsComponent implements OnInit, OnDestroy {
         if (term) {
           const filteredBuildings = this.allBuildings.filter(
             (building: Building) =>
-              building.building_name.toLowerCase().includes(term)
+              building.building_name.toLowerCase().includes(term) ||
+              building.floor_levels.toString().includes(term)
           );
           this.buildingsSubject.next(filteredBuildings);
         } else {
@@ -121,7 +130,7 @@ export class BuildingsComponent implements OnInit, OnDestroy {
     }
   }
 
-  getDialogConfig(building?: Building): DialogConfig {
+  private getDialogConfig(building?: Building): DialogConfig {
     return {
       title: building ? 'Edit Building' : 'Add Building',
       isEdit: !!building,
@@ -169,7 +178,9 @@ export class BuildingsComponent implements OnInit, OnDestroy {
             },
             error: (error) => {
               console.error('Error adding building:', error);
-              this.snackBar.open('Error adding building', 'Close', {
+              const errorMessage =
+                error.error?.message || 'Error adding building';
+              this.snackBar.open(errorMessage, 'Close', {
                 duration: 3000,
               });
             },
@@ -190,7 +201,7 @@ export class BuildingsComponent implements OnInit, OnDestroy {
     });
   }
 
-  updateBuilding(id: number, building: Partial<Building>) {
+  private updateBuilding(id: number, building: Partial<Building>) {
     this.buildingsService
       .updateBuilding(id, building)
       .pipe(takeUntil(this.destroy$))
@@ -238,5 +249,119 @@ export class BuildingsComponent implements OnInit, OnDestroy {
           });
         },
       });
+  }
+
+  // ======================
+  // PDF Generation
+  // ======================
+
+  private createPdfBlob(): Blob {
+    const doc = new jsPDF('p', 'mm', 'legal');
+    const pageWidth = doc.internal.pageSize.width;
+    const margin = 10;
+    const logoSize = 22;
+    const topMargin = 15;
+    let currentY = topMargin;
+
+    try {
+      // Add the university logo
+      const leftLogoUrl =
+        'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
+      doc.addImage(leftLogoUrl, 'PNG', margin, 10, logoSize, logoSize);
+
+      // Add header text
+      doc.setFontSize(12);
+      doc.setFont('times', 'bold');
+      doc.text(
+        'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
+        pageWidth / 2,
+        currentY,
+        { align: 'center' }
+      );
+      currentY += 5;
+
+      doc.setFontSize(12);
+      doc.text(
+        'Gen. Santos Ave. Upper Bicutan, Taguig City',
+        pageWidth / 2,
+        currentY,
+        { align: 'center' }
+      );
+      currentY += 10;
+
+      doc.setFontSize(15);
+      doc.setTextColor(0, 0, 0);
+      doc.text('Buildings Report', pageWidth / 2, currentY, {
+        align: 'center',
+      });
+      currentY += 8;
+
+      // Add the horizontal line below the header
+      doc.setDrawColor(0, 0, 0);
+      doc.setLineWidth(0.5);
+      doc.line(margin, currentY, pageWidth - margin, currentY);
+      currentY += 7;
+
+      const buildings = this.buildingsSubject.getValue();
+      const bodyData = buildings.map((building, index) => [
+        (index + 1).toString(),
+        building.building_name,
+        building.floor_levels.toString(),
+      ]);
+
+      // Add table to PDF
+      (doc as any).autoTable({
+        startY: currentY,
+        head: [['#', 'Building Name', 'Floor Levels']],
+        body: bodyData,
+        theme: 'grid',
+        headStyles: {
+          fillColor: [128, 0, 0],
+          textColor: [255, 255, 255],
+          fontSize: 9,
+        },
+        bodyStyles: {
+          fontSize: 8,
+          textColor: [0, 0, 0],
+        },
+        styles: {
+          lineWidth: 0.1,
+          overflow: 'linebreak',
+          cellPadding: 2,
+        },
+        columnStyles: {
+          0: { cellWidth: 15 }, // #
+          1: { cellWidth: 100 }, // Building Name
+          2: { cellWidth: 40 }, // Floor Levels
+        },
+        margin: { left: margin, right: margin },
+        didDrawPage: (data: any) => {
+          currentY = data.cursor.y + 10;
+        },
+      });
+
+      return doc.output('blob');
+    } catch (error) {
+      this.snackBar.open('Failed to generate PDF.', 'Close', {
+        duration: 3000,
+      });
+      throw error;
+    }
+  }
+
+  onExport() {
+    this.dialog.open(DialogExportComponent, {
+      maxWidth: '70rem',
+      width: '100%',
+      data: {
+        exportType: 'all',
+        entity: 'Buildings',
+        customTitle: 'Export All Buildings',
+        generatePdfFunction: (showPreview: boolean) => {
+          return this.createPdfBlob();
+        },
+        generateFileNameFunction: () => 'pup_taguig_buildings_report.pdf',
+      },
+    });
   }
 }
