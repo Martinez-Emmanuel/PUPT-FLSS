@@ -19,10 +19,10 @@ return new class extends Migration
 
         // Add default faculty types
         $defaultTypes = [
-            ['faculty_type' => 'Full-Time', 'regular_units' => 24, 'additional_units' => 6],
-            ['faculty_type' => 'Part-Time', 'regular_units' => 12, 'additional_units' => 3],
-            ['faculty_type' => 'Temporary', 'regular_units' => 18, 'additional_units' => 3],
-            ['faculty_type' => 'Designee', 'regular_units' => 9, 'additional_units' => 3],
+            ['faculty_type' => 'Full-Time', 'regular_units' => 15, 'additional_units' => 0],
+            ['faculty_type' => 'Part-Time', 'regular_units' => 12, 'additional_units' => 0],
+            ['faculty_type' => 'Temporary', 'regular_units' => 15, 'additional_units' => 0],
+            ['faculty_type' => 'Designee', 'regular_units' => 6, 'additional_units' => 0],
         ];
 
         foreach ($defaultTypes as $type) {
