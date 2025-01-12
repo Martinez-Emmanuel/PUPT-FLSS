@@ -25,11 +25,24 @@ export const SUPERADMIN_ROUTES: Routes = [
       },
       {
         path: 'faculty',
-        loadComponent: () =>
-          import('./management/faculty/faculty.component').then(
-            (m) => m.FacultyComponent
-          ),
-        data: { pageTitle: 'Manage Faculty' },
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./management/faculty/faculty.component').then(
+                (m) => m.FacultyComponent
+              ),
+            data: { pageTitle: 'Manage Faculty' },
+          },
+          {
+            path: 'types',
+            loadComponent: () =>
+              import(
+                './management/faculty/faculty-types/faculty-types.component'
+              ).then((m) => m.FacultyTypesComponent),
+            data: { pageTitle: 'Faculty Types' },
+          },
+        ],
       },
       {
         path: 'programs',

@@ -81,6 +81,7 @@ class ExternalController extends Controller
         // Step 3: Join faculties with current schedules
         $facultySchedules = DB::table('faculty')
             ->join('users', 'faculty.user_id', '=', 'users.id')
+            ->join('faculty_type', 'faculty.faculty_type_id', '=', 'faculty_type.faculty_type_id')
             ->leftJoinSub($schedulesSub, 'current_schedules', function ($join) {
                 $join->on('current_schedules.faculty_id', '=', 'faculty.id');
             })
@@ -98,7 +99,7 @@ class ExternalController extends Controller
                 'faculty.id as faculty_id',
                 'users.id as user_id',
                 'users.code as faculty_code',
-                'faculty.faculty_type',
+                'faculty_type.faculty_type',
                 'current_schedules.schedule_id',
                 'current_schedules.day',
                 'current_schedules.start_time',

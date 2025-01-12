@@ -27,6 +27,7 @@
       [searchLabel]="'Search Faculty'"
       [addButtonLabel]="'Add Faculty'"
       [inputFields]="headerInputFields"
+      [showExportButton]="false"
       [buttonDisabled]="isHrisHealthy"
       (inputChange)="onInputChange($event)"
       (add)="openAddFacultyDialog()"
@@ -54,8 +55,20 @@
 <ng-template #facultyTypeTemplate let-element>
   <div
     class="faculty-type"
-    [ngClass]="getFacultyTypeClass(element.faculty_type)"
+    [ngClass]="
+      getFacultyTypeClass(element.faculty?.faculty_type?.faculty_type ?? 'N/A')
+    "
   >
-    {{ element.faculty_type }}
+    {{ element.faculty?.faculty_type?.faculty_type ?? "N/A" }}
+  </div>
+</ng-template>
+
+<!-- Faculty Units Template -->
+<ng-template #facultyUnitsTemplate let-element>
+  <div class="faculty-units">
+    {{
+      (element.faculty?.faculty_type?.regular_units ?? 0) +
+        (element.faculty?.faculty_type?.additional_units ?? 0)
+    }}
   </div>
 </ng-template>

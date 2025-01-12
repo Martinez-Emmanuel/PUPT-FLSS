@@ -31,11 +31,25 @@ export interface Faculty {
   name: string;
   code: string;
   email: string;
-  faculty_type: string;
-  faculty_units: number;
   status: string;
   role: string;
   password?: string;
+  faculty?: {
+    id: number;
+    user_id: number;
+    faculty_type_id: number;
+    hris_user_id: number | null;
+    created_at: string;
+    updated_at: string;
+    faculty_type: {
+      faculty_type_id: number;
+      faculty_type: string;
+      regular_units: number;
+      additional_units: number;
+      created_at: string;
+      updated_at: string;
+    };
+  };
 }
 
 @Injectable({
@@ -47,7 +61,7 @@ export class FacultyService {
   constructor(private http: HttpClient) {}
 
   getFaculty(): Observable<Faculty[]> {
-    return this.http.get<User[]>(`${this.baseUrl}/faculty`).pipe(
+    return this.http.get<any[]>(`${this.baseUrl}/faculty`).pipe(
       map((users) => {
         if (!Array.isArray(users)) {
           throw new Error('Unexpected response format');
@@ -64,10 +78,9 @@ export class FacultyService {
           }${user.suffix_name ? ' ' + user.suffix_name : ''}`,
           code: user.code,
           email: user.email || '',
-          faculty_type: user.faculty?.faculty_type || '',
-          faculty_units: user.faculty?.faculty_units ?? 0,
           status: user.status || 'Active',
           role: user.role,
+          faculty: user.faculty,
         }));
       }),
       catchError((error) => {
@@ -86,9 +99,5 @@ export class FacultyService {
     faculty: Omit<Faculty, 'code'>
   ): Observable<Faculty> {
     return this.http.put<Faculty>(`${this.baseUrl}/faculty/${id}`, faculty);
-  }
-
-  deleteFaculty(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/faculty/${id}`);
   }
 }

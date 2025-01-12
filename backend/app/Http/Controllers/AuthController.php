@@ -19,7 +19,7 @@ class AuthController extends Controller
         ]);
 
         // Check if the user exists and the password is correct
-        $user = User::where('email', $loginUserData['email'])->first();
+        $user = User::with(['faculty.facultyType'])->where('email', $loginUserData['email'])->first();
 
         if (!$user || !Hash::check($loginUserData['password'], $user->password)) {
             return response()->json(['message' => 'Invalid Credentials'], 401);
@@ -40,7 +40,7 @@ class AuthController extends Controller
             'faculty' => $faculty ? [
                 'faculty_id' => $faculty->id,
                 'faculty_email' => $user->email,
-                'faculty_type' => $faculty->faculty_type,
+                'faculty_type' => $faculty->facultyType->faculty_type ?? null,
                 'faculty_units' => $faculty->faculty_units,
             ] : null,
         ]);

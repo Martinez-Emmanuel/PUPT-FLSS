@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\SendFacultyUpdateWebhook;
 use App\Models\Faculty;
+use App\Models\FacultyType;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -190,9 +191,17 @@ class WebhookController extends Controller
                 ]);
 
                 // Update faculty data and hris_user_id if provided
-                $facultyUpdateData = [
-                    'faculty_type' => $facultyData['faculty_type'],
-                ];
+                $facultyUpdateData = [];
+
+                // Get or create faculty type
+                $facultyType = FacultyType::firstOrCreate(
+                    ['faculty_type' => $facultyData['faculty_type']],
+                    [
+                        'regular_units' => 0,
+                        'additional_units' => 0,
+                    ]
+                );
+                $facultyUpdateData['faculty_type_id'] = $facultyType->faculty_type_id;
 
                 // If HRIS sends back the UserID, update it
                 if (isset($facultyData['hris_user_id'])) {

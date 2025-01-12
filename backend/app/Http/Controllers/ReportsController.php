@@ -60,6 +60,7 @@ class ReportsController extends Controller
         // Step 3: Join faculties with current schedules
         $facultySchedules = DB::table('faculty')
             ->join('users', 'faculty.user_id', '=', 'users.id')
+            ->join('faculty_type', 'faculty.faculty_type_id', '=', 'faculty_type.faculty_type_id')
             ->leftJoinSub($schedulesSub, 'current_schedules', function ($join) {
                 $join->on('current_schedules.faculty_id', '=', 'faculty.id');
             })
@@ -77,7 +78,7 @@ class ReportsController extends Controller
                 'faculty.id as faculty_id',
                 'users.id as user_id',
                 'users.code as faculty_code',
-                'faculty.faculty_type',
+                'faculty_type.faculty_type',
                 'current_schedules.schedule_id',
                 'current_schedules.day',
                 'current_schedules.start_time',
@@ -515,21 +516,22 @@ class ReportsController extends Controller
             return response()->json(['message' => 'No active semester found.'], 404);
         }
 
-        // Step 3: Get basic faculty info
-        $faculty = DB::table('faculty')
-            ->join('users', 'faculty.user_id', '=', 'users.id')
-            ->where('faculty.id', $faculty_id)
-            ->select(
-                'faculty.id as faculty_id',
-                'users.id as user_id',
-                'users.code as faculty_code',
-                'faculty.faculty_type'
-            )
+        // Step 3: Get faculty basic info
+        $faculty = Faculty::with(['user', 'facultyType'])
+            ->where('id', $faculty_id)
             ->first();
 
         if (!$faculty) {
             return response()->json(['message' => 'Faculty not found.'], 404);
         }
+
+        $facultyData = [
+            'faculty_id' => $faculty->id,
+            'user_id' => $faculty->user->id,
+            'faculty_code' => $faculty->user->code,
+            'faculty_type' => $faculty->facultyType->faculty_type,
+            'faculty_name' => "{$faculty->user->last_name}, {$faculty->user->first_name}",
+        ];
 
         // Step 4: Prepare the base response
         $response = [
@@ -541,10 +543,10 @@ class ReportsController extends Controller
                 'semester' => $activeSemester->semester,
                 'start_date' => $activeSemester->start_date,
                 'end_date' => $activeSemester->end_date,
-                'faculty_id' => $faculty->faculty_id,
+                'faculty_id' => $faculty->id,
                 'faculty_name' => 'N/A',
-                'faculty_code' => $faculty->faculty_code,
-                'faculty_type' => $faculty->faculty_type,
+                'faculty_code' => $faculty->user->code,
+                'faculty_type' => $faculty->facultyType->faculty_type,
                 'assigned_units' => 0,
                 'total_hours' => 0,
                 'is_published' => 0,
@@ -553,7 +555,7 @@ class ReportsController extends Controller
         ];
 
         // Step 5: Fetch User model for the faculty
-        $user = User::find($faculty->user_id);
+        $user = User::find($faculty->user->id);
         if ($user) {
             $response['faculty_schedule']['faculty_name'] = $user->formatted_name;
         }
@@ -571,7 +573,7 @@ class ReportsController extends Controller
                 $join->on('faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
                     ->where('faculty_schedule_publication.faculty_id', '=', $faculty_id);
             })
-            ->where('schedules.faculty_id', '=', $faculty->faculty_id)
+            ->where('schedules.faculty_id', '=', $faculty->id)
             ->where('ca_semesters.semester', '=', $activeSemester->semester)
             ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id)
             ->select(

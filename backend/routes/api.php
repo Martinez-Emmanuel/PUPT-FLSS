@@ -11,6 +11,7 @@ use App\Http\Controllers\EmailController;
 use App\Http\Controllers\External\v1\ExternalController;
 use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\FacultyNotificationController;
+use App\Http\Controllers\FacultyTypeController;
 use App\Http\Controllers\OAuthController;
 use App\Http\Controllers\PreferenceController;
 use App\Http\Controllers\ProgramController;
@@ -134,6 +135,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/notify-faculty-deadlines-single', [EmailController::class, 'notifyFacultyBeforeDeadlineSingle']);
     Route::post('/test-faculty-notification', [EmailController::class, 'singleDeadlineNotification']);
     Route::get('/notify-global-deadline', [EmailController::class, 'notifyGlobalFacultyDeadline']);
+
+    /**
+     * Faculty Type
+     */
+    Route::apiResource('faculty-types', FacultyTypeController::class);
 
     /**
      * Preferences
