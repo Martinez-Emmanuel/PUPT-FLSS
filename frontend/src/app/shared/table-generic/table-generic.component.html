@@ -49,6 +49,11 @@
         >
           {{ element[column.key] }}
         </span>
+        } @else if (column.template) {
+        <ng-container
+          [ngTemplateOutlet]="column.template"
+          [ngTemplateOutletContext]="{ $implicit: element }"
+        ></ng-container>
         } @else {
         {{ element[column.key] }}
         }

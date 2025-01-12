@@ -63,9 +63,8 @@
     padding: var(--spacing-xs);
 
     .status-badge {
-      padding: var(--spacing-xxs) var(--spacing-xs);
+      padding: var(--spacing-xxs) var(--spacing-sm);
       border-radius: var(--border-radius-xl);
-      font-weight: 500;
     }
 
     .status-active {
