@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-custom-spinner',
-  standalone: true,
   imports: [CommonModule],
   templateUrl: './custom-spinner.component.html',
   styleUrls: ['./custom-spinner.component.scss'],
