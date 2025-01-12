@@ -7,8 +7,6 @@ export interface Building {
   building_id: number;
   building_name: string;
   floor_levels: number;
-  created_at?: string;
-  updated_at?: string;
 }
 
 @Injectable({

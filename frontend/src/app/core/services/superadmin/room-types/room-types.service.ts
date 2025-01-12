@@ -7,8 +7,6 @@ import { environment } from '../../../../../environments/environment.dev';
 export interface RoomType {
   room_type_id: number;
   type_name: string;
-  created_at: string;
-  updated_at: string;
 }
 
 @Injectable({

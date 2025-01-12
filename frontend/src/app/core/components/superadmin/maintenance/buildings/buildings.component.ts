@@ -42,18 +42,10 @@ export class BuildingsComponent implements OnInit, OnDestroy {
     { key: 'index', label: '#' },
     { key: 'building_name', label: 'Building Name' },
     { key: 'floor_levels', label: 'Floor Levels' },
-    { key: 'created_at', label: 'Created At' },
-    { key: 'updated_at', label: 'Updated At' },
     { key: 'actions', label: 'Actions' },
   ];
 
-  displayedColumns = [
-    'index',
-    'building_name',
-    'floor_levels',
-    'created_at',
-    'updated_at',
-  ];
+  displayedColumns = ['index', 'building_name', 'floor_levels'];
 
   headerInputFields: InputField[] = [
     { key: 'search', label: 'Search Buildings', type: 'text' },

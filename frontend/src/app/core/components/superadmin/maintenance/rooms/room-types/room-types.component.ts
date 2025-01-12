@@ -42,12 +42,10 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
   columns = [
     { key: 'index', label: '#' },
     { key: 'type_name', label: 'Room Type' },
-    { key: 'created_at', label: 'Created At' },
-    { key: 'updated_at', label: 'Updated At' },
     { key: 'actions', label: 'Actions' },
   ];
 
-  displayedColumns = ['index', 'type_name', 'created_at', 'updated_at'];
+  displayedColumns = ['index', 'type_name'];
 
   headerInputFields: InputField[] = [
     { key: 'search', label: 'Search Room Types', type: 'text' },
