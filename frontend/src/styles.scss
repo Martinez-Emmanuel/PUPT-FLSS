@@ -268,6 +268,12 @@ span[mat-symbol] {
       background-color: var(--aqua-fade-lighter);
       color: var(--aqua-primary);
     }
+
+    /* Fallback theme for any new faculty type */
+    &:not(.full-time):not(.designee):not(.part-time):not(.temporary) {
+      background-color: var(--neutral-fade);
+      color: var(--neutral-base);
+    }
   }
 }
 
