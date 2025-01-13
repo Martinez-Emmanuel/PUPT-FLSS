@@ -89,18 +89,14 @@ export class DialogFacultyLoginComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  // Simplified onSubmitClick() to directly use FLSS login
-  public onSubmitClick(): void {
+  public onSubmit(): void {
     if (this.loginForm.valid) {
       this.isLoading = true;
       const { email, password } = this.loginForm.value;
 
-      // Directly call FLSS login since HRIS is assumed to be down
       this.fallbackToFlssLogin(email, password);
     }
   }
-
-  // Removed tryHrisLogin() as it's not needed
 
   private fallbackToFlssLogin(email: string, password: string): void {
     this.authService.flssLogin(email, password).subscribe({
@@ -112,7 +108,6 @@ export class DialogFacultyLoginComponent implements OnInit {
   private handleLoginSuccess(response: any): void {
     console.log('Login successful', response);
 
-    // Role Check for Faculty Login
     if (response.user.role !== 'faculty') {
       this.handleLoginError({
         status: 403,

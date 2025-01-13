@@ -36,6 +36,9 @@ import { AuthService } from '../../core/services/auth/auth.service';
 })
 export class LoginComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  private isAdminDialogOpen = false;
+  private isFacultyDialogOpen = false;
+  private isRedirectDialogOpen = false;
 
   readonly backgroundImages = [
     'assets/images/pupt_img_1.webp',
@@ -100,9 +103,16 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   handleFacultyLogin(): void {
+    if (this.isRedirectDialogOpen || this.isFacultyDialogOpen) return;
+
+    this.isRedirectDialogOpen = true;
     const dialogRef = this.dialog.open(DialogRedirectComponent, {
       disableClose: true,
       data: { checkingHris: true },
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      this.isRedirectDialogOpen = false;
     });
 
     forkJoin([this.authService.checkHrisHealth(), timer(2000)]).subscribe({
@@ -123,14 +133,28 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   openFacultyLoginDialog(): void {
-    this.dialog.open(DialogFacultyLoginComponent, {
+    if (this.isFacultyDialogOpen) return;
+
+    this.isFacultyDialogOpen = true;
+    const dialogRef = this.dialog.open(DialogFacultyLoginComponent, {
       disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      this.isFacultyDialogOpen = false;
     });
   }
 
   openAdminLoginDialog(): void {
-    this.dialog.open(DialogAdminLoginComponent, {
+    if (this.isAdminDialogOpen) return;
+
+    this.isAdminDialogOpen = true;
+    const dialogRef = this.dialog.open(DialogAdminLoginComponent, {
       disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe(() => {
+      this.isAdminDialogOpen = false;
     });
   }
 }
