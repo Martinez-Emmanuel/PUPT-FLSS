@@ -7,7 +7,7 @@ use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CurriculumController;
 use App\Http\Controllers\CurriculumDetailsController;
 use App\Http\Controllers\EmailController;
-use App\Http\Controllers\External\V1\ExternalController;
+use App\Http\Controllers\External\v1\ExternalController;
 use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\FacultyNotificationController;
 use App\Http\Controllers\OAuthController;
@@ -133,6 +133,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/request-notifications', [PreferenceController::class, 'getRequestNotifications']);
     
     /**
+     * Admin Notification
+     */
+    Route::get('/request-notifications', [PreferenceController::class, 'getRequestNotifications']);
+
+    /**
      * Programs
      */
     Route::get('/programs', [ProgramController::class, 'getPrograms']);
@@ -205,6 +210,17 @@ Route::prefix('external')->group(function () {
         // Version 1
         Route::prefix('v1')->group(function () {
             Route::get('/pupt-faculty-schedules', [ExternalController::class, 'ECRSFacultySchedules']);
+        });
+    });
+
+    /**
+     * Faculty Academic Requirements Management System (FARMS)
+     */
+    Route::prefix('farms')->middleware(['check.hmac:farms'])->group(function () {
+        // Version 1
+        Route::prefix('v1')->group(function () {
+            Route::get('/course-schedules', [ExternalController::class, 'FARMSCourseSchedules']);
+            Route::get('/course-files', [ExternalController::class, 'FARMSCourseFiles']);
         });
     });
 });
