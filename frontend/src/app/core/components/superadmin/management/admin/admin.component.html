@@ -10,6 +10,7 @@
     <app-table-header
       [searchLabel]="'Search Admins'"
       [addButtonLabel]="'Add Admin'"
+      [showExportButton]="false"
       [inputFields]="headerInputFields"
       (inputChange)="onInputChange($event)"
       (add)="openAddAdminDialog()"
@@ -23,8 +24,8 @@
       [data]="filteredAdmins"
       [displayedColumns]="displayedColumns"
       [showViewButton]="false"
+      [showDeleteButton]="false"
       (edit)="openEditAdminDialog($event)"
-      (delete)="deleteAdmin($event)"
     ></app-table-generic>
   </div>
 

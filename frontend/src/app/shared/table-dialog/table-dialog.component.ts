@@ -284,7 +284,7 @@ export class TableDialogComponent {
       if (roleControl && codeControl) {
         roleControl.valueChanges.subscribe((role) => {
           if (role) {
-            this.generateAdminCode(role);
+            this.generateAdminCode();
           }
         });
 
@@ -418,32 +418,34 @@ export class TableDialogComponent {
     }
   }
 
-  private generateAdminCode(role: string): void {
+  private generateAdminCode(): void {
     const codeControl = this.form.get('code');
     if (codeControl) {
-      this.adminService.getNextAdminCode(role).subscribe({
+      this.adminService.getNextAdminCode().subscribe({
         next: (nextCode) => {
           codeControl.setValue(nextCode);
           this.cdr.markForCheck();
         },
         error: (error) => {
           console.error('Error generating admin code:', error);
-          // Optionally handle the error (e.g., show a message to the user)
         },
       });
     }
   }
 
   private initAutocompleteOptions(field: DialogFieldConfig): void {
-    this.filteredOptions[field.formControlName] =
-      field.options?.map(String) || [];
+    if (field.filter) {
+      this.filteredOptions[field.formControlName] = field.options || [];
+    }
   }
 
   private initStartTimeControl(): void {
-    const startTimeControl = this.form.get('startTime');
+    const startTimeControl = this.form.get('start_time');
     if (startTimeControl) {
       startTimeControl.valueChanges.subscribe((value) => {
-        this.startTimeChange.emit(value);
+        if (value) {
+          this.startTimeChange.emit(value);
+        }
       });
     }
   }

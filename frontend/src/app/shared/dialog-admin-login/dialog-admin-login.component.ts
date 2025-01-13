@@ -1,6 +1,11 @@
 import { CommonModule } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -168,8 +173,12 @@ export class DialogAdminLoginComponent implements OnInit {
   }
 
   private getErrorMessage(error: any): string {
-    if (error.status === 401 || error.status === 403) {
-      return 'Invalid credentials. Please check your admin code and password.';
+    if (error.status === 401) {
+      return 'Invalid credentials. Please check your email and password.';
+    } else if (error.status === 403) {
+      return (
+        error.error?.message || 'Access forbidden. You are not authorized.'
+      );
     } else if (error.status === 0) {
       return 'Unable to connect to the server. Please check your internet connection.';
     } else {

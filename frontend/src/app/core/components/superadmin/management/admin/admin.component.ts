@@ -1,10 +1,11 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
+
+import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormControl } from '@angular/forms';
 
 import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
@@ -14,7 +15,6 @@ import { LoadingComponent } from '../../../../../shared/loading/loading.componen
 import { AdminService, User } from '../../../../services/superadmin/management/admin/admin.service';
 
 import { fadeAnimation } from '../../../../animations/animations';
-import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-admin',
@@ -37,7 +37,7 @@ export class AdminComponent implements OnInit, OnDestroy {
   admins: User[] = [];
   filteredAdmins: User[] = [];
   isLoading = true;
-  
+
   searchControl = new FormControl('');
   private destroy$ = new Subject<void>();
 
@@ -45,8 +45,8 @@ export class AdminComponent implements OnInit, OnDestroy {
     { key: 'index', label: '#' },
     { key: 'code', label: 'Admin Code' },
     { key: 'fullName', label: 'Name' },
+    { key: 'email', label: 'Email' },
     { key: 'passwordDisplay', label: 'Password' },
-    { key: 'role', label: 'Role' },
     { key: 'status', label: 'Status' },
   ];
 
@@ -54,8 +54,8 @@ export class AdminComponent implements OnInit, OnDestroy {
     'index',
     'code',
     'fullName',
+    'email',
     'passwordDisplay',
-    'role',
     'status',
     'action',
   ];
@@ -119,11 +119,7 @@ export class AdminComponent implements OnInit, OnDestroy {
 
   setupSearch() {
     this.searchControl.valueChanges
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged(),
-        takeUntil(this.destroy$)
-      )
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
       .subscribe((searchTerm) => {
         this.onSearch(searchTerm || '');
       });
@@ -163,7 +159,7 @@ export class AdminComponent implements OnInit, OnDestroy {
           type: 'text',
           maxLength: 20,
           required: true,
-          disabled: !!admin,
+          disabled: true,
         },
         {
           label: 'Last Name',
@@ -214,13 +210,6 @@ export class AdminComponent implements OnInit, OnDestroy {
           confirmPassword: true,
         },
         {
-          label: 'Role',
-          formControlName: 'role',
-          type: 'select',
-          options: ['admin', 'superadmin'],
-          required: true,
-        },
-        {
           label: 'Status',
           formControlName: 'status',
           type: 'select',
@@ -228,41 +217,69 @@ export class AdminComponent implements OnInit, OnDestroy {
           required: true,
         },
       ],
-      initialValue: admin ? { ...admin, password: '' } : { status: 'Active' },
+      initialValue: admin
+        ? { ...admin, password: '' }
+        : { status: 'Active', role: 'admin' },
     };
   }
 
   openAddAdminDialog() {
-    const config = this.getDialogConfig();
-    const dialogRef = this.dialog.open(TableDialogComponent, {
-      data: config,
-      disableClose: true,
-    });
+    this.adminService.getNextAdminCode().subscribe({
+      next: (code) => {
+        const config = this.getDialogConfig();
+        config.initialValue = { ...config.initialValue, code };
 
-    dialogRef.afterClosed().subscribe((result) => {
-      if (result) {
-        const { confirmPassword, ...adminData } = result;
-        const { name, ...rest } = adminData;
-
-        this.adminService.addAdmin(rest).subscribe({
-          next: (newAdmin) => {
-            this.snackBar.open('Admin added successfully', 'Close', {
-              duration: 3000,
-            });
-            this.fetchAdmins();
-          },
-          error: (error) => {
-            this.snackBar.open(
-              'Error adding admin. Please try again.',
-              'Close',
-              {
-                duration: 3000,
-              }
-            );
-            console.error('Error adding admin:', error);
-          },
+        const dialogRef = this.dialog.open(TableDialogComponent, {
+          data: config,
+          disableClose: true,
         });
-      }
+
+        dialogRef.afterClosed().subscribe((result) => {
+          if (result) {
+            const { confirmPassword, ...adminData } = result;
+            const { name, ...rest } = adminData;
+
+            this.adminService.addAdmin({ ...rest, role: 'admin' }).subscribe({
+              next: (newAdmin) => {
+                const adminWithDisplay = {
+                  ...newAdmin,
+                  fullName: `${newAdmin.last_name}, ${newAdmin.first_name} ${
+                    newAdmin.middle_name ?? ''
+                  } ${newAdmin.suffix_name ?? ''}`,
+                  passwordDisplay: '••••••••',
+                };
+                this.admins = [...this.admins, adminWithDisplay];
+                this.filteredAdmins = [...this.admins];
+                this.cdr.markForCheck();
+
+                this.snackBar.open('Admin added successfully', 'Close', {
+                  duration: 3000,
+                });
+              },
+              error: (error) => {
+                this.snackBar.open(
+                  'Error adding admin. Please try again.',
+                  'Close',
+                  {
+                    duration: 3000,
+                  }
+                );
+                console.error('Error adding admin:', error);
+              },
+            });
+          }
+        });
+      },
+      error: (error) => {
+        this.snackBar.open(
+          'Error generating admin code. Please try again.',
+          'Close',
+          {
+            duration: 3000,
+          }
+        );
+        console.error('Error generating admin code:', error);
+      },
     });
   }
 
@@ -276,31 +293,7 @@ export class AdminComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        // Check if role has changed
-        if (result.role !== admin.role) {
-          // Get new admin code based on new role
-          this.adminService.getNextAdminCode(result.role).subscribe({
-            next: (newCode) => {
-              const updatedAdmin = {
-                ...result,
-                code: newCode,
-              };
-              this.updateAdmin(admin.id, updatedAdmin);
-            },
-            error: (error) => {
-              this.snackBar.open(
-                'Error generating new admin code. Please try again.',
-                'Close',
-                {
-                  duration: 3000,
-                }
-              );
-              console.error('Error generating admin code:', error);
-            },
-          });
-        } else {
-          this.updateAdmin(admin.id, result);
-        }
+        this.updateAdmin(admin.id, { ...result, role: 'admin' });
       }
     });
   }
@@ -308,26 +301,38 @@ export class AdminComponent implements OnInit, OnDestroy {
   updateAdmin(id: string, updatedAdmin: any) {
     const { confirmPassword, ...adminData } = updatedAdmin;
 
-    // Only include password if it was changed
     if (!adminData.password) {
       delete adminData.password;
     }
 
+    const existingAdmin = this.admins.find((admin) => admin.id === id);
+    if (!existingAdmin) return;
+
     this.adminService.updateAdmin(id, adminData).subscribe({
       next: (updatedAdminResponse) => {
-        const index = this.admins.findIndex((admin) => admin.id === id);
-        if (index !== -1) {
-          this.admins[index] = {
-            ...updatedAdminResponse,
-            passwordDisplay: '••••••••',
-          };
+        const updatedAdminWithDisplay = {
+          ...existingAdmin,
+          ...updatedAdminResponse,
+          fullName: this.formatAdminName(updatedAdminResponse),
+          passwordDisplay: '••••••••',
+        };
+
+        this.admins = this.admins.map((admin) =>
+          admin.id === id ? updatedAdminWithDisplay : admin
+        );
+
+        const searchTerm = this.searchControl.value;
+        if (searchTerm) {
+          this.onSearch(searchTerm);
+        } else {
+          this.filteredAdmins = [...this.admins];
         }
+
+        this.cdr.detectChanges();
 
         this.snackBar.open('Admin updated successfully', 'Close', {
           duration: 3000,
         });
-        this.fetchAdmins();
-        this.cdr.markForCheck();
       },
       error: (error) => {
         this.snackBar.open('Error updating admin. Please try again.', 'Close', {
@@ -338,28 +343,9 @@ export class AdminComponent implements OnInit, OnDestroy {
     });
   }
 
-  deleteAdmin(admin: User) {
-    const index = this.admins.indexOf(admin);
-    if (index >= 0) {
-      this.adminService.deleteAdmin(admin.id).subscribe(
-        () => {
-          this.snackBar.open('Admin deleted successfully', 'Close', {
-            duration: 3000,
-          });
-          this.fetchAdmins();
-          this.cdr.markForCheck();
-        },
-        (error) => {
-          this.snackBar.open(
-            'Error deleting admin. Please try again.',
-            'Close',
-            {
-              duration: 3000,
-            }
-          );
-          console.error('Error deleting admin:', error);
-        }
-      );
-    }
+  private formatAdminName(admin: User): string {
+    return `${admin.last_name}, ${admin.first_name}${
+      admin.middle_name ? ' ' + admin.middle_name : ''
+    }${admin.suffix_name ? ' ' + admin.suffix_name : ''}`.trim();
   }
 }

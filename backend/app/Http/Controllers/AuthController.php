@@ -25,6 +25,11 @@ class AuthController extends Controller
             return response()->json(['message' => 'Invalid Credentials'], 401);
         }
 
+        // Check if admin/superadmin is active
+        if (($user->role === 'admin' || $user->role === 'superadmin') && $user->status === 'Inactive') {
+            return response()->json(['message' => 'Your account is currently inactive. Please contact the system administrator.'], 403);
+        }
+
         $tokenResult = $user->createToken('user-token');
         $token = $tokenResult->plainTextToken;
         $expiration = Carbon::now()->addHours(24);

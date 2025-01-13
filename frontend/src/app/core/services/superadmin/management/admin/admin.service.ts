@@ -40,7 +40,9 @@ export class AdminService {
 
   // Fetch all admins
   getAdmins(): Observable<User[]> {
-    return this.http.get<User[]>(`${this.baseUrl}/getAdmins`);
+    return this.http
+      .get<User[]>(`${this.baseUrl}/getAdmins`)
+      .pipe(map((admins) => admins.filter((admin) => admin.role === 'admin')));
   }
 
   // Fetch a specific admin by ID
@@ -55,46 +57,46 @@ export class AdminService {
 
   // Update an existing admin
   updateAdmin(id: string, updatedAdmin: User): Observable<User> {
-    return this.http.put<User>(
-      `${this.baseUrl}/updateAdmins/${id}`,
-      updatedAdmin
-    );
-  }
-
-  // Delete an admin by ID
-  deleteAdmin(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.baseUrl}/deleteAdmins/${id}`);
+    return this.http
+      .put<{ message: string; updated_fields: string[]; admin: User }>(
+        `${this.baseUrl}/updateAdmins/${id}`,
+        updatedAdmin
+      )
+      .pipe(map((response) => response.admin));
   }
 
   // Generate next admin code
-  getNextAdminCode(role: string): Observable<string> {
+  getNextAdminCode(): Observable<string> {
     return this.getAdmins().pipe(
       map((admins) => {
-        const prefix = role.toLowerCase() === 'superadmin' ? 'SDM' : 'ADM';
+        const prefix = 'ADM';
         const year = new Date().getFullYear();
         const suffix = 'TG' + year;
 
-        // Filter codes by role prefix and current year
+        // Filter codes by current year and sort them
         const existingCodes = admins
           .filter(
             (admin) =>
               admin.code.startsWith(prefix) &&
               admin.code.endsWith(year.toString())
           )
-          .map((admin) => admin.code);
+          .map((admin) => admin.code)
+          .sort((a, b) => {
+            // Extract numbers and compare
+            const numA = parseInt(a.match(/\d{3}/)?.[0] || '0', 10);
+            const numB = parseInt(b.match(/\d{3}/)?.[0] || '0', 10);
+            return numB - numA; // Sort in descending order
+          });
 
         if (existingCodes.length === 0) {
           return `${prefix}001${suffix}`;
         }
 
-        // Extract the numeric portions and find the highest number
-        const numbers = existingCodes.map((code) => {
-          const match = code.match(/\d{3}/);
-          return match ? parseInt(match[0], 10) : 0;
-        });
-
-        const maxNumber = Math.max(...numbers);
-        const nextNumber = (maxNumber + 1).toString().padStart(3, '0');
+        // Get the highest number from the sorted codes
+        const lastCode = existingCodes[0];
+        const match = lastCode.match(/\d{3}/);
+        const lastNumber = match ? parseInt(match[0], 10) : 0;
+        const nextNumber = (lastNumber + 1).toString().padStart(3, '0');
 
         return `${prefix}${nextNumber}${suffix}`;
       })
