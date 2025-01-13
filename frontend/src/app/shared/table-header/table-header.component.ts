@@ -43,7 +43,7 @@ export interface InputField {
 export class TableHeaderComponent implements OnInit, OnChanges {
   @Input() inputFields: InputField[] = [];
   @Input() addButtonLabel = 'Add';
-  @Input() addIconName = 'add';
+  @Input() addIconName = 'add_box';
   @Input() buttonDisabled = false;
   @Input() showExportButton = true;
   @Input() showExportDialog = false;
