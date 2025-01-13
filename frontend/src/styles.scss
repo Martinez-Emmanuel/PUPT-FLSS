@@ -22,6 +22,7 @@
   --font-size-mdx: 1.1rem;
   --font-size-lg: 1.25rem;
   --font-size-xl: 1.5rem;
+  --font-size-xlx: 1.75rem;
   --font-size-2xl: 2rem;
   --font-size-2xxl: 2.5rem;
   --font-size-3xl: 3rem;
@@ -267,6 +268,12 @@ span[mat-symbol] {
     &.temporary {
       background-color: var(--aqua-fade-lighter);
       color: var(--aqua-primary);
+    }
+
+    /* Fallback theme for any new faculty type */
+    &:not(.full-time):not(.designee):not(.part-time):not(.temporary) {
+      background-color: var(--neutral-fade);
+      color: var(--neutral-base);
     }
   }
 }

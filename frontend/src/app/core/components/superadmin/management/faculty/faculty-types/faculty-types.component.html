@@ -1,0 +1,34 @@
+<div class="faculty-types-management-container">
+  @if (isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
+
+  <!-- Table Header -->
+  <div class="faculty-types-header-container" [@fadeAnimation]>
+    <app-table-header
+      title="Faculty Types"
+      subtitle="Manage faculty types and their unit allocations"
+      [addButtonLabel]="'Add Faculty Type'"
+      [inputFields]="headerInputFields"
+      [showExportButton]="false"
+      (inputChange)="onInputChange($event)"
+      (add)="openDialog('Add')"
+    ></app-table-header>
+  </div>
+
+  <!-- Faculty Management Table -->
+  <div class="faculty-types-table-container" [@fadeAnimation]>
+    <app-table-generic
+      [data]="filteredFacultyTypes"
+      [columns]="columns"
+      [displayedColumns]="displayedColumns"
+      [tableName]="'faculty-types'"
+      (edit)="openDialog('Edit', $event)"
+      (delete)="onDelete($event)"
+    ></app-table-generic>
+  </div>
+
+  }
+</div>

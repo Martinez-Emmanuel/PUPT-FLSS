@@ -361,7 +361,8 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
    * @param faculty - The faculty to check.
    * @returns True if individually scheduled, false otherwise.
    */
-  isIndividuallyScheduled(faculty: Faculty): boolean {
+  isIndividuallyScheduled(faculty?: Faculty): boolean {
+    if (!faculty) return false;
     return this.facultyScheduledState.get(faculty.faculty_id) ?? false;
   }
 
@@ -860,7 +861,16 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
    * @param faculty - The faculty to check.
    * @returns The toggle state.
    */
-  public getToggleState(faculty: Faculty): ToggleState {
+  public getToggleState(faculty?: Faculty): ToggleState {
+    if (!faculty || !this.allData.length) {
+      return {
+        isGlobalDisabled: true,
+        isIndividualDisabled: true,
+        globalTooltip: 'No faculty data available',
+        individualTooltip: 'No faculty data available',
+      };
+    }
+
     const isGlobalDisabled =
       (this.hasIndividualDeadlines &&
         !this.isToggleAllChecked &&

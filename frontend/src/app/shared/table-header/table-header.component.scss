@@ -91,14 +91,14 @@
 
   .add-button {
     background-color: var(--primary-one);
-    min-width: 10rem;
+    // min-width: 10rem;
   }
 
   .button-wrapper {
-    @include mixins.flex-layout($gap: var(--spacing-xs));
+    @include mixins.flex-layout($gap: var(--spacing-xxs));
 
     mat-icon {
-      @include mixins.flex-layout;
+      @include mixins.flex-layout($justify: flex-start);
       font-size: var(--font-size-lg);
     }
   }

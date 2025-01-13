@@ -1,8 +1,9 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, TemplateRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 
-import { catchError, debounceTime, distinctUntilChanged, of, Subject, takeUntil, interval } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, of, Subject, takeUntil, interval, firstValueFrom } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -16,6 +17,7 @@ import { LoadingComponent } from '../../../../../shared/loading/loading.componen
 
 import { FacultyService, Faculty } from '../../../../services/superadmin/management/faculty/faculty.service';
 import { HrisHealthService } from '../../../../services/health/hris-health.service';
+import { FacultyTypeService, FacultyType } from '../../../../services/superadmin/management/faculty/faculty-type.service';
 
 import { fadeAnimation } from '../../../../animations/animations';
 
@@ -43,10 +45,11 @@ interface Column {
 })
 export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
   facultyStatuses = ['Active', 'Inactive'];
-  facultyTypes = ['Full-Time', 'Part-Time', 'Temporary', 'Designee'];
+  facultyTypes: FacultyType[] = [];
   selectedFacultyIndex: number | null = null;
 
   @ViewChild('facultyTypeTemplate') facultyTypeTemplate!: TemplateRef<any>;
+  @ViewChild('facultyUnitsTemplate') facultyUnitsTemplate!: TemplateRef<any>;
 
   faculty: Faculty[] = [];
   filteredFaculty: Faculty[] = [];
@@ -90,10 +93,13 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private facultyService: FacultyService,
-    private hrisHealthService: HrisHealthService
+    private hrisHealthService: HrisHealthService,
+    private router: Router,
+    private facultyTypeService: FacultyTypeService
   ) {}
 
   ngOnInit() {
+    this.loadFacultyTypes();
     this.fetchFaculty();
     this.setupSearch();
     this.setupHrisHealthCheck();
@@ -110,6 +116,13 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
     );
     if (facultyTypeColumn) {
       facultyTypeColumn.template = this.facultyTypeTemplate;
+    }
+
+    const facultyUnitsColumn = this.columns.find(
+      (col) => col.key === 'faculty_units'
+    );
+    if (facultyUnitsColumn) {
+      facultyUnitsColumn.template = this.facultyUnitsTemplate;
     }
     this.cdr.detectChanges();
   }
@@ -137,9 +150,16 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
           faculty.code.toLowerCase().includes(lowerSearch) ||
           faculty.name.toLowerCase().includes(lowerSearch) ||
           faculty.email.toLowerCase().includes(lowerSearch) ||
-          faculty.faculty_type.toLowerCase().includes(lowerSearch) ||
+          faculty.faculty?.faculty_type?.faculty_type
+            ?.toLowerCase()
+            .includes(lowerSearch) ||
           faculty.status.toLowerCase().includes(lowerSearch) ||
-          faculty.faculty_units.toString().includes(lowerSearch)
+          (
+            (faculty.faculty?.faculty_type?.regular_units ?? 0) +
+            (faculty.faculty?.faculty_type?.additional_units ?? 0)
+          )
+            .toString()
+            .includes(lowerSearch)
       );
     }
     this.cdr.markForCheck();
@@ -174,6 +194,7 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
         takeUntil(this.destroy$)
       )
       .subscribe((faculty) => {
+        console.log('Fetched faculty:', faculty); // Debug log
         this.faculty = faculty;
         this.filteredFaculty = [...this.faculty];
         this.isLoading = false;
@@ -188,7 +209,7 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
    */
   private getDialogConfig(faculty?: Faculty): DialogConfig {
     return {
-      title: 'Faculty',
+      title: faculty ? 'Edit Faculty' : 'Add Faculty',
       isEdit: !!faculty,
       fields: [
         {
@@ -251,27 +272,76 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
         },
         {
           label: 'Type',
-          formControlName: 'faculty_type',
+          formControlName: 'faculty_type_id',
           type: 'select',
-          options: this.facultyTypes,
-          required: true,
-        },
-        {
-          label: 'Units Assigned',
-          formControlName: 'faculty_units',
-          type: 'number',
+          options: [
+            {
+              value: 'configure',
+              label: 'Configure faculty types...',
+              metadata: {
+                isConfig: true,
+                icon: 'settings',
+              },
+            },
+            ...this.facultyTypes.map((type) => ({
+              value: type.faculty_type_id,
+              label: type.faculty_type,
+            })),
+          ],
           required: true,
         },
         {
           label: 'Status',
           formControlName: 'status',
           type: 'select',
-          options: this.facultyStatuses,
+          options: this.facultyStatuses.map((status) => ({
+            value: status,
+            label: status,
+          })),
           required: true,
         },
       ],
-      initialValue: faculty || {},
+      initialValue: faculty
+        ? {
+            code: faculty.code,
+            last_name: faculty.last_name,
+            first_name: faculty.first_name,
+            middle_name: faculty.middle_name,
+            suffix_name: faculty.suffix_name,
+            email: faculty.email,
+            faculty_type_id: faculty.faculty?.faculty_type_id,
+            status: faculty.status,
+            password: '********',
+            confirmPassword: '********',
+          }
+        : undefined,
     };
+  }
+
+  /**
+   * Handles the faculty type configuration option in the dialog.
+   * @param dialogRef The dialog reference to handle.
+   */
+  private handleFacultyTypeConfig(dialogRef: any) {
+    const dialogAfterOpened$ = dialogRef.afterOpened();
+    dialogAfterOpened$.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      const form = dialogRef.componentInstance.form;
+      const facultyTypeControl = form.get('faculty_type_id');
+
+      if (facultyTypeControl) {
+        const facultyTypeIdControl = form.get('faculty_type_id');
+        if (facultyTypeIdControl) {
+          facultyTypeIdControl.valueChanges
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((value: string) => {
+              if (value === 'configure') {
+                dialogRef.close();
+                this.router.navigate(['/superadmin/faculty/types']);
+              }
+            });
+        }
+      }
+    });
   }
 
   /**
@@ -292,6 +362,8 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
       data: config,
       disableClose: true,
     });
+
+    this.handleFacultyTypeConfig(dialogRef);
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
@@ -342,6 +414,8 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
       data: config,
       disableClose: true,
     });
+
+    this.handleFacultyTypeConfig(dialogRef);
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result && this.selectedFacultyIndex !== null) {
@@ -399,42 +473,6 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
   }
 
   /**
-   * Deletes a faculty member.
-   * @param faculty The faculty member to delete.
-   */
-  /*
-  deleteFaculty(faculty: Faculty) {
-    const facultyId = faculty.id;
-
-    this.facultyService
-      .deleteFaculty(facultyId)
-      .pipe(
-        catchError((error) => {
-          console.error('Error deleting faculty:', error);
-          this.snackBar.open(
-            'Error deleting faculty. Please try again.',
-            'Close',
-            { duration: 3000 }
-          );
-          return of(null);
-        })
-      )
-      .subscribe((result) => {
-        if (result !== null) {
-          this.faculty = this.faculty.filter((f) => f.id !== facultyId);
-          this.filteredFaculty = this.filteredFaculty.filter(
-            (f) => f.id !== facultyId
-          );
-          this.snackBar.open('Faculty deleted successfully', 'Close', {
-            duration: 3000,
-          });
-          this.cdr.markForCheck();
-        }
-      });
-  }
-  */
-
-  /**
    * Sets up an interval to periodically check the health of the HRIS system.
    */
   private setupHrisHealthCheck() {
@@ -478,5 +516,17 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
       'part-time': type.includes('part-time'),
       temporary: type.includes('temporary'),
     };
+  }
+
+  async loadFacultyTypes(): Promise<void> {
+    try {
+      this.facultyTypes = await firstValueFrom(
+        this.facultyTypeService.getFacultyTypes()
+      );
+    } catch (error) {
+      this.snackBar.open('Error loading faculty types', 'Close', {
+        duration: 3000,
+      });
+    }
   }
 }

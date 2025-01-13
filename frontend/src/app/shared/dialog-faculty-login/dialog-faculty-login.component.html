@@ -15,7 +15,7 @@
 
   <!--Dialog Form-->
   <div class="dialog-login-content">
-    <form [formGroup]="loginForm" (ngSubmit)="onSubmitClick()">
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
       <div class="field-container">
         <div class="input-container">
           <span
@@ -92,30 +92,35 @@
         </div>
         }
       </div>
-    </form>
-  </div>
 
-  <!--Dialog Actions-->
-  <div class="dialog-login-actions">
-    <button mat-button class="close-button" (click)="onCloseClick()">
-      Close
-    </button>
-    <button
-      mat-flat-button
-      class="login-button"
-      [ngClass]="{
-        'button-disabled': isLoading || loginForm.invalid
-      }"
-      [disabled]="loginForm.invalid || isLoading"
-      (click)="onSubmitClick()"
-    >
-      @if(!isLoading){ Log In } @if(isLoading) {
-      <mat-spinner
-        class="custom-spinner"
-        diameter="25"
-        strokeWidth="2.5"
-      ></mat-spinner
-      >}
-    </button>
+      <!--Dialog Actions-->
+      <div class="dialog-login-actions">
+        <button
+          mat-button
+          class="close-button"
+          type="button"
+          (click)="onCloseClick()"
+        >
+          Close
+        </button>
+        <button
+          mat-flat-button
+          class="login-button"
+          [ngClass]="{
+            'button-disabled': isLoading || loginForm.invalid
+          }"
+          [disabled]="loginForm.invalid || isLoading"
+          type="submit"
+        >
+          @if(!isLoading){ Log In } @if(isLoading) {
+          <mat-spinner
+            class="custom-spinner"
+            diameter="25"
+            strokeWidth="2.5"
+          ></mat-spinner
+          >}
+        </button>
+      </div>
+    </form>
   </div>
 </div>

@@ -18,8 +18,8 @@ class AccountController extends Controller
      */
     public function indexAdmins()
     {
-        // Fetch users with roles 'admin' or 'super_admin'
-        $admins = User::whereIn('role', ['admin', 'superadmin'])->get();
+        // Fetch users with role 'admin' only
+        $admins = User::where('role', 'admin')->get();
         return response()->json($admins);
     }
 
@@ -36,9 +36,17 @@ class AccountController extends Controller
             'code' => 'required|string|max:255|unique:users',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|min:8',
-            'role' => 'required|in:admin,superadmin',
+            'role' => 'required|in:admin',
             'status' => 'required|in:Active,Inactive',
         ]);
+
+        $existingCode = User::where('code', $validatedData['code'])->exists();
+        if ($existingCode) {
+            return response()->json([
+                'message' => 'Admin code already exists.',
+                'errors' => ['code' => ['This admin code is already taken.']],
+            ], 422);
+        }
 
         $admin = User::create([
             'last_name' => $validatedData['last_name'],
@@ -68,7 +76,7 @@ class AccountController extends Controller
             'code' => 'sometimes|required|string|max:255|unique:users,code,' . $admin->id,
             'email' => 'sometimes|required|email|unique:users,email,' . $admin->id,
             'password' => 'sometimes|string|min:8',
-            'role' => 'sometimes|required|in:admin,superadmin',
+            'role' => 'sometimes|required|in:admin',
             'status' => 'sometimes|required|in:Active,Inactive',
         ]);
 

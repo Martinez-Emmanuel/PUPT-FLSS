@@ -39,8 +39,7 @@ class FacultyController extends Controller
             'email' => 'required|email|unique:users',
             'role' => 'required|string',
             'status' => 'required|string',
-            'faculty_type' => 'required|string',
-            'faculty_units' => 'required|numeric',
+            'faculty_type_id' => 'required|exists:faculty_type,faculty_type_id',
             'password' => 'required|string',
         ]);
 
@@ -56,10 +55,11 @@ class FacultyController extends Controller
             'password' => $validatedData['password'],
         ]);
 
-        $user->faculty()->create([
-            'faculty_type' => $validatedData['faculty_type'],
-            'faculty_units' => $validatedData['faculty_units'],
+        $faculty = $user->faculty()->create([
+            'faculty_type_id' => $validatedData['faculty_type_id'],
         ]);
+
+        $facultyType = $faculty->facultyType;
 
         // Send webhook to HRIS about new faculty
         $facultyData = [
@@ -70,12 +70,12 @@ class FacultyController extends Controller
             'name_extension' => $validatedData['suffix_name'],
             'email' => $validatedData['email'],
             'status' => $validatedData['status'],
-            'faculty_type' => $validatedData['faculty_type'],
+            'faculty_type' => $facultyType->faculty_type,
         ];
 
         $this->webhookController->sendFacultyWebhook('faculty.created', $facultyData);
 
-        return response()->json($user->load('faculty'), 201);
+        return response()->json($user->load('faculty.facultyType'), 201);
     }
 
     /**
@@ -94,8 +94,7 @@ class FacultyController extends Controller
             'suffix_name' => 'nullable|string',
             'email' => 'required|email',
             'status' => 'required|string',
-            'faculty_type' => 'required|string',
-            'faculty_units' => 'required|numeric',
+            'faculty_type_id' => 'required|exists:faculty_type,faculty_type_id',
             'password' => 'nullable|string',
         ]);
 
@@ -110,11 +109,11 @@ class FacultyController extends Controller
 
         $user->faculty()->updateOrCreate(
             ['user_id' => $user->id],
-            [
-                'faculty_type' => $validatedData['faculty_type'],
-                'faculty_units' => $validatedData['faculty_units'],
-            ]
+            ['faculty_type_id' => $validatedData['faculty_type_id']]
         );
+
+        // Get faculty type details for webhook
+        $facultyType = $user->faculty->facultyType;
 
         // Send webhook to HRIS about faculty update
         $facultyData = [
@@ -125,17 +124,17 @@ class FacultyController extends Controller
             'name_extension' => $validatedData['suffix_name'],
             'email' => $validatedData['email'],
             'status' => $validatedData['status'],
-            'faculty_type' => $validatedData['faculty_type'],
+            'faculty_type' => $facultyType->faculty_type,
         ];
 
         $this->webhookController->sendFacultyWebhook('faculty.updated', $facultyData);
 
-        // If a password is provided, update it without bcrypt
+        // If a password is provided, update it
         if (isset($validatedData['password'])) {
-            $user->update(['password' => $validatedData['password']]); // No bcrypt applied
+            $user->update(['password' => $validatedData['password']]);
         }
 
-        return response()->json($user->load('faculty'));
+        return response()->json($user->load('faculty.facultyType'));
     }
 
     /**
@@ -163,7 +162,7 @@ class FacultyController extends Controller
         $facultyDetails = Faculty::whereHas('user', function ($query) {
             $query->where('status', 'Active');
         })
-            ->with('user')
+            ->with(['user', 'facultyType'])
             ->get();
 
         $response = $facultyDetails->map(function ($faculty) {
@@ -172,8 +171,8 @@ class FacultyController extends Controller
                 'name' => $faculty->user->formatted_name ?? 'N/A',
                 'code' => $faculty->user->code ?? 'N/A',
                 'faculty_email' => $faculty->user->email ?? 'N/A',
-                'faculty_type' => $faculty->faculty_type ?? 'N/A',
-                'faculty_units' => $faculty->faculty_units ?? 'N/A',
+                'faculty_type' => $faculty->facultyType->faculty_type ?? 'N/A',
+                'faculty_units' => $faculty->faculty_units,
             ];
         })
             ->sortBy('name')

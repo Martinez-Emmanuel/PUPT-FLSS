@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\SendFacultyFirstLoginPasswordJob;
 use App\Models\Faculty;
+use App\Models\FacultyType;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -79,8 +80,15 @@ class OAuthController extends Controller
                 $faculty = new Faculty();
                 $faculty->user_id = $user->id;
                 $faculty->hris_user_id = $facultyData['UserID'];
-                $faculty->faculty_type = $facultyData['faculty_type'];
-                $faculty->faculty_units = 0;
+
+                $facultyType = FacultyType::firstOrCreate(
+                    ['faculty_type' => $facultyData['faculty_type']],
+                    [
+                        'regular_units' => 0,
+                        'additional_units' => 0,
+                    ]
+                );
+                $faculty->faculty_type_id = $facultyType->faculty_type_id;
 
                 if (!$faculty->save()) {
                     throw new \Exception('Failed to create faculty record');
@@ -119,8 +127,8 @@ class OAuthController extends Controller
                     'role' => $user->role,
                     'faculty' => [
                         'faculty_id' => $user->faculty->id,
-                        'faculty_type' => $user->faculty->faculty_type,
-                        'faculty_units' => $user->faculty->faculty_units,
+                        'faculty_type' => $user->faculty->facultyType->faculty_type,
+                        'faculty_units' => $user->faculty->facultyType->total_units,
                     ],
                 ],
                 'expires_at' => now()->addDay()->toDateTimeString(),

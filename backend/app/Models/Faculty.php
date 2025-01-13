@@ -16,17 +16,26 @@ class Faculty extends Authenticatable
 
     protected $fillable = [
         'user_id',
-        'hris_user_id',
-        'faculty_type',
-        'faculty_units',
-        'faculty_password',
+        'faculty_type_id',
     ];
+
+    protected $with = ['facultyType'];
 
     public $timestamps = true;
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
+        return $this->belongsTo(User::class);
+    }
+
+    public function facultyType()
+    {
+        return $this->belongsTo(FacultyType::class, 'faculty_type_id');
+    }
+
+    public function getFacultyUnitsAttribute(): float
+    {
+        return $this->facultyType ? $this->facultyType->total_units : 0;
     }
 
     public function setFacultyPasswordAttribute($value)

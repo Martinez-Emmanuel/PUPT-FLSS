@@ -161,7 +161,7 @@ class PreferenceController extends Controller
                 'faculty_id' => $faculty->id,
                 'faculty_name' => $facultyUser->formatted_name ?? 'N/A',
                 'faculty_code' => $facultyUser->code ?? 'N/A',
-                'faculty_type' => $faculty->faculty_type ?? 'N/A',
+                'faculty_type' => $faculty->facultyType->faculty_type ?? 'N/A',
                 'faculty_units' => $faculty->faculty_units,
                 'has_request' => (int) ($preferenceSetting->has_request ?? 0),
                 'is_enabled' => (int) ($preferenceSetting->is_enabled ?? 0),
@@ -282,7 +282,7 @@ class PreferenceController extends Controller
                 'faculty_id' => $faculty->id,
                 'faculty_name' => $facultyUser->formatted_name ?? 'N/A',
                 'faculty_code' => $facultyUser->code ?? 'N/A',
-                'faculty_type' => $faculty->faculty_type ?? 'N/A',
+                'faculty_type' => $faculty->facultyType->faculty_type ?? 'N/A',
                 'faculty_units' => $faculty->faculty_units,
                 'has_request' => (int) ($preferenceSetting->has_request ?? 0),
                 'is_enabled' => (int) ($preferenceSetting->is_enabled ?? 0),
@@ -316,10 +316,9 @@ class PreferenceController extends Controller
         ], 200, [], JSON_PRETTY_PRINT);
     }
 
-
     public function getRequestNotifications()
     {
-        
+
         $activeSemester = ActiveSemester::with(['academicYear', 'semester'])
             ->where('is_active', 1)
             ->first();
@@ -346,19 +345,19 @@ class PreferenceController extends Controller
             $facultyName = trim(implode(' ', array_filter([
                 $faculty->last_name,
                 $faculty->middle_name,
-                $faculty->first_name
+                $faculty->first_name,
             ])));
 
             return [
                 'faculty_id' => $faculty->faculty_id,
                 'faculty_name' => $facultyName,
-                'message' => "$facultyName has requested to reopen their preferences submission.", 
+                'message' => "$facultyName has requested to reopen their preferences submission.",
             ];
         });
 
         return response()->json($notifications, 200);
     }
-    
+
     /**
      * Retrieves preferences for a specific faculty based on their faculty_id.
      */
@@ -418,7 +417,7 @@ class PreferenceController extends Controller
             'faculty_id' => $faculty->id,
             'faculty_name' => $faculty->user->name ?? 'N/A',
             'faculty_code' => $faculty->user->code ?? 'N/A',
-            'faculty_type' => $faculty->faculty_type ?? 'N/A',
+            'faculty_type' => $faculty->facultyType->faculty_type ?? 'N/A',
             'faculty_units' => $faculty->faculty_units,
             'has_request' => (int) ($preferenceSetting->has_request ?? 0),
             'is_enabled' => (int) ($preferenceSetting->is_enabled ?? 0),

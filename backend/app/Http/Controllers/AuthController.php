@@ -19,10 +19,15 @@ class AuthController extends Controller
         ]);
 
         // Check if the user exists and the password is correct
-        $user = User::where('email', $loginUserData['email'])->first();
+        $user = User::with(['faculty.facultyType'])->where('email', $loginUserData['email'])->first();
 
         if (!$user || !Hash::check($loginUserData['password'], $user->password)) {
             return response()->json(['message' => 'Invalid Credentials'], 401);
+        }
+
+        // Check if admin/superadmin is active
+        if (($user->role === 'admin' || $user->role === 'superadmin') && $user->status === 'Inactive') {
+            return response()->json(['message' => 'Your account is currently inactive. Please contact the system administrator.'], 403);
         }
 
         $tokenResult = $user->createToken('user-token');
@@ -40,7 +45,7 @@ class AuthController extends Controller
             'faculty' => $faculty ? [
                 'faculty_id' => $faculty->id,
                 'faculty_email' => $user->email,
-                'faculty_type' => $faculty->faculty_type,
+                'faculty_type' => $faculty->facultyType->faculty_type ?? null,
                 'faculty_units' => $faculty->faculty_units,
             ] : null,
         ]);
