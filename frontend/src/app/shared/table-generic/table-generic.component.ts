@@ -11,17 +11,17 @@ import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 import { DialogGenericComponent } from '../dialog-generic/dialog-generic.component';
 
 @Component({
-    selector: 'app-table-generic',
-    imports: [
-        CommonModule,
-        MatTableModule,
-        MatPaginatorModule,
-        MatIconModule,
-        MatButtonModule,
-        MatSymbolDirective,
-    ],
-    templateUrl: './table-generic.component.html',
-    styleUrls: ['./table-generic.component.scss']
+  selector: 'app-table-generic',
+  imports: [
+    CommonModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatIconModule,
+    MatButtonModule,
+    MatSymbolDirective,
+  ],
+  templateUrl: './table-generic.component.html',
+  styleUrls: ['./table-generic.component.scss'],
 })
 export class TableGenericComponent<T> implements OnInit, AfterViewInit {
   @Input() columns: {
@@ -39,7 +39,9 @@ export class TableGenericComponent<T> implements OnInit, AfterViewInit {
   }
   @Input() displayedColumns: string[] = [];
   @Input() showViewButton: boolean = false;
+  @Input() showDeleteButton: boolean = true;
   @Input() isHeaderSticky: boolean = true;
+  @Input() disableEdit: boolean = false;
 
   @Input() showTableHeading: boolean = false;
   @Input() tableHeadingTitle: string = '';
@@ -58,7 +60,6 @@ export class TableGenericComponent<T> implements OnInit, AfterViewInit {
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-
   constructor(private dialog: MatDialog) {}
 
   ngOnInit() {
@@ -70,15 +71,15 @@ export class TableGenericComponent<T> implements OnInit, AfterViewInit {
 
   ngAfterViewInit() {
     if (this.paginator) {
+      this.dataSource.paginator = this.paginator;
+      this.paginator.page.subscribe(() => {
         this.dataSource.paginator = this.paginator;
-        this.paginator.page.subscribe(() => {
-            this.dataSource.paginator = this.paginator;
-        });
+      });
     } else {
-        console.error('Paginator is not defined');
+      console.error('Paginator is not defined');
     }
   }
-  
+
   getIndex(index: number): number {
     if (this.paginator) {
       return this.paginator.pageIndex * this.paginator.pageSize + index + 1;

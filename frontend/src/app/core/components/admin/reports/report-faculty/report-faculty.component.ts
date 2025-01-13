@@ -726,4 +726,14 @@ export class ReportFacultyComponent
   hasSchedules(faculty: Faculty): boolean {
     return (faculty.schedules ?? []).length > 0;
   }
+
+  getFacultyTypeClass(facultyType: string): Record<string, boolean> {
+    const type = facultyType.toLowerCase();
+    return {
+      'full-time': type.includes('full-time'),
+      designee: type.includes('designee'),
+      'part-time': type.includes('part-time'),
+      temporary: type.includes('temporary'),
+    };
+  }
 }

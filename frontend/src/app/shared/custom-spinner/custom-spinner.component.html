@@ -1,0 +1,25 @@
+<div [ngSwitch]="type">
+  @switch (type) { @case ('cube-grid') {
+  <div class="cube-grid" [ngStyle]="{ 'width.px': size, 'height.px': size }">
+    @for (i of [0, 1, 2, 3, 4, 5, 6, 7, 8]; track i) {
+    <div class="cube" [ngStyle]="getStyleForCube()"></div>
+    }
+  </div>
+  } @case ('circular') {
+  <div class="custom-spinner circular-spinner">
+    <svg class="circular" [attr.viewBox]="'0 0 ' + size + ' ' + size">
+      <circle
+        class="path"
+        [attr.cx]="size / 2"
+        [attr.cy]="size / 2"
+        [attr.r]="size / 2 - strokeWidth"
+        fill="none"
+        [style.stroke]="color"
+        [style.stroke-width]="strokeWidth"
+      />
+    </svg>
+  </div>
+  } @default {
+  <p>Invalid spinner type</p>
+  } }
+</div>

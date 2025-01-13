@@ -1,0 +1,113 @@
+<div class="dialog-login-container">
+  <!--Dialog Title-->
+  <div class="dialog-login-title">
+    <h1 class="title-text">Admin Login</h1>
+    <p class="title-desc">Enter your account email and password to start.</p>
+  </div>
+
+  <!--Dialog Form-->
+  <div class="dialog-login-content">
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <div class="field-container">
+        <div class="input-container">
+          <span
+            mat-symbol="email"
+            class="input-icon"
+            [matTooltip]="'Email Address'"
+          ></span>
+          <input
+            type="email"
+            placeholder="Email Address"
+            class="login-input"
+            id="email"
+            formControlName="email"
+            autocomplete="email"
+          />
+        </div>
+        @if (email && email.invalid && (email.dirty || email.touched)) {
+        <div
+          class="error-message slide-down"
+          [ngClass]="{ show: email.invalid }"
+        >
+          <span mat-symbol="error"></span>
+          @if (email.errors?.['required']) {
+          <span>Email is required.</span>
+          } @if (email.errors?.['email']) {
+          <span>Please enter a valid email address.</span>
+          }
+        </div>
+        }
+      </div>
+
+      <div class="field-container">
+        <div class="input-container">
+          <span
+            mat-symbol="lock"
+            class="input-icon"
+            [matTooltip]="'Account Password'"
+          ></span>
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            placeholder="Password"
+            class="login-input"
+            id="password"
+            formControlName="password"
+            autocomplete="current-password"
+            minlength="8"
+            maxlength="40"
+          />
+          @if (passwordHasValue) {
+          <mat-icon
+            matRipple
+            class="password-visibility-toggle"
+            (click)="togglePasswordVisibility()"
+          >
+            {{ showPassword ? "visibility_off" : "visibility" }}
+          </mat-icon>
+          }
+        </div>
+
+        @if (password && password.invalid && (password.dirty ||
+        password.touched)) {
+        <div
+          class="error-message slide-down"
+          [ngClass]="{ show: password.invalid }"
+        >
+          <span mat-symbol="error"></span>
+          @if (password.errors?.['required']) {
+          <span>Account Password is required.</span>
+          } @if (password.errors?.['minlength']) {
+          <span>Password is too short.</span>
+          } @if (password.errors?.['maxlength']) {
+          <span>Password is too long.</span>
+          }
+        </div>
+        }
+      </div>
+    </form>
+  </div>
+
+  <!--Dialog Actions-->
+  <div class="dialog-login-actions">
+    <button mat-button class="close-button" (click)="onCloseClick()">
+      Close
+    </button>
+    <button
+      mat-flat-button
+      class="login-button"
+      [ngClass]="{
+        'button-disabled': isLoading || loginForm.invalid
+      }"
+      [disabled]="loginForm.invalid || isLoading"
+      (click)="onSubmit()"
+    >
+      @if(!isLoading){ Log In } @if(isLoading) {
+      <mat-spinner
+        class="custom-spinner"
+        diameter="25"
+        strokeWidth="2.5"
+      ></mat-spinner
+      >}
+    </button>
+  </div>
+</div>

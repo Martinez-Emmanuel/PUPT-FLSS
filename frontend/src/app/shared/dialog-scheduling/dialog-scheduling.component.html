@@ -17,7 +17,7 @@
       <div class="no-faculty-message">
         No faculty has selected this course as their preference.
       </div>
-      } @else { 
+      } @else {
       <!-- Outer loop for faculty -->
       @for (faculty of data.suggestedFaculty; track faculty.faculty_id) {
       <div class="faculty-card-wrapper">
@@ -68,9 +68,7 @@
         >
           <div
             class="faculty-type"
-            [class.full-time]="faculty.type.includes('Full-time')"
-            [class.full-time-designee]="faculty.type.includes('Designee')"
-            [class.part-time]="faculty.type === 'Part-time'"
+            [ngClass]="getFacultyTypeClass(faculty.type)"
           >
             {{ faculty.type }}
           </div>

@@ -35,6 +35,13 @@
   --line-height-mdx: 1.6;
   --line-height-lg: 1.75;
 
+  // Letter Spacing
+  --letter-spacing-xxs: 0.15px;
+  --letter-spacing-xs: 0.25px;
+  --letter-spacing-sm: 0.5px;
+  --letter-spacing-md: 1px;
+  --letter-spacing-lg: 1.5px;
+
   // Spacing
   --spacing-xxxs: 0.1rem;
   --spacing-xxs: 0.25rem;
@@ -86,7 +93,9 @@
   --duration-extra-long: 0.7s;
 
   // Dialog Sizes
+  --dialog-xs: 15rem;
   --dialog-small: 20rem;
+  --dialog-smx: 21rem;
   --dialog-base: 25rem;
   --dialog-medium: 30rem;
   --dialog-base-height: 60vh;
@@ -228,6 +237,41 @@ span[mat-symbol] {
   width: var(--dialog-small);
 }
 
+.custom-cell {
+  padding: var(--spacing-xs);
+  text-align: center;
+
+  .faculty-type {
+    width: fit-content;
+    padding: var(--spacing-xxs) var(--spacing-sm);
+    border-radius: var(--border-radius-xl);
+    font-size: var(--font-size-xsx);
+    font-weight: 500;
+    margin: 0 auto;
+    display: inline-block;
+
+    &.full-time {
+      background-color: var(--blue-fade-lighter);
+      color: var(--blue-primary);
+    }
+
+    &.designee {
+      background-color: var(--pink-fade-lighter);
+      color: var(--pink-primary);
+    }
+
+    &.part-time {
+      background-color: var(--purple-fade-lighter);
+      color: var(--purple-primary);
+    }
+
+    &.temporary {
+      background-color: var(--aqua-fade-lighter);
+      color: var(--aqua-primary);
+    }
+  }
+}
+
 .custom-paginator {
   @include mixins.default-transition;
   padding: var(--spacing-sm) 0 !important;
@@ -238,6 +282,12 @@ span[mat-symbol] {
   .mat-mdc-dialog-container .mat-mdc-dialog-title + .mat-mdc-dialog-content {
     padding-bottom: var(--spacing-sm);
   }
+}
+
+.cdk-overlay-dark-backdrop {
+  backdrop-filter: blur(5px) brightness(0.5);
+  -webkit-backdrop-filter: blur(5px) brightness(0.5);
+  will-change: backdrop-filter;
 }
 
 // .mat-mdc-header-cell {

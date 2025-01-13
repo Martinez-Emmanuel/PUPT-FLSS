@@ -3,7 +3,6 @@ import { NgControl } from '@angular/forms';
 
 @Directive({
   selector: '[appTwoDigitInput]',
-  standalone: true,
 })
 export class TwoDigitInputDirective {
   constructor(private ngControl: NgControl) {}

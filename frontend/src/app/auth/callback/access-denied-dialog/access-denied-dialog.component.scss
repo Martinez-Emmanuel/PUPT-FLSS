@@ -1,0 +1,58 @@
+@use "../../../../styles/mixins";
+
+.dialog-info-container {
+  @include mixins.flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-md)
+  );
+  padding: var(--spacing-lgx);
+  width: var(--dialog-small);
+
+  .title {
+    @include mixins.flex-layout(
+      $align: center,
+      $justify: flex-start,
+      $gap: var(--spacing-xs)
+    );
+
+    span[mat-symbol] {
+      @include mixins.gradient-primary-text(315deg);
+      color: var(--primary-text);
+      font-size: var(--font-size-xl);
+      font-weight: 600;
+    }
+
+    .heading {
+      @include mixins.gradient-primary-text(315deg);
+      color: var(--primary-text);
+      margin: 0;
+      font-size: var(--font-size-xl);
+      font-weight: 600;
+    }
+  }
+
+  .content {
+    .message {
+      text-align: justify;
+      line-height: var(--line-height-md);
+    }
+  }
+
+  .actions {
+    @include mixins.flex-layout(
+      $align: stretch,
+      $justify: flex-end,
+      $gap: var(--spacing-sm)
+    );
+
+    .cancel-button {
+      color: var(--primary-text);
+    }
+
+    .retry-button {
+      @include mixins.gradient-primary(315deg);
+    }
+  }
+}

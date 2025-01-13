@@ -1,3 +1,26 @@
 .app-root-body {
   height: 100%;
 }
+
+.app-container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+:host {
+  display: block;
+  height: 100vh;
+  width: 100%;
+}
+
+router-outlet ~ * {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  left: 0;
+  top: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}

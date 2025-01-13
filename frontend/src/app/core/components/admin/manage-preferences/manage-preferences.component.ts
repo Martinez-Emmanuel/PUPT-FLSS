@@ -830,6 +830,21 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
   // ===========================
 
   /**
+   * Gets the class for the faculty type.
+   * @param facultyType - The faculty type.
+   * @returns The class object.
+   */
+  getFacultyTypeClass(facultyType: string): Record<string, boolean> {
+    const type = facultyType.toLowerCase();
+    return {
+      'full-time': type.includes('full-time'),
+      designee: type.includes('designee'),
+      'part-time': type.includes('part-time'),
+      temporary: type.includes('temporary'),
+    };
+  }
+
+  /**
    * Gets the tooltip for the toggle based on the type and faculty.
    * @param type - The type of toggle ('global' or 'individual').
    * @param faculty - The faculty to check (optional).

@@ -1,0 +1,26 @@
+<div class="dialog-redirect-container">
+  <div class="content">
+    <div class="spinner-container">
+      <app-custom-spinner
+        [size]="50"
+        color="var(--primary-lighter)"
+        type="cube-grid"
+      ></app-custom-spinner>
+    </div>
+
+    <!-- Outer container that holds the text -->
+    <div class="text-outer-container">
+      <!-- This inner container to animate. -->
+      <div class="text-inner-container" [@slideText]="currentTextState">
+        <div class="text-panel">
+          <span mat-symbol="wifi_tethering"></span>
+          Connecting to PUP-HRIS...
+        </div>
+        <div class="text-panel">
+          <span mat-symbol="conversion_path"></span>
+          Redirecting you to PUP-HRIS...
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -64,7 +64,8 @@
         @else {
         <div [@cardEntranceSide]="notifications.length">
           <div class="notifications-list">
-            @for (notification of notifications; track notification.id) {
+            @for (notification of notifications; track
+            notification.faculty_notifications_id) {
             <div class="notification-item">
               <p class="notification-message">{{ notification.message }}</p>
               <span class="notification-timestamp">{{

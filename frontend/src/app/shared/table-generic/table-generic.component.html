@@ -85,16 +85,20 @@
             mat-button
             class="sec-ripple edit-button"
             (click)="onEdit(element)"
+            [disabled]="disableEdit"
+            [ngClass]="{ 'disabled-button': disableEdit }"
           >
             <mat-icon>edit</mat-icon>
             <span>Edit</span>
           </button>
 
           <!-- Delete Button -->
+          @if (showDeleteButton) {
           <button mat-button class="delete-button" (click)="onDelete(element)">
             <mat-icon>delete</mat-icon>
             <span>Delete</span>
           </button>
+          }
         </div>
       </td>
     </ng-container>

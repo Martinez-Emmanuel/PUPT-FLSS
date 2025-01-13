@@ -33,7 +33,7 @@
   --primary-text-two: #f5cbcb;
   --primary-text-reverse: #f08383;
 
-  --error-base: #800000;
+  --primary-lighter: #800000;
 
   --secondary-text: #826202;
   --secondary-hover: #a47f1a0b;
@@ -45,22 +45,27 @@
   /* Extra colors */
   --blue-primary: #002f85;
   --blue-fade: #0027702f;
-  --blue-fade-lighter: #011b4b1a;
+  --blue-fade-lighter: #bed4fab0;
   --blue-text: #b8ccf3;
 
   --purple-primary: #310085;
   --purple-fade: #27006a31;
-  --purple-fade-lighter: #21035431;
+  --purple-fade-lighter: #d6beff8e;
   --purple-text: #e3d4fd;
 
   --aqua-primary: #004240;
   --aqua-fade: #02575340;
-  --aqua-fade-lighter: #004c4831;
+  --aqua-fade-lighter: #b2e0ddb1;
   --aqua-text: #a1d8d6;
 
   --green-primary: #005a09;
   --green-fade: #00461933;
   --green-text: #c8f1cc;
+
+  --pink-primary: #810040;
+  --pink-fade: #90054c31;
+  --pink-fade-lighter: #ffcae6c0;
+  --pink-text: #fbd3eb;
 
   /* Gradient-speficic values */
 
@@ -79,7 +84,7 @@
 
 .dark-theme {
   /* Page background */
-  --blur-bg: #171717f1;
+  --blur-bg: #131313f7;
   --main-bg: #111111;
   --admin-bg: #181818;
   --blur-bg-strong: #171717f1;
@@ -112,7 +117,7 @@
   --primary-text-two: #3f0000;
   --primary-text-reverse: #800000;
 
-  --error-base: #b43a3a;
+  --primary-lighter: #be4a4a;
 
   --secondary-text: #cc9d1b;
   --secondary-hover: #cc9d1b08;
@@ -140,6 +145,11 @@
   --green-primary: #97d39d;
   --green-fade: #00461940;
   --green-text: #003d06;
+
+  --pink-primary: #ff89ad;
+  --pink-fade: #63023645;
+  --pink-fade-lighter: #85225640;
+  --pink-text: #490029;
 
   /* Gradient-speficic values */
 

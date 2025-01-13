@@ -1,0 +1,168 @@
+@use "../../../styles/mixins";
+
+:host {
+  @include mixins.custom-spinner(var(--primary-text));
+}
+
+.dialog-login-container {
+  @include mixins.flex-layout(
+    $direction: column,
+    $align: stretch,
+    $justify: flex-start,
+    $gap: var(--spacing-md)
+  );
+  padding: var(--spacing-lgx);
+  max-width: var(--dialog-smx);
+}
+
+.dialog-login-title {
+  @include mixins.flex-layout(
+    $direction: column,
+    $align: flex-start,
+    $justify: flex-start,
+    $gap: var(--spacing-xxs)
+  );
+
+  .title-text {
+    @include mixins.gradient-primary-text(315deg);
+    margin: 0;
+    font-size: var(--font-size-2xl);
+    font-weight: 600;
+  }
+
+  .title-desc {
+    margin: 0;
+  }
+}
+
+.dialog-login-content {
+  padding-top: var(--spacing-sm);
+
+  .field-container {
+    position: relative;
+    margin-bottom: var(--spacing-lgx);
+
+    &.has-error .input-container .login-input {
+      border-color: var(--primary-one);
+    }
+  }
+
+  .input-container {
+    position: relative;
+
+    .password-visibility-toggle {
+      position: absolute;
+      right: var(--spacing-xs);
+      top: 50%;
+      transform: translateY(-50%);
+      border-radius: var(--border-radius-xl);
+      padding: var(--spacing-xs);
+      opacity: var(--opacity-semi-opaque);
+      cursor: pointer;
+
+      &:hover {
+        background-color: var(--neutral-fade);
+      }
+    }
+
+    .input-icon {
+      position: absolute;
+      left: var(--spacing-md);
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--neutral-base);
+      opacity: var(--opacity-semi-opaque);
+      font-size: var(--font-size-lg);
+    }
+
+    .login-input {
+      @include mixins.default-transition;
+      @include mixins.flex-layout;
+      width: 100%;
+      padding: 10px 10px 10px 50px;
+      background: var(--neutral-fade);
+      border-radius: var(--border-radius-xl);
+      box-sizing: border-box;
+      border: 2px solid transparent;
+      color: var(--neutral-base);
+      transition: border-color 0.5s ease;
+      height: var(--spacing-3xl);
+      font-size: var(--font-size-md);
+
+      &:focus {
+        outline: none;
+        border-color: var(--primary-one);
+      }
+
+      &.ng-invalid.ng-touched {
+        border-color: var(--primary-one);
+      }
+    }
+  }
+
+  .error-message {
+    @include mixins.flex-layout;
+    position: absolute;
+    min-height: var(--spacing-lg);
+    left: var(--spacing-sm);
+    visibility: hidden;
+    overflow: hidden;
+    gap: var(--spacing-xxs);
+    font-size: var(--font-size-xsx);
+
+    span.material-symbols-rounded {
+      @include mixins.flex-layout;
+      font-size: var(--font-size-md);
+    }
+
+    span {
+      color: var(--primary-text);
+      font-weight: 400;
+    }
+
+    &.show {
+      animation: slideDown 0.5s ease forwards;
+      visibility: visible;
+    }
+  }
+}
+
+@keyframes slideDown {
+  0% {
+    height: 0;
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+
+  100% {
+    height: auto;
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// =================
+// Dialog Actions
+// =================
+.dialog-login-actions {
+  @include mixins.flex-layout(
+    $direction: row,
+    $align: center,
+    $justify: flex-end,
+    $gap: var(--spacing-sm)
+  );
+
+  .close-button {
+    color: var(--primary-text);
+  }
+
+  .login-button {
+    @include mixins.gradient-primary(315deg);
+  }
+
+  .button-disabled {
+    background: var(--neutral-fade);
+    color: var(--neutral-base) !important;
+    opacity: var(--opacity-semi-opaque);
+  }
+}

@@ -74,17 +74,7 @@
           <td mat-cell *matCellDef="let element" class="custom-cell">
             <div
               class="faculty-type"
-              [ngClass]="{
-                'full-time':
-                  element.facultyType.toLowerCase().includes('full-time') ||
-                  element.facultyType.toLowerCase().includes('temporary'),
-                'full-time-designee': element.facultyType
-                  .toLowerCase()
-                  .includes('designee'),
-                'part-time': element.facultyType
-                  .toLowerCase()
-                  .includes('part-time')
-              }"
+              [ngClass]="getFacultyTypeClass(element.facultyType)"
             >
               {{ element.facultyType }}
             </div>

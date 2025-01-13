@@ -10,7 +10,7 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             UsersTableSeeder::class,
-            FacultyTableSeeder::class,
+            // FacultyTableSeeder::class,
             ProgramsTableSeeder::class,
             CurriculaTableSeeder::class,
             CurriculaProgramTableSeeder::class,
@@ -23,8 +23,8 @@ class DatabaseSeeder extends Seeder
             CoursesTableSeeder::class,
             CourseAssignmentsTableSeeder::class,
             CourseRequirementsTableSeeder::class,
-            PreferencesSeeder::class,
-            PreferenceDaysTableSeeder::class,
+            // PreferencesSeeder::class,
+            // PreferenceDaysTableSeeder::class,
             RoomsTableSeeder::class,
             SectionsPerProgramYearTableSeeder::class,
             SectionCoursesTableSeeder::class,

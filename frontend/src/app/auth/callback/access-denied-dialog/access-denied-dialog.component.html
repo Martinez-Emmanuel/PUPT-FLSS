@@ -1,0 +1,27 @@
+<div class="dialog-info-container">
+  <!-- Title -->
+  <div class="title">
+    <span mat-symbol="info"></span>
+    <h1 class="heading">Authorization Required</h1>
+  </div>
+  <!-- Content -->
+  <div class="content">
+    <!-- Primary Message -->
+    <p class="message">
+      You've chosen not to authorize PUPT-FLSS to access your PUP-HRIS data.
+    </p>
+    <p class="message">
+      Without this authorization, you won't be able to proceed with the Faculty
+      Loading and Scheduling System.
+    </p>
+  </div>
+  <!-- Actions -->
+  <div class="actions">
+    <button mat-button class="cancel-button" (click)="onCancel()">
+      Return to Login
+    </button>
+    <button mat-flat-button class="retry-button" (click)="onRetry()">
+      Try Again
+    </button>
+  </div>
+</div>
