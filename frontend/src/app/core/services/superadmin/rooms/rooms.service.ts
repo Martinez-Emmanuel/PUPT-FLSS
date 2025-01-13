@@ -7,13 +7,20 @@ import { map } from 'rxjs/operators';
 import { environment } from '../../../../../environments/environment.dev';
 
 export interface Room {
-  room_id?: number;
+  room_id: number;
   room_code: string;
-  location: string;
+  building_id: number;
   floor_level: string;
-  room_type: string;
+  room_type_id: number;
   capacity: number;
   status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface RoomWithDetails extends Room {
+  building_name: string;
+  room_type_name: string;
 }
 
 @Injectable({
@@ -32,7 +39,15 @@ export class RoomService {
       .pipe(map((response) => response.data));
   }
 
-  addRoom(room: Room): Observable<Room> {
+  getFloorLevels(buildingId: number): Observable<number[]> {
+    return this.http
+      .get<{ success: boolean; data: number[] }>(
+        `${this.baseUrl}/rooms/floor-levels/${buildingId}`
+      )
+      .pipe(map((response) => response.data));
+  }
+
+  addRoom(room: Partial<Room>): Observable<Room> {
     return this.http
       .post<{ success: boolean; message: string; data: Room }>(
         `${this.baseUrl}/addRoom`,
@@ -41,7 +56,7 @@ export class RoomService {
       .pipe(map((response) => response.data));
   }
 
-  updateRoom(id: number, room: Room): Observable<Room> {
+  updateRoom(id: number, room: Partial<Room>): Observable<Room> {
     return this.http
       .put<{ success: boolean; message: string; data: Room }>(
         `${this.baseUrl}/rooms/${id}`,
@@ -50,9 +65,11 @@ export class RoomService {
       .pipe(map((response) => response.data));
   }
 
-  deleteRoom(id: number): Observable<{ success: boolean; message: string }> {
-    return this.http.delete<{ success: boolean; message: string }>(
-      `${this.baseUrl}/rooms/${id}`
-    );
+  deleteRoom(id: number): Observable<void> {
+    return this.http
+      .delete<{ success: boolean; message: string }>(
+        `${this.baseUrl}/rooms/${id}`
+      )
+      .pipe(map(() => void 0));
   }
 }

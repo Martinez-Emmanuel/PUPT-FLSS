@@ -49,3 +49,13 @@
 
   }
 </div>
+
+<!-- Faculty Type Template -->
+<ng-template #facultyTypeTemplate let-element>
+  <div
+    class="faculty-type"
+    [ngClass]="getFacultyTypeClass(element.faculty_type)"
+  >
+    {{ element.faculty_type }}
+  </div>
+</ng-template>

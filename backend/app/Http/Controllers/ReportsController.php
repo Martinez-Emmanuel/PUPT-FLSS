@@ -220,6 +220,7 @@ class ReportsController extends Controller
             ->leftJoinSub($schedulesSub, 'current_schedules', function ($join) {
                 $join->on('current_schedules.room_id', '=', 'rooms.room_id');
             })
+            ->leftJoin('buildings', 'buildings.building_id', '=', 'rooms.building_id')
             ->leftJoin('faculty', 'current_schedules.faculty_id', '=', 'faculty.id')
             ->leftJoin('users', 'faculty.user_id', '=', 'users.id')
             ->leftJoin('section_courses', 'current_schedules.section_course_id', '=', 'section_courses.section_course_id')
@@ -227,10 +228,11 @@ class ReportsController extends Controller
             ->leftJoin('programs', 'programs.program_id', '=', 'sections_per_program_year.program_id')
             ->leftJoin('course_assignments', 'course_assignments.course_assignment_id', '=', 'section_courses.course_assignment_id')
             ->leftJoin('courses', 'courses.course_id', '=', 'course_assignments.course_id')
+            ->where('rooms.status', '=', 'Available')
             ->select(
                 'rooms.room_id',
                 'rooms.room_code',
-                'rooms.location',
+                'buildings.building_name as location',
                 'rooms.floor_level',
                 'rooms.capacity',
                 'current_schedules.schedule_id',

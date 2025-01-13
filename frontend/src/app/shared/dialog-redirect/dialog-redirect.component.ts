@@ -12,7 +12,6 @@ import { slideTextAnimation } from '../../core/animations/animations';
 
 @Component({
   selector: 'app-dialog-redirect',
-  standalone: true,
   imports: [CommonModule, CustomSpinnerComponent, MatSymbolDirective],
   templateUrl: './dialog-redirect.component.html',
   styleUrls: ['./dialog-redirect.component.scss'],

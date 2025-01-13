@@ -14,15 +14,25 @@ class Room extends Model
     protected $fillable = [
         'room_id',
         'room_code',
-        'location',
+        'building_id',
         'floor_level',
-        'room_type',
+        'room_type_id',
         'capacity',
         'status',
     ];
 
+    public function building()
+    {
+        return $this->belongsTo(Building::class, 'building_id');
+    }
+
     public function schedules()
     {
         return $this->hasMany(Schedule::class, 'room_id', 'room_id');
+    }
+
+    public function roomType()
+    {
+        return $this->belongsTo(RoomType::class, 'room_type_id', 'room_type_id');
     }
 }

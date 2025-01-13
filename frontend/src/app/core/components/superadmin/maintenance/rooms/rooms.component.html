@@ -7,6 +7,7 @@
   <!--Table Header-->
   <div class="rooms-header-container" [@fadeAnimation]>
     <app-table-header
+      title="Rooms"
       [inputFields]="headerInputFields"
       [addButtonLabel]="'Add Room'"
       (inputChange)="onInputChange($event)"
@@ -19,9 +20,9 @@
   <div class="rooms-table-container" [@fadeAnimation]>
     @if (rooms$ | async; as rooms) {
     <app-table-generic
-      [columns]="columns"
-      [data]="rooms"
       [tableName]="'room/s'"
+      [data]="rooms"
+      [columns]="columns"
       [displayedColumns]="displayedColumns"
       (edit)="openEditRoomDialog($event)"
       (delete)="deleteRoom($event)"

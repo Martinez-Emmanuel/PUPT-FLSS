@@ -3,6 +3,7 @@
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BuildingController;
 use App\Http\Controllers\CourseController;
 use App\Http\Controllers\CurriculumController;
 use App\Http\Controllers\CurriculumDetailsController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\PreferenceController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\ReportsController;
 use App\Http\Controllers\RoomController;
+use App\Http\Controllers\RoomTypeController;
 use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\WebhookController;
@@ -72,6 +74,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/offered-courses-sem', [AcademicYearController::class, 'getOfferedCoursesBySem']);
 
     /**
+     * Admin
+     */
+    Route::get('/admins', [AccountController::class, 'indexAdmins']);
+    Route::post('/admins', [AccountController::class, 'storeAdmin']);
+    Route::put('/admins/{admin}', [AccountController::class, 'updateAdmin']);
+    Route::delete('/admins/{admin}', [AccountController::class, 'destroyAdmin']);
+
+    /**
+     * Buildings
+     */
+    Route::apiResource('buildings', BuildingController::class);
+
+    /**
      * Course
      */
     Route::get('/courses', [CourseController::class, 'index']);
@@ -102,14 +117,21 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/email-all-faculty-schedule', [EmailController::class, 'emailAllFacultySchedule']);
     Route::post('/email-single-faculty-schedule', [EmailController::class, 'emailSingleFacultySchedule']);
     Route::post('/email-admins-pref-change', [EmailController::class, 'notifyAdminsOfPreferenceChange']);
+
+    /**
+     * Faculty
+     */
+    Route::get('/faculty', [FacultyController::class, 'index']);
+    Route::post('/faculty', [FacultyController::class, 'store']);
+    Route::put('/faculty/{user}', [FacultyController::class, 'update']);
+    Route::delete('/faculty/{user}', [FacultyController::class, 'destroy']);
+
     /**
      * Faculty Notification
      */
     Route::get('/faculty-notifications', [FacultyNotificationController::class, 'getFacultyNotifications']);
     Route::post('/faculty-notifications/{id}/read', [FacultyNotificationController::class, 'markAsRead']);
-    // Notify faculties with deadlines approaching in 24 hours
     Route::get('/notify-faculty-deadlines-single', [EmailController::class, 'notifyFacultyBeforeDeadlineSingle']);
-    // Test single faculty deadline notification
     Route::post('/test-faculty-notification', [EmailController::class, 'singleDeadlineNotification']);
     Route::get('/notify-global-deadline', [EmailController::class, 'notifyGlobalFacultyDeadline']);
 
@@ -166,6 +188,15 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/addRoom', [RoomController::class, 'addRoom']);
     Route::put('/rooms/{room_id}', [RoomController::class, 'updateRoom']);
     Route::delete('/rooms/{room_id}', [RoomController::class, 'deleteRoom']);
+
+    /**
+     * Room Types
+     */
+    Route::get('/room-types', [RoomTypeController::class, 'index']);
+    Route::get('/room-types/{id}', [RoomTypeController::class, 'show']);
+    Route::post('/room-types', [RoomTypeController::class, 'store']);
+    Route::put('/room-types/{id}', [RoomTypeController::class, 'update']);
+    Route::delete('/room-types/{id}', [RoomTypeController::class, 'destroy']);
 
     /**
      * Scheduling

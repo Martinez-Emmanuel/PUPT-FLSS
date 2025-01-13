@@ -1,46 +1,29 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-} from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef, ViewChild, TemplateRef, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
-import {
-  catchError,
-  debounceTime,
-  distinctUntilChanged,
-  of,
-  Subject,
-  takeUntil,
-  interval,
-} from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, of, Subject, takeUntil, interval } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSymbolDirective } from '../../../../imports/mat-symbol.directive';
 
-import {
-  TableDialogComponent,
-  DialogConfig,
-} from '../../../../../shared/table-dialog/table-dialog.component';
+import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
-import {
-  InputField,
-  TableHeaderComponent,
-} from '../../../../../shared/table-header/table-header.component';
+import { InputField, TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
 
-import {
-  FacultyService,
-  Faculty,
-} from '../../../../services/superadmin/management/faculty/faculty.service';
+import { FacultyService, Faculty } from '../../../../services/superadmin/management/faculty/faculty.service';
 import { HrisHealthService } from '../../../../services/health/hris-health.service';
 
 import { fadeAnimation } from '../../../../animations/animations';
+
+interface Column {
+  key: string;
+  label: string;
+  template?: TemplateRef<any>;
+}
 
 @Component({
   selector: 'app-faculty',
@@ -58,10 +41,12 @@ import { fadeAnimation } from '../../../../animations/animations';
   animations: [fadeAnimation],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class FacultyComponent implements OnInit, OnDestroy {
+export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
   facultyStatuses = ['Active', 'Inactive'];
   facultyTypes = ['Full-Time', 'Part-Time', 'Temporary', 'Designee'];
   selectedFacultyIndex: number | null = null;
+
+  @ViewChild('facultyTypeTemplate') facultyTypeTemplate!: TemplateRef<any>;
 
   faculty: Faculty[] = [];
   filteredFaculty: Faculty[] = [];
@@ -71,7 +56,7 @@ export class FacultyComponent implements OnInit, OnDestroy {
   searchControl = new FormControl('');
   private destroy$ = new Subject<void>();
 
-  columns = [
+  columns: Column[] = [
     { key: 'index', label: '#' },
     { key: 'code', label: 'Faculty Code' },
     { key: 'name', label: 'Name' },
@@ -117,6 +102,16 @@ export class FacultyComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  ngAfterViewInit() {
+    const facultyTypeColumn = this.columns.find(
+      (col) => col.key === 'faculty_type'
+    );
+    if (facultyTypeColumn) {
+      facultyTypeColumn.template = this.facultyTypeTemplate;
+    }
+    this.cdr.detectChanges();
   }
 
   setupSearch() {
@@ -469,5 +464,19 @@ export class FacultyComponent implements OnInit, OnDestroy {
         this.isHrisHealthy = isHealthy;
         this.cdr.markForCheck();
       });
+  }
+
+  sanitizeFileName(fileName: string): string {
+    return fileName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
+  }
+
+  getFacultyTypeClass(facultyType: string): Record<string, boolean> {
+    const type = facultyType.toLowerCase();
+    return {
+      'full-time': type.includes('full-time'),
+      designee: type.includes('designee'),
+      'part-time': type.includes('part-time'),
+      temporary: type.includes('temporary'),
+    };
   }
 }

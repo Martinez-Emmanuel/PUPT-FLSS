@@ -1,20 +1,51 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import {
+  Component,
+  OnInit,
+  OnDestroy,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormControl } from '@angular/forms';
 
-import { BehaviorSubject, Subject } from 'rxjs';
-import { takeUntil, catchError, map, finalize } from 'rxjs/operators';
+import { BehaviorSubject, Subject, Observable, combineLatest } from 'rxjs';
+import {
+  takeUntil,
+  map,
+  finalize,
+  debounceTime,
+  distinctUntilChanged,
+  switchMap,
+} from 'rxjs/operators';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
-import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
-import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
+import {
+  TableDialogComponent,
+  DialogConfig,
+  SelectOption,
+} from '../../../../../shared/table-dialog/table-dialog.component';
+import {
+  TableHeaderComponent,
+  InputField,
+} from '../../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
 import { DialogExportComponent } from '../../../../../shared/dialog-export/dialog-export.component';
 
-import { Room, RoomService } from '../../../../services/superadmin/rooms/rooms.service';
+import {
+  RoomWithDetails,
+  RoomService,
+} from '../../../../services/superadmin/rooms/rooms.service';
+import {
+  Building,
+  BuildingsService,
+} from '../../../../services/superadmin/buildings/buildings.service';
+import {
+  RoomType,
+  RoomTypesService,
+} from '../../../../services/superadmin/room-types/room-types.service';
 
 import { fadeAnimation } from '../../../../animations/animations';
 
@@ -22,68 +53,71 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
 @Component({
-    selector: 'app-rooms',
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        TableGenericComponent,
-        TableHeaderComponent,
-        LoadingComponent,
-    ],
-    templateUrl: './rooms.component.html',
-    styleUrls: ['./rooms.component.scss'],
-    animations: [fadeAnimation],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-rooms',
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TableGenericComponent,
+    TableHeaderComponent,
+    LoadingComponent,
+  ],
+  templateUrl: './rooms.component.html',
+  styleUrls: ['./rooms.component.scss'],
+  animations: [fadeAnimation],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class RoomsComponent implements OnInit, OnDestroy {
-  roomTypes = ['Lecture', 'Laboratory', 'Office'];
-  floors = ['1st', '2nd', '3rd', '4th', '5th'];
-  selectedRoomIndex: number | null = null;
-
-  private roomsSubject = new BehaviorSubject<Room[]>([]);
+  private roomsSubject = new BehaviorSubject<RoomWithDetails[]>([]);
   rooms$ = this.roomsSubject.asObservable();
+  private allRooms: RoomWithDetails[] = [];
+
+  private buildingsSubject = new BehaviorSubject<Building[]>([]);
+  buildings$ = this.buildingsSubject.asObservable();
+
+  private roomTypesSubject = new BehaviorSubject<RoomType[]>([]);
+  roomTypes$ = this.roomTypesSubject.asObservable();
 
   columns = [
     { key: 'index', label: '#' },
     { key: 'room_code', label: 'Room Code' },
-    { key: 'location', label: 'Location' },
+    { key: 'building_name', label: 'Building' },
     { key: 'floor_level', label: 'Floor Level' },
-    { key: 'room_type', label: 'Room Type' },
+    { key: 'room_type_name', label: 'Room Type' },
     { key: 'capacity', label: 'Capacity' },
     { key: 'status', label: 'Status' },
+    { key: 'actions', label: 'Actions' },
   ];
 
-  displayedColumns: string[] = [
+  displayedColumns = [
     'index',
     'room_code',
-    'location',
+    'building_name',
     'floor_level',
-    'room_type',
+    'room_type_name',
     'capacity',
     'status',
   ];
 
   headerInputFields: InputField[] = [
-    {
-      type: 'text',
-      label: 'Search Rooms',
-      key: 'search',
-    },
+    { key: 'search', label: 'Search Rooms', type: 'text' },
   ];
 
   isLoading = true;
-
+  searchControl = new FormControl('');
   private destroy$ = new Subject<void>();
 
   constructor(
-    private cdr: ChangeDetectorRef,
+    private roomService: RoomService,
+    private buildingsService: BuildingsService,
+    private roomTypesService: RoomTypesService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private roomService: RoomService
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
-    this.fetchRooms();
+    this.fetchInitialData();
+    this.setupSearch();
   }
 
   ngOnDestroy() {
@@ -91,235 +125,278 @@ export class RoomsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  fetchRooms() {
+  private fetchInitialData() {
     this.isLoading = true;
-    this.roomService
-      .getRooms()
+
+    combineLatest([
+      this.buildingsService.getBuildings(),
+      this.roomTypesService.getRoomTypes(),
+    ])
       .pipe(
-        catchError((err) => {
-          this.snackBar.open('Error fetching rooms data', 'Close', {
-            duration: 3000,
-          });
-          return [];
+        takeUntil(this.destroy$),
+        switchMap(([buildings, roomTypes]) => {
+          this.buildingsSubject.next(buildings);
+          this.roomTypesSubject.next(roomTypes);
+
+          return this.roomService.getRooms().pipe(
+            map((rooms) =>
+              rooms.map(
+                (room): RoomWithDetails => ({
+                  ...room,
+                  building_name:
+                    buildings.find((b) => b.building_id === room.building_id)
+                      ?.building_name || '',
+                  room_type_name:
+                    roomTypes.find(
+                      (rt) => rt.room_type_id === room.room_type_id
+                    )?.type_name || '',
+                })
+              )
+            )
+          );
         }),
         finalize(() => {
           this.isLoading = false;
           this.cdr.markForCheck();
-        }),
-        takeUntil(this.destroy$)
+        })
       )
-      .subscribe((rooms) => {
-        this.roomsSubject.next(rooms);
+      .subscribe({
+        next: (rooms) => {
+          this.allRooms = rooms;
+          this.roomsSubject.next(rooms);
+        },
+        error: (error) => {
+          console.error('Error fetching data:', error);
+          this.snackBar.open('Error fetching data', 'Close', {
+            duration: 3000,
+          });
+        },
       });
+  }
+
+  setupSearch() {
+    this.searchControl.valueChanges
+      .pipe(debounceTime(300), distinctUntilChanged(), takeUntil(this.destroy$))
+      .subscribe((searchTerm) => {
+        if (!searchTerm) {
+          this.roomsSubject.next(this.allRooms);
+          return;
+        }
+
+        const term = searchTerm.toLowerCase();
+        const filteredRooms = this.allRooms.filter(
+          (room) =>
+            room.room_code.toLowerCase().includes(term) ||
+            room.building_name.toLowerCase().includes(term) ||
+            room.room_type_name.toLowerCase().includes(term) ||
+            room.floor_level.toLowerCase().includes(term) ||
+            room.status.toLowerCase().includes(term) ||
+            room.capacity.toString().includes(term)
+        );
+        this.roomsSubject.next(filteredRooms);
+      });
+  }
+
+  getFloorLevels(buildingId: number): Observable<number[]> {
+    return this.roomService.getFloorLevels(buildingId);
   }
 
   onInputChange(values: { [key: string]: any }) {
     if (values['search'] !== undefined) {
-      this.onSearch(values['search']);
+      this.searchControl.setValue(values['search']);
     }
   }
 
-  onSearch(searchTerm: string) {
-    this.roomService
-      .getRooms()
-      .pipe(
-        map((rooms) =>
-          rooms.filter(
-            (room) =>
-              room.room_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-              room.location.toLowerCase().includes(searchTerm.toLowerCase())
-          )
-        ),
-        catchError(() => {
-          this.snackBar.open('Error during search', 'Close', {
-            duration: 3000,
-          });
-          return [];
-        }),
-        takeUntil(this.destroy$)
-      )
-      .subscribe((filteredRooms) => {
-        this.roomsSubject.next(filteredRooms);
-        this.cdr.markForCheck();
-      });
-  }
+  getDialogConfig(room?: RoomWithDetails): DialogConfig {
+    const buildings = this.buildingsSubject.value;
+    const roomTypes = this.roomTypesSubject.value;
+    const buildingId = room?.building_id;
+    let floorLevels: string[] = [];
 
-  getDialogConfig(room?: Room): DialogConfig {
+    if (buildingId) {
+      const building = buildings.find((b) => b.building_id === buildingId);
+      if (building) {
+        floorLevels = Array.from({ length: building.floor_levels }, (_, i) => {
+          const num = i + 1;
+          return `${num}${this.getOrdinalSuffix(num)}`;
+        });
+      }
+    }
+
+    const buildingOptions: SelectOption[] = buildings.map((b) => ({
+      value: b.building_id.toString(),
+      label: b.building_name,
+      metadata: {
+        floor_levels: b.floor_levels.toString(),
+      },
+    }));
+
+    const floorLevelOptions: SelectOption[] = floorLevels.map((level) => ({
+      value: level,
+      label: `${level} Floor`,
+    }));
+
+    const roomTypeOptions: SelectOption[] = [
+      {
+        value: 'configure',
+        label: 'Click to configure room types...',
+        metadata: {
+          isConfig: true,
+          icon: 'settings',
+        },
+      },
+      ...roomTypes.map((rt) => ({
+        value: rt.room_type_id.toString(),
+        label: rt.type_name,
+      })),
+    ];
+
     return {
       title: room ? 'Edit Room' : 'Add Room',
-      isEdit: !!room,
       fields: [
         {
-          label: 'Room Code',
           formControlName: 'room_code',
+          label: 'Room Code',
           type: 'text',
-          maxLength: 50,
           required: true,
+          maxLength: 191,
         },
         {
-          label: 'Location',
-          formControlName: 'location',
-          type: 'text',
-          maxLength: 50,
+          formControlName: 'building_id',
+          label: 'Building',
+          type: 'select',
           required: true,
+          options: buildingOptions,
         },
         {
-          label: 'Floor Level',
           formControlName: 'floor_level',
+          label: 'Floor Level',
           type: 'select',
-          options: this.floors,
           required: true,
+          options: floorLevelOptions,
         },
         {
+          formControlName: 'room_type_id',
           label: 'Room Type',
-          formControlName: 'room_type',
           type: 'select',
-          options: this.roomTypes,
           required: true,
+          options: roomTypeOptions,
         },
         {
-          label: 'Capacity',
           formControlName: 'capacity',
+          label: 'Capacity',
           type: 'number',
-          min: 1,
-          max: 999,
           required: true,
+          min: 1,
         },
         {
-          label: 'Status',
           formControlName: 'status',
+          label: 'Status',
           type: 'select',
-          options: ['Available', 'Unavailable'],
           required: true,
+          options: [
+            { value: 'Available', label: 'Available' },
+            { value: 'Unavailable', label: 'Unavailable' },
+          ],
         },
       ],
-      initialValue: room || {},
+      isEdit: !!room,
+      initialValue: room
+        ? {
+            room_code: room.room_code,
+            building_id: room.building_id.toString(),
+            floor_level: room.floor_level,
+            room_type_id: room.room_type_id.toString(),
+            capacity: room.capacity.toString(),
+            status: room.status,
+          }
+        : undefined,
     };
   }
 
-  // ======================
-  // CRU Operations
-  // ======================
+  private getOrdinalSuffix(num: number): string {
+    const j = num % 10;
+    const k = num % 100;
+    if (j == 1 && k != 11) return 'st';
+    if (j == 2 && k != 12) return 'nd';
+    if (j == 3 && k != 13) return 'rd';
+    return 'th';
+  }
 
   openAddRoomDialog() {
-    const config = this.getDialogConfig();
     const dialogRef = this.dialog.open(TableDialogComponent, {
-      data: config,
-      disableClose: true,
+      data: this.getDialogConfig(),
     });
 
-    dialogRef
-      .afterClosed()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((result) => {
-        if (result) {
-          this.roomService
-            .addRoom(result)
-            .pipe(
-              catchError(() => {
-                this.snackBar.open('Error adding room', 'Close', {
-                  duration: 3000,
-                });
-                return [];
-              }),
-              takeUntil(this.destroy$)
-            )
-            .subscribe((newRoom) => {
-              const currentRooms = this.roomsSubject.getValue();
-              this.roomsSubject.next([...currentRooms, newRoom]);
-              this.snackBar.open(
-                `Room ${newRoom.room_code} added successfully.`,
-                'Close',
-                {
-                  duration: 3000,
-                }
-              );
-            });
-        }
-      });
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.roomService
+          .addRoom(result)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: () => {
+              this.snackBar.open('Room added successfully', 'Close', {
+                duration: 3000,
+              });
+              this.fetchInitialData();
+            },
+            error: (error) => {
+              console.error('Error adding room:', error);
+              this.snackBar.open('Error adding room', 'Close', {
+                duration: 3000,
+              });
+            },
+          });
+      }
+    });
   }
 
-  openEditRoomDialog(room: Room) {
-    const config = this.getDialogConfig(room);
+  openEditRoomDialog(room: RoomWithDetails) {
     const dialogRef = this.dialog.open(TableDialogComponent, {
-      data: config,
-      disableClose: true,
+      data: this.getDialogConfig(room),
     });
 
-    dialogRef
-      .afterClosed()
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result) {
+        this.roomService
+          .updateRoom(room.room_id!, result)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: () => {
+              this.snackBar.open('Room updated successfully', 'Close', {
+                duration: 3000,
+              });
+              this.fetchInitialData();
+            },
+            error: (error) => {
+              console.error('Error updating room:', error);
+              this.snackBar.open('Error updating room', 'Close', {
+                duration: 3000,
+              });
+            },
+          });
+      }
+    });
+  }
+
+  deleteRoom(room: RoomWithDetails) {
+    this.roomService
+      .deleteRoom(room.room_id!)
       .pipe(takeUntil(this.destroy$))
-      .subscribe((result) => {
-        if (result) {
-          const updatedRoom = { ...result, room_id: room.room_id };
-          this.updateRoom(updatedRoom);
-        }
+      .subscribe({
+        next: () => {
+          this.snackBar.open('Room deleted successfully', 'Close', {
+            duration: 3000,
+          });
+          this.fetchInitialData();
+        },
+        error: (error) => {
+          const errorMessage = error.error?.message || 'Error deleting room';
+          this.snackBar.open(errorMessage, 'Close', {
+            duration: 3000,
+          });
+        },
       });
-  }
-
-  updateRoom(room: Room) {
-    const roomId = room.room_id;
-    if (roomId !== undefined) {
-      this.roomService
-        .updateRoom(roomId, room)
-        .pipe(
-          catchError(() => {
-            this.snackBar.open('Error updating room.', 'Close', {
-              duration: 3000,
-            });
-            return [];
-          }),
-          takeUntil(this.destroy$)
-        )
-        .subscribe((updated) => {
-          const currentRooms = this.roomsSubject.getValue();
-          const index = currentRooms.findIndex((r) => r.room_id === roomId);
-          if (index !== -1) {
-            currentRooms[index] = updated;
-            this.roomsSubject.next([...currentRooms]);
-            this.snackBar.open(
-              `Room ${updated.room_code} updated successfully.`,
-              'Close',
-              {
-                duration: 3000,
-              }
-            );
-          }
-        });
-    }
-  }
-
-  deleteRoom(room: Room) {
-    const roomId = room.room_id;
-    if (roomId !== undefined) {
-      this.roomService
-        .deleteRoom(roomId)
-        .pipe(
-          catchError((error) => {
-            const errorMessage = error.error?.message || 'Error deleting room.';
-            this.snackBar.open(errorMessage, 'Close', {
-              duration: 3000,
-            });
-            return [];
-          }),
-          takeUntil(this.destroy$)
-        )
-        .subscribe((response) => {
-          if (response.success) {
-            const updatedRooms = this.roomsSubject
-              .getValue()
-              .filter((r) => r.room_id !== roomId);
-            this.roomsSubject.next(updatedRooms);
-            this.snackBar.open(
-              `Room ${room.room_code} deleted successfully.`,
-              'Close',
-              {
-                duration: 3000,
-              }
-            );
-          }
-        });
-    }
   }
 
   // ======================
@@ -375,9 +452,9 @@ export class RoomsComponent implements OnInit, OnDestroy {
       const bodyData = rooms.map((room, index) => [
         (index + 1).toString(),
         room.room_code,
-        room.location,
+        room.building_name,
         room.floor_level,
-        room.room_type,
+        room.room_type_name,
         room.capacity.toString(),
         room.status,
       ]);
@@ -416,7 +493,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
           0: { cellWidth: 15 }, // # (index)
           1: { cellWidth: 30 }, // Room Code
           2: { cellWidth: 40 }, // Location
-          3: { cellWidth: 30 }, // Floor Level
+          3: { cellWidth: 25 }, // Floor Level
           4: { cellWidth: 40 }, // Room Type
           5: { cellWidth: 20 }, // Capacity
           6: { cellWidth: 25 }, // Status

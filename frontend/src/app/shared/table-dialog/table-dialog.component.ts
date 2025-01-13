@@ -1,9 +1,29 @@
-import { Component, Output, EventEmitter, Inject, ChangeDetectionStrategy, ChangeDetectorRef, Injectable } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
+import {
+  Component,
+  Output,
+  EventEmitter,
+  Inject,
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Injectable,
+} from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  Validators,
+  ReactiveFormsModule,
+  AbstractControl,
+  ValidationErrors,
+  ValidatorFn,
+} from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
-import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogRef,
+  MatDialogModule,
+} from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -15,7 +35,12 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import { DateAdapter, MAT_DATE_FORMATS, NativeDateAdapter, provideNativeDateAdapter } from '@angular/material/core';
+import {
+  DateAdapter,
+  MAT_DATE_FORMATS,
+  NativeDateAdapter,
+  provideNativeDateAdapter,
+} from '@angular/material/core';
 
 import { AdminService } from '../../core/services/superadmin/management/admin/admin.service';
 import { TwoDigitInputDirective } from '../../core/imports/two-digit-input.directive';
@@ -57,6 +82,14 @@ const CUSTOM_DATE_FORMATS = {
   },
 };
 
+export interface SelectOption {
+  value: string | number;
+  label: string;
+  metadata?: {
+    [key: string]: any;
+  };
+}
+
 export interface DialogFieldConfig {
   label: string;
   formControlName: string;
@@ -68,7 +101,7 @@ export interface DialogFieldConfig {
     | 'checkbox'
     | 'autocomplete'
     | 'date';
-  options?: string[] | number[];
+  options?: string[] | number[] | SelectOption[];
   maxLength?: number;
   required?: boolean;
   min?: number;
@@ -127,7 +160,7 @@ export class TableDialogComponent {
   isEditDialog: boolean = false;
   isConflict: boolean = false;
   customExportOptions: { all: string; current: string } | null = null;
-  filteredOptions: { [key: string]: (string | number)[] } = {};
+  filteredOptions: { [key: string]: (string | number | SelectOption)[] } = {};
   initialFormValues: any;
 
   @Output() startTimeChange = new EventEmitter<string>();
@@ -177,6 +210,71 @@ export class TableDialogComponent {
     this.form.reset();
     this.data.fields.forEach(this.addFormControl.bind(this));
     this.initialFormValues = this.form.getRawValue();
+
+    // Add building change listener for floor level options update
+    const buildingControl = this.form.get('building_id');
+    const floorLevelControl = this.form.get('floor_level');
+    const roomTypeControl = this.form.get('room_type_id');
+
+    if (roomTypeControl) {
+      roomTypeControl.valueChanges.subscribe((value) => {
+        if (value === 'configure') {
+          this.dialogRef.close();
+          this.router.navigate(['/superadmin/rooms/types']);
+        }
+      });
+    }
+
+    if (buildingControl && floorLevelControl) {
+      buildingControl.valueChanges.subscribe((buildingId) => {
+        if (buildingId) {
+          // Find the building field to get its options
+          const buildingField = this.data.fields.find(
+            (f) => f.formControlName === 'building_id'
+          );
+          const floorLevelField = this.data.fields.find(
+            (f) => f.formControlName === 'floor_level'
+          );
+
+          if (buildingField && floorLevelField) {
+            // Find the selected building from options
+            const selectedBuilding = buildingField.options?.find(
+              (opt) => this.isSelectOption(opt) && opt.value === buildingId
+            );
+
+            if (selectedBuilding && this.isSelectOption(selectedBuilding)) {
+              // Get the building object from the value
+              const building = {
+                building_id: parseInt(selectedBuilding.value.toString()),
+                building_name: selectedBuilding.label,
+                floor_levels: parseInt(
+                  selectedBuilding.metadata?.['floor_levels'] || '0'
+                ),
+              };
+
+              // Generate new floor level options
+              const floorLevels = Array.from(
+                { length: building.floor_levels },
+                (_, i) => {
+                  const num = i + 1;
+                  const ordinal = `${num}${this.getOrdinalSuffix(num)}`;
+                  return {
+                    value: ordinal,
+                    label: `${ordinal} Floor`,
+                  };
+                }
+              );
+
+              // Update the floor level field options
+              floorLevelField.options = floorLevels;
+
+              // Reset floor level selection
+              floorLevelControl.setValue('');
+            }
+          }
+        }
+      });
+    }
 
     // Add role change listener for admin code generation
     if (this.data.title === 'Admin' && !this.data.isEdit) {
@@ -467,14 +565,18 @@ export class TableDialogComponent {
   }
 
   filterOptions(field: DialogFieldConfig): void {
-    const value = this.form.get(field.formControlName)?.value;
+    const value =
+      this.form.get(field.formControlName)?.value?.toLowerCase() || '';
     if (field.filter) {
       this.filteredOptions[field.formControlName] = field.filter(value);
     } else {
       this.filteredOptions[field.formControlName] =
-        field.options?.filter((option) =>
-          String(option).toLowerCase().includes(value.toLowerCase())
-        ) || [];
+        field.options?.filter((option) => {
+          if (this.isSelectOption(option)) {
+            return option.label.toLowerCase().includes(value);
+          }
+          return String(option).toLowerCase().includes(value);
+        }) || [];
     }
     this.cdr.markForCheck();
   }
@@ -529,5 +631,20 @@ export class TableDialogComponent {
 
   onDeleteYear(year: string): void {
     this.dialogRef.close({ deletedYear: year });
+  }
+
+  isSelectOption(
+    option: string | number | SelectOption
+  ): option is SelectOption {
+    return typeof option === 'object' && 'value' in option && 'label' in option;
+  }
+
+  private getOrdinalSuffix(num: number): string {
+    const j = num % 10;
+    const k = num % 100;
+    if (j == 1 && k != 11) return 'st';
+    if (j == 2 && k != 12) return 'nd';
+    if (j == 3 && k != 13) return 'rd';
+    return 'th';
   }
 }

@@ -6,7 +6,7 @@ export const SUPERADMIN_ROUTES: Routes = [
     loadComponent: () =>
       import('./main/main.component').then((m) => m.MainComponent),
     children: [
-      { path: '', redirectTo: 'programs', pathMatch: 'full' },
+      { path: '', redirectTo: 'admin', pathMatch: 'full' },
       {
         path: 'dashboard',
         loadComponent: () =>
@@ -62,13 +62,34 @@ export const SUPERADMIN_ROUTES: Routes = [
       },
       {
         path: 'rooms',
-        loadComponent: () =>
-          import('./maintenance/rooms/rooms.component').then(
-            (m) => m.RoomsComponent
-          ),
-        data: { pageTitle: 'Rooms' },
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./maintenance/rooms/rooms.component').then(
+                (m) => m.RoomsComponent
+              ),
+            data: { pageTitle: 'Rooms' },
+          },
+          {
+            path: 'types',
+            loadComponent: () =>
+              import(
+                './maintenance/rooms/room-types/room-types.component'
+              ).then((m) => m.RoomTypesComponent),
+            data: { pageTitle: 'Room Types' },
+          },
+        ],
       },
-      { path: '**', redirectTo: 'programs' },
+      {
+        path: 'buildings',
+        loadComponent: () =>
+          import('./maintenance/buildings/buildings.component').then(
+            (m) => m.BuildingsComponent
+          ),
+        data: { pageTitle: 'Buildings' },
+      },
+      { path: '**', redirectTo: 'admin' },
     ],
   },
 ];

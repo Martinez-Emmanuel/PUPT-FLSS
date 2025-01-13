@@ -1,0 +1,33 @@
+<div class="buildings-container">
+  @if (isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
+  <!--Table Header-->
+  <div class="buildings-header-container" [@fadeAnimation]>
+    <app-table-header
+      title="Buildings"
+      [inputFields]="headerInputFields"
+      [addButtonLabel]="'Add Building'"
+      (inputChange)="onInputChange($event)"
+      (add)="openAddBuildingDialog()"
+      (export)="onExport()"
+    ></app-table-header>
+  </div>
+
+  <!-- Common Table -->
+  <div class="buildings-table-container" [@fadeAnimation]>
+    <app-table-generic
+      [tableName]="'building/s'"
+      [data]="(buildings$ | async) || []"
+      [columns]="columns"
+      [displayedColumns]="displayedColumns"
+      (edit)="openEditBuildingDialog($event)"
+      (delete)="deleteBuilding($event)"
+    >
+      ></app-table-generic
+    >
+  </div>
+  }
+</div>

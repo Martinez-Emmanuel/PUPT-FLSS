@@ -25,7 +25,7 @@ class RoomsTableSeeder extends Seeder
             $dataToInsert[] = [
                 'room_id' => $record['room_id'],
                 'room_code' => $record['room_code'],
-                'location' => $record['location'],
+                'building_id' => $record['building_id'],
                 'floor_level' => $record['floor_level'],
                 'room_type' => $record['room_type'],
                 'capacity' => $record['capacity'],

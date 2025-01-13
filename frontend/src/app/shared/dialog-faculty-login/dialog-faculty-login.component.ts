@@ -34,7 +34,6 @@ import { RoleService } from '../../core/services/role/role.service';
     MatSymbolDirective,
     CommonModule,
   ],
-  standalone: true,
 })
 export class DialogFacultyLoginComponent implements OnInit {
   loginForm!: FormGroup;
