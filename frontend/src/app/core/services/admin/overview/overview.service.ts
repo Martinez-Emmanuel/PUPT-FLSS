@@ -6,7 +6,6 @@ import { environment } from '../../../../../environments/environment.dev';
 export interface RequestNotification {
   faculty_id: number;
   faculty_name: string;
-  message: string;
 }
 
 export interface OverviewDetails {

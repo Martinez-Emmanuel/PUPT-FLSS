@@ -108,7 +108,6 @@ class FacultyNotificationController extends Controller
             return [
                 'faculty_id' => $faculty->faculty_id,
                 'faculty_name' => $facultyName,
-                'message' => "has requested to reopen their preferences submission.",
             ];
         });
 
