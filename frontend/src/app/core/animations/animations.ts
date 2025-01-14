@@ -13,7 +13,7 @@ import {
 export const fadeAnimation = trigger('fadeAnimation', [
   transition('* <=> *', [
     style({ opacity: 0 }),
-    animate('500ms ease-out', style({ opacity: 1 })),
+    animate('500ms ease-out', style({ opacity: '*' })), // previously 1
   ]),
 ]);
 
@@ -66,6 +66,22 @@ export const cardEntranceSide = trigger('cardEntranceSide', [
           animate(
             '400ms ease-out',
             style({ opacity: 1, transform: 'translateX(0)' })
+          ),
+        ]),
+      ],
+      { optional: true }
+    ),
+    query(
+      ':leave',
+      [
+        stagger('75ms', [
+          animate(
+            '500ms cubic-bezier(0.4, 0, 0.2, 1)',
+            style({
+              opacity: 0,
+              transform: 'translateX(30px) scale(0.95)',
+              filter: 'blur(2px)',
+            })
           ),
         ]),
       ],
