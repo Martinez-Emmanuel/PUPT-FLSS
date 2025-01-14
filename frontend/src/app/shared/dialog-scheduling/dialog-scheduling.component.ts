@@ -36,6 +36,32 @@ function mustMatchOption(validOptions: string[]): ValidatorFn {
   };
 }
 
+/**
+ * Validator that requires a control value when another field has a value.
+ * Used for interdependent fields like start/end times.
+ *
+ * @param otherFieldName - Name of the field to check against
+ * @returns Validator function
+ */
+function requiredIfOtherFieldHasValue(otherFieldName: string): ValidatorFn {
+  return (control: AbstractControl): ValidationErrors | null => {
+    if (!control.parent) {
+      return null;
+    }
+
+    const otherField = control.parent.get(otherFieldName);
+    if (!otherField) {
+      return null;
+    }
+
+    if (otherField.value && !control.value) {
+      return { requiredWithOther: true };
+    }
+
+    return null;
+  };
+}
+
 interface Preference {
   day: string;
   time: string;
@@ -138,8 +164,8 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   ) {
     this.scheduleForm = this.fb.group({
       day: [''],
-      startTime: [''],
-      endTime: [''],
+      startTime: ['', [requiredIfOtherFieldHasValue('endTime')]],
+      endTime: ['', [requiredIfOtherFieldHasValue('startTime')]],
       professor: [''],
       room: [''],
     });
@@ -148,6 +174,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.setupDayButtons();
     this.setupCustomValidators();
+    this.setupTimeFieldValidation();
     this.populateExistingSchedule();
     this.data.suggestedFaculty.forEach(
       (faculty) => (faculty.animating = false)
@@ -255,7 +282,17 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
         filter((startTime) => !!startTime),
         takeUntil(this.destroy$)
       )
-      .subscribe((startTime) => this.updateEndTimeOptions(startTime));
+      .subscribe((startTime) => {
+        this.updateEndTimeOptions(startTime);
+        this.scheduleForm.markAllAsTouched();
+      });
+
+    this.scheduleForm
+      .get('endTime')!
+      .valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe(() => {
+        this.scheduleForm.markAllAsTouched();
+      });
   }
 
   private updateEndTimeOptions(startTime: string): void {
@@ -343,7 +380,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
             : '';
           this.cdr.markForCheck();
         }),
-        catchError((error) => {
+        catchError(() => {
           this.conflictMessage =
             'An error occurred during validation. Please try again.';
           this.hasConflicts = true;
@@ -513,5 +550,24 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
       'part-time': type.includes('part-time'),
       temporary: type.includes('temporary'),
     };
+  }
+
+  private setupTimeFieldValidation(): void {
+    const startTimeControl = this.scheduleForm.get('startTime');
+    const endTimeControl = this.scheduleForm.get('endTime');
+
+    if (startTimeControl && endTimeControl) {
+      startTimeControl.valueChanges
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          endTimeControl.updateValueAndValidity();
+        });
+
+      endTimeControl.valueChanges
+        .pipe(takeUntil(this.destroy$))
+        .subscribe(() => {
+          startTimeControl.updateValueAndValidity();
+        });
+    }
   }
 }
