@@ -352,8 +352,20 @@
         $gap: var(--spacing-sm)
       );
 
-      span[mat-symbol] {
+      .request-icon {
         font-size: var(--font-size-lg);
+      }
+
+      .help-icon {
+        padding-top: var(--spacing-xxxs);
+        margin-left: -1px !important;
+        font-size: var(--font-size-sm);
+        opacity: var(--opacity-semi-opaque);
+        transition: opacity 0.2s ease;
+
+        &:hover {
+          opacity: 1;
+        }
       }
 
       .requests-content {

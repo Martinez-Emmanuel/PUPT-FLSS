@@ -250,7 +250,17 @@
     <div class="main-cluster-two">
       <div class="requests card">
         <h2 class="card-title">
-          <span mat-symbol="assignment"></span>Faculty Requests
+          <span mat-symbol="assignment" class="request-icon"></span>Faculty
+          Requests
+          <span
+            mat-symbol="help"
+            class="help-icon"
+            [fill]="false"
+            [matTooltip]="
+              'These are faculties who requests to access their preferences submission'
+            "
+            matTooltipPosition="above"
+          ></span>
         </h2>
         <div class="requests-content">
           <em>Feature coming soon.</em>
