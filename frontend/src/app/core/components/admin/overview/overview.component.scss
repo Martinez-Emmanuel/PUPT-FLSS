@@ -344,7 +344,7 @@
     flex: 2;
     height: inherit;
 
-    .notifications {
+    .requests {
       flex: 1;
       @include mixins.flex-layout(
         $direction: column,
@@ -352,7 +352,11 @@
         $gap: var(--spacing-sm)
       );
 
-      .notifications-content {
+      span[mat-symbol] {
+        font-size: var(--font-size-lg);
+      }
+
+      .requests-content {
         flex: 1;
         @include mixins.flex-layout;
         opacity: var(--opacity-semi-opaque);
