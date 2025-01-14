@@ -688,12 +688,13 @@ class ReportsController extends Controller
         // Step 3: Get faculty basic info
         $faculty = DB::table('faculty')
             ->join('users', 'faculty.user_id', '=', 'users.id')
+            ->join('faculty_type', 'faculty.faculty_type_id', '=', 'faculty_type.faculty_type_id')
             ->where('faculty.id', $faculty_id)
             ->select(
                 'faculty.id as faculty_id',
                 'users.id as user_id',
                 'users.code as faculty_code',
-                'faculty.faculty_type',
+                'faculty_type.faculty_type',
                 DB::raw("CONCAT(users.last_name, ', ', users.first_name) as faculty_name")
             )
             ->first();
