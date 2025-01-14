@@ -299,6 +299,9 @@ class ScheduleController extends Controller
                         'is_published' => 0,
                     ]
                 );
+
+                // Update the main schedule record
+                $schedule->update(['is_published' => 0]);
             } elseif ($previousFacultyId) {
                 FacultySchedulePublication::where('faculty_id', $previousFacultyId)
                     ->where('schedule_id', $schedule->schedule_id)
