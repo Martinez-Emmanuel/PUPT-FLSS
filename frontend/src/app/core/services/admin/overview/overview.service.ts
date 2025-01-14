@@ -3,6 +3,12 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../../../environments/environment.dev';
 
+export interface RequestNotification {
+  faculty_id: number;
+  faculty_name: string;
+  message: string;
+}
+
 export interface OverviewDetails {
   global_start_date: null;
   activeAcademicYear: string;
@@ -34,4 +40,9 @@ export class OverviewService {
     return this.http.get<OverviewDetails>(`${this.baseUrl}/overview-details`);
   }
 
+  getRequestNotifications(): Observable<RequestNotification[]> {
+    return this.http.get<RequestNotification[]>(
+      `${this.baseUrl}/request-notifications`
+    );
+  }
 }

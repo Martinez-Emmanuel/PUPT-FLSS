@@ -257,13 +257,49 @@
             class="help-icon"
             [fill]="false"
             [matTooltip]="
-              'These are faculties who requests to access their preferences submission'
+              'These are faculties who requested to access their preferences submission'
             "
             matTooltipPosition="above"
           ></span>
         </h2>
         <div class="requests-content">
-          <em>Feature coming soon.</em>
+          @if (!notificationsLoaded) {
+          <div class="requests-loading"></div>
+          } @else if (!requestNotifications.length && !isAnimatingOut) {
+          <div class="no-requests">
+            <img src="../../../../../assets/images/empty.svg" />
+            <div class="no-text">
+              <span mat-symbol="info"></span>
+              <em>No pending requests.</em>
+            </div>
+          </div>
+          } @else {
+          <div
+            class="requests-list"
+            [@cardEntranceSide]="requestNotifications.length"
+          >
+            @for (request of requestNotifications; track request.faculty_id) {
+            <div class="request-item">
+              <div class="request-content">
+                <div class="faculty-name">
+                  <span mat-symbol="person"></span>
+                  <p>{{ request.faculty_name }}</p>
+                </div>
+                <div class="request-actions">
+                  <button class="approve-btn" (click)="approveRequest(request)">
+                    <span mat-symbol="check"></span>
+                    Approve
+                  </button>
+                  <button class="discard-btn" (click)="discardRequest(request)">
+                    <span mat-symbol="close"></span>
+                    Discard
+                  </button>
+                </div>
+              </div>
+            </div>
+            }
+          </div>
+          }
         </div>
       </div>
     </div>

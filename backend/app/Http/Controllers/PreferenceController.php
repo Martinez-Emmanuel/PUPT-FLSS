@@ -316,48 +316,6 @@ class PreferenceController extends Controller
         ], 200, [], JSON_PRETTY_PRINT);
     }
 
-    public function getRequestNotifications()
-    {
-
-        $activeSemester = ActiveSemester::with(['academicYear', 'semester'])
-            ->where('is_active', 1)
-            ->first();
-
-        if (!$activeSemester) {
-            return response()->json(['error' => 'No active semester found'], 404);
-        }
-
-        // Get faculty with active requests
-        $facultyRequests = Faculty::with(['user'])
-            ->join('preferences_settings', 'faculty.id', '=', 'preferences_settings.faculty_id')
-            ->where('preferences_settings.has_request', 1)
-            ->select(
-                'faculty.id as faculty_id',
-                'users.first_name',
-                'users.middle_name',
-                'users.last_name'
-            )
-            ->join('users', 'faculty.user_id', '=', 'users.id')
-            ->get();
-
-        $notifications = $facultyRequests->map(function ($faculty) {
-            // Construct full name
-            $facultyName = trim(implode(' ', array_filter([
-                $faculty->last_name,
-                $faculty->middle_name,
-                $faculty->first_name,
-            ])));
-
-            return [
-                'faculty_id' => $faculty->faculty_id,
-                'faculty_name' => $facultyName,
-                'message' => "$facultyName has requested to reopen their preferences submission.",
-            ];
-        });
-
-        return response()->json($notifications, 200);
-    }
-
     /**
      * Retrieves preferences for a specific faculty based on their faculty_id.
      */

@@ -106,8 +106,6 @@
     );
     flex: 6;
     height: inherit;
-    // border: 1px solid grey;
-    // overflow: auto;
 
     .overview-greetings {
       @include mixins.flex-layout(
@@ -336,11 +334,7 @@
 
   /* Cluster Two */
   .main-cluster-two {
-    @include mixins.flex-layout(
-      $direction: column,
-      $align: stretch,
-      $gap: var(--spacing-md)
-    );
+    @include mixins.flex-layout($direction: column, $align: stretch);
     flex: 2;
     height: inherit;
 
@@ -351,6 +345,7 @@
         $align: stretch,
         $gap: var(--spacing-sm)
       );
+      height: inherit;
 
       .request-icon {
         font-size: var(--font-size-lg);
@@ -370,8 +365,119 @@
 
       .requests-content {
         flex: 1;
-        @include mixins.flex-layout;
-        opacity: var(--opacity-semi-opaque);
+        height: 55vh;
+        @include mixins.flex-layout(
+          $direction: column,
+          $align: stretch,
+          $gap: var(--spacing-sm)
+        );
+        overflow: hidden;
+
+        .no-requests {
+          @include mixins.flex-layout(
+            $direction: column,
+            $align: center,
+            $justify: center
+          );
+          opacity: var(--opacity-semi-opaque);
+
+          .no-text {
+            @include mixins.flex-layout(
+              $align: center,
+              $justify: center,
+              $gap: var(--spacing-xxs)
+            );
+
+            span[mat-symbol] {
+              font-size: var(--font-size-md);
+            }
+          }
+        }
+
+        .faculty-name {
+          @include mixins.flex-layout(
+            $align: center,
+            $justify: flex-start,
+            $gap: var(--spacing-xs)
+          );
+
+          span[mat-symbol] {
+            font-size: var(--font-size-mdx);
+          }
+        }
+
+        .requests-list {
+          @include mixins.flex-layout(
+            $direction: column,
+            $align: stretch,
+            $justify: flex-start,
+            $gap: var(--spacing-sm)
+          );
+          @include mixins.custom-scrollbar;
+          height: inherit;
+          overflow-y: auto;
+          overflow-x: hidden;
+          padding-right: var(--spacing-xs);
+        }
+
+        .request-item {
+          background-color: var(--main-bg);
+          border-radius: var(--border-radius-sm);
+          padding: var(--spacing-sm);
+          box-shadow: var(--shadow-level-0);
+          flex-shrink: 0;
+
+          .faculty-name {
+            font-weight: 500;
+            color: var(--neutral-base);
+            margin-bottom: var(--spacing-xs);
+          }
+
+          .request-actions {
+            @include mixins.flex-layout(
+              $align: stretch,
+              $justify: space-between,
+              $gap: var(--spacing-xs)
+            );
+
+            button {
+              @include mixins.flex-layout(
+                $align: center,
+                $justify: center,
+                $gap: var(--spacing-xxs)
+              );
+              flex: 1;
+              padding: var(--spacing-xs) var(--spacing-sm);
+              border: none;
+              border-radius: var(--border-radius-xs);
+              font-size: var(--font-size-smx);
+              cursor: pointer;
+              transition: opacity 0.2s ease, transform 0.2s ease;
+
+              &:hover {
+                opacity: var(--opacity-semi-opaque);
+              }
+
+              &:active {
+                transform: scale(0.95);
+              }
+
+              span[mat-symbol] {
+                font-size: var(--font-size-mdx);
+              }
+            }
+
+            .approve-btn {
+              background-color: var(--green-fade-lighter);
+              color: var(--green-primary);
+            }
+
+            .discard-btn {
+              background-color: var(--primary-one-fade);
+              color: var(--primary-text);
+            }
+          }
+        }
       }
     }
   }
