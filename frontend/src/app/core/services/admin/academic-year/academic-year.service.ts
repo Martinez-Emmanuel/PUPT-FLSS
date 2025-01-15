@@ -60,7 +60,14 @@ export class AcademicYearService {
       .request('DELETE', `${this.baseUrl}/delete-academic-year`, {
         body: { academic_year_id: academicYearId },
       })
-      .pipe(catchError(this.handleError));
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          if (error.error?.status === 'error') {
+            return throwError(() => new Error(error.error.message));
+          }
+          return this.handleError(error);
+        })
+      );
   }
 
   /**

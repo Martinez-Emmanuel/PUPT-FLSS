@@ -224,6 +224,30 @@ class AcademicYearController extends Controller
         $academicYearId = $request->input('academic_year_id');
 
         try {
+            $hasSchedules = DB::table('schedules')
+                ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+                ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
+                ->where('sections_per_program_year.academic_year_id', $academicYearId)
+                ->where(function ($query) {
+                    $query->whereNotNull('schedules.day')
+                        ->orWhereNotNull('schedules.start_time')
+                        ->orWhereNotNull('schedules.end_time')
+                        ->orWhereNotNull('schedules.faculty_id')
+                        ->orWhereNotNull('schedules.room_id');
+                })
+                ->exists();
+
+            if ($hasSchedules) {
+                // Get the academic year details for the error message
+                $academicYear = AcademicYear::find($academicYearId);
+                $yearRange = $academicYear ? "{$academicYear->year_start}-{$academicYear->year_end}" : 'Unknown';
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => "Cannot delete A.Y. {$yearRange} as it has assigned schedules.",
+                ], 422);
+            }
+
             // Start the transaction
             DB::beginTransaction();
 
@@ -239,7 +263,7 @@ class AcademicYearController extends Controller
             ActiveSemester::where('academic_year_id', $academicYearId)
                 ->delete();
 
-            // Step 4: Remove Academic Year Curricula (curriculum assignments for this academic year)
+            // Step 4: Remove Academic Year Curricula
             AcademicYearCurricula::where('academic_year_id', $academicYearId)
                 ->delete();
 
@@ -251,6 +275,7 @@ class AcademicYearController extends Controller
             DB::commit();
 
             return response()->json([
+                'status' => 'success',
                 'message' => 'Academic year and all related data were removed successfully.',
             ], 200);
 
@@ -259,6 +284,7 @@ class AcademicYearController extends Controller
             DB::rollBack();
 
             return response()->json([
+                'status' => 'error',
                 'message' => 'An error occurred: ' . $e->getMessage(),
             ], 500);
         }

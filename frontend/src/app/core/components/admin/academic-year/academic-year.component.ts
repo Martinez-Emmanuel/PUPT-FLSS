@@ -741,17 +741,24 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
    */
   deleteAcademicYear(academicYearId: number): void {
     this.academicYearService.deleteAcademicYear(academicYearId).subscribe(
-      (response) => {
-        this.snackBar.open('Academic year deleted successfully.', 'Close', {
-          duration: 3000,
-        });
-        this.loadAcademicYears();
+      (response: any) => {
+        if (response.status === 'success') {
+          this.snackBar.open('Academic year deleted successfully.', 'Close', {
+            duration: 3000,
+          });
+          this.loadAcademicYears();
+        } else {
+          this.snackBar.open(response.message, 'Close', {
+            duration: 5000,
+          });
+        }
       },
       (error) => {
-        console.error('Error deleting academic year:', error);
-        this.snackBar.open('Failed to delete academic year.', 'Close', {
-          duration: 3000,
-        });
+        this.snackBar.open(
+          error.message || 'Failed to delete academic year.',
+          'Close',
+          { duration: 5000 }
+        );
       }
     );
   }
