@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\NotifyFacultyDeadlineSingleJob;
 use App\Jobs\NotifyGlobalFacultyDeadlineJob;
+use App\Jobs\SendFacultyScheduleEmailJob;
 use App\Models\Faculty;
 use App\Models\PreferencesSetting;
 use Carbon\Carbon;
