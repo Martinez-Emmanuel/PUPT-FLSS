@@ -20,6 +20,11 @@ import 'jspdf-autotable';
 
 import { CurriculumService, Curriculum, Program, YearLevel, Semester, Course, CourseRequirement } from '../../../../../services/superadmin/curriculum/curriculum.service';
 
+interface TableCell {
+  content: string;
+  colSpan?: number;
+}
+
 @Component({
   selector: 'app-curriculum-detail',
   imports: [
@@ -941,7 +946,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
       this.openPdfPreviewDialog(false);
     }
   }
-
+  
   openPdfPreviewDialog(exportAll: boolean): void {
     const dialogRef = this.dialog.open(DialogExportComponent, {
       data: {
@@ -952,16 +957,13 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
       maxWidth: '70rem',
       width: '100%',
     });
-
+  
     dialogRef.afterClosed().subscribe((result) => {});
   }
-
+  
   generatePDF(showPreview: boolean = false, exportAll: boolean = false): void {
     const doc = new jsPDF('p', 'mm', 'letter') as any;
-    const pageWidth = doc.internal.pageSize.width;
-    const margin = 10;
-    const topMargin = 15;
-
+  
     if (this.curriculum) {
       if (exportAll) {
         this.curriculum.programs.forEach((program, index) => {
@@ -977,7 +979,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
           return;
         }
       }
-
+  
       const pdfBlob = doc.output('blob');
       if (showPreview) {
         return pdfBlob;
@@ -989,7 +991,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
       return;
     }
   }
-
+  
   private addProgramToPDF(
     doc: any,
     program: Program,
@@ -1001,7 +1003,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
     const topMargin = 15;
     const bottomMargin = 15;
     const logoSize = 22;
-
+  
     if (!isFirstProgram) {
       doc.addPage();
     }
@@ -1013,23 +1015,23 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
       logoSize,
       `Curriculum Year ${this.curriculum?.curriculum_year || ''}`
     );
-
+  
     if (!program || !program.year_levels || program.year_levels.length === 0) {
       console.warn('No valid program or year levels found');
       return;
     }
-
+  
     const sortedYearLevels = program.year_levels.sort(
       (a, b) => a.year - b.year
     );
-
+  
     for (const yearLevel of sortedYearLevels) {
       const hasCoursesInYear = yearLevel.semesters.some(
         (semester) => semester.courses && semester.courses.length > 0
       );
-
+  
       if (!hasCoursesInYear) continue;
-
+  
       if (currentY + 20 > pageHeight - bottomMargin) {
         doc.addPage();
         currentY = this.drawHeader(
@@ -1041,16 +1043,16 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
           `Curriculum Year ${this.curriculum?.curriculum_year || ''}`
         );
       }
-
+  
       doc.setFont('helvetica', 'bold');
       doc.setFontSize(15);
       doc.text(`${program.name} - Year ${yearLevel.year}`, margin, currentY);
       currentY += 10;
-
+  
       const sortedSemesters = yearLevel.semesters.sort(
         (a, b) => a.semester - b.semester
       );
-
+  
       for (const semester of sortedSemesters) {
         if (!semester.courses || semester.courses.length === 0) continue;
         if (currentY + 40 > pageHeight - bottomMargin) {
@@ -1072,18 +1074,23 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
           );
           currentY += 10;
         }
-
+  
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(13);
         doc.text(`Semester ${semester.semester}`, margin, currentY);
         currentY += 6;
-
-        const tableData = semester.courses.map((course) => {
+  
+        const tableData: (string | TableCell)[][] = semester.courses.map(
+          (course) => {
           const processedCourse = this.populateCourseRequisites(course);
           return [
             processedCourse.course_code || 'N/A',
-            processedCourse.pre_req || 'None',
-            processedCourse.co_req || 'None',
+            Array.isArray(
+              processedCourse.pre_req)
+              ? processedCourse.pre_req.join(', ') : 'None',
+            Array.isArray(
+              processedCourse.co_req)
+              ? processedCourse.co_req.join(', ') : 'None',
             processedCourse.course_title || 'N/A',
             processedCourse.lec_hours?.toString() || '0',
             processedCourse.lab_hours?.toString() || '0',
@@ -1091,7 +1098,32 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
             processedCourse.tuition_hours?.toString() || '0',
           ];
         });
-
+  
+        // Calculate totals
+        const totalUnits = semester.courses.reduce(
+          (sum, course) => sum + (course.units || 0), 0
+        );
+        const totalTuitionHours = semester.courses.reduce(
+          (sum, course) => sum + (course.tuition_hours || 0), 0
+        );
+  
+        // Add total row with merged cells and aligned values
+        tableData.push([
+          { 
+            content: 'TOTAL: ', 
+            colSpan: 6,
+            styles: { halign: 'left' }
+          } as TableCell,
+          { 
+            content: totalUnits.toString(),
+            styles: { halign: 'center' }
+          } as TableCell,
+          { 
+            content: totalTuitionHours.toString(),
+            styles: { halign: 'center' }
+          } as TableCell
+        ]);
+  
         doc.autoTable({
           startY: currentY,
           head: [
@@ -1106,7 +1138,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
               'Tuition',
             ],
           ],
-          body: tableData,
+          body: tableData as Array<(string | TableCell)[]>,
           theme: 'grid',
           headStyles: {
             fillColor: [128, 0, 0],
@@ -1129,20 +1161,41 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
             1: { cellWidth: 'auto' },
             2: { cellWidth: 'auto' },
             3: { cellWidth: 'auto' },
-            4: { cellWidth: 'auto' },
-            5: { cellWidth: 'auto' },
-            6: { cellWidth: 'auto' },
-            7: { cellWidth: 'auto' },
+            4: { cellWidth: 'auto', halign: 'center' },
+            5: { cellWidth: 'auto', halign: 'center' },
+            6: { cellWidth: 'auto', halign: 'center' },
+            7: { cellWidth: 'auto', halign: 'center' },
+          },
+          didParseCell: function(data: {
+            row: { index: number };
+            column: { index: number };
+            cell: { styles: any; colSpan?: number };
+          }) {
+            // Style for total row
+            if (data.row.index === tableData.length - 1) {
+              data.cell.styles.fontStyle = 'bold';
+              data.cell.styles.lineWidth = 0.5;
+            }
           },
           margin: { left: 10, right: 10 },
         });
-
         currentY = (doc as any).lastAutoTable.finalY + 8;
       }
       currentY += 5;
+  
+      const yearTotalUnits = yearLevel.semesters
+        .flatMap(sem => sem.courses)
+        .reduce((sum, course) => sum + (course.units || 0), 0);
+      const yearTotalTuitionHours = yearLevel.semesters
+        .flatMap(sem => sem.courses)
+        .reduce((sum, course) => sum + (course.tuition_hours || 0), 0);
+  
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(11);
+      currentY += 10;
     }
   }
-
+  
   private drawHeader(
     doc: jsPDF,
     startY: number,
@@ -1154,44 +1207,44 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
     doc.setTextColor(0, 0, 0);
     const logoUrl =
       'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
-
+  
     const logoXPosition = margin;
     doc.addImage(logoUrl, 'PNG', logoXPosition, startY - 5, logoSize, logoSize);
-
+  
     const centerX = pageWidth / 2;
-
+  
     let currentY = startY;
-
+  
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-
+  
     doc.text(
       'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
       centerX,
       currentY,
       { align: 'center' }
     );
-
+  
     currentY += 5;
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-
+  
     doc.text('Gen. Santos Ave. Upper Bicutan, Taguig City', centerX, currentY, {
       align: 'center',
     });
-
+  
     currentY += 10;
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-
+  
     doc.text(title, centerX, currentY, { align: 'center' });
     currentY += 8;
-
+  
     doc.setDrawColor(0, 0, 0);
     doc.setLineWidth(0.5);
     doc.line(margin, currentY, pageWidth - margin, currentY);
     currentY += 7;
-
+  
     return currentY;
   }
 

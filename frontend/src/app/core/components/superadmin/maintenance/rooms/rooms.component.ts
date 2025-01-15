@@ -410,46 +410,114 @@ export class RoomsComponent implements OnInit, OnDestroy {
     const logoSize = 22;
     const topMargin = 15;
     let currentY = topMargin;
-
+  
     try {
-      // Add the university logo
-      const leftLogoUrl =
-        'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
-      doc.addImage(leftLogoUrl, 'PNG', margin, 10, logoSize, logoSize);
-
-      // Add header text
-      doc.setFontSize(12);
-      doc.setFont('times', 'bold');
-      doc.text(
-        'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
-        pageWidth / 2,
-        currentY,
-        { align: 'center' }
-      );
-      currentY += 5;
-
-      doc.setFontSize(12);
-      doc.text(
-        'Gen. Santos Ave. Upper Bicutan, Taguig City',
-        pageWidth / 2,
-        currentY,
-        { align: 'center' }
-      );
-      currentY += 10;
-
-      doc.setFontSize(15);
-      doc.setTextColor(0, 0, 0);
-      doc.text('Room Report', pageWidth / 2, currentY, { align: 'center' });
-      currentY += 8;
-
-      // Add the horizontal line below the header
-      doc.setDrawColor(0, 0, 0);
-      doc.setLineWidth(0.5);
-      doc.line(margin, currentY, pageWidth - margin, currentY);
-      currentY += 7; // Move down after the header and line
-
-      const rooms = this.roomsSubject.getValue();
-      const bodyData = rooms.map((room, index) => [
+      // Helper function to add header
+      const addHeader = (title: string) => {
+        currentY = topMargin;
+        
+        // Add the university logo
+        const leftLogoUrl = 'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
+        doc.addImage(leftLogoUrl, 'PNG', margin, 10, logoSize, logoSize);
+  
+        // Add header text
+        doc.setFontSize(12);
+        doc.setFont('times', 'bold');
+        doc.text(
+          'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
+          pageWidth / 2,
+          currentY,
+          { align: 'center' }
+        );
+        currentY += 5;
+  
+        doc.setFontSize(12);
+        doc.text(
+          'Gen. Santos Ave. Upper Bicutan, Taguig City',
+          pageWidth / 2,
+          currentY,
+          { align: 'center' }
+        );
+        currentY += 10;
+  
+        doc.setFontSize(15);
+        doc.setTextColor(0, 0, 0);
+        doc.text(title, pageWidth / 2, currentY, { align: 'center' });
+        currentY += 8;
+  
+        // Add the horizontal line below the header
+        doc.setDrawColor(0, 0, 0);
+        doc.setLineWidth(0.5);
+        doc.line(margin, currentY, pageWidth - margin, currentY);
+        currentY += 7;
+      };
+  
+      // Helper function to add table
+      const addTable = (data: any[], startY: number) => {
+        if (data.length === 0) {
+          // If no data, add a message
+          doc.setFontSize(10);
+          doc.setTextColor(0, 0, 0);
+          doc.setFont('times', 'italic');
+          doc.text(
+            'No available rooms found.', 
+            pageWidth / 2, startY + 10, { align: 'center' }
+          );
+          doc.setFont('times', 'normal');
+          return;
+        }
+  
+        (doc as any).autoTable({
+          startY: startY,
+          head: [
+            [
+              '#',
+              'Room Code',
+              'Location',
+              'Floor Level',
+              'Room Type',
+              'Capacity',
+              'Status',
+            ],
+          ],
+          body: data,
+          theme: 'grid',
+          headStyles: {
+            fillColor: [128, 0, 0],
+            textColor: [255, 255, 255],
+            fontSize: 9,
+          },
+          bodyStyles: {
+            fontSize: 8,
+            textColor: [0, 0, 0],
+          },
+          styles: {
+            lineWidth: 0.1,
+            overflow: 'linebreak',
+            cellPadding: 2,
+          },
+          columnStyles: {
+            0: { cellWidth: 15 },
+            1: { cellWidth: 30 },
+            2: { cellWidth: 40 },
+            3: { cellWidth: 25 },
+            4: { cellWidth: 40 },
+            5: { cellWidth: 20 },
+            6: { cellWidth: 25 },
+          },
+          margin: { left: margin, right: margin },
+        });
+      };
+  
+      // Get all rooms and buildings
+      const allRooms = this.roomsSubject.getValue();
+      // Filter out unavailable rooms
+      const rooms = allRooms.filter(room => room.status === 'Available');
+      const buildings = this.buildingsSubject.getValue();
+  
+      // First page: All available rooms
+      addHeader('Room Report - All Rooms');
+      const allRoomsData = rooms.map((room, index) => [
         (index + 1).toString(),
         room.room_code,
         room.building_name,
@@ -458,52 +526,33 @@ export class RoomsComponent implements OnInit, OnDestroy {
         room.capacity.toString(),
         room.status,
       ]);
-
-      // Add table to PDF
-      (doc as any).autoTable({
-        startY: currentY,
-        head: [
-          [
-            '#',
-            'Room Code',
-            'Location',
-            'Floor Level',
-            'Room Type',
-            'Capacity',
-            'Status',
-          ],
-        ],
-        body: bodyData,
-        theme: 'grid',
-        headStyles: {
-          fillColor: [128, 0, 0],
-          textColor: [255, 255, 255],
-          fontSize: 9,
-        },
-        bodyStyles: {
-          fontSize: 8,
-          textColor: [0, 0, 0],
-        },
-        styles: {
-          lineWidth: 0.1,
-          overflow: 'linebreak',
-          cellPadding: 2,
-        },
-        columnStyles: {
-          0: { cellWidth: 15 }, // # (index)
-          1: { cellWidth: 30 }, // Room Code
-          2: { cellWidth: 40 }, // Location
-          3: { cellWidth: 25 }, // Floor Level
-          4: { cellWidth: 40 }, // Room Type
-          5: { cellWidth: 20 }, // Capacity
-          6: { cellWidth: 25 }, // Status
-        },
-        margin: { left: margin, right: margin },
-        didDrawPage: (data: any) => {
-          currentY = data.cursor.y + 10;
-        },
+      addTable(allRoomsData, currentY);
+  
+      // Subsequent pages: Available rooms by building
+      buildings.forEach((building) => {
+        // Add new page for each building
+        doc.addPage();
+  
+        // Add header for building page
+        addHeader(`Room Report - ${building.building_name}`);
+  
+        // Filter available rooms for this building
+        const buildingRooms = rooms
+          .filter(room => room.building_id === building.building_id)
+          .map((room, index) => [
+            (index + 1).toString(),
+            room.room_code,
+            room.building_name,
+            room.floor_level,
+            room.room_type_name,
+            room.capacity.toString(),
+            room.status,
+          ]);
+  
+        // Add table for building rooms
+        addTable(buildingRooms, currentY);
       });
-
+  
       return doc.output('blob');
     } catch (error) {
       this.snackBar.open('Failed to generate PDF.', 'Close', {
