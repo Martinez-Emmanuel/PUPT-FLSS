@@ -459,7 +459,10 @@ export class RoomsComponent implements OnInit, OnDestroy {
           doc.setFontSize(10);
           doc.setTextColor(0, 0, 0);
           doc.setFont('times', 'italic');
-          doc.text('No available rooms found.', pageWidth / 2, startY + 10, { align: 'center' });
+          doc.text(
+            'No available rooms found.', 
+            pageWidth / 2, startY + 10, { align: 'center' }
+          );
           doc.setFont('times', 'normal');
           return;
         }
