@@ -123,8 +123,8 @@
               <mat-option [value]="time">{{ time }}</mat-option>
               }
             </mat-select>
-            @if (scheduleForm.get('startTime')?.errors?.['requiredWithOther'] &&
-            scheduleForm.get('startTime')?.touched) {
+            @if (scheduleForm.get('startTime')?.errors?.['required'] &&
+            scheduleForm.touched) {
             <mat-error>Start time is required</mat-error>
             }
           </mat-form-field>
@@ -138,11 +138,9 @@
               <mat-option [value]="time">{{ time }}</mat-option>
               }
             </mat-select>
-            @if (scheduleForm.get('endTime')?.errors?.['requiredWithOther'] &&
-            scheduleForm.get('endTime')?.touched) {
+            @if (scheduleForm.get('endTime')?.errors?.['required'] &&
+            scheduleForm.touched) {
             <mat-error>End time is required</mat-error>
-            } @else if (scheduleForm.get('endTime')?.errors?.['sameTime']) {
-            <mat-error>Cannot be same as start time</mat-error>
             }
           </mat-form-field>
         </div>

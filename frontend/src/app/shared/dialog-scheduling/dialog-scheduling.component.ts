@@ -1,39 +1,11 @@
-import {
-  Component,
-  Inject,
-  OnInit,
-  OnDestroy,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-} from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  AbstractControl,
-  ValidationErrors,
-  ValidatorFn,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
 import { Observable, Subject, of } from 'rxjs';
-import {
-  map,
-  takeUntil,
-  debounceTime,
-  distinctUntilChanged,
-  switchMap,
-  shareReplay,
-  catchError,
-  tap,
-  filter,
-  startWith,
-} from 'rxjs/operators';
-import {
-  MatDialogRef,
-  MAT_DIALOG_DATA,
-  MatDialogModule,
-} from '@angular/material/dialog';
+import { map, takeUntil, debounceTime, distinctUntilChanged, switchMap, shareReplay, catchError, tap, startWith } from 'rxjs/operators';
+
+import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -49,10 +21,7 @@ import { SchedulingService } from '../../core/services/admin/scheduling/scheduli
 import { ScheduleValidationService } from '../../core/services/admin/scheduling/schedule-validation.service';
 import { Faculty, Room } from '../../core/models/scheduling.model';
 
-import {
-  cardEntranceSide,
-  cardSwipeAnimation,
-} from '../../core/animations/animations';
+import { cardEntranceSide, cardSwipeAnimation } from '../../core/animations/animations';
 
 /**
  * Validator to ensure the control's value matches one of the valid options.
@@ -65,53 +34,6 @@ function mustMatchOption(validOptions: string[]): ValidatorFn {
     return validOptions.includes(control.value)
       ? null
       : { invalidOption: true };
-  };
-}
-
-/**
- * Validator that requires a control value when another field has a value.
- * Used for interdependent fields like start/end times.
- *
- * @param otherFieldName - Name of the field to check against
- * @returns Validator function
- */
-function requiredIfOtherFieldHasValue(otherFieldName: string): ValidatorFn {
-  return (control: AbstractControl): ValidationErrors | null => {
-    if (!control.parent) {
-      return null;
-    }
-
-    const otherField = control.parent.get(otherFieldName);
-    if (!otherField) {
-      return null;
-    }
-
-    if (otherField.value && !control.value) {
-      return { requiredWithOther: true };
-    }
-
-    return null;
-  };
-}
-
-/**
- * Validator that checks if start time and end time are different.
- * @returns Validator function that returns error if times are the same
- */
-function validateTimeDifference(): ValidatorFn {
-  return (control: AbstractControl): ValidationErrors | null => {
-    if (!control.parent) {
-      return null;
-    }
-
-    const startTime = control.parent.get('startTime')?.value;
-    const endTime = control.parent.get('endTime')?.value;
-
-    if (startTime && endTime && startTime === endTime) {
-      return { sameTime: true };
-    }
-
-    return null;
   };
 }
 
@@ -217,11 +139,8 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   ) {
     this.scheduleForm = this.fb.group({
       day: [''],
-      startTime: ['', [requiredIfOtherFieldHasValue('endTime')]],
-      endTime: [
-        '',
-        [requiredIfOtherFieldHasValue('startTime'), validateTimeDifference()],
-      ],
+      startTime: [''],
+      endTime: [''],
       professor: [''],
       room: [''],
     });
@@ -230,7 +149,6 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.setupDayButtons();
     this.setupCustomValidators();
-    this.setupTimeFieldValidation();
     this.populateExistingSchedule();
     this.data.suggestedFaculty.forEach(
       (faculty) => (faculty.animating = false)
@@ -334,38 +252,80 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   private subscribeToStartTimeChanges(): void {
     this.scheduleForm
       .get('startTime')!
-      .valueChanges.pipe(
-        filter((startTime) => !!startTime),
-        takeUntil(this.destroy$)
-      )
+      .valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe((startTime) => {
-        this.updateEndTimeOptions(startTime);
-        this.scheduleForm.markAllAsTouched();
+        const endTimeControl = this.scheduleForm.get('endTime');
+
+        if (startTime) {
+          this.updateEndTimeOptions(startTime);
+          if (!endTimeControl?.value) {
+            endTimeControl?.setErrors({ required: true });
+          }
+        } else {
+          this.data.options.endTimeOptions = [...this.data.options.timeOptions];
+          if (!endTimeControl?.value) {
+            endTimeControl?.setErrors(null);
+          }
+        }
+
+        endTimeControl?.markAsTouched();
+        this.cdr.markForCheck();
       });
 
     this.scheduleForm
       .get('endTime')!
       .valueChanges.pipe(takeUntil(this.destroy$))
-      .subscribe(() => {
-        this.scheduleForm.markAllAsTouched();
+      .subscribe((endTime) => {
+        const startTimeControl = this.scheduleForm.get('startTime');
+
+        if (endTime) {
+          if (!startTimeControl?.value) {
+            startTimeControl?.setErrors({ required: true });
+          }
+        } else {
+          if (!startTimeControl?.value) {
+            startTimeControl?.setErrors(null);
+          }
+        }
+
+        startTimeControl?.markAsTouched();
+        this.cdr.markForCheck();
       });
   }
 
   private updateEndTimeOptions(startTime: string): void {
     const startIndex = this.data.options.timeOptions.indexOf(startTime);
     if (startIndex === -1) {
-      this.scheduleForm.patchValue({ endTime: '' });
-      this.data.options.endTimeOptions = [];
+      const endTimeControl = this.scheduleForm.get('endTime');
+      if (endTimeControl) {
+        endTimeControl.reset('');
+        endTimeControl.markAsTouched();
+        if (!endTimeControl.value) {
+          endTimeControl.setErrors({ required: true });
+        }
+        this.data.options.endTimeOptions = [];
+      }
       return;
     }
 
     this.data.options.endTimeOptions = this.data.options.timeOptions.slice(
       startIndex + 1
     );
+
     const currentEndTime = this.scheduleForm.get('endTime')?.value;
-    if (!this.data.options.endTimeOptions.includes(currentEndTime)) {
-      this.scheduleForm.patchValue({ endTime: '' });
+    if (currentEndTime) {
+      const endTimeIndex =
+        this.data.options.timeOptions.indexOf(currentEndTime);
+      if (endTimeIndex <= startIndex) {
+        const endTimeControl = this.scheduleForm.get('endTime');
+        if (endTimeControl) {
+          endTimeControl.reset('');
+          endTimeControl.markAsTouched();
+          endTimeControl.setErrors({ required: true });
+        }
+      }
     }
+
     this.cdr.markForCheck();
   }
 
@@ -606,24 +566,5 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
       'part-time': type.includes('part-time'),
       temporary: type.includes('temporary'),
     };
-  }
-
-  private setupTimeFieldValidation(): void {
-    const startTimeControl = this.scheduleForm.get('startTime');
-    const endTimeControl = this.scheduleForm.get('endTime');
-
-    if (startTimeControl && endTimeControl) {
-      startTimeControl.valueChanges
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(() => {
-          endTimeControl.updateValueAndValidity();
-        });
-
-      endTimeControl.valueChanges
-        .pipe(takeUntil(this.destroy$))
-        .subscribe(() => {
-          startTimeControl.updateValueAndValidity();
-        });
-    }
   }
 }
