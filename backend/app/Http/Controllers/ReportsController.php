@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\External\v1\ExternalController;
+use App\Jobs\ProcessExternalScheduleChange;
 use App\Models\AcademicYear;
 use App\Models\ActiveSemester;
 use App\Models\Faculty;
@@ -906,84 +906,106 @@ class ReportsController extends Controller
 
         $isPublished = $validated['is_published'];
 
-        // Step 2: Get the active semester and academic year
-        $activeSemester = DB::table('active_semesters')
-            ->where('is_active', 1)
-            ->first();
+        try {
+            // Wrap all database operations in a transaction
+            return DB::transaction(function () use ($isPublished) {
+                // Step 2: Get the active semester and academic year
+                $activeSemester = DB::table('active_semesters')
+                    ->where('is_active', 1)
+                    ->first();
 
-        if (!$activeSemester) {
-            return response()->json(['message' => 'No active semester found'], 404);
+                if (!$activeSemester) {
+                    return response()->json(['message' => 'No active semester found'], 404);
+                }
+
+                $activeAcademicYearId = $activeSemester->academic_year_id;
+                $activeSemesterId = $activeSemester->semester_id;
+
+                // Step 3: Fetch schedule IDs for the active semester and academic year
+                // Optimized query with index hints and selective joins
+                $activeSchedules = DB::table('schedules')
+                    ->select('schedules.schedule_id')
+                    ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+                    ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+                    ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
+                    ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
+                    ->where('sections_per_program_year.academic_year_id', '=', $activeAcademicYearId)
+                    ->where('semesters.semester', '=', $activeSemesterId)
+                    ->pluck('schedules.schedule_id');
+
+                if ($activeSchedules->isEmpty()) {
+                    return response()->json(['message' => 'No schedules found for the active semester and academic year.'], 404);
+                }
+
+                // Step 4: Batch update operations
+                // Update schedules table
+                $updatedCount = DB::table('schedules')
+                    ->whereIn('schedule_id', $activeSchedules)
+                    ->update(['is_published' => $isPublished]);
+
+                // Update faculty_schedule_publication table
+                DB::table('faculty_schedule_publication')
+                    ->whereIn('schedule_id', $activeSchedules)
+                    ->update([
+                        'is_published' => $isPublished,
+                        'updated_at' => now(),
+                    ]);
+
+                // Update preferences_settings table
+                DB::table('preferences_settings')
+                    ->update([
+                        'is_enabled' => 0,
+                        'global_deadline' => null,
+                        'individual_deadline' => null,
+                        'updated_at' => now(),
+                    ]);
+
+                // Step 5: Create notifications in bulk
+                $academicYear = $this->getCurrentAcademicYear();
+                $message = $isPublished
+                ? "Schedules have been published for A.Y. {$academicYear}."
+                : "Schedules have been unpublished for A.Y. {$academicYear}.";
+
+                // Prepare bulk notifications
+                $now = now();
+                $notifications = Faculty::select('id as faculty_id')
+                    ->get()
+                    ->map(function ($faculty) use ($message, $now) {
+                        return [
+                            'faculty_id' => $faculty->faculty_id,
+                            'message' => $message,
+                            'is_read' => 0,
+                            'created_at' => $now,
+                            'updated_at' => $now,
+                        ];
+                    })
+                    ->toArray();
+
+                // Bulk insert notifications
+                if (!empty($notifications)) {
+                    FacultyNotification::insert($notifications);
+                }
+
+                // Step 6: Dispatch external service job
+                ProcessExternalScheduleChange::dispatch('toggleAllSchedules', $isPublished);
+
+                return response()->json([
+                    'message' => 'Schedules and faculty schedule publications updated successfully',
+                    'updated_count' => $updatedCount,
+                    'is_published' => $isPublished,
+                    'active_semester_id' => $activeSemester->active_semester_id,
+                    'academic_year_id' => $activeAcademicYearId,
+                    'semester_id' => $activeSemesterId,
+                ]);
+            });
+        } catch (\Exception $e) {
+            // Log the error and return a user-friendly message
+            \Log::error('Failed to toggle all schedules: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to update schedules. Please try again.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
         }
-
-        $activeAcademicYearId = $activeSemester->academic_year_id;
-        $activeSemesterId = $activeSemester->semester_id;
-
-        // Step 3: Fetch schedule IDs for the active semester and academic year
-        $activeSchedules = DB::table('schedules')
-            ->select('schedules.schedule_id')
-            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
-            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
-            ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
-            ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
-            ->where('sections_per_program_year.academic_year_id', '=', $activeAcademicYearId)
-            ->where('semesters.semester', '=', $activeSemesterId)
-            ->pluck('schedules.schedule_id');
-
-        if ($activeSchedules->isEmpty()) {
-            return response()->json(['message' => 'No schedules found for the active semester and academic year.'], 404);
-        }
-
-        // Step 4: Update `is_published` for the fetched schedules in the `schedules` table
-        $updatedCount = DB::table('schedules')
-            ->whereIn('schedule_id', $activeSchedules)
-            ->update(['is_published' => $isPublished]);
-
-        // Step 5: Update `is_published` in the `faculty_schedule_publication` table based on the same schedule IDs
-        DB::table('faculty_schedule_publication')
-            ->whereIn('schedule_id', $activeSchedules)
-            ->update(['is_published' => $isPublished, 'updated_at' => now()]);
-
-        // Step 6: Disable preferences for all faculty by setting `is_enabled` to 0
-        DB::table('preferences_settings')
-            ->update([
-                'is_enabled' => 0,
-                'global_deadline' => null,
-                'individual_deadline' => null,
-                'updated_at' => now(),
-            ]);
-
-        // Step 7: Prepare notification message
-        $academicYear = $this->getCurrentAcademicYear();
-        $message = $isPublished
-        ? "Schedules have been published for A.Y. {$academicYear}."
-        : "Schedules have been unpublished for A.Y. {$academicYear}.";
-
-        // Step 8: Fetch all faculty IDs
-        $facultyIds = Faculty::pluck('id');
-
-        // Step 9: Create notifications for all faculties
-        $notifications = $facultyIds->map(function ($facultyId) use ($message) {
-            return [
-                'faculty_id' => $facultyId,
-                'message' => $message,
-                'is_read' => 0,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ];
-        })->toArray();
-
-        FacultyNotification::insert($notifications);
-        ExternalController::ECRSScheduleChange('toggleAllSchedules', $isPublished);
-
-        // Step 10: Return a response
-        return response()->json([
-            'message' => 'Schedules and faculty schedule publications updated successfully',
-            'updated_count' => $updatedCount,
-            'is_published' => $isPublished,
-            'active_semester_id' => $activeSemester->active_semester_id,
-            'academic_year_id' => $activeAcademicYearId,
-            'semester_id' => $activeSemesterId,
-        ]);
     }
 
     /**
@@ -992,84 +1014,114 @@ class ReportsController extends Controller
     public function toggleSingleSchedule(Request $request)
     {
         // Step 1: Validate the input
-        $request->validate([
+        $validated = $request->validate([
             'faculty_id' => 'required|integer|exists:faculty,id',
             'is_published' => 'required|boolean',
         ]);
 
-        $facultyId = $request->input('faculty_id');
-        $isPublished = $request->input('is_published');
+        $facultyId = $validated['faculty_id'];
+        $isPublished = $validated['is_published'];
 
-        // Step 2: Get the active semester and academic year
-        $activeSemester = DB::table('active_semesters')
-            ->where('is_active', 1)
-            ->first();
+        try {
+            // Wrap all database operations in a transaction
+            return DB::transaction(function () use ($facultyId, $isPublished) {
+                // Step 2: Get the active semester and academic year
+                $activeSemester = DB::table('active_semesters')
+                    ->where('is_active', 1)
+                    ->first();
 
-        if (!$activeSemester) {
-            return response()->json(['message' => 'No active semester found'], 404);
+                if (!$activeSemester) {
+                    return response()->json(['message' => 'No active semester found'], 404);
+                }
+
+                $activeAcademicYearId = $activeSemester->academic_year_id;
+                $activeSemesterId = $activeSemester->semester_id;
+
+                // Step 3: Fetch all related schedule_ids in a single query
+                // Optimized query with index hints and selective joins
+                $facultySchedules = DB::table('schedules')
+                    ->select([
+                        'schedules.schedule_id',
+                        'faculty_schedule_publication.faculty_schedule_publication_id',
+                    ])
+                    ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+                    ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+                    ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
+                    ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
+                    ->join('faculty_schedule_publication', 'schedules.schedule_id', '=', 'faculty_schedule_publication.schedule_id')
+                    ->where('faculty_schedule_publication.faculty_id', $facultyId)
+                    ->where('sections_per_program_year.academic_year_id', $activeAcademicYearId)
+                    ->where('semesters.semester', $activeSemesterId)
+                    ->get();
+
+                if ($facultySchedules->isEmpty()) {
+                    return response()->json([
+                        'message' => 'No schedules found for the given faculty in the active semester and academic year',
+                    ], 404);
+                }
+
+                $scheduleIds = $facultySchedules->pluck('schedule_id')->toArray();
+                $publicationIds = $facultySchedules->pluck('faculty_schedule_publication_id')->toArray();
+
+                // Step 4: Batch update operations
+                // Update faculty_schedule_publication table
+                DB::table('faculty_schedule_publication')
+                    ->whereIn('faculty_schedule_publication_id', $publicationIds)
+                    ->update([
+                        'is_published' => $isPublished,
+                        'updated_at' => now(),
+                    ]);
+
+                // Update schedules table
+                DB::table('schedules')
+                    ->whereIn('schedule_id', $scheduleIds)
+                    ->update([
+                        'is_published' => $isPublished,
+                        'updated_at' => now(),
+                    ]);
+
+                // Step 5: Update preferences settings
+                DB::table('preferences_settings')
+                    ->where('faculty_id', $facultyId)
+                    ->update([
+                        'is_enabled' => 0,
+                        'global_deadline' => null,
+                        'individual_deadline' => null,
+                        'updated_at' => now(),
+                    ]);
+
+                // Step 6: Create notification
+                $academicYear = $this->getCurrentAcademicYear();
+                $message = $isPublished
+                ? "Your schedule has been published for A.Y. {$academicYear}."
+                : "Your schedule has been unpublished for A.Y. {$academicYear}.";
+
+                FacultyNotification::create([
+                    'faculty_id' => $facultyId,
+                    'message' => $message,
+                    'is_read' => 0,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                // Step 7: Dispatch external service job
+                ProcessExternalScheduleChange::dispatch('toggleSingleSchedule', $isPublished, $facultyId);
+
+                return response()->json([
+                    'message' => 'Publication status updated successfully for the faculty',
+                    'faculty_id' => $facultyId,
+                    'is_published' => $isPublished,
+                    'updated_schedule_ids' => $scheduleIds,
+                ]);
+            });
+        } catch (\Exception $e) {
+            // Log the error and return a user-friendly message
+            \Log::error('Failed to toggle single faculty schedule: ' . $e->getMessage());
+            return response()->json([
+                'message' => 'Failed to update faculty schedule. Please try again.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
         }
-
-        $activeAcademicYearId = $activeSemester->academic_year_id;
-        $activeSemesterId = $activeSemester->semester_id;
-
-        // Step 3: Fetch all related schedule_ids from the faculty_schedule_publication table
-        $facultySchedules = DB::table('faculty_schedule_publication')
-            ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
-            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
-            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
-            ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
-            ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
-            ->where('faculty_schedule_publication.faculty_id', $facultyId)
-            ->where('sections_per_program_year.academic_year_id', '=', $activeAcademicYearId)
-            ->where('semesters.semester', '=', $activeSemesterId)
-            ->pluck('schedules.schedule_id', 'faculty_schedule_publication.faculty_schedule_publication_id');
-
-        if ($facultySchedules->isEmpty()) {
-            return response()->json(['message' => 'No schedules found for the given faculty in the active semester and academic year'], 404);
-        }
-
-        // Step 4: Update the is_published value in the faculty_schedule_publication table for active schedules
-        DB::table('faculty_schedule_publication')
-            ->whereIn('faculty_schedule_publication_id', $facultySchedules->keys())
-            ->update(['is_published' => $isPublished, 'updated_at' => now()]);
-
-        // Step 5: Update the corresponding is_published value in the schedules table for active schedules
-        DB::table('schedules')
-            ->whereIn('schedule_id', $facultySchedules->values())
-            ->update(['is_published' => $isPublished, 'updated_at' => now()]);
-
-        // Step 6: Disable preferences for the individual faculty by setting `is_enabled` to 0
-        DB::table('preferences_settings')
-            ->where('faculty_id', $facultyId)
-            ->update([
-                'is_enabled' => 0,
-                'global_deadline' => null,
-                'individual_deadline' => null,
-                'updated_at' => now(),
-            ]);
-
-        // Step 7: Prepare notification message
-        $academicYear = $this->getCurrentAcademicYear();
-        $message = $isPublished
-        ? "Your schedule has been published for A.Y. {$academicYear}."
-        : "Your schedule has been unpublished for A.Y. {$academicYear}.";
-
-        // Step 8: Create notification for the specific faculty
-        FacultyNotification::create([
-            'faculty_id' => $facultyId,
-            'message' => $message,
-            'is_read' => 0,
-        ]);
-
-        ExternalController::ECRSScheduleChange('toggleSingleSchedule', $isPublished, $facultyId);
-
-        // Step 9: Return a success response
-        return response()->json([
-            'message' => 'Publication status updated successfully for the faculty',
-            'faculty_id' => $facultyId,
-            'is_published' => $isPublished,
-            'updated_schedule_ids' => $facultySchedules->values(),
-        ]);
     }
 
     /**
