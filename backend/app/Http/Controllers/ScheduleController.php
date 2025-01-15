@@ -2,12 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Faculty;
 use App\Models\FacultySchedulePublication;
 use App\Models\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class ScheduleController extends Controller
@@ -241,7 +239,7 @@ class ScheduleController extends Controller
     }
 
     /**
-     * Assigns a schedule to a course section.
+     * Assigns or updates a schedule.
      */
     public function assignSchedule(Request $request)
     {
@@ -249,99 +247,102 @@ class ScheduleController extends Controller
             'schedule_id' => 'required|exists:schedules,schedule_id',
             'faculty_id' => 'nullable|exists:faculty,id',
             'room_id' => 'nullable|exists:rooms,room_id',
-            'day' => 'nullable|string|max:10',
-            'start_time' => 'nullable|date_format:H:i:s',
-            'end_time' => 'nullable|date_format:H:i:s|after:start_time',
+            'day' => 'nullable|string',
+            'start_time' => 'nullable|string',
+            'end_time' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Validation Error',
-                'errors' => $validator->errors(),
-            ], 422);
+            return response()->json(['message' => 'Invalid input parameters', 'errors' => $validator->errors()], 400);
         }
 
-        // Step 2: Retrieve the schedule using the schedule_id from the request
-        $schedule = Schedule::find($request->input('schedule_id'));
+        $activeSemester = DB::table('active_semesters')
+            ->where('is_active', 1)
+            ->first();
 
-        if (!$schedule) {
-            return response()->json(['message' => 'Schedule not found'], 404);
+        if (!$activeSemester) {
+            return response()->json(['message' => 'No active semester found'], 404);
         }
 
-        // Step 3: Assign the validated data to the schedule inside a transaction
         DB::beginTransaction();
-
         try {
+            $schedule = Schedule::find($request->schedule_id);
             $previousFacultyId = $schedule->faculty_id;
+            $newFacultyId = $request->input('faculty_id');
 
-            $schedule->faculty_id = $request->input('faculty_id');
+            $schedule->faculty_id = $newFacultyId;
             $schedule->room_id = $request->input('room_id');
             $schedule->day = $request->input('day');
             $schedule->start_time = $request->input('start_time');
             $schedule->end_time = $request->input('end_time');
-
-            $schedule->is_published = 0;
             $schedule->save();
 
-            if ($request->input('faculty_id')) {
-                if ($previousFacultyId) {
+            if ($newFacultyId) {
+                // Unpublish schedules for the new faculty
+                DB::table('faculty_schedule_publication')
+                    ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
+                    ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+                    ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+                    ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
+                    ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
+                    ->join('active_semesters', function ($join) {
+                        $join->on('active_semesters.semester_id', '=', 'semesters.semester_id')
+                            ->where('active_semesters.is_active', '=', 1);
+                    })
+                    ->where('faculty_schedule_publication.faculty_id', $newFacultyId)
+                    ->where('sections_per_program_year.academic_year_id', $activeSemester->academic_year_id)
+                    ->update([
+                        'faculty_schedule_publication.is_published' => 0,
+                        'schedules.is_published' => 0,
+                    ]);
+
+                FacultySchedulePublication::updateOrCreate(
+                    [
+                        'faculty_id' => $newFacultyId,
+                        'schedule_id' => $schedule->schedule_id,
+                    ],
+                    ['is_published' => 0]
+                );
+            }
+
+            // Unpublish schedules for the previous faculty
+            if ($previousFacultyId) {
+                DB::table('faculty_schedule_publication')
+                    ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
+                    ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+                    ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+                    ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
+                    ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
+                    ->join('active_semesters', function ($join) {
+                        $join->on('active_semesters.semester_id', '=', 'semesters.semester_id')
+                            ->where('active_semesters.is_active', '=', 1);
+                    })
+                    ->where('faculty_schedule_publication.faculty_id', $previousFacultyId)
+                    ->where('sections_per_program_year.academic_year_id', $activeSemester->academic_year_id)
+                    ->update([
+                        'faculty_schedule_publication.is_published' => 0,
+                        'schedules.is_published' => 0,
+                    ]);
+
+                if ($previousFacultyId !== $newFacultyId) {
                     FacultySchedulePublication::where('faculty_id', $previousFacultyId)
                         ->where('schedule_id', $schedule->schedule_id)
                         ->delete();
                 }
-
-                FacultySchedulePublication::updateOrCreate(
-                    [
-                        'faculty_id' => $request->input('faculty_id'),
-                        'schedule_id' => $schedule->schedule_id,
-                    ],
-                    [
-                        'is_published' => 0,
-                    ]
-                );
-            } elseif ($previousFacultyId) {
-                FacultySchedulePublication::where('faculty_id', $previousFacultyId)
-                    ->where('schedule_id', $schedule->schedule_id)
-                    ->delete();
             }
 
-            // Optionally, load related faculty and room details
-            $schedule->load(['faculty.user', 'room']);
-
-            // Prepare the response data
-            $responseData = [
-                'message' => 'Schedule updated successfully',
-                'schedule_id' => $schedule->schedule_id,
-                'schedule_details' => [
-                    'schedule_id' => $schedule->schedule_id,
-                    'section_course_id' => $schedule->section_course_id,
-                    'day' => $schedule->day,
-                    'start_time' => $schedule->start_time,
-                    'end_time' => $schedule->end_time,
-                    'faculty' => $schedule->faculty ? [
-                        'faculty_id' => $schedule->faculty->id,
-                        'name' => $schedule->faculty->user->name,
-                        'email' => $schedule->faculty->user->email,
-                    ] : null,
-                    'room' => $schedule->room ? [
-                        'room_id' => $schedule->room->room_id,
-                        'room_code' => $schedule->room->room_code,
-                    ] : null,
-                    'created_at' => $schedule->created_at,
-                    'updated_at' => $schedule->updated_at,
-                ],
-            ];
-
-            // Commit the transaction after all database operations succeed
             DB::commit();
 
-            return response()->json($responseData, 200);
-        } catch (\Exception $e) {
-            // Rollback the transaction if any exception occurs
-            DB::rollBack();
+            $schedule->load(['faculty.user', 'room']);
 
-            Log::error("Error updating schedule ID {$request->input('schedule_id')}: " . $e->getMessage());
-            return response()->json(['message' => 'Internal Server Error'], 500);
+            return response()->json([
+                'message' => 'Schedule assigned successfully',
+                'schedule' => $schedule,
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json(['message' => 'Failed to assign schedule', 'error' => $e->getMessage()], 500);
         }
     }
 

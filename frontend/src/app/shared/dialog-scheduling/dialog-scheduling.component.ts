@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
 import { Observable, Subject, of } from 'rxjs';
-import { map, takeUntil, debounceTime, distinctUntilChanged, switchMap, shareReplay, catchError, tap, filter, startWith } from 'rxjs/operators';
+import { map, takeUntil, debounceTime, distinctUntilChanged, switchMap, shareReplay, catchError, tap, startWith } from 'rxjs/operators';
+
 import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -251,28 +252,80 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
   private subscribeToStartTimeChanges(): void {
     this.scheduleForm
       .get('startTime')!
-      .valueChanges.pipe(
-        filter((startTime) => !!startTime),
-        takeUntil(this.destroy$)
-      )
-      .subscribe((startTime) => this.updateEndTimeOptions(startTime));
+      .valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((startTime) => {
+        const endTimeControl = this.scheduleForm.get('endTime');
+
+        if (startTime) {
+          this.updateEndTimeOptions(startTime);
+          if (!endTimeControl?.value) {
+            endTimeControl?.setErrors({ required: true });
+          }
+        } else {
+          this.data.options.endTimeOptions = [...this.data.options.timeOptions];
+          if (!endTimeControl?.value) {
+            endTimeControl?.setErrors(null);
+          }
+        }
+
+        endTimeControl?.markAsTouched();
+        this.cdr.markForCheck();
+      });
+
+    this.scheduleForm
+      .get('endTime')!
+      .valueChanges.pipe(takeUntil(this.destroy$))
+      .subscribe((endTime) => {
+        const startTimeControl = this.scheduleForm.get('startTime');
+
+        if (endTime) {
+          if (!startTimeControl?.value) {
+            startTimeControl?.setErrors({ required: true });
+          }
+        } else {
+          if (!startTimeControl?.value) {
+            startTimeControl?.setErrors(null);
+          }
+        }
+
+        startTimeControl?.markAsTouched();
+        this.cdr.markForCheck();
+      });
   }
 
   private updateEndTimeOptions(startTime: string): void {
     const startIndex = this.data.options.timeOptions.indexOf(startTime);
     if (startIndex === -1) {
-      this.scheduleForm.patchValue({ endTime: '' });
-      this.data.options.endTimeOptions = [];
+      const endTimeControl = this.scheduleForm.get('endTime');
+      if (endTimeControl) {
+        endTimeControl.reset('');
+        endTimeControl.markAsTouched();
+        if (!endTimeControl.value) {
+          endTimeControl.setErrors({ required: true });
+        }
+        this.data.options.endTimeOptions = [];
+      }
       return;
     }
 
     this.data.options.endTimeOptions = this.data.options.timeOptions.slice(
       startIndex + 1
     );
+
     const currentEndTime = this.scheduleForm.get('endTime')?.value;
-    if (!this.data.options.endTimeOptions.includes(currentEndTime)) {
-      this.scheduleForm.patchValue({ endTime: '' });
+    if (currentEndTime) {
+      const endTimeIndex =
+        this.data.options.timeOptions.indexOf(currentEndTime);
+      if (endTimeIndex <= startIndex) {
+        const endTimeControl = this.scheduleForm.get('endTime');
+        if (endTimeControl) {
+          endTimeControl.reset('');
+          endTimeControl.markAsTouched();
+          endTimeControl.setErrors({ required: true });
+        }
+      }
     }
+
     this.cdr.markForCheck();
   }
 
@@ -343,7 +396,7 @@ export class DialogSchedulingComponent implements OnInit, OnDestroy {
             : '';
           this.cdr.markForCheck();
         }),
-        catchError((error) => {
+        catchError(() => {
           this.conflictMessage =
             'An error occurred during validation. Please try again.';
           this.hasConflicts = true;

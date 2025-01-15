@@ -111,6 +111,10 @@
       padding: var(--spacing-xs);
       text-align: center;
 
+      &.action {
+        text-align: center;
+      }
+
       .request-badge {
         width: fit-content;
         padding: var(--spacing-xxs) var(--spacing-sm);
@@ -121,6 +125,7 @@
         display: inline-block;
         background-color: var(--green-fade);
         color: var(--green-primary);
+        text-wrap: nowrap;
       }
 
       .none-text {

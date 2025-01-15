@@ -1,4 +1,4 @@
--- PUPT-FLSS 2025 Official Database Schema (Version 1.9.1)
+-- PUPT-FLSS 2025 Official Database Schema
 -- Key Changes from the previous version:
 -- (+) Add `hris_user_id` to `faculty` table
 

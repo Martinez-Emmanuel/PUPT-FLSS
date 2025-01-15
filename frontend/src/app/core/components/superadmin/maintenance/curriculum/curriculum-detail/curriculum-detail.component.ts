@@ -750,7 +750,8 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                   error: (error) => {
                     console.error('Error updating curriculum:', error);
                     this.snackBar.open(
-                      'Error updating curriculum. Please refresh the page.',
+                      error.error?.message ||
+                        'Error updating curriculum. Please refresh the page.',
                       'Close',
                       { duration: 3000 }
                     );

@@ -263,9 +263,38 @@ class CurriculumController extends Controller
             'program_id' => 'required|integer|exists:programs,program_id',
         ]);
 
-        DB::transaction(function () use ($request) {
-            $curriculum = Curriculum::where('curriculum_year', $request->curriculum_year)->firstOrFail();
+        // Get the curriculum ID
+        $curriculum = Curriculum::where('curriculum_year', $request->curriculum_year)->firstOrFail();
 
+        // Get program details
+        $program = Program::findOrFail($request->program_id);
+
+        // Check for existing schedules
+        $hasSchedules = DB::table('curricula_program')
+            ->join('year_levels', 'curricula_program.curricula_program_id', '=', 'year_levels.curricula_program_id')
+            ->join('semesters', 'year_levels.year_level_id', '=', 'semesters.year_level_id')
+            ->join('course_assignments', 'semesters.semester_id', '=', 'course_assignments.semester_id')
+            ->join('section_courses', 'course_assignments.course_assignment_id', '=', 'section_courses.course_assignment_id')
+            ->join('schedules', 'section_courses.section_course_id', '=', 'schedules.section_course_id')
+            ->where('curricula_program.curriculum_id', $curriculum->curriculum_id)
+            ->where('curricula_program.program_id', $request->program_id)
+            ->where(function ($query) {
+                $query->whereNotNull('schedules.day')
+                    ->orWhereNotNull('schedules.start_time')
+                    ->orWhereNotNull('schedules.end_time')
+                    ->orWhereNotNull('schedules.faculty_id')
+                    ->orWhereNotNull('schedules.room_id');
+            })
+            ->exists();
+
+        if ($hasSchedules) {
+            return response()->json([
+                'status' => 'error',
+                'message' => "Cannot remove program '{$program->program_code}' from this curriculum because it has existing schedules.",
+            ], 409);
+        }
+
+        DB::transaction(function () use ($request, $curriculum) {
             CurriculaProgram::where('curriculum_id', $curriculum->curriculum_id)
                 ->where('program_id', $request->program_id)
                 ->delete();

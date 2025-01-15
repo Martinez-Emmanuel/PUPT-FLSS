@@ -58,13 +58,13 @@
 
       .helper-container {
         @include mixins.flex-layout($gap: var(--spacing-xxs));
-  
+
         .help-button {
           opacity: var(--opacity-semi-opaque);
           font-size: var(--font-size-md);
           cursor: pointer;
         }
-  
+
         .single-toggle {
           padding-right: var(--spacing-mdx);
         }
@@ -85,6 +85,15 @@
       .custom-cell {
         padding: var(--spacing-xs);
         text-align: center;
+
+        &.program-name,
+        &.faculty-name {
+          max-width: 20rem;
+        }
+
+        &.action {
+          text-align: center;
+        }
 
         .prim-button {
           color: var(--primary-text);
