@@ -519,6 +519,7 @@ export class ReportFacultyComponent
       'Thursday',
       'Friday',
       'Saturday',
+      'Sunday',
     ];
     const dayColumnWidth = (pageWidth - margin * 2) / days.length;
     const pageHeight = doc.internal.pageSize.height;
