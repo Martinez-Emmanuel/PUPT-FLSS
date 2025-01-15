@@ -659,6 +659,7 @@ export class ReportProgramsComponent implements OnInit {
       'Thursday',
       'Friday',
       'Saturday',
+      'Sunday'
     ];
     const dayColumnWidth = (pageWidth - margin * 2) / days.length;
     const pageHeight = doc.internal.pageSize.height;
@@ -726,7 +727,7 @@ export class ReportProgramsComponent implements OnInit {
         );
 
       daySchedule.forEach((item: any) => {
-        const boxHeight = 35;
+        const boxHeight = 40;
 
         if (yPosition + boxHeight > maxContentHeight) {
           days.forEach((_, i) => {
