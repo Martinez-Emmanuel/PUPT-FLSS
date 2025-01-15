@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { forkJoin, Subject, takeUntil } from 'rxjs';
+import { forkJoin, Observable, Subject, takeUntil } from 'rxjs';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
@@ -9,16 +9,33 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
-import { TableHeaderComponent, InputField } from '../../../../shared/table-header/table-header.component';
-import { TableDialogComponent, DialogConfig, DialogFieldConfig } from '../../../../shared/table-dialog/table-dialog.component';
-import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
+import {
+  TableHeaderComponent,
+  InputField,
+} from '../../../../shared/table-header/table-header.component';
+import {
+  TableDialogComponent,
+  DialogConfig,
+  DialogFieldConfig,
+} from '../../../../shared/table-dialog/table-dialog.component';
+import {
+  DialogGenericComponent,
+  DialogData,
+} from '../../../../shared/dialog-generic/dialog-generic.component';
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { CurriculumService } from '../../../services/superadmin/curriculum/curriculum.service';
 import { AcademicYearService } from '../../../services/admin/academic-year/academic-year.service';
-import { AcademicYear, Program, YearLevel } from '../../../models/scheduling.model';
+import {
+  AcademicYear,
+  Program,
+  YearLevel,
+} from '../../../models/scheduling.model';
 
-import { fadeAnimation, pageFloatUpAnimation } from '../../../animations/animations';
+import {
+  fadeAnimation,
+  pageFloatUpAnimation,
+} from '../../../animations/animations';
 
 @Component({
   selector: 'app-academic-year',
@@ -387,6 +404,17 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
    * @param program - The program to manage.
    */
   onManageSections(program: Program) {
+    if (!this.selectedAcademicYearId) {
+      this.snackBar.open('Invalid academic year selection.', 'Close', {
+        duration: 3000,
+      });
+      return;
+    }
+
+    this.openManageSectionsDialog(program);
+  }
+
+  private openManageSectionsDialog(program: Program) {
     const fields: DialogFieldConfig[] = [];
 
     const sortedYearLevels = program.year_levels.sort(
@@ -449,7 +477,8 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result) {
-        let changesMade = false;
+        const updates: Observable<any>[] = [];
+
         sortedYearLevels.forEach((yearLevelObj) => {
           const sectionsKey = `numberOfSections${yearLevelObj.year_level}`;
           const numberOfSections = result[sectionsKey];
@@ -458,40 +487,36 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
             numberOfSections !==
             program.sections[yearLevelObj.year_level.toString()]
           ) {
-            changesMade = true;
-
             if (this.selectedAcademicYearId != null) {
-              this.academicYearService
+              const update = this.academicYearService
                 .updateSections(
                   this.selectedAcademicYearId,
                   program.program_id,
                   yearLevelObj.year_level,
                   numberOfSections
                 )
-                .subscribe(
-                  (response) => {
-                    console.log(
-                      `Year Level ${yearLevelObj.year_level} updated successfully.`
-                    );
-                  },
-                  (error) => {
-                    console.error(
-                      `Failed to update Year Level ${yearLevelObj.year_level}`,
-                      error
-                    );
-                  }
-                );
-            } else {
-              console.error('selectedAcademicYearId is null or undefined.');
+                .pipe(takeUntil(this.destroy$));
+              updates.push(update);
             }
           }
         });
 
-        if (changesMade) {
-          this.snackBar.open('Sections updated successfully.', 'Close', {
-            duration: 3000,
-          });
-          this.fetchProgramsForAcademicYear(this.selectedAcademicYear);
+        if (updates.length > 0) {
+          forkJoin(updates)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe({
+              next: () => {
+                this.snackBar.open('Sections updated successfully.', 'Close', {
+                  duration: 3000,
+                });
+                this.fetchProgramsForAcademicYear(this.selectedAcademicYear);
+              },
+              error: (error) => {
+                this.snackBar.open(error.message, 'Close', {
+                  duration: 5000,
+                });
+              },
+            });
         } else {
           this.snackBar.open('No changes detected!', 'Close', {
             duration: 3000,
@@ -508,7 +533,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
   onRemoveProgram(program: Program) {
     const dialogData: DialogData = {
       title: 'Confirm Delete',
-      content: `Are you sure you want to delete the program 
+      content: `Are you sure you want to delete the program
         "${program.program_code}"? This action cannot be undone.`,
       actionText: 'Delete',
       cancelText: 'Cancel',

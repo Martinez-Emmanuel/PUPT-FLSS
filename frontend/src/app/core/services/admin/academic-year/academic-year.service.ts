@@ -150,7 +150,14 @@ export class AcademicYearService {
         year_level: yearLevel,
         number_of_sections: numberOfSections,
       })
-      .pipe(catchError(this.handleError));
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+          if (error.error?.status === 'error') {
+            return throwError(() => new Error(error.error.message));
+          }
+          return this.handleError(error);
+        })
+      );
   }
 
   /**

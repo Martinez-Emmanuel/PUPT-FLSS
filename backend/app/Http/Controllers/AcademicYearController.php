@@ -567,7 +567,48 @@ class AcademicYearController extends Controller
         $requestedSections = $request->input('number_of_sections');
 
         try {
-            // Step 1: Get the existing number of sections for the specified academic year, program, and year level
+            // Step 1: Get all sections with schedules and their section names
+            $sectionsWithSchedules = DB::table('sections_per_program_year')
+                ->select('sections_per_program_year.section_name', 'sections_per_program_year.sections_per_program_year_id')
+                ->join('section_courses', 'sections_per_program_year.sections_per_program_year_id', '=', 'section_courses.sections_per_program_year_id')
+                ->join('schedules', 'section_courses.section_course_id', '=', 'schedules.section_course_id')
+                ->where('sections_per_program_year.academic_year_id', $academicYearId)
+                ->where('sections_per_program_year.program_id', $programId)
+                ->where('sections_per_program_year.year_level', $yearLevel)
+                ->where(function ($query) {
+                    $query->whereNotNull('schedules.day')
+                        ->orWhereNotNull('schedules.start_time')
+                        ->orWhereNotNull('schedules.end_time')
+                        ->orWhereNotNull('schedules.faculty_id')
+                        ->orWhereNotNull('schedules.room_id');
+                })
+                ->distinct()
+                ->get();
+
+            // Get all existing sections ordered by section name
+            $existingSections = SectionsPerProgramYear::where('academic_year_id', $academicYearId)
+                ->where('program_id', $programId)
+                ->where('year_level', $yearLevel)
+                ->orderBy('section_name')
+                ->get();
+
+            // If reducing sections, check if any sections being removed have schedules
+            if ($requestedSections < $existingSections->count()) {
+                // Get sections that would be removed (the last N sections)
+                $sectionsToRemove = $existingSections->slice($requestedSections);
+
+                // Check if any of these sections have schedules
+                foreach ($sectionsToRemove as $section) {
+                    if ($sectionsWithSchedules->contains('sections_per_program_year_id', $section->sections_per_program_year_id)) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => "Cannot remove section {$section->section_name} as it has assigned schedules.",
+                        ], 422);
+                    }
+                }
+            }
+
+            // Get the existing number of sections
             $existingSections = SectionsPerProgramYear::where('academic_year_id', $academicYearId)
                 ->where('program_id', $programId)
                 ->where('year_level', $yearLevel)
