@@ -71,22 +71,6 @@ export const cardEntranceSide = trigger('cardEntranceSide', [
       ],
       { optional: true }
     ),
-    query(
-      ':leave',
-      [
-        stagger('75ms', [
-          animate(
-            '500ms cubic-bezier(0.4, 0, 0.2, 1)',
-            style({
-              opacity: 0,
-              transform: 'translateX(30px) scale(0.95)',
-              filter: 'blur(2px)',
-            })
-          ),
-        ]),
-      ],
-      { optional: true }
-    ),
   ]),
 ]);
 
