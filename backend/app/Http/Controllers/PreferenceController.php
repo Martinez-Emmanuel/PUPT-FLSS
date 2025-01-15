@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\NotifyAdminOfPreferenceChangeJob;
 use App\Jobs\SendFacultyPreferenceEmailJob;
 use App\Models\ActiveSemester;
 use App\Models\Faculty;
@@ -9,6 +10,7 @@ use App\Models\FacultyNotification;
 use App\Models\Preference;
 use App\Models\PreferenceDay;
 use App\Models\PreferencesSetting;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -699,7 +701,6 @@ class PreferenceController extends Controller
         ]);
 
         $facultyId = $validated['faculty_id'];
-
         $preferenceSetting = PreferencesSetting::where('faculty_id', $facultyId)->first();
 
         if (!$preferenceSetting) {
@@ -711,6 +712,17 @@ class PreferenceController extends Controller
         } else {
             $preferenceSetting->has_request = 1;
             $preferenceSetting->save();
+        }
+
+        $admins = User::where('role', 'admin')
+            ->where('status', 'Active')
+            ->get();
+
+        foreach ($admins as $admin) {
+            NotifyAdminOfPreferenceChangeJob::dispatch(
+                Faculty::find($facultyId),
+                $admin
+            );
         }
 
         return response()->json([

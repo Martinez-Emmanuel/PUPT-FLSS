@@ -44,35 +44,35 @@ class NotifyAdminOfPreferenceChangeJob implements ShouldQueue
             $this->faculty->user->middle_name,
             $this->faculty->user->suffix_name
         );
-    
+
         $adminName = $this->formatName(
             $this->admin->last_name,
             $this->admin->first_name,
             $this->admin->middle_name
         );
-    
+
         $data = [
-            'faculty' => (object)[
+            'faculty' => (object) [
                 'last_name' => $this->faculty->user->last_name,
                 'first_name' => $this->faculty->user->first_name,
                 'middle_name' => $this->faculty->user->middle_name,
                 'suffix_name' => $this->faculty->user->suffix_name,
                 'email' => $this->faculty->user->email,
             ],
-            'admin' => (object)[
+            'admin' => (object) [
                 'last_name' => $this->admin->last_name,
                 'first_name' => $this->admin->first_name,
                 'middle_name' => $this->admin->middle_name,
             ],
         ];
-    
+
         // Send email to the admin
         Mail::send('emails.change_request', $data, function ($message) use ($data) {
             $message->to($this->admin->email)
                 ->subject('Faculty Preference Change Request');
         });
     }
-    
+
     /**
      * Format a name with optional middle and suffix names.
      *
@@ -85,19 +85,14 @@ class NotifyAdminOfPreferenceChangeJob implements ShouldQueue
     private function formatName($lastName, $firstName, $middleName = null, $suffixName = null)
     {
         // Start with the basic format: Last Name, First Name
-        $name = "{$lastName}, {$firstName}";
-    
-      
+        $name = "{$firstName} {$middleName} {$lastName}";
 
-   
         if ($suffixName) {
             $name .= " {$suffixName}";
         }
-    
+
         // Trim any extra spaces and return the formatted name
         return trim($name);
     }
-    
-    
-    
+
 }
