@@ -1,7 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable, Subject, forkJoin, of } from 'rxjs';
-import { takeUntil, switchMap, tap, map, catchError } from 'rxjs/operators';
+import { takeUntil, switchMap, tap, map, catchError, finalize } from 'rxjs/operators';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -91,6 +91,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   isLoading = true;
   loadingScheduleId: number | null = null;
   isSubmissionEnabled: number = 0;
+  processingCourseId: number | null = null;
 
   private destroy$ = new Subject<void>();
   private readonly DIALOG_INFO_PREF_KEY = 'doNotShowDialogInfo';
@@ -877,6 +878,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   // ====================
 
   addCourseCopy(element: Schedule): void {
+    this.processingCourseId = element.section_course_id;
     this.schedulingService
       .duplicateCourse(element)
       .pipe(
@@ -890,6 +892,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
               (s) => s.section_name === this.selectedSection
             )?.section_id || 0
           );
+        }),
+        finalize(() => {
+          this.processingCourseId = null;
         })
       )
       .subscribe({
@@ -933,6 +938,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
     dialogRef.afterClosed().subscribe((result) => {
       if (result === 'remove') {
+        this.processingCourseId = element.section_course_id;
         this.schedulingService
           .removeDuplicateCourse(element.section_course_id)
           .pipe(
@@ -953,6 +959,9 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                     section.section_id
                   )
                 : of([]);
+            }),
+            finalize(() => {
+              this.processingCourseId = null;
             })
           )
           .subscribe({

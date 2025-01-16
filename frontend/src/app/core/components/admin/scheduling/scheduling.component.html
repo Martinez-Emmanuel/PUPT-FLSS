@@ -53,7 +53,10 @@
             <div class="course-code-wrapper">
               {{ element.course_code }}
               <!-- Add Icon for Original Courses -->
-              @if (!element.is_copy) {
+              @if (!element.is_copy) { @if (processingCourseId ===
+              element.section_course_id) {
+              <mat-spinner class="custom-spinner" diameter="15"></mat-spinner>
+              } @else {
               <span
                 mat-symbol="content_copy"
                 class="copy-icon"
@@ -62,9 +65,13 @@
                   getOrdinalSuffix(getScheduleCount(element) + 1)
                 }} schedule for {{ element.course_code }}"
               ></span>
-              }
+              } }
+
               <!-- Remove Icon for Copied Courses -->
-              @if (element.is_copy) {
+              @if (element.is_copy) { @if (processingCourseId ===
+              element.section_course_id) {
+              <mat-spinner class="custom-spinner" diameter="15"></mat-spinner>
+              } @else {
               <span
                 mat-symbol="do_not_disturb_on"
                 class="remove-icon"
@@ -73,7 +80,7 @@
                   getOrdinalSuffix(getScheduleIndex(element))
                 }} schedule for {{ element.course_code }}"
               ></span>
-              }
+              } }
             </div>
           </td>
         </ng-container>
@@ -186,7 +193,7 @@
                 <div class="button-content">
                   @if (loadingScheduleId === element.schedule_id) {
                   <mat-spinner
-                    class="custom-spinner"
+                    class="custom-spinner-two"
                     diameter="25"
                   ></mat-spinner>
                   } @else {

@@ -5,7 +5,8 @@
 }
 
 :host {
-  @include mixins.custom-spinner(var(--secondary-text));
+  @include mixins.custom-spinner(var(--neutral-base));
+  @include mixins.custom-spinner-two;
 }
 
 .scheduling-container {
@@ -89,29 +90,28 @@
         position: relative;
 
         .course-code-wrapper {
-          @include mixins.flex-layout;
-        }
+          @include mixins.flex-layout($gap: var(--spacing-xs));
 
-        .copy-icon,
-        .remove-icon {
-          background: var(--neutral-option);
-          border-radius: var(--border-radius-base);
-          padding: var(--spacing-xxs);
-          font-size: var(--font-size-sm);
-          margin-left: var(--spacing-xs);
-          visibility: hidden;
-          opacity: var(--opacity-semi-opaque);
-          cursor: pointer;
-        }
+          .copy-icon,
+          .remove-icon {
+            background: var(--neutral-option);
+            border-radius: var(--border-radius-base);
+            padding: var(--spacing-xxs);
+            font-size: var(--font-size-sm);
+            visibility: hidden;
+            opacity: var(--opacity-semi-opaque);
+            cursor: pointer;
+          }
 
-        .remove-icon {
-          background: var(--primary-fade);
-          color: var(--primary-text-lighter);
-        }
+          .remove-icon {
+            background: var(--primary-fade);
+            color: var(--primary-text-lighter);
+          }
 
-        &:hover .copy-icon,
-        &:hover .remove-icon {
-          visibility: visible;
+          &:hover .copy-icon,
+          &:hover .remove-icon {
+            visibility: visible;
+          }
         }
       }
 
@@ -123,25 +123,27 @@
         text-wrap: nowrap;
       }
 
-      .action-button-container {
-        @include mixins.flex-layout($align: stretch);
-      }
-
-      .edit-button {
-        @include mixins.flex-layout;
-        color: var(--secondary-text);
-
-        .button-content {
-          @include mixins.flex-layout($gap: var(--spacing-xs));
+      &.action {
+        .action-button-container {
+          @include mixins.flex-layout($align: stretch);
         }
 
-        .button-content mat-icon {
+        .edit-button {
           @include mixins.flex-layout;
-          font-size: var(--font-size-lg);
-        }
+          color: var(--secondary-text);
 
-        &:hover {
-          background-color: var(--secondary-hover);
+          .button-content {
+            @include mixins.flex-layout($gap: var(--spacing-xs));
+
+            mat-icon {
+              @include mixins.flex-layout;
+              font-size: var(--font-size-lg);
+            }
+          }
+
+          &:hover {
+            background-color: var(--secondary-hover);
+          }
         }
       }
     }
