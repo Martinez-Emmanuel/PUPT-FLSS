@@ -6,7 +6,6 @@ use App\Jobs\ProcessExternalScheduleChange;
 use App\Models\AcademicYear;
 use App\Models\ActiveSemester;
 use App\Models\Faculty;
-use App\Models\FacultyNotification;
 use App\Models\PreferencesSetting;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -1004,36 +1003,12 @@ class ReportsController extends Controller
                 DB::table('preferences_settings')
                     ->update([
                         'is_enabled' => 0,
+                        'global_start_date' => null,
                         'global_deadline' => null,
+                        'individual_start_date' => null,
                         'individual_deadline' => null,
                         'updated_at' => now(),
                     ]);
-
-                // Step 5: Create notifications in bulk
-                $academicYear = $this->getCurrentAcademicYear();
-                $message = $isPublished
-                ? "Schedules have been published for A.Y. {$academicYear}."
-                : "Schedules have been unpublished for A.Y. {$academicYear}.";
-
-                // Prepare bulk notifications
-                $now = now();
-                $notifications = Faculty::select('id as faculty_id')
-                    ->get()
-                    ->map(function ($faculty) use ($message, $now) {
-                        return [
-                            'faculty_id' => $faculty->faculty_id,
-                            'message' => $message,
-                            'is_read' => 0,
-                            'created_at' => $now,
-                            'updated_at' => $now,
-                        ];
-                    })
-                    ->toArray();
-
-                // Bulk insert notifications
-                if (!empty($notifications)) {
-                    FacultyNotification::insert($notifications);
-                }
 
                 // Step 6: Dispatch external service job
                 ProcessExternalScheduleChange::dispatch('toggleAllSchedules', $isPublished);
@@ -1048,7 +1023,6 @@ class ReportsController extends Controller
                 ]);
             });
         } catch (\Exception $e) {
-            // Log the error and return a user-friendly message
             \Log::error('Failed to toggle all schedules: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Failed to update schedules. Please try again.',
@@ -1086,8 +1060,7 @@ class ReportsController extends Controller
                 $activeAcademicYearId = $activeSemester->academic_year_id;
                 $activeSemesterId = $activeSemester->semester_id;
 
-                // Step 3: Fetch all related schedule_ids in a single query
-                // Optimized query with index hints and selective joins
+                // Step 3: Fetch all related schedule_ids
                 $facultySchedules = DB::table('schedules')
                     ->select([
                         'schedules.schedule_id',
@@ -1113,7 +1086,6 @@ class ReportsController extends Controller
                 $publicationIds = $facultySchedules->pluck('faculty_schedule_publication_id')->toArray();
 
                 // Step 4: Batch update operations
-                // Update faculty_schedule_publication table
                 DB::table('faculty_schedule_publication')
                     ->whereIn('faculty_schedule_publication_id', $publicationIds)
                     ->update([
@@ -1121,7 +1093,6 @@ class ReportsController extends Controller
                         'updated_at' => now(),
                     ]);
 
-                // Update schedules table
                 DB::table('schedules')
                     ->whereIn('schedule_id', $scheduleIds)
                     ->update([
@@ -1134,24 +1105,12 @@ class ReportsController extends Controller
                     ->where('faculty_id', $facultyId)
                     ->update([
                         'is_enabled' => 0,
+                        'global_start_date' => null,
                         'global_deadline' => null,
+                        'individual_start_date' => null,
                         'individual_deadline' => null,
                         'updated_at' => now(),
                     ]);
-
-                // Step 6: Create notification
-                $academicYear = $this->getCurrentAcademicYear();
-                $message = $isPublished
-                ? "Your schedule has been published for A.Y. {$academicYear}."
-                : "Your schedule has been unpublished for A.Y. {$academicYear}.";
-
-                FacultyNotification::create([
-                    'faculty_id' => $facultyId,
-                    'message' => $message,
-                    'is_read' => 0,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
 
                 // Step 7: Dispatch external service job
                 ProcessExternalScheduleChange::dispatch('toggleSingleSchedule', $isPublished, $facultyId);
@@ -1164,7 +1123,6 @@ class ReportsController extends Controller
                 ]);
             });
         } catch (\Exception $e) {
-            // Log the error and return a user-friendly message
             \Log::error('Failed to toggle single faculty schedule: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Failed to update faculty schedule. Please try again.',

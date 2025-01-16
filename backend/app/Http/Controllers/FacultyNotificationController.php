@@ -4,74 +4,81 @@ namespace App\Http\Controllers;
 
 use App\Models\ActiveSemester;
 use App\Models\Faculty;
-use App\Models\FacultyNotification;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class FacultyNotificationController extends Controller
 {
     /**
-     * Retrieve notifications for the authenticated faculty.
+     * Get notifications and status information for a specific faculty.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
      */
     public function getFacultyNotifications(Request $request)
     {
-        $user = Auth::user();
+        // Validate faculty_id in request
+        $validated = $request->validate([
+            'faculty_id' => 'required|exists:faculty,id',
+        ]);
 
-        // Ensure the user is authenticated and is a faculty member
-        if (!$user || $user->role !== 'faculty') {
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
+        $facultyId = $validated['faculty_id'];
 
-        // Retrieve the associated faculty profile
-        $faculty = $user->faculty;
-
-        if (!$faculty) {
-            return response()->json(['message' => 'Faculty profile not found.'], 404);
-        }
-
-        // Fetch notifications ordered by most recent
-        $notifications = FacultyNotification::where('faculty_id', $faculty->id)
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return response()->json([
-            'notifications' => $notifications,
-        ], 200);
-    }
-
-    /**
-     * Mark a specific notification as read.
-     */
-    public function markAsRead(Request $request, $id)
-    {
-        $user = Auth::user();
-
-        // Ensure the user is authenticated and is a faculty member
-        if (!$user || $user->role !== 'faculty') {
-            return response()->json(['message' => 'Unauthorized'], 401);
-        }
-
-        // Retrieve the associated faculty profile
-        $faculty = $user->faculty;
-
-        if (!$faculty) {
-            return response()->json(['message' => 'Faculty profile not found.'], 404);
-        }
-
-        // Find the notification
-        $notification = FacultyNotification::where('id', $id)
-            ->where('faculty_id', $faculty->id)
+        // Get active semester info
+        $activeSemester = DB::table('active_semesters')
+            ->join('academic_years', 'active_semesters.academic_year_id', '=', 'academic_years.academic_year_id')
+            ->join('semesters', 'active_semesters.semester_id', '=', 'semesters.semester_id')
+            ->where('active_semesters.is_active', 1)
+            ->select(
+                'active_semesters.active_semester_id',
+                'active_semesters.academic_year_id',
+                'academic_years.year_start',
+                'academic_years.year_end',
+                'semesters.semester'
+            )
             ->first();
 
-        if (!$notification) {
-            return response()->json(['message' => 'Notification not found.'], 404);
+        if (!$activeSemester) {
+            return response()->json(['error' => 'No active semester found'], 404);
         }
 
-        // Update the notification status
-        $notification->is_read = 1;
-        $notification->save();
+        // Get faculty preferences status and deadlines
+        $preferencesSettings = DB::table('preferences_settings')
+            ->where('faculty_id', $facultyId)
+            ->select(
+                'is_enabled',
+                'individual_deadline',
+                'global_deadline',
+                'individual_start_date',
+                'global_start_date'
+            )
+            ->first();
 
-        return response()->json(['message' => 'Notification marked as read.'], 200);
+        $preferencesStatus = $preferencesSettings->is_enabled ?? false;
+        $preferencesDeadline = $preferencesSettings->individual_deadline ?? $preferencesSettings->global_deadline;
+        $preferencesStart = $preferencesSettings->individual_start_date ?? $preferencesSettings->global_start_date;
+
+        // Get faculty schedule publication status
+        $isSchedulePublished = DB::table('faculty_schedule_publication')
+            ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
+            ->where('faculty_schedule_publication.faculty_id', $facultyId)
+            ->where('sections_per_program_year.academic_year_id', $activeSemester->academic_year_id)
+            ->where('faculty_schedule_publication.is_published', 1)
+            ->exists();
+
+        return response()->json([
+            'academic_year' => "{$activeSemester->year_start}-{$activeSemester->year_end}",
+            'semester' => $this->getSemesterLabel($activeSemester->semester),
+            'faculty_status' => [
+                'preferences_enabled' => (bool) $preferencesStatus,
+                'schedule_published' => (bool) $isSchedulePublished,
+                'preferences_deadline' => $preferencesDeadline,
+                'preferences_start' => $preferencesStart,
+            ],
+        ]);
     }
 
     /**
@@ -112,5 +119,15 @@ class FacultyNotificationController extends Controller
         });
 
         return response()->json($notifications, 200);
+    }
+
+    private function getSemesterLabel($semester): string
+    {
+        return match ($semester) {
+            1 => '1st Semester',
+            2 => '2nd Semester',
+            3 => 'Summer Semester',
+            default => 'Unknown Semester'
+        };
     }
 }

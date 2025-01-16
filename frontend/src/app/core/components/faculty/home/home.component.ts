@@ -6,7 +6,7 @@ import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { CookieService } from 'ngx-cookie-service';
 import { ReportsService } from '../../../services/admin/reports/reports.service';
-import { FacultyNotificationService, Notification } from '../../../services/faculty/faculty-notification/faculty-notification.service';
+import { FacultyNotificationService } from '../../../services/faculty/faculty-notification/faculty-notification.service';
 
 import { FullCalendarComponent, FullCalendarModule } from '@fullcalendar/angular';
 import { CalendarOptions, EventInput } from '@fullcalendar/core';
@@ -16,19 +16,19 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 
 import { fadeAnimation, cardEntranceSide } from '../../../animations/animations';
 
+import { DatePipe } from '@angular/common';
+
 @Component({
-    selector: 'app-home',
-    imports: [MatSymbolDirective, LoadingComponent, FullCalendarModule],
-    templateUrl: './home.component.html',
-    styleUrls: ['./home.component.scss'],
-    animations: [fadeAnimation, cardEntranceSide]
+  selector: 'app-home',
+  imports: [MatSymbolDirective, LoadingComponent, FullCalendarModule, DatePipe],
+  templateUrl: './home.component.html',
+  styleUrls: ['./home.component.scss'],
+  animations: [fadeAnimation, cardEntranceSide],
 })
 export class HomeComponent implements OnInit, AfterViewInit {
   @ViewChild('calendar') calendarComponent!: FullCalendarComponent;
 
   isLoading = true;
-  activeYear = '';
-  activeSemester = '';
   calendarOptions: CalendarOptions = {};
   events: EventInput[] = [];
 
@@ -38,7 +38,14 @@ export class HomeComponent implements OnInit, AfterViewInit {
   facultyType: string | null = '';
   facultyEmail: string | null = '';
 
-  notifications: Notification[] = [];
+  academicYear = '';
+  semester = '';
+  facultyStatus = {
+    preferences_enabled: false,
+    schedule_published: false,
+    preferences_deadline: null as string | null,
+    preferences_start: null as string | null,
+  };
 
   constructor(
     private reportsService: ReportsService,
@@ -124,26 +131,27 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * Fetch notifications from the back-end.
+   * Fetch notifications and faculty status from the back-end.
    */
   private fetchNotifications(): void {
-    this.facultyNotifService.getFacultyNotifications().subscribe({
-      next: (response) => {
-        this.notifications = response.notifications.map(notification => ({
-          faculty_notifications_id: notification.faculty_notifications_id,
-          faculty_id: notification.faculty_id,
-          message: notification.message,
-          created_at: notification.created_at,
-          updated_at: notification.updated_at,
-          is_read: notification.is_read,
-          timestamp: new Date(notification.created_at).toLocaleString()
-        }));
-        this.changeDetectorRef.detectChanges();
-      },
-      error: (error) => {
-        console.error('Error fetching notifications', error);
-      },
-    });
+    if (!this.facultyId) {
+      console.error('Faculty ID not found');
+      return;
+    }
+
+    this.facultyNotifService
+      .getFacultyNotifications(Number(this.facultyId))
+      .subscribe({
+        next: (response) => {
+          this.academicYear = response.academic_year;
+          this.semester = response.semester;
+          this.facultyStatus = response.faculty_status;
+          this.changeDetectorRef.detectChanges();
+        },
+        error: (error) => {
+          console.error('Error fetching faculty status:', error);
+        },
+      });
   }
 
   /**
@@ -152,11 +160,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
    */
   private processScheduleResponse(response: any): void {
     const facultySchedule = response.faculty_schedule;
-
-    this.activeYear = `${facultySchedule.year_start}-${facultySchedule.year_end}`;
-    this.activeSemester = `${facultySchedule.semester}${this.getOrdinalSuffix(
-      facultySchedule.semester
-    )} Semester`;
 
     if (facultySchedule.is_published === 1) {
       this.events = this.createEventsFromSchedule(facultySchedule);
@@ -190,20 +193,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
       const calendarApi = this.calendarComponent.getApi();
       calendarApi.updateSize();
     }
-  }
-
-  /**
-   * Get ordinal suffix for the semester number.
-   * @param num - The semester number.
-   * @returns The ordinal suffix as a string.
-   */
-  private getOrdinalSuffix(num: number): string {
-    const j = num % 10;
-    const k = num % 100;
-    if (j === 1 && k !== 11) return 'st';
-    if (j === 2 && k !== 12) return 'nd';
-    if (j === 3 && k !== 13) return 'rd';
-    return 'th';
   }
 
   /**
