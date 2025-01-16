@@ -146,10 +146,10 @@
       }
 
       &[routerLink="preferences"].active span[mat-symbol="settings"] {
-        animation: settings-rotate-clockwise 1.5s cubic-bezier(0.35, 0, 0.3, 1),
-          settings-rotate-counterclockwise 1.5s cubic-bezier(0.35, 0, 0.3, 1);
+        animation: settings-rotate-clockwise 2s cubic-bezier(0.4, 0, 0.2, 1),
+          settings-rotate-counterclockwise 2s cubic-bezier(0.4, 0, 0.2, 1);
         animation-iteration-count: 2, 2;
-        animation-delay: 0s, 1.5s;
+        animation-delay: 0s, 2s;
         animation-fill-mode: forwards;
         transform-origin: center center;
       }
