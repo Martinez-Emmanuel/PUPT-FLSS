@@ -86,11 +86,6 @@
         padding: var(--spacing-xs);
         text-align: center;
 
-        &.program-name,
-        &.faculty-name {
-          max-width: 20rem;
-        }
-
         &.action {
           text-align: center;
         }

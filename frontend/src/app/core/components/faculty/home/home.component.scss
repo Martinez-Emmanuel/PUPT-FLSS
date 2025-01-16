@@ -20,7 +20,7 @@
     $direction: column,
     $align: flex-start,
     $justify: flex-start,
-    $gap: var(--spacing-md)
+    $gap: var(--spacing-lg)
   );
   flex: 9;
 
@@ -54,7 +54,7 @@
     user-select: none;
 
     .full-calendar {
-      max-height: 30rem;
+      max-height: 29rem;
       overflow-y: auto;
     }
   }
@@ -64,9 +64,9 @@
   @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
-    $gap: var(--spacing-md)
+    $gap: var(--spacing-lg)
   );
-  flex: 3;
+  flex: 2;
   min-height: 0;
 
   .active-year-sem-container {
