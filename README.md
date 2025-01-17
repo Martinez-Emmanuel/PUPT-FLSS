@@ -26,7 +26,6 @@ The PUPT Faculty Loading and Scheduling System (FLSS) is a comprehensive web-bas
 ### Frontend
 - **Framework**: Angular 19
 - **UI Components**: Angular Material
-- **State Management**: NGRX
 - **Charts**: Chart.js
 - **PDF Generation**: jsPDF
 - **Styling**: SCSS/TailwindCSS
@@ -64,7 +63,6 @@ The system provides API endpoints for various integrations:
 
 - **BioSync** (Biometric Synchronization System)
   - Computer laboratory schedules
-  - Attendance tracking integration
 
 ## 👥 Contributors
 
