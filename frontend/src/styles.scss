@@ -456,3 +456,8 @@ span[mat-symbol] {
 
   --fc-today-bg-color: var(--primary-one-fade);
 }
+
+
+.sidenav-bar {
+  transition: background-color 0.3s ease !important;
+}

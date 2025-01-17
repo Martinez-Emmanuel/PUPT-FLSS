@@ -26,13 +26,6 @@ export const slideInAnimation = trigger('slideInAnimation', [
       opacity: 0,
     })
   ),
-  state(
-    '*',
-    style({
-      transform: 'translateX(0)',
-      opacity: 1,
-    })
-  ),
   transition('void => *', animate('750ms cubic-bezier(0.16, 1, 0.3, 1)')),
   transition('* => void', animate('750ms cubic-bezier(0.7, 0, 0.84, 0)')),
 ]);
