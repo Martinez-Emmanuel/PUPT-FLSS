@@ -148,7 +148,7 @@
       &[routerLink="preferences"].active span[mat-symbol="settings"] {
         animation: settings-rotate-clockwise 2s cubic-bezier(0.4, 0, 0.2, 1),
           settings-rotate-counterclockwise 2s cubic-bezier(0.4, 0, 0.2, 1);
-        animation-iteration-count: 2, 2;
+        animation-iteration-count: 1, 1;
         animation-delay: 0s, 2s;
         animation-fill-mode: forwards;
         transform-origin: center center;
