@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\FacultySchedulePublication;
 use App\Models\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -276,60 +275,6 @@ class ScheduleController extends Controller
             $schedule->start_time = $request->input('start_time');
             $schedule->end_time = $request->input('end_time');
             $schedule->save();
-
-            if ($newFacultyId) {
-                // Unpublish schedules for the new faculty
-                DB::table('faculty_schedule_publication')
-                    ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
-                    ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
-                    ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
-                    ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
-                    ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
-                    ->join('active_semesters', function ($join) {
-                        $join->on('active_semesters.semester_id', '=', 'semesters.semester_id')
-                            ->where('active_semesters.is_active', '=', 1);
-                    })
-                    ->where('faculty_schedule_publication.faculty_id', $newFacultyId)
-                    ->where('sections_per_program_year.academic_year_id', $activeSemester->academic_year_id)
-                    ->update([
-                        'faculty_schedule_publication.is_published' => 0,
-                        'schedules.is_published' => 0,
-                    ]);
-
-                FacultySchedulePublication::updateOrCreate(
-                    [
-                        'faculty_id' => $newFacultyId,
-                        'schedule_id' => $schedule->schedule_id,
-                    ],
-                    ['is_published' => 0]
-                );
-            }
-
-            // Unpublish schedules for the previous faculty
-            if ($previousFacultyId) {
-                DB::table('faculty_schedule_publication')
-                    ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
-                    ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
-                    ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
-                    ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
-                    ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
-                    ->join('active_semesters', function ($join) {
-                        $join->on('active_semesters.semester_id', '=', 'semesters.semester_id')
-                            ->where('active_semesters.is_active', '=', 1);
-                    })
-                    ->where('faculty_schedule_publication.faculty_id', $previousFacultyId)
-                    ->where('sections_per_program_year.academic_year_id', $activeSemester->academic_year_id)
-                    ->update([
-                        'faculty_schedule_publication.is_published' => 0,
-                        'schedules.is_published' => 0,
-                    ]);
-
-                if ($previousFacultyId !== $newFacultyId) {
-                    FacultySchedulePublication::where('faculty_id', $previousFacultyId)
-                        ->where('schedule_id', $schedule->schedule_id)
-                        ->delete();
-                }
-            }
 
             DB::commit();
 
