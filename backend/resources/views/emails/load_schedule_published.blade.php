@@ -160,8 +160,7 @@
             <p class="greeting"><b>Dear {{ $faculty_name }},</b></p>
 
             <p>We are pleased to inform you that <b>your official load and schedule</b> for the upcoming semester are
-                <b>now published.</b> You can now view your assigned courses, teaching schedule, and room
-                assignments by logging into the faculty portal.
+                <b>now published.</b> You may now view them in your FLSS account.
             </p>
 
             <div class="button-container">
