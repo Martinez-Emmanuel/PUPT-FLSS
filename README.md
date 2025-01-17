@@ -51,7 +51,8 @@ The PUPT Faculty Loading and Scheduling System (FLSS) is a comprehensive web-bas
 The system provides API endpoints for various integrations:
 
 - **FESR** (Faculty Data Management and Evaluation System with Research Repository)
-  - Faculty credential provider
+  - Faculty credential provider using OAuth 2.0 authentication
+  - Real-time credential synchronization via webhooks
 
 - **FARMS** (Faculty Academic Requirements Management System)
   - Course schedules retrieval
