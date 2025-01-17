@@ -249,6 +249,16 @@ Route::prefix('external')->group(function () {
             Route::get('/course-files', [ExternalController::class, 'FARMSCourseFiles']);
         });
     });
+
+    /**
+     * Biometric Synchronization System (BioSync)
+     */
+    Route::prefix('biosync')->middleware(['check.hmac:biosync'])->group(function () {
+        // Version 1
+        Route::prefix('v1')->group(function () {
+            Route::get('/computer-laboratory-schedules', [ExternalController::class, 'BIOSYNCComputerLabSchedules']);
+        });
+    });
 });
 
 /**

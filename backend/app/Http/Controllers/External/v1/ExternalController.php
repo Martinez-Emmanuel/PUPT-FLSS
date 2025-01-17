@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Log;
 
 class ExternalController extends Controller
 {
+
     /**
      * For: E-Class Record System (ECRS)
      * Retrieves faculty schedules for ECRS integration.
@@ -434,6 +435,151 @@ class ExternalController extends Controller
 
         return response()->json([
             'courses_files' => $courses,
+        ]);
+    }
+
+    /**
+     * For: Biometric Synchronization System (BioSync)
+     * Retrieves computer laboratory schedules for BioSync integration.
+     * Returns schedules for rooms with room_type "Computer Laboratory" for the current active semester.
+     */
+
+    /**
+     * Room type ID for Computer Laboratory
+     */
+    private const COMPUTER_LABORATORY_ID = 3;
+
+    public function BioSyncComputerLabSchedules()
+    {
+        // Step 1: Retrieve the current active semester with academic year details
+        $activeSemester = DB::table('active_semesters')
+            ->join('academic_years', 'active_semesters.academic_year_id', '=', 'academic_years.academic_year_id')
+            ->join('semesters', 'active_semesters.semester_id', '=', 'semesters.semester_id')
+            ->where('active_semesters.is_active', 1)
+            ->select(
+                'academic_years.year_start',
+                'academic_years.year_end',
+                'semesters.semester',
+                'active_semesters.academic_year_id'
+            )
+            ->first();
+
+        if (!$activeSemester) {
+            return response()->json(['message' => 'No active semester found.'], 404);
+        }
+
+        // Check if there are any published schedules for the active semester
+        $hasPublishedSchedules = DB::table('faculty_schedule_publication')
+            ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
+            ->where('semesters.semester', '=', $activeSemester->semester)
+            ->where('faculty_schedule_publication.is_published', '=', 1)
+            ->exists();
+
+        if (!$hasPublishedSchedules) {
+            return response()->json([
+                'message' => "PUP Taguig faculty load and schedules for " . "A.Y. " .
+                $activeSemester->year_start . "-" . $activeSemester->year_end .
+                ", " . $this->formatSemesterLabel($activeSemester->semester) .
+                " is not yet published.",
+            ]);
+        }
+
+        // Get computer laboratory schedules
+        $labSchedules = DB::table('rooms')
+            ->join('room_types', 'rooms.room_type_id', '=', 'room_types.room_type_id')
+            ->join('buildings', 'rooms.building_id', '=', 'buildings.building_id')
+            ->join('schedules', 'rooms.room_id', '=', 'schedules.room_id')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->join('courses', 'courses.course_id', '=', 'course_assignments.course_id')
+            ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
+            ->join('programs', 'sections_per_program_year.program_id', '=', 'programs.program_id')
+            ->join('faculty', 'schedules.faculty_id', '=', 'faculty.id')
+            ->join('users', 'faculty.user_id', '=', 'users.id')
+            ->join('faculty_schedule_publication', function ($join) {
+                $join->on('faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
+                    ->where('faculty_schedule_publication.is_published', '=', 1);
+            })
+            ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
+            ->where('room_types.room_type_id', '=', self::COMPUTER_LABORATORY_ID)
+            ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id)
+            ->where('semesters.semester', '=', $activeSemester->semester)
+            ->select(
+                'rooms.room_id',
+                'rooms.room_code',
+                'buildings.building_name',
+                'rooms.floor_level',
+                'rooms.capacity',
+                'schedules.schedule_id',
+                'schedules.day',
+                'schedules.start_time',
+                'schedules.end_time',
+                'courses.course_code',
+                'courses.course_title',
+                'courses.lec_hours as lec',
+                'courses.lab_hours as lab',
+                'courses.units',
+                'courses.tuition_hours',
+                'programs.program_code',
+                'programs.program_title',
+                'sections_per_program_year.year_level',
+                'sections_per_program_year.section_name',
+                'course_assignments.course_assignment_id',
+                'users.code as faculty_code',
+                DB::raw("CONCAT(users.last_name, ', ', users.first_name,
+                    CASE WHEN users.middle_name IS NOT NULL THEN CONCAT(' ', users.middle_name) ELSE '' END,
+                    CASE WHEN users.suffix_name IS NOT NULL THEN CONCAT(' ', users.suffix_name) ELSE '' END)
+                    as faculty_name")
+            )
+            ->orderBy('rooms.room_code')
+            ->orderBy('schedules.day')
+            ->orderBy('schedules.start_time')
+            ->get();
+
+        // Group schedules by room
+        $groupedSchedules = $labSchedules->groupBy('room_id')->map(function ($roomSchedules) {
+            $firstSchedule = $roomSchedules->first();
+            return [
+                'room_code' => $firstSchedule->room_code,
+                'location' => $firstSchedule->building_name,
+                'floor_level' => $firstSchedule->floor_level,
+                'capacity' => $firstSchedule->capacity,
+                'schedules' => $roomSchedules->map(function ($schedule) {
+                    return [
+                        'schedule_id' => $schedule->schedule_id,
+                        'day' => $schedule->day,
+                        'start_time' => $schedule->start_time,
+                        'end_time' => $schedule->end_time,
+                        'faculty_name' => $schedule->faculty_name,
+                        'faculty_code' => $schedule->faculty_code,
+                        'program_code' => $schedule->program_code,
+                        'program_title' => $schedule->program_title,
+                        'year_level' => $schedule->year_level,
+                        'section_name' => $schedule->section_name,
+                        'course_details' => [
+                            'course_id' => $schedule->course_assignment_id,
+                            'course_title' => $schedule->course_title,
+                            'course_code' => $schedule->course_code,
+                            'lec' => $schedule->lec,
+                            'lab' => $schedule->lab,
+                            'units' => $schedule->units,
+                            'tuition_hours' => $schedule->tuition_hours,
+                        ],
+                    ];
+                })->values()->all(),
+            ];
+        })->values();
+
+        return response()->json([
+            'computer_laboratory_schedules' => [
+                'academic_year_start' => $activeSemester->year_start,
+                'academic_year_end' => $activeSemester->year_end,
+                'semester' => $activeSemester->semester,
+                'rooms' => $groupedSchedules,
+            ],
         ]);
     }
 
