@@ -131,22 +131,23 @@ class ExternalController extends Controller
         $faculties = [];
 
         foreach ($facultySchedules as $schedule) {
-            if (!isset($faculties[$schedule->faculty_id])) {
-                $faculties[$schedule->faculty_id] = [
-                    'faculty_id' => $schedule->faculty_id,
-                    'last_name' => $users[$schedule->user_id]->last_name ?? null,
-                    'first_name' => $users[$schedule->user_id]->first_name ?? null,
-                    'middle_name' => $users[$schedule->user_id]->middle_name ?? null,
-                    'suffix_name' => $users[$schedule->user_id]->suffix_name ?? null,
-                    'faculty_code' => $schedule->faculty_code,
-                    'faculty_type' => $schedule->faculty_type,
-                    'assigned_units' => 0,
-                    'schedules' => [],
-                    'tracked_courses' => [],
-                ];
-            }
-
+            // Only process faculty members who have schedules
             if ($schedule->schedule_id) {
+                if (!isset($faculties[$schedule->faculty_id])) {
+                    $faculties[$schedule->faculty_id] = [
+                        'faculty_id' => $schedule->faculty_id,
+                        'last_name' => $users[$schedule->user_id]->last_name ?? null,
+                        'first_name' => $users[$schedule->user_id]->first_name ?? null,
+                        'middle_name' => $users[$schedule->user_id]->middle_name ?? null,
+                        'suffix_name' => $users[$schedule->user_id]->suffix_name ?? null,
+                        'faculty_code' => $schedule->faculty_code,
+                        'faculty_type' => $schedule->faculty_type,
+                        'assigned_units' => 0,
+                        'schedules' => [],
+                        'tracked_courses' => [],
+                    ];
+                }
+
                 // Only add units if we haven't counted this course assignment before
                 if (!in_array($schedule->course_assignment_id, $faculties[$schedule->faculty_id]['tracked_courses'])) {
                     $faculties[$schedule->faculty_id]['assigned_units'] += $schedule->units;
