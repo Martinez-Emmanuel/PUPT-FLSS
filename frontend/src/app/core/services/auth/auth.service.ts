@@ -3,7 +3,8 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Router } from '@angular/router';
 
 import { Observable } from 'rxjs';
-import { map, tap, switchMap, finalize } from 'rxjs/operators';
+import { map, tap, switchMap, finalize, catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 
 import { CookieService } from 'ngx-cookie-service';
 
@@ -11,6 +12,17 @@ import { environment } from '../../../../environments/environment.dev';
 import { environmentOAuth } from '../../../../environments/env.auth';
 
 import { HrisHealthService } from '../health/hris-health.service';
+
+export interface LoginError {
+  message: string;
+  status: number;
+}
+
+export interface LoginResponse {
+  token: string;
+  expires_at: string;
+  user: any;
+}
 
 interface OAuthTokenResponse {
   access_token: string;
@@ -33,7 +45,7 @@ export class AuthService {
     private http: HttpClient,
     private cookieService: CookieService,
     private router: Router,
-    private hrisHealthService: HrisHealthService,
+    private hrisHealthService: HrisHealthService
   ) {}
 
   // ==============================
@@ -157,10 +169,15 @@ export class AuthService {
   // ==============================
   // Internal FLSS auth methods
   // ==============================
-  flssLogin(email: string, password: string): Observable<any> {
+  flssLogin(
+    email: string,
+    password: string,
+    allowedRoles: string[]
+  ): Observable<any> {
     const loginData = {
       email: email,
       password: password,
+      allowed_roles: allowedRoles,
     };
     return this.http.post(`${this.baseUrl}/login`, loginData);
   }
@@ -305,5 +322,61 @@ export class AuthService {
     });
 
     localStorage.removeItem('oauth_state');
+  }
+
+  /**
+   * Handles login with error handling and role validation
+   */
+  handleLogin(
+    email: string,
+    password: string,
+    allowedRoles: string[]
+  ): Observable<LoginResponse> {
+    return this.flssLogin(email, password, allowedRoles).pipe(
+      catchError((error) => {
+        const errorMessage = this.handleLoginError(error);
+        throw { message: errorMessage, status: error.status };
+      })
+    );
+  }
+
+  /**
+   * Unified error handling for login attempts
+   */
+  private handleLoginError(error: any): string {
+    let errorMessage = '';
+    if (error.error?.message) {
+      errorMessage = error.error.message;
+    } else if (typeof error.error === 'string') {
+      try {
+        const parsedError = JSON.parse(error.error);
+        errorMessage = parsedError.message;
+      } catch {
+        errorMessage = error.error;
+      }
+    }
+
+    if (!errorMessage || errorMessage.trim() === '') {
+      return this.getDefaultErrorMessage(error.status);
+    }
+
+    return errorMessage;
+  }
+
+  private getDefaultErrorMessage(status: number): string {
+    switch (status) {
+      case 401:
+        return 'Invalid credentials.';
+      case 403:
+        return 'Access forbidden.';
+      case 429:
+        return 'Too many login attempts. Please try again later.';
+      case 500:
+        return 'Server error occurred. Please try again later.';
+      case 0:
+        return 'Unable to connect to the server. Please check your internet connection.';
+      default:
+        return 'An unexpected error occurred. Please try again later.';
+    }
   }
 }

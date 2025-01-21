@@ -17,7 +17,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
-import { AuthService } from '../../core/services/auth/auth.service';
+import { AuthService, LoginError } from '../../core/services/auth/auth.service';
 import { RoleService } from '../../core/services/role/role.service';
 
 @Component({
@@ -94,53 +94,25 @@ export class DialogFacultyLoginComponent implements OnInit {
       this.isLoading = true;
       const { email, password } = this.loginForm.value;
 
-      this.fallbackToFlssLogin(email, password);
-    }
-  }
+      this.authService.handleLogin(email, password, ['faculty']).subscribe({
+        next: (response) => {
+          const expiryDate = new Date(response.expires_at);
 
-  private fallbackToFlssLogin(email: string, password: string): void {
-    this.authService.flssLogin(email, password).subscribe({
-      next: (response) => this.handleLoginSuccess(response),
-      error: (error) => this.handleLoginError(error),
-    });
-  }
+          this.authService.setSanctumToken(response.token, response.expires_at);
+          this.authService.setUserInfo(response.user, response.expires_at);
 
-  private handleLoginSuccess(response: any): void {
-    console.log('Login successful', response);
+          const expirationTime = expiryDate.getTime() - Date.now();
+          setTimeout(() => this.onAutoLogout(), expirationTime);
 
-    if (response.user.role !== 'faculty') {
-      this.handleLoginError({
-        status: 403,
-        error: {
-          message: 'Access forbidden. You are not authorized as faculty.',
+          this.dialogRef.close();
+          this.router.navigateByUrl('/faculty/home', { replaceUrl: true });
+        },
+        error: (error: LoginError) => {
+          this.showErrorSnackbar(error.message);
+          this.isLoading = false;
         },
       });
-      return;
     }
-
-    // Set expiry date for cookies
-    const expiryDate = new Date(response.expires_at);
-
-    // Set token and user info
-    this.authService.setSanctumToken(response.token, response.expires_at);
-    this.authService.setUserInfo(response.user, response.expires_at);
-
-    // Set auto logout timer
-    const expirationTime = expiryDate.getTime() - Date.now();
-    setTimeout(() => this.onAutoLogout(), expirationTime);
-
-    // Close dialog and navigate
-    this.dialogRef.close();
-    this.router.navigateByUrl('/faculty/home', { replaceUrl: true });
-  }
-
-  private handleLogoutSuccess(message?: string): void {
-    this.authService.clearCookies();
-    this.dialogRef.close();
-    if (message) {
-      alert(message);
-    }
-    this.router.navigate(['/login']);
   }
 
   private onAutoLogout(): void {
@@ -156,34 +128,21 @@ export class DialogFacultyLoginComponent implements OnInit {
     }
   }
 
-  // =======================
-  // Error handling methods
-  // =======================
-  private handleLoginError(error: any): void {
-    console.error('Login failed', error);
-    const errorMessage = this.getErrorMessage(error);
-    this.showErrorSnackbar(errorMessage);
-    this.isLoading = false;
+  private handleLogoutSuccess(message?: string): void {
+    this.authService.clearCookies();
+    this.dialogRef.close();
+    if (message) {
+      alert(message);
+    }
+    this.router.navigate(['/login']);
   }
 
   private showErrorSnackbar(message: string): void {
     this.snackBar.open(message, 'Close', {
-      duration: 3000,
+      duration: 5000,
       horizontalPosition: 'center',
       verticalPosition: 'bottom',
+      panelClass: ['error-snackbar'],
     });
-  }
-
-  private getErrorMessage(error: any): string {
-    if (error.status === 401 || error.status === 403) {
-      return 'Invalid credentials. Please check your email and password.';
-    } else if (error.status === 0) {
-      return 'Unable to connect to the server. Please try again later.';
-    } else {
-      return (
-        error.error?.message ||
-        'An unexpected error occurred. Please try again later.'
-      );
-    }
   }
 }

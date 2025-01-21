@@ -17,7 +17,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
-import { AuthService } from '../../core/services/auth/auth.service';
+import { AuthService, LoginError } from '../../core/services/auth/auth.service';
 import { RoleService } from '../../core/services/role/role.service';
 
 @Component({
@@ -90,14 +90,29 @@ export class DialogAdminLoginComponent implements OnInit {
       this.isLoading = true;
       const { email, password } = this.loginForm.value;
 
-      this.authService.flssLogin(email, password).subscribe({
-        next: (response) => {
-          this.handleLoginSuccess(response);
-        },
-        error: (error) => {
-          this.handleLoginError(error);
-        },
-      });
+      this.authService
+        .handleLogin(email, password, ['admin', 'superadmin'])
+        .subscribe({
+          next: (response) => {
+            const expiryDate = new Date(response.expires_at);
+            this.authService.setSanctumToken(
+              response.token,
+              response.expires_at
+            );
+            this.authService.setUserInfo(response.user, response.expires_at);
+            const expirationTime = expiryDate.getTime() - Date.now();
+            setTimeout(() => this.onAutoLogout(), expirationTime);
+            const redirectUrl = this.roleService.getHomeUrlForRole(
+              response.user.role
+            );
+            this.dialogRef.close();
+            this.router.navigateByUrl(redirectUrl, { replaceUrl: true });
+          },
+          error: (error: LoginError) => {
+            this.showErrorSnackbar(error.message);
+            this.isLoading = false;
+          },
+        });
     }
   }
 
@@ -105,51 +120,14 @@ export class DialogAdminLoginComponent implements OnInit {
     this.dialogRef.close();
   }
 
-  private handleLoginSuccess(response: any): void {
-    console.log('Login successful', response);
-
-    // Role Check for Admin Login
-    if (response.user.role !== 'admin' && response.user.role !== 'superadmin') {
-      this.handleLoginError({
-        status: 403,
-        error: {
-          message: 'Access forbidden. You are not authorized as admin.',
-        },
-      });
-      return;
-    }
-
-    // Set expiry date for cookies
-    const expiryDate = new Date(response.expires_at);
-
-    // Set token and user info
-    this.authService.setSanctumToken(response.token, response.expires_at);
-    this.authService.setUserInfo(response.user, response.expires_at);
-
-    // Set auto logout timer
-    const expirationTime = expiryDate.getTime() - Date.now();
-    setTimeout(() => this.onAutoLogout(), expirationTime);
-
-    // Close dialog and navigate to appropriate admin home page
-    const redirectUrl = this.roleService.getHomeUrlForRole(response.user.role);
-    this.dialogRef.close();
-    this.router.navigateByUrl(redirectUrl, { replaceUrl: true });
-  }
-
-  private handleLoginError(error: any): void {
-    console.error('Login failed', error);
-    const errorMessage = this.getErrorMessage(error);
-    this.showErrorSnackbar(errorMessage);
-    this.isLoading = false;
-  }
-
   private showErrorSnackbar(message: string): void {
     this.snackBar.open(message, 'Close', {
-      duration: 3000,
+      duration: 5000,
       horizontalPosition: 'center',
       verticalPosition: 'bottom',
     });
   }
+
   onAutoLogout(): void {
     if (this.authService.getToken()) {
       this.authService.logout().subscribe({
@@ -170,19 +148,5 @@ export class DialogAdminLoginComponent implements OnInit {
       alert(message);
     }
     this.router.navigate(['/login']);
-  }
-
-  private getErrorMessage(error: any): string {
-    if (error.status === 401) {
-      return 'Invalid credentials. Please check your email and password.';
-    } else if (error.status === 403) {
-      return (
-        error.error?.message || 'Access forbidden. You are not authorized.'
-      );
-    } else if (error.status === 0) {
-      return 'Unable to connect to the server. Please check your internet connection.';
-    } else {
-      return 'An unexpected error occurred. Please try again later.';
-    }
   }
 }

@@ -10,24 +10,35 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-
     public function login(Request $request)
     {
         $loginUserData = $request->validate([
             'email' => 'required|string|email',
             'password' => 'required|string|min:8|max:40',
+            'allowed_roles' => 'required|array',
         ]);
 
         // Check if the user exists and the password is correct
         $user = User::with(['faculty.facultyType'])->where('email', $loginUserData['email'])->first();
 
         if (!$user || !Hash::check($loginUserData['password'], $user->password)) {
-            return response()->json(['message' => 'Invalid Credentials'], 401);
+            return response()->json([
+                'message' => 'Invalid credentials. Check your email and password.',
+            ], 401);
+        }
+
+        // Check if user has allowed role
+        if (!in_array($user->role, $loginUserData['allowed_roles'])) {
+            return response()->json([
+                'message' => 'Access forbidden. You are not authorized as ' . implode(' or ', $loginUserData['allowed_roles']) . '.',
+            ], 403);
         }
 
         // Check if admin/superadmin is active
         if (($user->role === 'admin' || $user->role === 'superadmin') && $user->status === 'Inactive') {
-            return response()->json(['message' => 'Your account is currently inactive. Please contact the system administrator.'], 403);
+            return response()->json([
+                'message' => 'Your account is currently inactive. Please contact the system administrator.',
+            ], 403);
         }
 
         $tokenResult = $user->createToken('user-token');
@@ -55,7 +66,7 @@ class AuthController extends Controller
         Cookie::queue(Cookie::make('user_info', $userData, 1440));
 
         return response()->json([
-            'message' => 'Login successful',
+            'message' => 'Login successful.',
             'token' => $token,
             'expires_at' => $expiration,
             'user' => json_decode($userData, true),
@@ -64,9 +75,7 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $user = $request->user();
-
-        if ($user) {
+        if ($request->user()) {
             // Revoke the token that was used to authenticate the current request
             $request->user()->currentAccessToken()->delete();
 
