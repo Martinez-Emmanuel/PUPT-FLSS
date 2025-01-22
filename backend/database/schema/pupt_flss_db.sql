@@ -340,7 +340,6 @@ CREATE TABLE `schedules` (
   `end_time` time DEFAULT NULL,
   `faculty_id` bigint UNSIGNED DEFAULT NULL,
   `room_id` bigint UNSIGNED DEFAULT NULL,
-  `is_published` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`schedule_id`),
@@ -350,7 +349,6 @@ CREATE TABLE `schedules` (
   KEY `schedules_day_index` (`day`),
   KEY `schedules_start_time_index` (`start_time`),
   KEY `schedules_end_time_index` (`end_time`),
-  KEY `schedules_is_published_index` (`is_published`),
   FOREIGN KEY (`section_course_id`) REFERENCES `section_courses` (`section_course_id`) ON DELETE CASCADE,
   FOREIGN KEY (`faculty_id`) REFERENCES `faculty` (`id`) ON DELETE CASCADE,
   FOREIGN KEY (`room_id`) REFERENCES `rooms` (`room_id`) ON DELETE CASCADE

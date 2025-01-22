@@ -645,7 +645,6 @@ class ReportsController extends Controller
     /**
      * Get a single Faculty Schedule for the current active academic year and semester
      */
-
     public function getFacultyScheduleHistory($faculty_id, Request $request)
     {
         // Step 1: Validate input
@@ -719,7 +718,6 @@ class ReportsController extends Controller
             ->where('schedules.faculty_id', $faculty_id)
             ->where('sections_per_program_year.academic_year_id', $semesterInfo->academic_year_id)
             ->where('ca_semesters.semester', $semesterInfo->semester)
-            ->where('schedules.is_published', '=', 1)
             ->select(
                 'schedules.schedule_id',
                 'schedules.day',
@@ -804,7 +802,6 @@ class ReportsController extends Controller
      */
     public function getFacultyAcademicYearsHistory($faculty_id)
     {
-        // Validate faculty_id
         $validator = Validator::make(['faculty_id' => $faculty_id], [
             'faculty_id' => 'required|integer|exists:faculty,id',
         ]);
@@ -812,134 +809,65 @@ class ReportsController extends Controller
         if ($validator->fails()) {
             return response()->json([
                 'message' => 'Invalid faculty ID',
-                'errors' => $validator->errors(),
+                'errors' => $validator->errors()
             ], 400);
         }
 
-        // Get current active semester info for comparison
-        $currentActive = DB::table('active_semesters')
-            ->join('academic_years', 'active_semesters.academic_year_id', '=', 'academic_years.academic_year_id')
-            ->where('active_semesters.is_active', 1)
-            ->select(
-                'academic_years.academic_year_id',
-                'active_semesters.semester_id'
-            )
-            ->first();
-
-        if (!$currentActive) {
-            return response()->json(['message' => 'No active semester found.'], 404);
-        }
-
-        // First get the base schedule data
-        $publishedSchedules = DB::table('schedules')
+        // First get academic years with published schedules
+        $academicYears = DB::table('academic_years as ay')
             ->select([
-                'academic_years.academic_year_id',
-                'academic_years.year_start',
-                'academic_years.year_end',
-                'semesters.semester_id',
-                'semesters.semester',
+                'ay.academic_year_id',
+                DB::raw("CONCAT(ay.year_start, '-', ay.year_end) as academic_year")
             ])
-            ->join('faculty_schedule_publication', function ($join) use ($faculty_id) {
-                $join->on('faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
-                    ->where('faculty_schedule_publication.faculty_id', '=', $faculty_id)
-                    ->where('faculty_schedule_publication.is_published', '=', 1);
+            ->whereExists(function ($query) use ($faculty_id) {
+                $query->select(DB::raw(1))
+                    ->from('faculty_schedule_publication as fsp')
+                    ->join('schedules as s', 's.schedule_id', '=', 'fsp.schedule_id')
+                    ->join('section_courses as sc', 'sc.section_course_id', '=', 's.section_course_id')
+                    ->join('sections_per_program_year as sppy', 'sppy.sections_per_program_year_id', '=', 'sc.sections_per_program_year_id')
+                    ->where('fsp.faculty_id', $faculty_id)
+                    ->where('fsp.is_published', 1)
+                    ->whereRaw('sppy.academic_year_id = ay.academic_year_id');
             })
-            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
-            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
-            ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
-            ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
-            ->join('academic_years', 'sections_per_program_year.academic_year_id', '=', 'academic_years.academic_year_id')
-            ->where('schedules.faculty_id', $faculty_id)
-            ->where(function ($query) use ($currentActive) {
-                $query->where('academic_years.academic_year_id', '<', $currentActive->academic_year_id)
-                    ->orWhere(function ($q) use ($currentActive) {
-                        $q->where('academic_years.academic_year_id', '=', $currentActive->academic_year_id)
-                            ->where('semesters.semester_id', '<', $currentActive->semester_id);
-                    });
-            })
-            ->distinct()
-            ->groupBy(
-                'academic_years.academic_year_id',
-                'academic_years.year_start',
-                'academic_years.year_end',
-                'semesters.semester_id',
-                'semesters.semester'
-            )
-            ->orderBy('academic_years.year_start', 'desc')
-            ->orderBy('semesters.semester', 'asc')
+            ->orderBy('ay.year_start', 'desc')
             ->get();
 
-        // Get active semester data separately
-        $activeSemesters = DB::table('active_semesters AS a')
-            ->select(
-                'a.active_semester_id',
-                'a.academic_year_id',
-                'a.semester_id',
-                'a.start_date',
-                'a.end_date',
-                's1.semester'
-            )
-            ->join('semesters AS s1', 'a.semester_id', '=', 's1.semester_id')
-            ->whereIn('a.academic_year_id', $publishedSchedules->pluck('academic_year_id'))
-            ->get()
-            ->keyBy(function ($item) {
-                // Key by academic year and semester number
-                return $item->academic_year_id . '-' . $item->semester;
-            });
+        // For each academic year, get the semesters with published schedules
+        $result = $academicYears->map(function ($academicYear) use ($faculty_id) {
+            $semesters = DB::table('active_semesters')
+                ->select([
+                    'active_semesters.active_semester_id',
+                    'active_semesters.semester_id',
+                    'active_semesters.start_date',
+                    'active_semesters.end_date'
+                ])
+                ->join('semesters', 'semesters.semester_id', '=', 'active_semesters.semester_id')
+                ->where('active_semesters.academic_year_id', $academicYear->academic_year_id)
+                ->whereExists(function ($query) use ($faculty_id, $academicYear) {
+                    $query->select(DB::raw(1))
+                        ->from('faculty_schedule_publication as fsp')
+                        ->join('schedules as s', 's.schedule_id', '=', 'fsp.schedule_id')
+                        ->join('section_courses as sc', 'sc.section_course_id', '=', 's.section_course_id')
+                        ->join('course_assignments as ca', 'ca.course_assignment_id', '=', 'sc.course_assignment_id')
+                        ->join('semesters as cas', 'ca.semester_id', '=', 'cas.semester_id')
+                        ->join('sections_per_program_year as sppy', 'sppy.sections_per_program_year_id', '=', 'sc.sections_per_program_year_id')
+                        ->where('fsp.faculty_id', $faculty_id)
+                        ->where('fsp.is_published', 1)
+                        ->where('sppy.academic_year_id', $academicYear->academic_year_id)
+                        ->whereColumn('cas.semester', 'semesters.semester');
+                })
+                ->orderBy('semesters.semester')
+                ->get();
 
-        // Group by academic year
-        $groupedYears = [];
-        foreach ($publishedSchedules as $schedule) {
-            $academicYearId = $schedule->academic_year_id;
+            $academicYear->semesters = $semesters;
+            return $academicYear;
+        })
+        ->filter(function ($academicYear) {
+            return !$academicYear->semesters->isEmpty();
+        })
+        ->values();
 
-            if (!isset($groupedYears[$academicYearId])) {
-                $groupedYears[$academicYearId] = [
-                    'academic_year_id' => $academicYearId,
-                    'academic_year' => $schedule->year_start . '-' . $schedule->year_end,
-                    'semesters' => [],
-                ];
-            }
-
-            // Add semester info
-            $semesterLabel = match ($schedule->semester) {
-                1 => '1st Semester',
-                2 => '2nd Semester',
-                3 => 'Summer Semester',
-                default => 'Unknown Semester'
-            };
-
-            // Check if semester already exists
-            $semesterExists = false;
-            foreach ($groupedYears[$academicYearId]['semesters'] as $existingSemester) {
-                if ($existingSemester['semester_number'] === $semesterLabel) { // Check by semester number instead of ID
-                    $semesterExists = true;
-                    break;
-                }
-            }
-
-            if (!$semesterExists) {
-                // Get active semester data if it exists - key by academic year and semester number
-                $activeKey = $schedule->academic_year_id . '-' . $schedule->semester;
-                $activeSemester = $activeSemesters[$activeKey] ?? null;
-
-                // Add debug logging
-                \Log::info('Matching semester data', [
-                    'activeKey' => $activeKey,
-                    'activeSemester' => $activeSemester,
-                    'schedule' => $schedule,
-                ]);
-
-                $groupedYears[$academicYearId]['semesters'][] = [
-                    'active_semester_id' => $activeSemester ? $activeSemester->active_semester_id : null,
-                    'semester_id' => $schedule->semester_id,
-                    'semester_number' => $semesterLabel,
-                    'start_date' => $activeSemester ? $activeSemester->start_date : null,
-                    'end_date' => $activeSemester ? $activeSemester->end_date : null,
-                ];
-            }
-        }
-
-        return response()->json(array_values($groupedYears));
+        return response()->json($result);
     }
 
     /**
@@ -955,7 +883,6 @@ class ReportsController extends Controller
         $isPublished = $validated['is_published'];
 
         try {
-            // Wrap all database operations in a transaction
             return DB::transaction(function () use ($isPublished) {
                 // Step 2: Get the active semester and academic year
                 $activeSemester = DB::table('active_semesters')
@@ -970,34 +897,35 @@ class ReportsController extends Controller
                 $activeSemesterId = $activeSemester->semester_id;
 
                 // Step 3: Fetch schedule IDs for the active semester and academic year
-                // Optimized query with index hints and selective joins
                 $activeSchedules = DB::table('schedules')
-                    ->select('schedules.schedule_id')
+                    ->select(['schedules.schedule_id', 'schedules.faculty_id'])
                     ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
                     ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
                     ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
                     ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
                     ->where('sections_per_program_year.academic_year_id', '=', $activeAcademicYearId)
                     ->where('semesters.semester', '=', $activeSemesterId)
-                    ->pluck('schedules.schedule_id');
+                    ->whereNotNull('schedules.faculty_id')
+                    ->get();
 
                 if ($activeSchedules->isEmpty()) {
                     return response()->json(['message' => 'No schedules found for the active semester and academic year.'], 404);
                 }
 
-                // Step 4: Batch update operations
-                // Update schedules table
-                $updatedCount = DB::table('schedules')
-                    ->whereIn('schedule_id', $activeSchedules)
-                    ->update(['is_published' => $isPublished]);
-
-                // Update faculty_schedule_publication table
-                DB::table('faculty_schedule_publication')
-                    ->whereIn('schedule_id', $activeSchedules)
-                    ->update([
-                        'is_published' => $isPublished,
-                        'updated_at' => now(),
-                    ]);
+                // Create or update publication records for each schedule
+                foreach ($activeSchedules as $schedule) {
+                    DB::table('faculty_schedule_publication')->updateOrInsert(
+                        [
+                            'schedule_id' => $schedule->schedule_id,
+                            'faculty_id' => $schedule->faculty_id
+                        ],
+                        [
+                            'is_published' => $isPublished,
+                            'updated_at' => now(),
+                            'created_at' => now(),
+                        ]
+                    );
+                }
 
                 // Update preferences_settings table
                 DB::table('preferences_settings')
@@ -1015,7 +943,7 @@ class ReportsController extends Controller
 
                 return response()->json([
                     'message' => 'Schedules and faculty schedule publications updated successfully',
-                    'updated_count' => $updatedCount,
+                    'updated_count' => $activeSchedules->count(),
                     'is_published' => $isPublished,
                     'active_semester_id' => $activeSemester->active_semester_id,
                     'academic_year_id' => $activeAcademicYearId,
@@ -1046,9 +974,7 @@ class ReportsController extends Controller
         $isPublished = $validated['is_published'];
 
         try {
-            // Wrap all database operations in a transaction
             return DB::transaction(function () use ($facultyId, $isPublished) {
-                // Step 2: Get the active semester and academic year
                 $activeSemester = DB::table('active_semesters')
                     ->where('is_active', 1)
                     ->first();
@@ -1057,23 +983,16 @@ class ReportsController extends Controller
                     return response()->json(['message' => 'No active semester found'], 404);
                 }
 
-                $activeAcademicYearId = $activeSemester->academic_year_id;
-                $activeSemesterId = $activeSemester->semester_id;
-
-                // Step 3: Fetch all related schedule_ids
+                // First get all schedules for the faculty
                 $facultySchedules = DB::table('schedules')
-                    ->select([
-                        'schedules.schedule_id',
-                        'faculty_schedule_publication.faculty_schedule_publication_id',
-                    ])
+                    ->select('schedules.schedule_id')
                     ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
                     ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
                     ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
                     ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
-                    ->join('faculty_schedule_publication', 'schedules.schedule_id', '=', 'faculty_schedule_publication.schedule_id')
-                    ->where('faculty_schedule_publication.faculty_id', $facultyId)
-                    ->where('sections_per_program_year.academic_year_id', $activeAcademicYearId)
-                    ->where('semesters.semester', $activeSemesterId)
+                    ->where('schedules.faculty_id', $facultyId)
+                    ->where('sections_per_program_year.academic_year_id', $activeSemester->academic_year_id)
+                    ->where('semesters.semester', $activeSemester->semester_id)
                     ->get();
 
                 if ($facultySchedules->isEmpty()) {
@@ -1083,24 +1002,22 @@ class ReportsController extends Controller
                 }
 
                 $scheduleIds = $facultySchedules->pluck('schedule_id')->toArray();
-                $publicationIds = $facultySchedules->pluck('faculty_schedule_publication_id')->toArray();
 
-                // Step 4: Batch update operations
-                DB::table('faculty_schedule_publication')
-                    ->whereIn('faculty_schedule_publication_id', $publicationIds)
-                    ->update([
-                        'is_published' => $isPublished,
-                        'updated_at' => now(),
-                    ]);
+                // Ensure publication records exist for all schedules
+                foreach ($scheduleIds as $scheduleId) {
+                    DB::table('faculty_schedule_publication')->updateOrInsert(
+                        [
+                            'schedule_id' => $scheduleId,
+                            'faculty_id' => $facultyId
+                        ],
+                        [
+                            'is_published' => $isPublished,
+                            'updated_at' => now(),
+                            'created_at' => now(),
+                        ]
+                    );
+                }
 
-                DB::table('schedules')
-                    ->whereIn('schedule_id', $scheduleIds)
-                    ->update([
-                        'is_published' => $isPublished,
-                        'updated_at' => now(),
-                    ]);
-
-                // Step 5: Update preferences settings
                 DB::table('preferences_settings')
                     ->where('faculty_id', $facultyId)
                     ->update([
@@ -1112,7 +1029,6 @@ class ReportsController extends Controller
                         'updated_at' => now(),
                     ]);
 
-                // Step 7: Dispatch external service job
                 ProcessExternalScheduleChange::dispatch('toggleSingleSchedule', $isPublished, $facultyId);
 
                 return response()->json([

@@ -19,7 +19,6 @@ class Schedule extends Model
         'end_time',
         'faculty_id',
         'room_id',
-        'is_published',
     ];
 
     public function sectionCourse()

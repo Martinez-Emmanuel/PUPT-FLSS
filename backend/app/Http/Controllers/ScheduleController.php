@@ -154,7 +154,6 @@ class ScheduleController extends Controller
             'end_time' => null,
             'faculty_id' => null,
             'room_id' => null,
-            'is_published' => 0,
             'created_at' => now(),
             'updated_at' => now(),
         ]);
@@ -492,5 +491,40 @@ class ScheduleController extends Controller
         ];
 
         return count($sections) - 1;
+    }
+
+    // Keep this helper function
+    private function createFacultySchedulePublication($scheduleId, $facultyId)
+    {
+        DB::table('faculty_schedule_publication')->insert([
+            'schedule_id' => $scheduleId,
+            'faculty_id' => $facultyId,
+            'is_published' => 0,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+    }
+
+    // Update assignFaculty to handle reassignment
+    public function assignFaculty(Request $request, Schedule $schedule)
+    {
+        $validated = $request->validate([
+            'faculty_id' => 'required|exists:faculty,id'
+        ]);
+
+        // If there's an existing faculty, delete their publication record
+        if ($schedule->faculty_id) {
+            DB::table('faculty_schedule_publication')
+                ->where('schedule_id', $schedule->schedule_id)
+                ->where('faculty_id', $schedule->faculty_id)
+                ->delete();
+        }
+
+        $schedule->update(['faculty_id' => $validated['faculty_id']]);
+        
+        // Create new publication record for the new faculty
+        $this->createFacultySchedulePublication($schedule->schedule_id, $validated['faculty_id']);
+
+        return response()->json($schedule);
     }
 }
