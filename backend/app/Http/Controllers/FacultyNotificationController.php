@@ -32,6 +32,7 @@ class FacultyNotificationController extends Controller
             ->select(
                 'active_semesters.active_semester_id',
                 'active_semesters.academic_year_id',
+                'active_semesters.semester_id',
                 'academic_years.year_start',
                 'academic_years.year_end',
                 'semesters.semester'
@@ -60,12 +61,9 @@ class FacultyNotificationController extends Controller
 
         // Get faculty schedule publication status
         $isSchedulePublished = DB::table('faculty_schedule_publication')
-            ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
-            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
-            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
-            ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
             ->where('faculty_schedule_publication.faculty_id', $facultyId)
-            ->where('sections_per_program_year.academic_year_id', $activeSemester->academic_year_id)
+            ->where('faculty_schedule_publication.academic_year_id', $activeSemester->academic_year_id)
+            ->where('faculty_schedule_publication.semester_id', $activeSemester->semester_id)
             ->where('faculty_schedule_publication.is_published', 1)
             ->exists();
 

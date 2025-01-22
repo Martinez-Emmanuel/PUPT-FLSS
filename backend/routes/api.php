@@ -175,8 +175,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/single-faculty-schedule/{faculty_id}', [ReportsController::class, 'getSingleFacultySchedule']);
     Route::get('/faculty-schedule-history/{faculty_id}', [ReportsController::class, 'getFacultyScheduleHistory']);
     Route::get('/faculty-academic-years-history/{faculty_id}', [ReportsController::class, 'getFacultyAcademicYearsHistory']);
-    Route::post('/toggle-all-schedule', [ReportsController::class, 'toggleAllSchedules']);
-    Route::post('/toggle-single-schedule', [ReportsController::class, 'toggleSingleSchedule']);
     Route::get('/overview-details', [ReportsController::class, 'getOverviewDetails']);
 
     /**
@@ -205,6 +203,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/remove-duplicate-course', [ScheduleController::class, 'removeDuplicateCourse']);
     Route::get('/get-active-faculty', [FacultyController::class, 'getFacultyDetails']);
     Route::get('/get-available-rooms', [RoomController::class, 'getAllRooms']);
+    Route::post('/toggle-all-schedule', [ScheduleController::class, 'toggleAllSchedules']);
+    Route::post('/toggle-single-schedule', [ScheduleController::class, 'toggleSingleSchedule']);
 
     /**
      * Semester

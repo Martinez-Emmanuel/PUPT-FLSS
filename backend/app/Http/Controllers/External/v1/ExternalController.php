@@ -28,6 +28,7 @@ class ExternalController extends Controller
                 'academic_years.year_end',
                 'semesters.semester',
                 'active_semesters.academic_year_id',
+                'active_semesters.semester_id',
                 'active_semesters.active_semester_id',
                 'active_semesters.start_date',
                 'active_semesters.end_date'
@@ -40,12 +41,9 @@ class ExternalController extends Controller
 
         // Check if there are any published schedules for the active semester
         $hasPublishedSchedules = DB::table('faculty_schedule_publication')
-            ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
-            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
-            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
-            ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
-            ->where('semesters.semester', '=', $activeSemester->semester)
-            ->where('faculty_schedule_publication.is_published', '=', 1)
+            ->where('faculty_schedule_publication.academic_year_id', $activeSemester->academic_year_id)
+            ->where('faculty_schedule_publication.semester_id', $activeSemester->semester_id)
+            ->where('faculty_schedule_publication.is_published', 1)
             ->exists();
 
         if (!$hasPublishedSchedules) {
@@ -63,8 +61,10 @@ class ExternalController extends Controller
             ->join('course_assignments', 'course_assignments.course_assignment_id', '=', 'section_courses.course_assignment_id')
             ->join('semesters as ca_semesters', 'ca_semesters.semester_id', '=', 'course_assignments.semester_id')
             ->join('sections_per_program_year', 'sections_per_program_year.sections_per_program_year_id', '=', 'section_courses.sections_per_program_year_id')
-            ->join('faculty_schedule_publication', function ($join) {
-                $join->on('faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
+            ->join('faculty_schedule_publication', function ($join) use ($activeSemester) {
+                $join->on('faculty_schedule_publication.faculty_id', '=', 'schedules.faculty_id')
+                    ->where('faculty_schedule_publication.academic_year_id', '=', $activeSemester->academic_year_id)
+                    ->where('faculty_schedule_publication.semester_id', '=', $activeSemester->semester_id)
                     ->where('faculty_schedule_publication.is_published', '=', 1);
             })
             ->where('ca_semesters.semester', '=', $activeSemester->semester)
@@ -92,9 +92,10 @@ class ExternalController extends Controller
             ->leftJoin('course_assignments', 'course_assignments.course_assignment_id', '=', 'section_courses.course_assignment_id')
             ->leftJoin('courses', 'courses.course_id', '=', 'course_assignments.course_id')
             ->leftJoin('rooms', 'rooms.room_id', '=', 'current_schedules.room_id')
-            ->leftJoin('faculty_schedule_publication', function ($join) {
-                $join->on('faculty_schedule_publication.schedule_id', '=', 'current_schedules.schedule_id')
-                    ->on('faculty_schedule_publication.faculty_id', '=', 'faculty.id');
+            ->leftJoin('faculty_schedule_publication', function ($join) use ($activeSemester) {
+                $join->on('faculty_schedule_publication.faculty_id', '=', 'faculty.id')
+                    ->where('faculty_schedule_publication.academic_year_id', '=', $activeSemester->academic_year_id)
+                    ->where('faculty_schedule_publication.semester_id', '=', $activeSemester->semester_id);
             })
             ->select(
                 'faculty.id as faculty_id',
@@ -243,13 +244,12 @@ class ExternalController extends Controller
     }
 
     /**
-     * For: Faculty Academic Requirements Management System (FARMS)
+     * For: Faculty and Room Management System (FARMS)
      * Retrieves course schedules for FARMS integration.
-     * Returns grouped schedules by faculty and course for the current active semester.
      */
     public function FARMSCourseSchedules()
     {
-        // Retrieve the current active semester and academic year
+        // Step 1: Get active semester
         $activeSemester = DB::table('active_semesters')
             ->join('academic_years', 'active_semesters.academic_year_id', '=', 'academic_years.academic_year_id')
             ->join('semesters', 'active_semesters.semester_id', '=', 'semesters.semester_id')
@@ -258,7 +258,9 @@ class ExternalController extends Controller
                 'academic_years.year_start',
                 'academic_years.year_end',
                 'semesters.semester',
-                'active_semesters.academic_year_id'
+                'active_semesters.academic_year_id',
+                'active_semesters.semester_id',
+                'active_semesters.active_semester_id'
             )
             ->first();
 
@@ -266,14 +268,11 @@ class ExternalController extends Controller
             return response()->json(['message' => 'No active semester found.'], 404);
         }
 
-        // First check if there are any published schedules for the active semester
+        // Step 2: Check if there are any published schedules
         $hasPublishedSchedules = DB::table('faculty_schedule_publication')
-            ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
-            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
-            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
-            ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
-            ->where('semesters.semester', '=', $activeSemester->semester)
-            ->where('faculty_schedule_publication.is_published', '=', 1)
+            ->where('faculty_schedule_publication.academic_year_id', $activeSemester->academic_year_id)
+            ->where('faculty_schedule_publication.semester_id', $activeSemester->semester_id)
+            ->where('faculty_schedule_publication.is_published', 1)
             ->exists();
 
         if (!$hasPublishedSchedules) {
@@ -294,9 +293,10 @@ class ExternalController extends Controller
             ->join('sections_per_program_year', 'sections_per_program_year.sections_per_program_year_id', '=', 'section_courses.sections_per_program_year_id')
             ->join('programs', 'programs.program_id', '=', 'sections_per_program_year.program_id')
             ->join('semesters as ca_semesters', 'ca_semesters.semester_id', '=', 'course_assignments.semester_id')
-            ->join('faculty_schedule_publication', function ($join) {
-                $join->on('faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
-                    ->on('faculty_schedule_publication.faculty_id', '=', 'faculty.id')
+            ->join('faculty_schedule_publication', function ($join) use ($activeSemester) {
+                $join->on('faculty_schedule_publication.faculty_id', '=', 'faculty.id')
+                    ->where('faculty_schedule_publication.academic_year_id', '=', $activeSemester->academic_year_id)
+                    ->where('faculty_schedule_publication.semester_id', '=', $activeSemester->semester_id)
                     ->where('faculty_schedule_publication.is_published', '=', 1);
             })
             ->where('ca_semesters.semester', '=', $activeSemester->semester)
@@ -360,13 +360,12 @@ class ExternalController extends Controller
     }
 
     /**
-     * For: Faculty Academic Requirements Management System (FARMS)
-     * Retrieves course files information for FARMS integration.
-     * Returns faculty course assignments with semester details.
+     * For: Faculty and Room Management System (FARMS)
+     * Retrieves course files for FARMS integration.
      */
     public function FARMSCourseFiles()
     {
-        // Retrieve the current active semester and academic year
+        // Step 1: Get active semester
         $activeSemester = DB::table('active_semesters')
             ->join('academic_years', 'active_semesters.academic_year_id', '=', 'academic_years.academic_year_id')
             ->join('semesters', 'active_semesters.semester_id', '=', 'semesters.semester_id')
@@ -375,7 +374,9 @@ class ExternalController extends Controller
                 'academic_years.year_start',
                 'academic_years.year_end',
                 'semesters.semester',
-                'active_semesters.academic_year_id'
+                'active_semesters.academic_year_id',
+                'active_semesters.semester_id',
+                'active_semesters.active_semester_id'
             )
             ->first();
 
@@ -383,14 +384,11 @@ class ExternalController extends Controller
             return response()->json(['message' => 'No active semester found.'], 404);
         }
 
-        // First check if there are any published schedules for the active semester
+        // Step 2: Check if there are any published schedules
         $hasPublishedSchedules = DB::table('faculty_schedule_publication')
-            ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
-            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
-            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
-            ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
-            ->where('semesters.semester', '=', $activeSemester->semester)
-            ->where('faculty_schedule_publication.is_published', '=', 1)
+            ->where('faculty_schedule_publication.academic_year_id', $activeSemester->academic_year_id)
+            ->where('faculty_schedule_publication.semester_id', $activeSemester->semester_id)
+            ->where('faculty_schedule_publication.is_published', 1)
             ->exists();
 
         if (!$hasPublishedSchedules) {
@@ -402,40 +400,56 @@ class ExternalController extends Controller
             ]);
         }
 
-        // Get faculty course assignments
-        $courses = DB::table('faculty')
-            ->join('schedules', 'faculty.id', '=', 'schedules.faculty_id')
+        // Step 3: Get all course files for published schedules
+        $schedulesSub = DB::table('schedules')
             ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
             ->join('course_assignments', 'course_assignments.course_assignment_id', '=', 'section_courses.course_assignment_id')
-            ->join('courses', 'courses.course_id', '=', 'course_assignments.course_id')
             ->join('semesters as ca_semesters', 'ca_semesters.semester_id', '=', 'course_assignments.semester_id')
-            ->join('faculty_schedule_publication', function ($join) {
-                $join->on('faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
-                    ->on('faculty_schedule_publication.faculty_id', '=', 'faculty.id')
+            ->join('sections_per_program_year', 'sections_per_program_year.sections_per_program_year_id', '=', 'section_courses.sections_per_program_year_id')
+            ->join('faculty_schedule_publication', function ($join) use ($activeSemester) {
+                $join->on('faculty_schedule_publication.faculty_id', '=', 'schedules.faculty_id')
+                    ->where('faculty_schedule_publication.academic_year_id', '=', $activeSemester->academic_year_id)
+                    ->where('faculty_schedule_publication.semester_id', '=', $activeSemester->semester_id)
                     ->where('faculty_schedule_publication.is_published', '=', 1);
             })
             ->where('ca_semesters.semester', '=', $activeSemester->semester)
+            ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id)
+            ->select(
+                'schedules.schedule_id',
+                'schedules.faculty_id',
+                'schedules.section_course_id'
+            );
+
+        $courseFiles = DB::table('faculty')
+            ->join('users', 'faculty.user_id', '=', 'users.id')
+            ->leftJoinSub($schedulesSub, 'current_schedules', function ($join) {
+                $join->on('current_schedules.faculty_id', '=', 'faculty.id');
+            })
+            ->leftJoin('section_courses', 'current_schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->leftJoin('course_assignments', 'course_assignments.course_assignment_id', '=', 'section_courses.course_assignment_id')
+            ->leftJoin('courses', 'courses.course_id', '=', 'course_assignments.course_id')
+            ->leftJoin('faculty_schedule_publication', function ($join) use ($activeSemester) {
+                $join->on('faculty_schedule_publication.faculty_id', '=', 'faculty.id')
+                    ->where('faculty_schedule_publication.academic_year_id', '=', $activeSemester->academic_year_id)
+                    ->where('faculty_schedule_publication.semester_id', '=', $activeSemester->semester_id)
+                    ->where('faculty_schedule_publication.is_published', '=', 1);
+            })
+            ->where('faculty_schedule_publication.is_published', '=', 1)
             ->select(
                 'faculty.hris_user_id as user_login_id',
-                'schedules.schedule_id as course_schedule_id',
-                'courses.course_title as subject'
+                'current_schedules.schedule_id as course_schedule_id',
+                'courses.course_title as subject',
+                DB::raw("'" . $this->formatSemesterLabel($activeSemester->semester) . "' as semester"),
+                DB::raw("'" . $activeSemester->year_start . "-" . $activeSemester->year_end . "' as school_year")
             )
+            ->whereNotNull('current_schedules.schedule_id')
             ->distinct()
             ->orderBy('faculty.hris_user_id')
-            ->orderBy('schedules.schedule_id')
-            ->get()
-            ->map(function ($course) use ($activeSemester) {
-                return [
-                    'user_login_id' => $course->user_login_id,
-                    'course_schedule_id' => $course->course_schedule_id,
-                    'semester' => $this->formatSemesterLabel($activeSemester->semester),
-                    'school_year' => $activeSemester->year_start . '-' . $activeSemester->year_end,
-                    'subject' => $course->subject,
-                ];
-            });
+            ->orderBy('current_schedules.schedule_id')
+            ->get();
 
         return response()->json([
-            'courses_files' => $courses,
+            'courses_files' => $courseFiles,
         ]);
     }
 
@@ -452,7 +466,7 @@ class ExternalController extends Controller
 
     public function BioSyncComputerLabSchedules()
     {
-        // Step 1: Retrieve the current active semester with academic year details
+        // Step 1: Get active semester
         $activeSemester = DB::table('active_semesters')
             ->join('academic_years', 'active_semesters.academic_year_id', '=', 'academic_years.academic_year_id')
             ->join('semesters', 'active_semesters.semester_id', '=', 'semesters.semester_id')
@@ -461,7 +475,8 @@ class ExternalController extends Controller
                 'academic_years.year_start',
                 'academic_years.year_end',
                 'semesters.semester',
-                'active_semesters.academic_year_id'
+                'active_semesters.academic_year_id',
+                'active_semesters.semester_id'
             )
             ->first();
 
@@ -469,83 +484,65 @@ class ExternalController extends Controller
             return response()->json(['message' => 'No active semester found.'], 404);
         }
 
-        // Check if there are any published schedules for the active semester
-        $hasPublishedSchedules = DB::table('faculty_schedule_publication')
-            ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
-            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
-            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
-            ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
-            ->where('semesters.semester', '=', $activeSemester->semester)
-            ->where('faculty_schedule_publication.is_published', '=', 1)
-            ->exists();
-
-        if (!$hasPublishedSchedules) {
-            return response()->json([
-                'message' => "PUP Taguig faculty load and schedules for " . "A.Y. " .
-                $activeSemester->year_start . "-" . $activeSemester->year_end .
-                ", " . $this->formatSemesterLabel($activeSemester->semester) .
-                " is not yet published.",
-            ]);
-        }
-
-        // Get computer laboratory schedules
-        $labSchedules = DB::table('rooms')
+        // Step 2: Get all computer laboratory schedules with related data
+        $query = DB::table('rooms')
             ->join('room_types', 'rooms.room_type_id', '=', 'room_types.room_type_id')
             ->join('buildings', 'rooms.building_id', '=', 'buildings.building_id')
             ->join('schedules', 'rooms.room_id', '=', 'schedules.room_id')
-            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
-            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
-            ->join('courses', 'courses.course_id', '=', 'course_assignments.course_id')
-            ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
-            ->join('programs', 'sections_per_program_year.program_id', '=', 'programs.program_id')
             ->join('faculty', 'schedules.faculty_id', '=', 'faculty.id')
             ->join('users', 'faculty.user_id', '=', 'users.id')
-            ->join('faculty_schedule_publication', function ($join) {
-                $join->on('faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
+            ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
+            ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
+            ->join('courses', 'course_assignments.course_id', '=', 'courses.course_id')
+            ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
+            ->join('programs', 'sections_per_program_year.program_id', '=', 'programs.program_id')
+            ->join('faculty_schedule_publication', function ($join) use ($activeSemester) {
+                $join->on('faculty_schedule_publication.faculty_id', '=', 'faculty.id')
+                    ->where('faculty_schedule_publication.academic_year_id', '=', $activeSemester->academic_year_id)
+                    ->where('faculty_schedule_publication.semester_id', '=', $activeSemester->semester_id)
                     ->where('faculty_schedule_publication.is_published', '=', 1);
             })
-            ->join('semesters', 'course_assignments.semester_id', '=', 'semesters.semester_id')
-            ->where('room_types.room_type_id', '=', self::COMPUTER_LABORATORY_ID)
+            ->where('rooms.room_type_id', '=', self::COMPUTER_LABORATORY_ID)
             ->where('sections_per_program_year.academic_year_id', '=', $activeSemester->academic_year_id)
-            ->where('semesters.semester', '=', $activeSemester->semester)
             ->select(
                 'rooms.room_id',
                 'rooms.room_code',
-                'buildings.building_name',
+                'buildings.building_name as location',
                 'rooms.floor_level',
                 'rooms.capacity',
                 'schedules.schedule_id',
                 'schedules.day',
                 'schedules.start_time',
                 'schedules.end_time',
-                'courses.course_code',
-                'courses.course_title',
-                'courses.lec_hours as lec',
-                'courses.lab_hours as lab',
-                'courses.units',
-                'courses.tuition_hours',
-                'programs.program_code',
-                'programs.program_title',
-                'sections_per_program_year.year_level',
-                'sections_per_program_year.section_name',
-                'course_assignments.course_assignment_id',
                 'users.code as faculty_code',
                 DB::raw("CONCAT(users.last_name, ', ', users.first_name,
                     CASE WHEN users.middle_name IS NOT NULL THEN CONCAT(' ', users.middle_name) ELSE '' END,
                     CASE WHEN users.suffix_name IS NOT NULL THEN CONCAT(' ', users.suffix_name) ELSE '' END)
-                    as faculty_name")
+                    as faculty_name"),
+                'programs.program_code',
+                'programs.program_title',
+                'sections_per_program_year.year_level',
+                'sections_per_program_year.section_name',
+                'courses.course_id',
+                'courses.course_title',
+                'courses.course_code',
+                'courses.lec_hours as lec',
+                'courses.lab_hours as lab',
+                'courses.units',
+                'courses.tuition_hours'
             )
             ->orderBy('rooms.room_code')
             ->orderBy('schedules.day')
-            ->orderBy('schedules.start_time')
-            ->get();
+            ->orderBy('schedules.start_time');
 
-        // Group schedules by room
-        $groupedSchedules = $labSchedules->groupBy('room_id')->map(function ($roomSchedules) {
+        $labSchedules = $query->get();
+
+        // Step 3: Group schedules by room
+        $rooms = $labSchedules->groupBy('room_id')->map(function ($roomSchedules) {
             $firstSchedule = $roomSchedules->first();
             return [
                 'room_code' => $firstSchedule->room_code,
-                'location' => $firstSchedule->building_name,
+                'location' => $firstSchedule->location,
                 'floor_level' => $firstSchedule->floor_level,
                 'capacity' => $firstSchedule->capacity,
                 'schedules' => $roomSchedules->map(function ($schedule) {
@@ -561,7 +558,7 @@ class ExternalController extends Controller
                         'year_level' => $schedule->year_level,
                         'section_name' => $schedule->section_name,
                         'course_details' => [
-                            'course_id' => $schedule->course_assignment_id,
+                            'course_id' => $schedule->course_id,
                             'course_title' => $schedule->course_title,
                             'course_code' => $schedule->course_code,
                             'lec' => $schedule->lec,
@@ -579,7 +576,7 @@ class ExternalController extends Controller
                 'academic_year_start' => $activeSemester->year_start,
                 'academic_year_end' => $activeSemester->year_end,
                 'semester' => $activeSemester->semester,
-                'rooms' => $groupedSchedules,
+                'rooms' => $rooms,
             ],
         ]);
     }

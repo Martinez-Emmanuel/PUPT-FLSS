@@ -357,16 +357,20 @@ CREATE TABLE `schedules` (
 CREATE TABLE `faculty_schedule_publication` (
   `faculty_schedule_publication_id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
   `faculty_id` bigint UNSIGNED NOT NULL,
-  `schedule_id` bigint UNSIGNED NOT NULL,
+  `academic_year_id` int UNSIGNED NOT NULL,
+  `semester_id` int UNSIGNED NOT NULL,
   `is_published` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`faculty_schedule_publication_id`),
+  UNIQUE KEY `unique_faculty_publication` (`faculty_id`,`academic_year_id`,`semester_id`),
   KEY `faculty_schedule_publication_faculty_id_index` (`faculty_id`),
-  KEY `faculty_schedule_publication_schedule_id_index` (`schedule_id`),
+  KEY `faculty_schedule_publication_academic_year_id_index` (`academic_year_id`),
+  KEY `faculty_schedule_publication_semester_id_index` (`semester_id`),
   KEY `faculty_schedule_publication_is_published_index` (`is_published`),
   CONSTRAINT `faculty_schedule_publication_faculty_id_foreign` FOREIGN KEY (`faculty_id`) REFERENCES `faculty` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `faculty_schedule_publication_schedule_id_foreign` FOREIGN KEY (`schedule_id`) REFERENCES `schedules` (`schedule_id`) ON DELETE CASCADE
+  CONSTRAINT `faculty_schedule_publication_academic_year_id_foreign` FOREIGN KEY (`academic_year_id`) REFERENCES `academic_years` (`academic_year_id`) ON DELETE CASCADE, -- Added foreign key constraint for academic_year_id
+  CONSTRAINT `faculty_schedule_publication_semester_id_foreign` FOREIGN KEY (`semester_id`) REFERENCES `semesters` (`semester_id`) ON DELETE CASCADE -- Added foreign key constraint for semester_id
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE `faculty_notifications` (

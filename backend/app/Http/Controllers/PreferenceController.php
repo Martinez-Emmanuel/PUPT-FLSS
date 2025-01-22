@@ -564,13 +564,11 @@ class PreferenceController extends Controller
             $activeSemester = ActiveSemester::where('is_active', 1)->first();
             if ($activeSemester) {
                 DB::table('faculty_schedule_publication')
-                    ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
-                    ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
-                    ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
-                    ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
-                    ->where('sections_per_program_year.academic_year_id', $activeSemester->academic_year_id)
+                    ->where('academic_year_id', $activeSemester->academic_year_id)
+                    ->where('semester_id', $activeSemester->semester_id)
                     ->update([
-                        'faculty_schedule_publication.is_published' => 0,
+                        'is_published' => 0,
+                        'updated_at' => now()
                     ]);
             }
         });
@@ -660,14 +658,12 @@ class PreferenceController extends Controller
             $activeSemester = ActiveSemester::where('is_active', 1)->first();
             if ($activeSemester) {
                 DB::table('faculty_schedule_publication')
-                    ->join('schedules', 'faculty_schedule_publication.schedule_id', '=', 'schedules.schedule_id')
-                    ->join('section_courses', 'schedules.section_course_id', '=', 'section_courses.section_course_id')
-                    ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
-                    ->join('sections_per_program_year', 'section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
-                    ->where('faculty_schedule_publication.faculty_id', $faculty_id)
-                    ->where('sections_per_program_year.academic_year_id', $activeSemester->academic_year_id)
+                    ->where('faculty_id', $faculty_id)
+                    ->where('academic_year_id', $activeSemester->academic_year_id)
+                    ->where('semester_id', $activeSemester->semester_id)
                     ->update([
-                        'faculty_schedule_publication.is_published' => 0,
+                        'is_published' => 0,
+                        'updated_at' => now()
                     ]);
             }
         });
