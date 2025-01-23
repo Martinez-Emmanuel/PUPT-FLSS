@@ -203,6 +203,7 @@ export class ReportRoomsComponent
         customTitle: `Room ${element.roomCode}`,
         academicYear: element.academicYear,
         semester: element.semester,
+
         generatePdfFunction: (preview: boolean) => this.createPdfBlob(element),
       },
       disableClose: true,
@@ -222,6 +223,8 @@ export class ReportRoomsComponent
         entity: 'room',
         entityData: this.filteredData,
         customTitle: 'All Room Schedules',
+        academicYear: this.filteredData[0]?.academicYear,
+        semester: this.filteredData[0]?.semester,
         generatePdfFunction: generatePdfFunction,
         showViewToggle: false,
       },
