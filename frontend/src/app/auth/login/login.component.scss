@@ -109,7 +109,7 @@
   .features-section {
     @include mixins.flex-layout(
       $direction: column,
-      $gap: var(--spacing-sm)
+      $gap: var(--spacing-md)
     );
     padding: var(--spacing-sm) 0;
     width: inherit;
@@ -137,8 +137,8 @@
 
       .feature-icon-wrapper {
         @include mixins.flex-layout($align: center, $justify: center);
-        min-width: 2.25rem;
-        height: 2.25rem;
+        min-width: 2rem;
+        height: 2rem;
         border-radius: var(--border-radius-md);
         background: var(--surface-card);
         transition: background 0.3s ease;
