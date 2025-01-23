@@ -4,7 +4,9 @@ export const SUPERADMIN_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./main/main.component').then((m) => m.MainComponent),
+      import('./superadmin-main/superadmin-main.component').then(
+        (m) => m.SuperadminMainComponent
+      ),
     children: [
       { path: '', redirectTo: 'admin', pathMatch: 'full' },
       {

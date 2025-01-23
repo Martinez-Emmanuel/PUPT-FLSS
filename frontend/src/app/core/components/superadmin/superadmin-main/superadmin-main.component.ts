@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnInit, ViewChild, AfterViewInit, OnDestroy, ElementRef, Renderer2, NgZone } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
@@ -12,8 +12,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
-import { MatRippleModule } from '@angular/material/core';
-import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
@@ -22,11 +20,10 @@ import { slideInAnimation, fadeAnimation } from '../../../animations/animations'
 import { AuthService } from '../../../services/auth/auth.service';
 import { ThemeService } from '../../../services/theme/theme.service';
 import { CookieService } from 'ngx-cookie-service';
-
 @Component({
-  selector: 'app-main',
-  templateUrl: './main.component.html',
-  styleUrls: ['./main.component.scss'],
+  selector: 'app-superadmin-main',
+  templateUrl: './superadmin-main.component.html',
+  styleUrls: ['./superadmin-main.component.scss'],
   imports: [
     CommonModule,
     RouterModule,
@@ -35,22 +32,32 @@ import { CookieService } from 'ngx-cookie-service';
     MatSidenavModule,
     MatListModule,
     MatIconModule,
-    MatRippleModule,
-    MatTooltipModule,
     MatSymbolDirective,
   ],
   animations: [fadeAnimation, slideInAnimation],
 })
-export class MainComponent implements OnInit {
+export class SuperadminMainComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('drawer') drawer!: MatSidenav;
 
   private breakpointObserver = inject(BreakpointObserver);
-  public pageTitle = '';
+  private documentClickListener!: () => void;
+  public showSidenav = false;
+  public isDropdownOpen = false;
+  public pageTitle = 'Dashboard';
   public accountName!: string;
   public accountRole!: string;
-  public isReportsView: boolean = false;
 
-  public isHandset$: Observable<boolean> = this.breakpointObserver
+  private routeTitleMap: Record<string, string> = {
+    dashboard: 'Dashboard',
+    programs: 'Programs',
+    courses: 'Courses',
+    curriculum: 'Curriculum',
+    rooms: 'Rooms',
+    'manage-admin': 'Manage Admin',
+    'manage-faculty': 'Manage Faculty',
+  };
+
+  isHandset$: Observable<boolean> = this.breakpointObserver
     .observe(Breakpoints.Handset)
     .pipe(
       map((result) => result.matches),
@@ -63,18 +70,15 @@ export class MainComponent implements OnInit {
     private route: ActivatedRoute,
     private authService: AuthService,
     private dialog: MatDialog,
-    private cookieService: CookieService
+    private cookieService: CookieService,
+    private el: ElementRef,
+    private renderer: Renderer2,
+    private ngZone: NgZone
   ) {
-    this.router.events
-      .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe((event: NavigationEnd) => {
-        this.isReportsView = event.urlAfterRedirects.includes('/reports');
-      });
   }
 
   ngOnInit(): void {
     this.initializeUserData();
-
     this.router.events
       .pipe(
         filter(
@@ -86,6 +90,14 @@ export class MainComponent implements OnInit {
     this.setPageTitle();
   }
 
+  ngAfterViewInit() {
+    this.setupDocumentClickListener();
+  }
+
+  ngOnDestroy() {
+    this.removeDocumentClickListener();
+  }
+
   private initializeUserData(): void {
     this.accountName = this.cookieService.get('user_name');
     this.accountRole = this.toTitleCase(this.cookieService.get('user_role'));
@@ -95,13 +107,64 @@ export class MainComponent implements OnInit {
     this.themeService.toggleTheme();
   }
 
+  public toggleDropdown(event: Event) {
+    event.stopPropagation();
+    this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  public closeDropdown() {
+    this.isDropdownOpen = false;
+  }
+
+  private setupDocumentClickListener() {
+    this.documentClickListener = this.renderer.listen(
+      'document',
+      'click',
+      (event: Event) => {
+        const dropdownElement =
+          this.el.nativeElement.querySelector('.dropdown-menu');
+        const profileIconElement =
+          this.el.nativeElement.querySelector('.profile-icon');
+
+        if (
+          !dropdownElement?.contains(event.target as Node) &&
+          !profileIconElement?.contains(event.target as Node)
+        ) {
+          this.ngZone.run(() => {
+            this.closeDropdown();
+          });
+        }
+      }
+    );
+  }
+
+  private removeDocumentClickListener() {
+    if (this.documentClickListener) {
+      this.documentClickListener();
+    }
+  }
+
   private toTitleCase(str: string): string {
     return str.charAt(0).toUpperCase() + str.slice(1);
   }
 
   private setPageTitle(): void {
-    const pageTitle = this.route.snapshot.firstChild?.data['pageTitle'];
-    this.pageTitle = pageTitle;
+    const childRoute = this.findDeepestChild(this.route);
+    const pageTitle =
+      childRoute?.snapshot.data['pageTitle'] ||
+      this.routeTitleMap[this.router.url.split('/').pop() || ''] ||
+      'Dashboard';
+    this.pageTitle = childRoute?.snapshot.data['curriculumYear']
+      ? `${pageTitle} ${childRoute.snapshot.data['curriculumYear']}`
+      : pageTitle;
+  }
+
+  private findDeepestChild(route: ActivatedRoute): ActivatedRoute | null {
+    let child = route.firstChild;
+    while (child?.firstChild) {
+      child = child.firstChild;
+    }
+    return child;
   }
 
   public logout() {

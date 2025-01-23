@@ -4,7 +4,9 @@ export const ADMIN_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./main/main.component').then((m) => m.MainComponent),
+      import('./admin-main/admin-main.component').then(
+        (m) => m.AdminMainComponent
+      ),
     children: [
       {
         path: '',
