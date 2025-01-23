@@ -1,5 +1,8 @@
 <!-- login.component.html -->
-<div class="login-container" [style.background-image]="currentBackgroundImage">
+<div
+  class="login-container"
+  [style.--background-image]="currentBackgroundImage"
+>
   <!--Login Image Section-->
   <div class="login-image-section">
     <app-slideshow
@@ -113,14 +116,14 @@
         mat-button
         class="toggle-button"
         [ngClass]="
-          (isDarkTheme | async) ? 'dark-theme sec-ripple' : 'light-theme'
+          (isDarkTheme$ | async) ? 'dark-theme sec-ripple' : 'light-theme'
         "
         (click)="toggleTheme()"
       >
         <mat-icon>
-          {{ (isDarkTheme | async) ? "dark_mode" : "light_mode" }}
+          {{ (isDarkTheme$ | async) ? "dark_mode" : "light_mode" }}
         </mat-icon>
-        <span> {{ (isDarkTheme | async) ? "Dark" : "Light" }} Theme </span>
+        <span> {{ (isDarkTheme$ | async) ? "Dark" : "Light" }} Theme </span>
       </button>
     </div>
   </div>
