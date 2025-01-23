@@ -1,5 +1,5 @@
-import { Component, inject, OnInit, ViewChild, AfterViewInit } from '@angular/core';
-import { CommonModule, AsyncPipe } from '@angular/common';
+import { Component, inject, OnInit, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { RouterModule, Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 
@@ -24,35 +24,33 @@ import { ThemeService } from '../../../services/theme/theme.service';
 import { CookieService } from 'ngx-cookie-service';
 
 @Component({
-    selector: 'app-main',
-    templateUrl: './main.component.html',
-    styleUrls: ['./main.component.scss'],
-    imports: [
-        CommonModule,
-        RouterModule,
-        AsyncPipe,
-        MatToolbarModule,
-        MatButtonModule,
-        MatSidenavModule,
-        MatListModule,
-        MatIconModule,
-        MatRippleModule,
-        MatTooltipModule,
-        MatSymbolDirective,
-    ],
-    animations: [fadeAnimation, slideInAnimation]
+  selector: 'app-main',
+  templateUrl: './main.component.html',
+  styleUrls: ['./main.component.scss'],
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatToolbarModule,
+    MatButtonModule,
+    MatSidenavModule,
+    MatListModule,
+    MatIconModule,
+    MatRippleModule,
+    MatTooltipModule,
+    MatSymbolDirective,
+  ],
+  animations: [fadeAnimation, slideInAnimation],
 })
-export class MainComponent implements OnInit, AfterViewInit {
+export class MainComponent implements OnInit {
   @ViewChild('drawer') drawer!: MatSidenav;
-  isReportsView: boolean = false;
 
   private breakpointObserver = inject(BreakpointObserver);
-  public showSidenav = false;
   public pageTitle = '';
-  public accountName: string;
-  public accountRole: string;
+  public accountName!: string;
+  public accountRole!: string;
+  public isReportsView: boolean = false;
 
-  isHandset$: Observable<boolean> = this.breakpointObserver
+  public isHandset$: Observable<boolean> = this.breakpointObserver
     .observe(Breakpoints.Handset)
     .pipe(
       map((result) => result.matches),
@@ -67,8 +65,6 @@ export class MainComponent implements OnInit, AfterViewInit {
     private dialog: MatDialog,
     private cookieService: CookieService
   ) {
-    this.accountName = this.cookieService.get('user_name');
-    this.accountRole = this.toTitleCase(this.cookieService.get('user_role'));
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: NavigationEnd) => {
@@ -77,6 +73,8 @@ export class MainComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit(): void {
+    this.initializeUserData();
+
     this.router.events
       .pipe(
         filter(
@@ -88,11 +86,12 @@ export class MainComponent implements OnInit, AfterViewInit {
     this.setPageTitle();
   }
 
-  ngAfterViewInit() {
-    setTimeout(() => (this.showSidenav = true), 0);
+  private initializeUserData(): void {
+    this.accountName = this.cookieService.get('user_name');
+    this.accountRole = this.toTitleCase(this.cookieService.get('user_role'));
   }
 
-  toggleTheme() {
+  public toggleTheme() {
     this.themeService.toggleTheme();
   }
 
@@ -101,8 +100,7 @@ export class MainComponent implements OnInit, AfterViewInit {
   }
 
   private setPageTitle(): void {
-    const pageTitle =
-      this.route.snapshot.firstChild?.data['pageTitle'];
+    const pageTitle = this.route.snapshot.firstChild?.data['pageTitle'];
     this.pageTitle = pageTitle;
   }
 
@@ -121,7 +119,7 @@ export class MainComponent implements OnInit, AfterViewInit {
         action: 'Log Out',
       },
       disableClose: true,
-      panelClass: 'dialog-base'
+      panelClass: 'dialog-base',
     });
 
     confirmDialogRef.afterClosed().subscribe((result) => {

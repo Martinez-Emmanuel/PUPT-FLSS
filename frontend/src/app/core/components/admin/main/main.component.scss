@@ -12,10 +12,9 @@
   @include mixins.default-transition;
 }
 
-.sidenav-bar {
-  @include mixins.default-transition;
+.sidenav {
   width: 16rem;
-  background-color: var(--admin-bg);
+  background-color: transparent;
   padding: var(--spacing-sm) var(--spacing-md);
   user-select: none;
 
