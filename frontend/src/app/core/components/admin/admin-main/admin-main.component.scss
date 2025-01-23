@@ -18,6 +18,10 @@
   padding: var(--spacing-sm) var(--spacing-md);
   user-select: none;
 
+  &.sidenav-mobile {
+    background-color: var(--admin-bg);
+  }
+
   .side-toolbar {
     @include mixins.flex-layout($direction: column, $gap: var(--spacing-md));
     padding: var(--spacing-lg) var(--spacing-md);

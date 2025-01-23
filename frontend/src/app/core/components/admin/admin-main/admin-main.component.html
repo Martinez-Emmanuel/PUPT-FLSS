@@ -5,6 +5,7 @@
   <mat-sidenav
     #drawer
     class="sidenav"
+    [class.sidenav-mobile]="isHandset$ | async"
     fixedInViewport
     [@slideInAnimation]
     [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
