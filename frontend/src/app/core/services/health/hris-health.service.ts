@@ -68,7 +68,7 @@ export class HrisHealthService {
     null;
 
   private readonly CACHE_DURATION_MS = 30000;
-  private readonly MAX_RETRIES = 5;
+  private readonly MAX_RETRIES = 3;
   private readonly INITIAL_RETRY_DELAY_MS = 500;
   private readonly TIMEOUT_MS = 5000;
   private readonly MEMORY_WARNING_THRESHOLD = 95;
