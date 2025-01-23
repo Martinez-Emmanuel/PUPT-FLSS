@@ -15,6 +15,7 @@ import { LoadingComponent } from '../../../../../shared/loading/loading.componen
 import { DialogExportComponent } from '../../../../../shared/dialog-export/dialog-export.component';
 
 import { Program, ProgramsService, AddProgramRequest, UpdateProgramRequest } from '../../../../services/superadmin/programs/programs.service';
+import { LogoCacheService } from '../../../../services/cache/logo-cache.service';
 
 import { fadeAnimation } from '../../../../animations/animations';
 
@@ -39,8 +40,8 @@ export class ProgramsComponent implements OnInit, OnDestroy {
   programStatuses = ['Active', 'Inactive'];
   programYears = [1, 2, 3, 4, 5];
   isLoading = true;
-  // Removed showPreview as it's no longer needed
 
+  private logoBase64: string = '';
   private destroy$ = new Subject<void>();
   private allPrograms: Program[] = [];
   private programsSubject = new BehaviorSubject<Program[]>([]);
@@ -78,10 +79,12 @@ export class ProgramsComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private programService: ProgramsService
+    private programService: ProgramsService,
+    private logoCacheService: LogoCacheService
   ) {}
 
   ngOnInit() {
+    this.initializeLogo();
     this.fetchPrograms();
     this.setupSearch();
   }
@@ -89,6 +92,15 @@ export class ProgramsComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private initializeLogo() {
+    this.logoCacheService
+      .getLogoBase64()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((base64) => {
+        this.logoBase64 = base64;
+      });
   }
 
   fetchPrograms() {
@@ -329,12 +341,10 @@ export class ProgramsComponent implements OnInit, OnDestroy {
     const topMargin = 15;
     let currentY = topMargin;
 
-    // Add the university logo
-    const leftLogoUrl =
-      'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
-    doc.addImage(leftLogoUrl, 'PNG', margin, 10, logoSize, logoSize);
+    if (this.logoBase64) {
+      doc.addImage(this.logoBase64, 'PNG', margin, 10, logoSize, logoSize);
+    }
 
-    // Add header text
     doc.setFontSize(12);
     doc.setFont('times', 'bold');
     doc.text(
@@ -362,7 +372,6 @@ export class ProgramsComponent implements OnInit, OnDestroy {
     doc.line(margin, currentY, pageWidth - margin, currentY);
     currentY += 7;
 
-    // Prepare table data
     const programs = this.programsSubject.getValue();
     const bodyData = programs.map((program, index) => [
       (index + 1).toString(),
@@ -374,7 +383,6 @@ export class ProgramsComponent implements OnInit, OnDestroy {
       program.curriculum_years,
     ]);
 
-    // Add table to PDF
     (doc as any).autoTable({
       startY: currentY,
       head: [

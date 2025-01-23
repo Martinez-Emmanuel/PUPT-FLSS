@@ -1,51 +1,23 @@
-import {
-  Component,
-  OnInit,
-  OnDestroy,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-} from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormControl } from '@angular/forms';
 
 import { BehaviorSubject, Subject, Observable, combineLatest } from 'rxjs';
-import {
-  takeUntil,
-  map,
-  finalize,
-  debounceTime,
-  distinctUntilChanged,
-  switchMap,
-} from 'rxjs/operators';
+import { takeUntil, map, finalize, debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
-import {
-  TableDialogComponent,
-  DialogConfig,
-  SelectOption,
-} from '../../../../../shared/table-dialog/table-dialog.component';
-import {
-  TableHeaderComponent,
-  InputField,
-} from '../../../../../shared/table-header/table-header.component';
+import { TableDialogComponent, DialogConfig, SelectOption } from '../../../../../shared/table-dialog/table-dialog.component';
+import { TableHeaderComponent, InputField } from '../../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
 import { DialogExportComponent } from '../../../../../shared/dialog-export/dialog-export.component';
 
-import {
-  RoomWithDetails,
-  RoomService,
-} from '../../../../services/superadmin/rooms/rooms.service';
-import {
-  Building,
-  BuildingsService,
-} from '../../../../services/superadmin/buildings/buildings.service';
-import {
-  RoomType,
-  RoomTypesService,
-} from '../../../../services/superadmin/room-types/room-types.service';
+import { RoomWithDetails, RoomService } from '../../../../services/superadmin/rooms/rooms.service';
+import { Building, BuildingsService } from '../../../../services/superadmin/buildings/buildings.service';
+import { RoomType, RoomTypesService } from '../../../../services/superadmin/room-types/room-types.service';
+import { LogoCacheService } from '../../../../services/cache/logo-cache.service';
 
 import { fadeAnimation } from '../../../../animations/animations';
 
@@ -104,6 +76,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
 
   isLoading = true;
   searchControl = new FormControl('');
+  private logoBase64: string = '';
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -112,10 +85,12 @@ export class RoomsComponent implements OnInit, OnDestroy {
     private roomTypesService: RoomTypesService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private logoCacheService: LogoCacheService
   ) {}
 
   ngOnInit() {
+    this.initializeLogo();
     this.fetchInitialData();
     this.setupSearch();
   }
@@ -123,6 +98,15 @@ export class RoomsComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private initializeLogo() {
+    this.logoCacheService
+      .getLogoBase64()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((base64) => {
+        this.logoBase64 = base64;
+      });
   }
 
   private fetchInitialData() {
@@ -410,17 +394,15 @@ export class RoomsComponent implements OnInit, OnDestroy {
     const logoSize = 22;
     const topMargin = 15;
     let currentY = topMargin;
-  
+
     try {
-      // Helper function to add header
       const addHeader = (title: string) => {
         currentY = topMargin;
-        
-        // Add the university logo
-        const leftLogoUrl = 'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
-        doc.addImage(leftLogoUrl, 'PNG', margin, 10, logoSize, logoSize);
-  
-        // Add header text
+
+        if (this.logoBase64) {
+          doc.addImage(this.logoBase64, 'PNG', margin, 10, logoSize, logoSize);
+        }
+
         doc.setFontSize(12);
         doc.setFont('times', 'bold');
         doc.text(
@@ -430,7 +412,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
           { align: 'center' }
         );
         currentY += 5;
-  
+
         doc.setFontSize(12);
         doc.text(
           'Gen. Santos Ave. Upper Bicutan, Taguig City',
@@ -439,34 +421,30 @@ export class RoomsComponent implements OnInit, OnDestroy {
           { align: 'center' }
         );
         currentY += 10;
-  
+
         doc.setFontSize(15);
         doc.setTextColor(0, 0, 0);
         doc.text(title, pageWidth / 2, currentY, { align: 'center' });
         currentY += 8;
-  
-        // Add the horizontal line below the header
+
         doc.setDrawColor(0, 0, 0);
         doc.setLineWidth(0.5);
         doc.line(margin, currentY, pageWidth - margin, currentY);
         currentY += 7;
       };
-  
-      // Helper function to add table
+
       const addTable = (data: any[], startY: number) => {
         if (data.length === 0) {
-          // If no data, add a message
           doc.setFontSize(10);
           doc.setTextColor(0, 0, 0);
           doc.setFont('times', 'italic');
-          doc.text(
-            'No available rooms found.', 
-            pageWidth / 2, startY + 10, { align: 'center' }
-          );
+          doc.text('No available rooms found.', pageWidth / 2, startY + 10, {
+            align: 'center',
+          });
           doc.setFont('times', 'normal');
           return;
         }
-  
+
         (doc as any).autoTable({
           startY: startY,
           head: [
@@ -508,14 +486,11 @@ export class RoomsComponent implements OnInit, OnDestroy {
           margin: { left: margin, right: margin },
         });
       };
-  
-      // Get all rooms and buildings
+
       const allRooms = this.roomsSubject.getValue();
-      // Filter out unavailable rooms
-      const rooms = allRooms.filter(room => room.status === 'Available');
+      const rooms = allRooms.filter((room) => room.status === 'Available');
       const buildings = this.buildingsSubject.getValue();
-  
-      // First page: All available rooms
+
       addHeader('Room Report - All Rooms');
       const allRoomsData = rooms.map((room, index) => [
         (index + 1).toString(),
@@ -527,18 +502,14 @@ export class RoomsComponent implements OnInit, OnDestroy {
         room.status,
       ]);
       addTable(allRoomsData, currentY);
-  
-      // Subsequent pages: Available rooms by building
+
       buildings.forEach((building) => {
-        // Add new page for each building
         doc.addPage();
-  
-        // Add header for building page
+
         addHeader(`Room Report - ${building.building_name}`);
-  
-        // Filter available rooms for this building
+
         const buildingRooms = rooms
-          .filter(room => room.building_id === building.building_id)
+          .filter((room) => room.building_id === building.building_id)
           .map((room, index) => [
             (index + 1).toString(),
             room.room_code,
@@ -548,11 +519,10 @@ export class RoomsComponent implements OnInit, OnDestroy {
             room.capacity.toString(),
             room.status,
           ]);
-  
-        // Add table for building rooms
+
         addTable(buildingRooms, currentY);
       });
-  
+
       return doc.output('blob');
     } catch (error) {
       this.snackBar.open('Failed to generate PDF.', 'Close', {

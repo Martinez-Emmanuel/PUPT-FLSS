@@ -1,9 +1,9 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { BehaviorSubject, Subject } from 'rxjs';
-import { filter, debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { filter, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSlideToggleModule, MatSlideToggleChange } from '@angular/material/slide-toggle';
@@ -22,6 +22,7 @@ import { DialogExportComponent } from '../../../../shared/dialog-export/dialog-e
 import { DialogTogglePreferencesComponent, DialogTogglePreferencesData } from '../../../../shared/dialog-toggle-preferences/dialog-toggle-preferences.component';
 
 import { PreferencesService } from '../../../services/faculty/preference/preferences.service';
+import { LogoCacheService } from '../../../services/cache/logo-cache.service';
 import { ActiveSemester } from '../../../models/preferences.model';
 
 import { fadeAnimation } from '../../../animations/animations';
@@ -67,7 +68,7 @@ interface ToggleState {
   styleUrls: ['./manage-preferences.component.scss'],
   animations: [fadeAnimation],
 })
-export class ManagePreferencesComponent implements OnInit, AfterViewInit {
+export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
   inputFields: InputField[] = [
     {
       type: 'text',
@@ -115,19 +116,26 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
   // Search Subject
   private searchSubject = new Subject<string>();
 
+  private logoBase64: string = '';
+
   @ViewChild(MatPaginator) paginator?: MatPaginator;
+
+  // Add the destroy$ Subject property
+  private destroy$ = new Subject<void>();
 
   constructor(
     private preferencesService: PreferencesService,
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private logoCacheService: LogoCacheService
   ) {}
 
   ngOnInit(): void {
     this.preferencesService.clearPreferencesCache();
     this.loadFacultyPreferences();
     this.setupFilterPredicate();
+    this.initializeLogo();
     this.searchSubject
       .pipe(debounceTime(300), distinctUntilChanged())
       .subscribe((searchValue) => {
@@ -140,9 +148,24 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
     this.applyFilter(this.currentFilter);
   }
 
+  // Add ngOnDestroy lifecycle hook to clean up subscriptions
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
   // ===========================
   // Data Loading and Handling
   // ===========================
+
+  private initializeLogo() {
+    this.logoCacheService
+      .getLogoBase64()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((base64) => {
+        this.logoBase64 = base64;
+      });
+  }
 
   /**
    * Sets up the filter predicate for the data source.
@@ -633,9 +656,9 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit {
      * Adds the header to the PDF.
      */
     const addHeader = () => {
-      const leftLogoUrl =
-        'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
-      doc.addImage(leftLogoUrl, 'PNG', margin, 10, logoSize, logoSize);
+      if (this.logoBase64) {
+        doc.addImage(this.logoBase64, 'PNG', margin, 10, logoSize, logoSize);
+      }
 
       doc.setFontSize(headerFont.size);
       doc.setFont(headerFont.font, headerFont.style);

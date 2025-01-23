@@ -18,11 +18,12 @@ import { LoadingComponent } from '../../../../../shared/loading/loading.componen
 import { DialogViewScheduleComponent } from '../../../../../shared/dialog-view-schedule/dialog-view-schedule.component';
 
 import { ReportsService } from '../../../../services/admin/reports/reports.service';
+import { LogoCacheService } from '../../../../services/cache/logo-cache.service';
+
+import { fadeAnimation } from '../../../../animations/animations';
 
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-
-import { fadeAnimation } from '../../../../animations/animations';
 
 interface Room {
   academicYear: any;
@@ -80,16 +81,19 @@ export class ReportRoomsComponent
   hasAnySchedules = false;
 
   private searchInput$ = new Subject<string>();
+  private logoBase64: string = '';
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   constructor(
     private reportsService: ReportsService,
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private logoCacheService: LogoCacheService
   ) {}
 
   ngOnInit(): void {
     this.fetchRoomData();
+    this.initializeLogo();
     this.searchInput$
       .pipe(debounceTime(300), distinctUntilChanged())
       .subscribe((searchQuery) => {
@@ -105,6 +109,14 @@ export class ReportRoomsComponent
     if (this.dataSource.paginator !== this.paginator) {
       this.dataSource.paginator = this.paginator;
     }
+  }
+
+  initializeLogo(): void {
+    this.logoCacheService.getLogoBase64().subscribe(
+      (base64) => {
+        this.logoBase64 = base64;
+      }
+    );
   }
 
   fetchRoomData(): void {
@@ -305,10 +317,11 @@ export class ReportRoomsComponent
     subtitle: string
   ): number {
     doc.setTextColor(0, 0, 0);
-    const logoUrl =
-      'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
-    const logoXPosition = pageWidth / 25 + 25;
-    doc.addImage(logoUrl, 'PNG', logoXPosition, startY - 5, logoSize, logoSize);
+    
+    if (this.logoBase64) {
+      const logoXPosition = pageWidth / 25 + 25;
+      doc.addImage(this.logoBase64, 'PNG', logoXPosition, startY - 5, logoSize, logoSize);
+    }
 
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');

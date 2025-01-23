@@ -20,12 +20,12 @@ import { DialogViewScheduleComponent } from '../../../../../shared/dialog-view-s
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
 
 import { ReportsService } from '../../../../services/admin/reports/reports.service';
+import { LogoCacheService } from '../../../../services/cache/logo-cache.service';
 
 import { fadeAnimation } from '../../../../animations/animations';
 
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-
 
 interface CourseDetails {
   course_assignment_id: number;
@@ -116,14 +116,18 @@ export class ReportProgramsComponent implements OnInit {
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
+  private logoBase64: string = '';
+
   constructor(
     private reportsService: ReportsService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private logoCacheService: LogoCacheService
   ) {}
 
   ngOnInit(): void {
     this.fetchProgramsData();
+    this.initializeLogo();
     this.searchInput$
       .pipe(debounceTime(300), distinctUntilChanged())
       .subscribe((searchQuery) => {
@@ -133,6 +137,14 @@ export class ReportProgramsComponent implements OnInit {
 
   ngAfterViewInit() {
     this.dataSource.paginator = this.paginator;
+  }
+
+  private initializeLogo(): void {
+    this.logoCacheService.getLogoBase64().subscribe(
+      (base64) => {
+        this.logoBase64 = base64;
+      }
+    );
   }
 
   fetchProgramsData(): void {
@@ -588,10 +600,11 @@ export class ReportProgramsComponent implements OnInit {
     subtitle: string
   ): number {
     doc.setTextColor(0, 0, 0);
-    const logoUrl =
-      'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
-    const logoXPosition = pageWidth / 25 + 25;
-    doc.addImage(logoUrl, 'PNG', logoXPosition, startY - 5, logoSize, logoSize);
+
+    if (this.logoBase64) {
+      const logoXPosition = pageWidth / 25 + 25;
+      doc.addImage(this.logoBase64, 'PNG', logoXPosition, startY - 5, logoSize, logoSize);
+    }
 
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
