@@ -910,7 +910,7 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
       isGloballyScheduled && !this.isToggleAllChecked
         ? 'Preferences submission is scheduled'
         : this.hasIndividualDeadlines && !this.isToggleAllChecked
-        ? 'Global preferences toggle is disabled because individual deadlines are set'
+        ? 'Global preferences toggle is disabled because individual preferences settings are set'
         : `${
             this.isToggleAllChecked ? 'Disable' : 'Enable'
           } preferences submission for ALL faculty`;

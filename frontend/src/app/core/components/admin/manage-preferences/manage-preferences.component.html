@@ -12,11 +12,11 @@
       [showExportButton]="true"
       [showAddButton]="false"
       [showActiveYearAndSem]="false"
-      [buttonDisabled]="!hasAnyPreferences || isToggleAllChecked"
+      [buttonDisabled]="!hasAnyPreferences || isToggleAllChecked || isAnyIndividualToggleOn"
       [tooltipMessage]="
         !hasAnyPreferences
           ? 'No faculty preferences available for export'
-          : isToggleAllChecked
+          : isToggleAllChecked || isAnyIndividualToggleOn
           ? 'Preferences submission is open; export disabled'
           : ''
       "
