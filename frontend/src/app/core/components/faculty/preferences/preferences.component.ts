@@ -613,15 +613,41 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   }
 
   public formatSelectedDaysAndTime(element: TableData): string {
-    return (
-      element.preferredDays
-        .filter((pd) => pd.start_time && pd.end_time)
-        .map((pd) => pd.day)
-        .join(', ') || 'Click to select day and time'
-    );
+    const selectedDays = element.preferredDays
+      .filter((pd) => pd.start_time && pd.end_time)
+      .map(
+        (pd) =>
+          `${pd.day} (${this.formatTime(pd.start_time)} - ${this.formatTime(
+            pd.end_time
+          )})`
+      )
+      .join('\n');
+
+    return selectedDays || 'Click to select day and time';
+  }
+
+  private formatTime(time: string): string {
+    if (!time) return '';
+
+    // If time is already in 12-hour format, return as is
+    if (time.includes('AM') || time.includes('PM')) return time;
+
+    // Convert 24-hour format to 12-hour format
+    const [hours, minutes] = time.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+
+    return `${hour12}:${minutes} ${ampm}`;
   }
 
   private showSnackBar(message: string): void {
     this.snackBar.open(message, 'Close', this.SNACK_BAR_CONFIG);
+  }
+
+  public getTooltipText(element: TableData): string {
+    return element.preferredDays.some((pd) => pd.start_time && pd.end_time)
+      ? 'Click to modify schedule'
+      : '';
   }
 }

@@ -280,6 +280,9 @@
         color: var(--primary-text);
         transition: opacity 0.3s ease;
         cursor: pointer;
+        white-space: pre-line;
+        text-align: left;
+        line-height: 1.5;
 
         &:hover {
           opacity: var(--opacity-semi-opaque);
@@ -293,6 +296,8 @@
 
     &.picker-cell {
       width: 20rem;
+      text-align: left;
+      padding: var(--spacing-sm) var(--spacing-md);
     }
 
     .remove-button {
