@@ -661,7 +661,7 @@ class PreferenceController extends Controller
             $activeSemester = ActiveSemester::where('is_active', 1)->first();
             if ($activeSemester) {
                 DB::table('faculty_schedule_publication')
-                    ->where('faculty_id', $faculty_id)
+                // ->where('faculty_id', $faculty_id)
                     ->where('academic_year_id', $activeSemester->academic_year_id)
                     ->where('semester_id', $activeSemester->semester_id)
                     ->update([

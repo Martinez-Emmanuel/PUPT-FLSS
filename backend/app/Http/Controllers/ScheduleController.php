@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ProcessExternalScheduleChange;
 use App\Models\Schedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
-use App\Jobs\ProcessExternalScheduleChange;
-use App\Models\PreferencesSetting;
+use Illuminate\Support\Facades\Validator;
 
 class ScheduleController extends Controller
 {
@@ -50,26 +49,26 @@ class ScheduleController extends Controller
                 'co.tuition_hours',
                 'pylc.academic_year_id'
             )
-            ->join('curricula_program as cp', function($join) {
+            ->join('curricula_program as cp', function ($join) {
                 $join->on('c.curriculum_id', '=', 'cp.curriculum_id')
                     ->whereIn('c.status', ['Active']);
             })
-            ->join('programs as p', function($join) {
+            ->join('programs as p', function ($join) {
                 $join->on('cp.program_id', '=', 'p.program_id')
                     ->where('p.status', 'Active');
             })
             ->join('year_levels as yl', 'cp.curricula_program_id', '=', 'yl.curricula_program_id')
             ->join('semesters as s', 'yl.year_level_id', '=', 's.year_level_id')
-            ->join('program_year_level_curricula as pylc', function($join) {
+            ->join('program_year_level_curricula as pylc', function ($join) {
                 $join->on('pylc.program_id', '=', 'p.program_id')
                     ->on('pylc.year_level', '=', 'yl.year')
                     ->on('pylc.curriculum_id', '=', 'c.curriculum_id');
             })
-            ->leftJoin('course_assignments as ca', function($join) {
+            ->leftJoin('course_assignments as ca', function ($join) {
                 $join->on('ca.curricula_program_id', '=', 'cp.curricula_program_id')
                     ->on('ca.semester_id', '=', 's.semester_id');
             })
-            ->leftJoin('courses as co', function($join) {
+            ->leftJoin('courses as co', function ($join) {
                 $join->on('ca.course_id', '=', 'co.course_id')
                     ->orderBy('co.course_code');
             })
@@ -277,11 +276,11 @@ class ScheduleController extends Controller
         DB::beginTransaction();
         try {
             $schedule = Schedule::where('schedule_id', $request->schedule_id)
-                ->with(['faculty.user' => function($query) {
+                ->with(['faculty.user' => function ($query) {
                     $query->select('id', 'email', 'first_name', 'last_name')
                         ->where('status', 'Active');
                 }])
-                ->with(['room' => function($query) {
+                ->with(['room' => function ($query) {
                     $query->select('room_id', 'room_code', 'status')
                         ->where('status', 'Active');
                 }])
@@ -538,12 +537,12 @@ class ScheduleController extends Controller
 
                 // Get all faculty with schedules in active semester
                 $facultiesWithSchedules = DB::table('schedules')
-                    ->join('section_courses', function($join) {
+                    ->join('section_courses', function ($join) {
                         $join->on('schedules.section_course_id', '=', 'section_courses.section_course_id')
                             ->where('section_courses.is_copy', 0);
                     })
                     ->join('course_assignments', 'section_courses.course_assignment_id', '=', 'course_assignments.course_assignment_id')
-                    ->join('sections_per_program_year', function($join) use ($activeSemester) {
+                    ->join('sections_per_program_year', function ($join) use ($activeSemester) {
                         $join->on('section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
                             ->where('sections_per_program_year.academic_year_id', $activeSemester->academic_year_id);
                     })
@@ -625,10 +624,10 @@ class ScheduleController extends Controller
 
                 // Check if faculty has schedules in active semester
                 $hasSchedules = DB::table('schedules')
-                    ->join('section_courses', function($join) {
+                    ->join('section_courses', function ($join) {
                         $join->on('schedules.section_course_id', '=', 'section_courses.section_course_id');
                     })
-                    ->join('sections_per_program_year', function($join) use ($activeSemester) {
+                    ->join('sections_per_program_year', function ($join) use ($activeSemester) {
                         $join->on('section_courses.sections_per_program_year_id', '=', 'sections_per_program_year.sections_per_program_year_id')
                             ->where('sections_per_program_year.academic_year_id', $activeSemester->academic_year_id);
                     })
@@ -656,7 +655,6 @@ class ScheduleController extends Controller
 
                 // Update preferences settings
                 DB::table('preferences_settings')
-                    ->where('faculty_id', $validated['faculty_id'])
                     ->update([
                         'is_enabled' => 0,
                         'global_start_date' => null,
