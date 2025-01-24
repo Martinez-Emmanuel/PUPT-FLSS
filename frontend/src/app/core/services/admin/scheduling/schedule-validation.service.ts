@@ -75,6 +75,19 @@ export class ScheduleValidationService {
       );
       if (!roomAvailability.isValid) conflicts.push(roomAvailability.message);
     }
+  
+    // Check course hours against selected time range
+    if (params.start_time && params.end_time) {
+      const courseHoursValidation = this.validateCourseHours(
+        schedules,
+        params.schedule_id,
+        params.start_time,
+        params.end_time
+      );
+      if (!courseHoursValidation.isValid) {
+        conflicts.push(courseHoursValidation.message);
+      }
+    }
 
     return { hasConflicts: conflicts.length > 0, messages: conflicts };
   }
@@ -346,5 +359,73 @@ export class ScheduleValidationService {
     const end2Minutes = this.timeToMinutes(end2);
 
     return start1Minutes < end2Minutes && end1Minutes > start2Minutes;
+  }
+
+  /**
+   * Validates if the selected time range matches the required course hours
+   */
+  private validateCourseHours(
+    schedules: PopulateSchedulesResponse,
+    schedule_id: number,
+    start_time: string,
+    end_time: string
+  ): { isValid: boolean; message: string } {
+    let targetCourse: any;
+    let allCourseSchedules: any[] = [];
+
+    for (const program of schedules.programs) {
+      for (const yearLevel of program.year_levels) {
+        for (const semester of yearLevel.semesters) {
+          for (const section of semester.sections) {
+            const course = section.courses.find(
+              (c) => c.schedule?.schedule_id === schedule_id
+            );
+            if (course) {
+              targetCourse = course;
+
+              allCourseSchedules = section.courses.filter(
+                (c) =>
+                  c.course_id === course.course_id &&
+                  c.schedule?.schedule_id !== schedule_id &&
+                  c.schedule?.start_time &&
+                  c.schedule?.end_time
+              );
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    if (!targetCourse) {
+      return { isValid: true, message: 'Course not found' };
+    }
+
+    const totalRequiredHours = targetCourse.lec_hours + targetCourse.lab_hours;
+
+    let hoursAlreadyScheduled = 0;
+    allCourseSchedules.forEach((course) => {
+      const startMins = this.timeToMinutes(course.schedule.start_time);
+      const endMins = this.timeToMinutes(course.schedule.end_time);
+      hoursAlreadyScheduled += (endMins - startMins) / 60;
+    });
+
+    const remainingHours = totalRequiredHours - hoursAlreadyScheduled;
+
+    const startMinutes = this.timeToMinutes(start_time);
+    const endMinutes = this.timeToMinutes(end_time);
+    const selectedDurationHours = (endMinutes - startMinutes) / 60;
+
+    if (selectedDurationHours > remainingHours) {
+      const totalScheduledHours = hoursAlreadyScheduled + selectedDurationHours;
+      return {
+        isValid: false,
+        message: `The selected time range (${selectedDurationHours} hours)
+        exceeds the remaining allowed hours (${remainingHours} hours) for
+        this course.`,
+      };
+    }
+
+    return { isValid: true, message: '' };
   }
 }
