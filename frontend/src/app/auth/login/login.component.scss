@@ -119,7 +119,7 @@
         $direction: column,
         $align: flex-start,
         $justify: flex-start,
-        $gap: var(--spacing-xxs)
+        $gap: var(--spacing-xs)
       );
       transition: transform 0.3s ease, box-shadow 0.3s ease;
       width: 100%;

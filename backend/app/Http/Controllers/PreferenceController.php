@@ -113,13 +113,16 @@ class PreferenceController extends Controller
         }
 
         $faculty = Faculty::with(['user', 'preferenceSetting'])
+            ->whereHas('user', function ($query) {
+                $query->where('status', 'Active');
+            })
             ->leftJoin('preferences', function ($join) use ($activeSemester) {
                 $join->on('faculty.id', '=', 'preferences.faculty_id')
                     ->where('preferences.active_semester_id', $activeSemester->active_semester_id);
             })
             ->leftJoin('course_assignments', 'preferences.course_assignment_id', '=', 'course_assignments.course_assignment_id')
             ->leftJoin('courses', 'course_assignments.course_id', '=', 'courses.course_id')
-            ->select('faculty.*', 'preferences.preferences_id', 'course_assignments.*', 'courses.*') // Select necessary columns
+            ->select('faculty.*', 'preferences.preferences_id', 'course_assignments.*', 'courses.*')
             ->get();
 
         $facultyPreferences = $faculty->groupBy('id')->map(function ($facultyGroup) use ($activeSemester) {
@@ -568,7 +571,7 @@ class PreferenceController extends Controller
                     ->where('semester_id', $activeSemester->semester_id)
                     ->update([
                         'is_published' => 0,
-                        'updated_at' => now()
+                        'updated_at' => now(),
                     ]);
             }
         });
@@ -663,7 +666,7 @@ class PreferenceController extends Controller
                     ->where('semester_id', $activeSemester->semester_id)
                     ->update([
                         'is_published' => 0,
-                        'updated_at' => now()
+                        'updated_at' => now(),
                     ]);
             }
         });

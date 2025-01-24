@@ -55,7 +55,7 @@ class Faculty extends Authenticatable
 
     public function preferenceSetting()
     {
-        return $this->hasOne(PreferencesSetting::class, 'faculty_id', 'id');
+        return $this->hasOne(PreferencesSetting::class);
     }
 
     public function schedulePublications()
