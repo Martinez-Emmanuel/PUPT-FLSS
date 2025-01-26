@@ -1,7 +1,10 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Subject } from 'rxjs';
+
+import { takeUntil } from 'rxjs';
 
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
@@ -13,6 +16,7 @@ import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 import { LoadingComponent } from '../loading/loading.component';
 
 import { PreferencesService } from '../../core/services/faculty/preference/preferences.service';
+import { LogoCacheService } from '../../core/services/cache/logo-cache.service';
 
 import { fadeAnimation } from '../../core/animations/animations';
 
@@ -50,7 +54,7 @@ interface DialogPrefData {
   styleUrls: ['./dialog-pref.component.scss'],
   animations: [fadeAnimation],
 })
-export class DialogPrefComponent implements OnInit {
+export class DialogPrefComponent implements OnInit, OnDestroy {
   facultyName: string = '';
   academicYear: string = '';
   semesterLabel: string = '';
@@ -59,14 +63,19 @@ export class DialogPrefComponent implements OnInit {
   selectedView: 'table-view' | 'pdf-view' = 'table-view';
   pdfBlobUrl: SafeResourceUrl | null = null;
 
+  private logoBase64: string = '';
+  private destroy$ = new Subject<void>();
+
   constructor(
     private preferencesService: PreferencesService,
     public dialogRef: MatDialogRef<DialogPrefComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogPrefData,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private logoCacheService: LogoCacheService
   ) {}
 
   ngOnInit(): void {
+    this.initializeLogo();
     this.isLoading = true;
     this.facultyName = this.data.facultyName;
 
@@ -105,6 +114,15 @@ export class DialogPrefComponent implements OnInit {
           this.isLoading = false;
         }
       );
+  }
+
+  private initializeLogo() {
+    this.logoCacheService
+      .getLogoBase64()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((base64) => {
+        this.logoBase64 = base64;
+      });
   }
 
   onViewChange(): void {
@@ -156,9 +174,10 @@ export class DialogPrefComponent implements OnInit {
      * Adds the header to the PDF.
      */
     const addHeader = () => {
-      const leftLogoUrl =
-        'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
-      doc.addImage(leftLogoUrl, 'PNG', margin, 10, logoSize, logoSize);
+
+      if (this.logoBase64) {
+        doc.addImage(this.logoBase64, 'PNG', margin, 10, logoSize, logoSize);
+      }
 
       doc.setFontSize(headerFont.size);
       doc.setFont(headerFont.font, headerFont.style);
@@ -341,5 +360,10 @@ export class DialogPrefComponent implements OnInit {
    */
   sanitizeFileName(fileName: string): string {
     return fileName.toLowerCase().replace(/[^a-z0-9]/g, '_');
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 }

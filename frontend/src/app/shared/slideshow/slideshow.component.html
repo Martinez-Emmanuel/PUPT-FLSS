@@ -1,18 +1,27 @@
 <div class="image-slideshow">
-    @for (image of images; track $index) {
-      <div
-        [style.background-image]="'url(' + image + ')'"
-        [class.active]="$index === currentIndex"
-        class="slideshow-image">
-      </div>
-    }
-    <div class="indicators">
-      @for (image of images; track $index) {
-        <div
-          [class.active]="$index === currentIndex"
-          class="indicator"
-          (click)="goToSlide($index)">
-        </div>
-      }
-    </div>
+  @if (isLoading) {
+  <div class="slideshow-loader">
+    <div class="loader-animation"></div>
   </div>
+  } @for (state of imageStates; track state.url) {
+  <div
+    [class.slideshow-image]="true"
+    [class.active]="images.indexOf(state.url) === currentIndex"
+    [class.loaded]="state.loaded"
+    [style.--image-url]="'url(' + state.url + ')'"
+    [attr.aria-hidden]="images.indexOf(state.url) !== currentIndex"
+  ></div>
+  }
+
+  <div class="indicators">
+    @for (state of imageStates; track state.url) {
+    <div
+      [class.indicator]="true"
+      [class.active]="images.indexOf(state.url) === currentIndex"
+      [class.loaded]="state.loaded"
+      (click)="goToSlide(images.indexOf(state.url))"
+      [attr.aria-label]="'Go to slide ' + (images.indexOf(state.url) + 1)"
+    ></div>
+    }
+  </div>
+</div>

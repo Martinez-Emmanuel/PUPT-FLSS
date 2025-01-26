@@ -4,6 +4,7 @@ import { Observable, forkJoin, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
 import { ReportsService } from '../reports/reports.service';
+import { LogoCacheService } from '../../cache/logo-cache.service';
 
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -56,10 +57,22 @@ interface Room {
   providedIn: 'root',
 })
 export class ReportGenerationService {
-  private readonly logoUrl =
-    'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
+  private logoBase64: string = '';
 
-  constructor(private reportsService: ReportsService) {}
+  constructor(
+    private reportsService: ReportsService,
+    private logoCacheService: LogoCacheService
+  ) {
+    this.initializeLogo();
+  }
+
+  private initializeLogo(): void {
+    this.logoCacheService.getLogoBase64().subscribe(
+      (base64) => {
+        this.logoBase64 = base64;
+      }
+    );
+  }
 
   /**
    * Generate all selected reports and return an array of { type: string; blob: Blob; }
@@ -326,15 +339,10 @@ export class ReportGenerationService {
       { align: 'center' }
     );
 
-    const logoXPosition = pageWidth / 25 + 25;
-    doc.addImage(
-      this.logoUrl,
-      'PNG',
-      logoXPosition,
-      startY - 5,
-      logoSize,
-      logoSize
-    );
+    if (this.logoBase64) {
+      const logoXPosition = pageWidth / 25 + 25;
+      doc.addImage(this.logoBase64, 'PNG', logoXPosition, startY - 5, logoSize, logoSize);
+    }
 
     let currentY = startY + 5;
 

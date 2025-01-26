@@ -21,6 +21,7 @@ import { DialogActionComponent } from '../../../../../shared/dialog-action/dialo
 import { DialogViewScheduleComponent } from '../../../../../shared/dialog-view-schedule/dialog-view-schedule.component';
 
 import { ReportsService } from '../../../../services/admin/reports/reports.service';
+import { LogoCacheService } from '../../../../services/cache/logo-cache.service';
 
 import { fadeAnimation } from '../../../../animations/animations';
 
@@ -90,21 +91,24 @@ export class ReportFacultyComponent
   sendEmail = true;
 
   private searchInput$ = new Subject<string>();
+  private logoBase64: string = '';
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   constructor(
     private reportsService: ReportsService,
     public dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private logoCacheService: LogoCacheService
   ) {}
 
   ngOnInit(): void {
     this.fetchFacultyData();
+    this.initializeLogo();
     this.searchInput$
       .pipe(
-        debounceTime(300), // Wait for 300ms pause in events
-        distinctUntilChanged() // Only emit if value is different from previous value
+        debounceTime(300),
+        distinctUntilChanged()
       )
       .subscribe((searchQuery) => {
         this.performSearch(searchQuery);
@@ -430,6 +434,14 @@ export class ReportFacultyComponent
     return doc.output('blob');
   }
 
+  private initializeLogo(): void {
+    this.logoCacheService.getLogoBase64().subscribe(
+      (base64) => {
+        this.logoBase64 = base64;
+      }
+    );
+  }
+
   // Helper method to draw the header
   private drawHeader(
     doc: jsPDF,
@@ -441,10 +453,11 @@ export class ReportFacultyComponent
     subtitle: string
   ): number {
     doc.setTextColor(0, 0, 0);
-    const logoUrl =
-      'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
-    const logoXPosition = pageWidth / 25 + 25;
-    doc.addImage(logoUrl, 'PNG', logoXPosition, startY - 5, logoSize, logoSize);
+
+    if (this.logoBase64) {
+      const logoXPosition = pageWidth / 25 + 25;
+      doc.addImage(this.logoBase64, 'PNG', logoXPosition, startY - 5, logoSize, logoSize);
+    }
 
     // Add the university name
     doc.setFontSize(12);

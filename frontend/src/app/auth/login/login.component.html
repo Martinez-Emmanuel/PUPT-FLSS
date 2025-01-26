@@ -1,5 +1,8 @@
 <!-- login.component.html -->
-<div class="login-container" [style.background-image]="currentBackgroundImage">
+<div
+  class="login-container"
+  [style.--background-image]="currentBackgroundImage"
+>
   <!--Login Image Section-->
   <div class="login-image-section">
     <app-slideshow
@@ -30,50 +33,60 @@
     <!-- Features Section -->
     <div class="features-section">
       <div class="feature-item">
-        <div class="feature-icon-wrapper">
-          <span mat-symbol="edit_calendar"></span>
+        <div class="feature-header">
+          <div class="feature-icon-wrapper">
+            <span mat-symbol="edit_calendar"></span>
+          </div>
+          <h3>Efficient Scheduling</h3>
         </div>
         <div class="feature-content">
-          <h3>Efficient Scheduling</h3>
           <p>
-            Real-time conflict detection with integrated faculty preferences for
+            Real-time conflict detection and smart automated resolution with integrated faculty preferences for
             seamless scheduling decisions
           </p>
         </div>
       </div>
+
       <div class="feature-item">
-        <div class="feature-icon-wrapper">
-          <span mat-symbol="analytics"></span>
+        <div class="feature-header">
+          <div class="feature-icon-wrapper">
+            <span mat-symbol="analytics"></span>
+          </div>
+          <h3>Automated Reports</h3>
         </div>
         <div class="feature-content">
-          <h3>Automated Reports</h3>
           <p>
-            Instantly generate schedule reports for faculty, programs, and rooms
+            Instantly generate and export detailed comprehensive schedule reports for faculty, programs, and rooms
             with a single click
           </p>
         </div>
       </div>
+
       <div class="feature-item">
-        <div class="feature-icon-wrapper">
-          <span mat-symbol="manage_accounts"></span>
+        <div class="feature-header">
+          <div class="feature-icon-wrapper">
+            <span mat-symbol="manage_accounts"></span>
+          </div>
+          <h3>Unified Faculty Portal</h3>
         </div>
         <div class="feature-content">
-          <h3>Unified Faculty Portal</h3>
           <p>
-            Submit teaching preferences and access official schedules seamlessly
+            Submit teaching preferences and access official schedules quickly and more efficiently
             in one unified platform
           </p>
         </div>
       </div>
 
       <div class="feature-item extra">
-        <div class="feature-icon-wrapper">
-          <span mat-symbol="database"></span>
+        <div class="feature-header">
+          <div class="feature-icon-wrapper">
+            <span mat-symbol="database"></span>
+          </div>
+          <h3>Comprehensive Data Management</h3>
         </div>
         <div class="feature-content">
-          <h3>Comprehensive Data Management</h3>
           <p>
-            Seamlessly manage curricula, program structures, and room resources
+            Seamlessly manage and organize complete curricula, program structures, and room resources
             in one integrated system
           </p>
         </div>
@@ -113,14 +126,14 @@
         mat-button
         class="toggle-button"
         [ngClass]="
-          (isDarkTheme | async) ? 'dark-theme sec-ripple' : 'light-theme'
+          (isDarkTheme$ | async) ? 'dark-theme sec-ripple' : 'light-theme'
         "
         (click)="toggleTheme()"
       >
         <mat-icon>
-          {{ (isDarkTheme | async) ? "dark_mode" : "light_mode" }}
+          {{ (isDarkTheme$ | async) ? "dark_mode" : "light_mode" }}
         </mat-icon>
-        <span> {{ (isDarkTheme | async) ? "Dark" : "Light" }} Theme </span>
+        <span> {{ (isDarkTheme$ | async) ? "Dark" : "Light" }} Theme </span>
       </button>
     </div>
   </div>

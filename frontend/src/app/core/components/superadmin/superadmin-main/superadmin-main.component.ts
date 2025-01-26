@@ -1,21 +1,6 @@
-import {
-  Component,
-  inject,
-  OnInit,
-  ViewChild,
-  AfterViewInit,
-  OnDestroy,
-  ElementRef,
-  Renderer2,
-  NgZone,
-} from '@angular/core';
-import { CommonModule, AsyncPipe } from '@angular/common';
-import {
-  RouterModule,
-  Router,
-  NavigationEnd,
-  ActivatedRoute,
-} from '@angular/router';
+import { Component, inject, OnInit, ViewChild, AfterViewInit, OnDestroy, ElementRef, Renderer2, NgZone } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule, Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { BreakpointObserver, Breakpoints } from '@angular/cdk/layout';
 
 import { Observable } from 'rxjs';
@@ -29,36 +14,29 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatDialog } from '@angular/material/dialog';
 
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
-import {
-  DialogGenericComponent,
-  DialogData,
-} from '../../../../shared/dialog-generic/dialog-generic.component';
-import {
-  slideInAnimation,
-  fadeAnimation,
-} from '../../../animations/animations';
+import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
+import { slideInAnimation, fadeAnimation } from '../../../animations/animations';
 
 import { AuthService } from '../../../services/auth/auth.service';
 import { ThemeService } from '../../../services/theme/theme.service';
 import { CookieService } from 'ngx-cookie-service';
 @Component({
-    selector: 'app-main',
-    templateUrl: './main.component.html',
-    styleUrls: ['./main.component.scss'],
-    imports: [
-        CommonModule,
-        RouterModule,
-        AsyncPipe,
-        MatToolbarModule,
-        MatButtonModule,
-        MatSidenavModule,
-        MatListModule,
-        MatIconModule,
-        MatSymbolDirective,
-    ],
-    animations: [fadeAnimation, slideInAnimation]
+  selector: 'app-superadmin-main',
+  templateUrl: './superadmin-main.component.html',
+  styleUrls: ['./superadmin-main.component.scss'],
+  imports: [
+    CommonModule,
+    RouterModule,
+    MatToolbarModule,
+    MatButtonModule,
+    MatSidenavModule,
+    MatListModule,
+    MatIconModule,
+    MatSymbolDirective,
+  ],
+  animations: [fadeAnimation, slideInAnimation],
 })
-export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
+export class SuperadminMainComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('drawer') drawer!: MatSidenav;
 
   private breakpointObserver = inject(BreakpointObserver);
@@ -66,8 +44,8 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
   public showSidenav = false;
   public isDropdownOpen = false;
   public pageTitle = 'Dashboard';
-  public accountName: string;
-  public accountRole: string;
+  public accountName!: string;
+  public accountRole!: string;
 
   private routeTitleMap: Record<string, string> = {
     dashboard: 'Dashboard',
@@ -97,11 +75,10 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
     private renderer: Renderer2,
     private ngZone: NgZone
   ) {
-    this.accountName = this.cookieService.get('user_name');
-    this.accountRole = this.toTitleCase(this.cookieService.get('user_role'));
   }
 
   ngOnInit(): void {
+    this.initializeUserData();
     this.router.events
       .pipe(
         filter(
@@ -114,7 +91,6 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    setTimeout(() => (this.showSidenav = true), 0);
     this.setupDocumentClickListener();
   }
 
@@ -122,16 +98,21 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
     this.removeDocumentClickListener();
   }
 
-  toggleTheme() {
+  private initializeUserData(): void {
+    this.accountName = this.cookieService.get('user_name');
+    this.accountRole = this.toTitleCase(this.cookieService.get('user_role'));
+  }
+
+  public toggleTheme() {
     this.themeService.toggleTheme();
   }
 
-  toggleDropdown(event: Event) {
+  public toggleDropdown(event: Event) {
     event.stopPropagation();
     this.isDropdownOpen = !this.isDropdownOpen;
   }
 
-  closeDropdown() {
+  public closeDropdown() {
     this.isDropdownOpen = false;
   }
 

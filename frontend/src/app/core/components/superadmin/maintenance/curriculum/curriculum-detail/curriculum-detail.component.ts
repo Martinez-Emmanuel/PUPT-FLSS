@@ -15,10 +15,11 @@ import { DialogExportComponent } from '../../../../../../shared/dialog-export/di
 import { LoadingComponent } from '../../../../../../shared/loading/loading.component';
 import { fadeAnimation, pageFloatUpAnimation } from '../../../../../animations/animations';
 
+import { CurriculumService, Curriculum, Program, YearLevel, Semester, Course, CourseRequirement } from '../../../../../services/superadmin/curriculum/curriculum.service';
+import { LogoCacheService } from '../../../../../services/cache/logo-cache.service';
+
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
-
-import { CurriculumService, Curriculum, Program, YearLevel, Semester, Course, CourseRequirement } from '../../../../../services/superadmin/curriculum/curriculum.service';
 
 interface TableCell {
   content: string;
@@ -47,6 +48,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
   public showPreview: boolean = false;
   public isLoading: boolean = true;
   public isManagingPrograms: boolean = false;
+  private logoBase64: string = '';
 
   headerInputFields: InputField[] = [
     {
@@ -93,7 +95,8 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
     private curriculumService: CurriculumService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
+    private logoCacheService: LogoCacheService
   ) {}
 
   // ===========================
@@ -105,6 +108,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
       this.fetchCurriculum(curriculumYear);
     }
 
+    this.initializeLogo();
     this.updateCustomExportOptions();
   }
 
@@ -116,6 +120,16 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
   // ===========================
   // Data Fetching and Updating
   // ===========================
+
+  private initializeLogo() {
+    this.logoCacheService
+      .getLogoBase64()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((base64) => {
+        this.logoBase64 = base64;
+      });
+  }
+
   fetchCurriculum(year: string) {
     this.isLoading = true;
     const previousSelectedProgram = this.selectedProgram;
@@ -1206,11 +1220,10 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
     title: string
   ): number {
     doc.setTextColor(0, 0, 0);
-    const logoUrl =
-      'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
-  
-    const logoXPosition = margin;
-    doc.addImage(logoUrl, 'PNG', logoXPosition, startY - 5, logoSize, logoSize);
+
+    if (this.logoBase64) {
+      doc.addImage(this.logoBase64, 'PNG', margin, 10, logoSize, logoSize);
+    };
   
     const centerX = pageWidth / 2;
   

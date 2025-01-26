@@ -15,6 +15,7 @@ import { LoadingComponent } from '../../../../../shared/loading/loading.componen
 import { DialogExportComponent } from '../../../../../shared/dialog-export/dialog-export.component';
 
 import { Building, BuildingsService } from '../../../../services/superadmin/buildings/buildings.service';
+import { LogoCacheService } from '../../../../services/cache/logo-cache.service';
 
 import { fadeAnimation } from '../../../../animations/animations';
 
@@ -39,6 +40,7 @@ export class BuildingsComponent implements OnInit, OnDestroy {
   private buildingsSubject = new BehaviorSubject<Building[]>([]);
   buildings$ = this.buildingsSubject.asObservable();
   private allBuildings: Building[] = [];
+  private logoBase64: string = '';
 
   columns = [
     { key: 'index', label: '#' },
@@ -62,10 +64,12 @@ export class BuildingsComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private buildingsService: BuildingsService
+    private buildingsService: BuildingsService,
+    private logoCacheService: LogoCacheService
   ) {}
 
   ngOnInit() {
+    this.initializeLogo();
     this.fetchBuildings();
     this.setupSearch();
   }
@@ -73,6 +77,15 @@ export class BuildingsComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  private initializeLogo() {
+    this.logoCacheService
+      .getLogoBase64()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((base64) => {
+        this.logoBase64 = base64;
+      });
   }
 
   private fetchBuildings() {
@@ -264,12 +277,9 @@ export class BuildingsComponent implements OnInit, OnDestroy {
     let currentY = topMargin;
 
     try {
-      // Add the university logo
-      const leftLogoUrl =
-        'https://iantuquib.weebly.com/uploads/5/9/7/7/59776029/2881282_orig.png';
-      doc.addImage(leftLogoUrl, 'PNG', margin, 10, logoSize, logoSize);
-
-      // Add header text
+      if (this.logoBase64) {
+        doc.addImage(this.logoBase64, 'PNG', margin, 10, logoSize, logoSize);
+      }
       doc.setFontSize(12);
       doc.setFont('times', 'bold');
       doc.text(
@@ -279,7 +289,6 @@ export class BuildingsComponent implements OnInit, OnDestroy {
         { align: 'center' }
       );
       currentY += 5;
-
       doc.setFontSize(12);
       doc.text(
         'Gen. Santos Ave. Upper Bicutan, Taguig City',
@@ -288,28 +297,22 @@ export class BuildingsComponent implements OnInit, OnDestroy {
         { align: 'center' }
       );
       currentY += 10;
-
       doc.setFontSize(15);
       doc.setTextColor(0, 0, 0);
       doc.text('Buildings Report', pageWidth / 2, currentY, {
         align: 'center',
       });
       currentY += 8;
-
-      // Add the horizontal line below the header
       doc.setDrawColor(0, 0, 0);
       doc.setLineWidth(0.5);
       doc.line(margin, currentY, pageWidth - margin, currentY);
       currentY += 7;
-
       const buildings = this.buildingsSubject.getValue();
       const bodyData = buildings.map((building, index) => [
         (index + 1).toString(),
         building.building_name,
         building.floor_levels.toString(),
       ]);
-
-      // Add table to PDF
       (doc as any).autoTable({
         startY: currentY,
         head: [['#', 'Building Name', 'Floor Levels']],
@@ -330,16 +333,15 @@ export class BuildingsComponent implements OnInit, OnDestroy {
           cellPadding: 2,
         },
         columnStyles: {
-          0: { cellWidth: 15 }, // #
-          1: { cellWidth: 100 }, // Building Name
-          2: { cellWidth: 40 }, // Floor Levels
+          0: { cellWidth: 15 },
+          1: { cellWidth: 100 },
+          2: { cellWidth: 40 },
         },
         margin: { left: margin, right: margin },
         didDrawPage: (data: any) => {
           currentY = data.cursor.y + 10;
         },
       });
-
       return doc.output('blob');
     } catch (error) {
       this.snackBar.open('Failed to generate PDF.', 'Close', {

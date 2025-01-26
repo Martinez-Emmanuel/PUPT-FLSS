@@ -2,11 +2,9 @@
 
 <mat-sidenav-container class="sidenav-container" autosize="true">
   <!--Side Nav Bar (Left Side)-->
-  @if (showSidenav) {
-
   <mat-sidenav
     #drawer
-    class="sidenav-bar"
+    class="sidenav"
     fixedInViewport
     [@slideInAnimation]
     [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
@@ -101,7 +99,6 @@
       </div>
     </mat-nav-list>
   </mat-sidenav>
-  }
 
   <!--Side Nav Content (Right Side)-->
   <mat-sidenav-content class="sidenav-content">

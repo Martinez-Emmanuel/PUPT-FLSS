@@ -12,12 +12,14 @@
 .login-container {
   display: flex;
   height: 100%;
+  background-image: var(--background-image);
   background-size: cover;
   background-position: center;
   position: relative;
   padding: var(--spacing-lg);
   box-sizing: border-box;
   transition: background-image 1s ease-in-out;
+  will-change: background-image;
 
   &::before {
     content: "";
@@ -42,9 +44,7 @@
 .login-image-section {
   padding: var(--spacing-lg);
   flex: 60%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  @include mixins.flex-layout($align: center, $justify: center);
 
   app-slideshow {
     width: 100%;
@@ -61,7 +61,7 @@
     $justify: flex-start,
     $gap: var(--spacing-md)
   );
-  padding: var(--spacing-2xl);
+  padding: var(--spacing-2xl) var(--spacing-xl);
   flex: 40%;
   width: 100%;
 
@@ -109,30 +109,36 @@
   .features-section {
     @include mixins.flex-layout(
       $direction: column,
-      $align: center,
-      $justify: center,
-      $gap: var(--spacing-lgx)
+      $gap: var(--spacing-md)
     );
-    padding: var(--spacing-md) 0;
+    padding: var(--spacing-sm) 0;
     width: inherit;
 
     .feature-item {
       @include mixins.flex-layout(
-        $direction: row,
-        $align: center,
+        $direction: column,
+        $align: flex-start,
         $justify: flex-start,
         $gap: var(--spacing-xs)
       );
-      border-radius: var(--border-radius-lg);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
-      width: fit-content;
+      width: 100%;
+
+      .feature-header {
+        @include mixins.flex-layout($gap: var(--spacing-xs));
+
+        h3 {
+          margin: 0;
+          font-size: var(--font-size-lg);
+          font-weight: 500;
+          color: var(--primary-text);
+        }
+      }
 
       .feature-icon-wrapper {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-width: 3.5rem;
-        height: 3.5rem;
+        @include mixins.flex-layout($align: center, $justify: center);
+        min-width: 2rem;
+        height: 2rem;
         border-radius: var(--border-radius-md);
         background: var(--surface-card);
         transition: background 0.3s ease;
@@ -147,21 +153,13 @@
       }
 
       .feature-content {
-        flex: 1;
-        text-align: justify;
-
-        h3 {
-          font-size: var(--font-size-lg);
-          font-weight: 500;
-          color: var(--primary-text);
-          margin: 0 0 var(--spacing-xxxs) 0;
-        }
-
         p {
+          margin: 0;
           font-size: var(--font-size-md);
           color: var(--neutral-base);
           line-height: 1.5;
-          margin: 0;
+          letter-spacing: var(--letter-spacing-xxs);
+          text-align: justify;
         }
       }
     }
@@ -291,60 +289,21 @@
   }
 }
 
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 500px) {
   .login-container {
-    padding: var(--spacing-sm);
+    padding: var(--spacing-smx);
+  }
+
+  .login-main-section .features-section {
+    @include mixins.flex-layout(
+      $direction: column,
+      $gap: var(--spacing-lg)
+    );
   }
 
   .login-main-section {
-    padding: var(--spacing-sm);
-    align-items: center;
-  }
-
-  .header-section {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-
-    .university-logo {
-      width: 2.5rem;
-    }
-
-    .university-name,
-    .system-name {
-      font-size: var(--font-size-xs);
-      text-align: center;
-    }
-  }
-}
-
-@media screen and (max-width: 320px) {
-  .login-container {
-    padding: var(--spacing-xs);
-  }
-
-  .login-main-section {
-    padding: var(--spacing-xs);
-    align-items: center;
-  }
-
-  .header-section {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-
-    .university-logo {
-      width: 2rem;
-    }
-
-    .header-text {
-      gap: var(--spacing-xxs);
-    }
-
-    .university-name,
-    .system-name {
-      font-size: var(--font-size-xxs);
-      text-align: center;
+    .buttons-section {
+      flex-direction: column;
     }
   }
 }
