@@ -684,7 +684,7 @@ export class ReportFacultyComponent
     const indent = 10;
     doc.setFont('helvetica', 'normal');
     doc.text(
-      `Professor ${facultyName}`,
+      `${facultyName}`,
       receivedByXPosition + indent,
       pageHeight - footerMargin + 8
     );

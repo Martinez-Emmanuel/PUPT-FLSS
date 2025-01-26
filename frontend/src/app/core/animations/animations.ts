@@ -26,13 +26,6 @@ export const slideInAnimation = trigger('slideInAnimation', [
       opacity: 0,
     })
   ),
-  state(
-    '*',
-    style({
-      transform: 'translateX(0)',
-      opacity: 1,
-    })
-  ),
   transition('void => *', animate('750ms cubic-bezier(0.16, 1, 0.3, 1)')),
   transition('* => void', animate('750ms cubic-bezier(0.7, 0, 0.84, 0)')),
 ]);
@@ -66,22 +59,6 @@ export const cardEntranceSide = trigger('cardEntranceSide', [
           animate(
             '400ms ease-out',
             style({ opacity: 1, transform: 'translateX(0)' })
-          ),
-        ]),
-      ],
-      { optional: true }
-    ),
-    query(
-      ':leave',
-      [
-        stagger('75ms', [
-          animate(
-            '500ms cubic-bezier(0.4, 0, 0.2, 1)',
-            style({
-              opacity: 0,
-              transform: 'translateX(30px) scale(0.95)',
-              filter: 'blur(2px)',
-            })
           ),
         ]),
       ],

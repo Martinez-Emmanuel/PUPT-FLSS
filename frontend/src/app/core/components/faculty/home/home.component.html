@@ -30,13 +30,13 @@
     <div class="active-year-sem-container">
       <!--Icon Container-->
       <div class="icon-container">
-        <span mat-symbol="event_note" weight="300"></span>
+        <span mat-symbol="event_note" weight="200"></span>
       </div>
       <!--Text Container-->
       <div class="text-container">
         <p class="text">
-          A.Y. {{ activeYear }},
-          {{ activeSemester }}
+          A.Y. {{ academicYear }},
+          {{ semester }}
         </p>
         <p class="label">Current Academic Year & Semester</p>
       </div>
@@ -46,36 +46,81 @@
     <div class="faculty-announcement">
       <!--Title-->
       <h2 class="card-title">
-        <span mat-symbol="notifications"></span>Notifications
+        <span mat-symbol="campaign"></span>Announcements
       </h2>
       <!--Content-->
       <div class="notifications-content">
-        <!--No notifications-->
-        @if (!notifications.length) {
-        <div class="no-notifications">
-          <img src="../../../../../assets/images/empty.svg" />
-          <div class="no-text">
-            <span mat-symbol="info"></span>
-            <span>No notifications yet.</span>
-          </div>
-        </div>
-        }
-        <!--Has notifications-->
-        @else {
-        <div [@cardEntranceSide]="notifications.length">
-          <div class="notifications-list">
-            @for (notification of notifications; track
-            notification.faculty_notifications_id) {
-            <div class="notification-item">
-              <p class="notification-message">{{ notification.message }}</p>
-              <span class="notification-timestamp">{{
-                notification.timestamp
-              }}</span>
+        <div class="announcements-list">
+          <!-- Preferences Submission Card -->
+          @if (facultyStatus.preferences_enabled ||
+          !facultyStatus.preferences_enabled &&
+          !facultyStatus.schedule_published) {
+          <div class="announcement-card preferences">
+            <!--Card Header-->
+            <div class="header">
+              <div class="icon-wrapper">
+                <span mat-symbol="clinical_notes"></span>
+              </div>
+              <h3>Faculty Preferences Submission</h3>
             </div>
-            }
+
+            <!--Card Content-->
+            <div class="content">
+              @if (facultyStatus.preferences_enabled) {
+              <p>
+                The submission for your course and schedule preferences is
+                <span class="highlight open">now open</span>. Go to
+                <em>Set Preferences</em> page to start.
+              </p>
+
+              <p class="secondary-text">
+                Make sure to finalize your preferences on or before the
+                submission closes on
+                <strong>
+                  {{ facultyStatus.preferences_deadline | date : "MMMM d, y" }}.
+                </strong>
+              </p>
+              } @else if (!facultyStatus.preferences_enabled &&
+              !facultyStatus.schedule_published) {
+              <p>
+                The preferences submission for the upcoming semester is now
+                <span class="highlight close">closed.</span>
+              </p>
+              <p class="secondary-text">
+                If you have not submitted your preferences yet or wish to make
+                changes, you may request to re-open your submission access
+                temporarily in <em>Set Preferences</em> page.
+              </p>
+              }
+            </div>
           </div>
+          }
+
+          <!-- Schedule Publication Card -->
+          @if (facultyStatus.schedule_published) {
+          <div class="announcement-card schedule">
+            <!--Card Header-->
+            <div class="header">
+              <div class="icon-wrapper">
+                <span mat-symbol="calendar_month"></span>
+              </div>
+              <h3>Faculty Official Load & Schedule</h3>
+            </div>
+            <!--Card Content-->
+            <div class="content">
+              <p>
+                Your official load and schedule for A.Y. {{ academicYear }},
+                {{ semester }} has been
+                <span class="highlight published">published.</span>
+              </p>
+              <p class="secondary-text">
+                You may now view them in the
+                <em>Load & Schedule</em> page.
+              </p>
+            </div>
+          </div>
+          }
         </div>
-        }
       </div>
     </div>
   </div>

@@ -242,6 +242,10 @@ span[mat-symbol] {
   padding: var(--spacing-xs);
   text-align: center;
 
+  &.max-cell {
+    max-width: 20rem;
+  }
+
   .faculty-type {
     width: fit-content;
     padding: var(--spacing-xxs) var(--spacing-sm);
@@ -451,4 +455,9 @@ span[mat-symbol] {
   --fc-button-active-border-color: transparent;
 
   --fc-today-bg-color: var(--primary-one-fade);
+}
+
+
+.sidenav-bar {
+  transition: background-color 0.3s ease !important;
 }

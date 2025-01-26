@@ -29,7 +29,10 @@ use Illuminate\Support\Facades\Route;
 | Authentication Routes
 |----------------------------
  */
-Route::post('login', [AuthController::class, 'login'])->name('login');
+Route::middleware('custom.ratelimit:login')->group(function () {
+    Route::post('login', [AuthController::class, 'login'])->name('login');
+});
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 });
@@ -131,7 +134,6 @@ Route::middleware('auth:sanctum')->group(function () {
      */
     Route::get('/faculty-notifications', [FacultyNotificationController::class, 'getFacultyNotifications']);
     Route::get('/request-notifications', [FacultyNotificationController::class, 'getRequestNotifications']);
-    Route::post('/faculty-notifications/{id}/read', [FacultyNotificationController::class, 'markAsRead']);
     Route::get('/notify-faculty-deadlines-single', [EmailController::class, 'notifyFacultyBeforeDeadlineSingle']);
     Route::post('/test-faculty-notification', [EmailController::class, 'singleDeadlineNotification']);
     Route::get('/notify-global-deadline', [EmailController::class, 'notifyGlobalFacultyDeadline']);
@@ -173,8 +175,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/single-faculty-schedule/{faculty_id}', [ReportsController::class, 'getSingleFacultySchedule']);
     Route::get('/faculty-schedule-history/{faculty_id}', [ReportsController::class, 'getFacultyScheduleHistory']);
     Route::get('/faculty-academic-years-history/{faculty_id}', [ReportsController::class, 'getFacultyAcademicYearsHistory']);
-    Route::post('/toggle-all-schedule', [ReportsController::class, 'toggleAllSchedules']);
-    Route::post('/toggle-single-schedule', [ReportsController::class, 'toggleSingleSchedule']);
     Route::get('/overview-details', [ReportsController::class, 'getOverviewDetails']);
 
     /**
@@ -203,6 +203,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/remove-duplicate-course', [ScheduleController::class, 'removeDuplicateCourse']);
     Route::get('/get-active-faculty', [FacultyController::class, 'getFacultyDetails']);
     Route::get('/get-available-rooms', [RoomController::class, 'getAllRooms']);
+    Route::post('/toggle-all-schedule', [ScheduleController::class, 'toggleAllSchedules']);
+    Route::post('/toggle-single-schedule', [ScheduleController::class, 'toggleSingleSchedule']);
 
     /**
      * Semester
@@ -248,6 +250,16 @@ Route::prefix('external')->group(function () {
         Route::prefix('v1')->group(function () {
             Route::get('/course-schedules', [ExternalController::class, 'FARMSCourseSchedules']);
             Route::get('/course-files', [ExternalController::class, 'FARMSCourseFiles']);
+        });
+    });
+
+    /**
+     * Biometric Synchronization System (BioSync)
+     */
+    Route::prefix('biosync')->middleware(['check.hmac:biosync'])->group(function () {
+        // Version 1
+        Route::prefix('v1')->group(function () {
+            Route::get('/computer-laboratory-schedules', [ExternalController::class, 'BIOSYNCComputerLabSchedules']);
         });
     });
 });

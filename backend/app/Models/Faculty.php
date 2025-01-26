@@ -62,4 +62,13 @@ class Faculty extends Authenticatable
     {
         return $this->hasMany(FacultySchedulePublication::class, 'faculty_id', 'id');
     }
+
+    public function isSchedulePublished($academicYearId, $semesterId)
+    {
+        return $this->schedulePublications()
+            ->where('academic_year_id', $academicYearId)
+            ->where('semester_id', $semesterId)
+            ->where('is_published', true)
+            ->exists();
+    }
 }

@@ -6,7 +6,6 @@ use App\Jobs\NotifyAdminOfPreferenceChangeJob;
 use App\Jobs\SendFacultyPreferenceEmailJob;
 use App\Models\ActiveSemester;
 use App\Models\Faculty;
-use App\Models\FacultyNotification;
 use App\Models\Preference;
 use App\Models\PreferenceDay;
 use App\Models\PreferencesSetting;
@@ -542,37 +541,13 @@ class PreferenceController extends Controller
                 ]);
             }
 
-            // Prepare notification message
-            $academicYear = $this->getCurrentAcademicYear();
-            $message = $status
-            ? "Preferences submission is now open for A.Y. {$academicYear}."
-            : "Preferences submission is set to start on {$global_start_date} for A.Y. {$academicYear}.";
-
-            // Fetch all faculty IDs
-            $facultyIds = Faculty::pluck('id');
-
-            // Create notifications for all faculties
-            $notifications = $facultyIds->map(function ($facultyId) use ($message) {
-                return [
-                    'faculty_id' => $facultyId,
-                    'message' => $message,
-                    'is_read' => 0,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ];
-            })->toArray();
-
-            FacultyNotification::insert($notifications);
-
             // Dispatch email jobs if sendEmail is true
             if ($sendEmail) {
                 $faculties = Faculty::all();
                 foreach ($faculties as $faculty) {
-                    // Only send email immediately if preferences are enabled now
                     if ($finalStatus) {
                         SendFacultyPreferenceEmailJob::dispatch($faculty->id);
                     } else if ($startDate) {
-                        // Schedule the email to be sent on the start date
                         SendFacultyPreferenceEmailJob::dispatch($faculty->id)->delay($startDate);
                     }
                 }
@@ -584,6 +559,18 @@ class PreferenceController extends Controller
                 ? $startDate->diffInDays($global_deadline)
                 : 'Start date or deadline not set',
             ]);
+
+            // Clear all faculty schedule publications for the active semester
+            $activeSemester = ActiveSemester::where('is_active', 1)->first();
+            if ($activeSemester) {
+                DB::table('faculty_schedule_publication')
+                    ->where('academic_year_id', $activeSemester->academic_year_id)
+                    ->where('semester_id', $activeSemester->semester_id)
+                    ->update([
+                        'is_published' => 0,
+                        'updated_at' => now()
+                    ]);
+            }
         });
 
         return response()->json([
@@ -648,19 +635,6 @@ class PreferenceController extends Controller
                 'has_request' => 0,
             ]);
 
-            // Prepare notification message
-            $academicYear = $this->getCurrentAcademicYear();
-            $message = $status
-            ? "Your preferences submission is now open for A.Y. {$academicYear}."
-            : "Your preferences submission is set to start on {$individual_start_date} for A.Y. {$academicYear}.";
-
-            // Create notification for the specific faculty
-            FacultyNotification::create([
-                'faculty_id' => $faculty_id,
-                'message' => $message,
-                'is_read' => 0,
-            ]);
-
             // Dispatch email job if sendEmail is true
             if ($sendEmail) {
                 $faculty = Faculty::find($faculty_id);
@@ -679,6 +653,19 @@ class PreferenceController extends Controller
                 ? $startDate->diffInDays($individual_deadline)
                 : 'Start date or deadline not set',
             ]);
+
+            // Clear schedule publications for the specific faculty in the active semester
+            $activeSemester = ActiveSemester::where('is_active', 1)->first();
+            if ($activeSemester) {
+                DB::table('faculty_schedule_publication')
+                    ->where('faculty_id', $faculty_id)
+                    ->where('academic_year_id', $activeSemester->academic_year_id)
+                    ->where('semester_id', $activeSemester->semester_id)
+                    ->update([
+                        'is_published' => 0,
+                        'updated_at' => now()
+                    ]);
+            }
         });
 
         return response()->json([

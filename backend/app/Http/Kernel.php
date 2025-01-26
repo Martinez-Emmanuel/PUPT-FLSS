@@ -42,9 +42,8 @@ class Kernel extends HttpKernel
 
         'api' => [
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
-            \Illuminate\Routing\Middleware\ThrottleRequests::class.':api',
+            \Illuminate\Routing\Middleware\ThrottleRequests::class . ':api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
-            
         ],
 
     ];
@@ -72,5 +71,6 @@ class Kernel extends HttpKernel
         'encrypt.response' => \App\Http\Middleware\EncryptJsonResponse::class,
         'check.api.key' => \App\Http\Middleware\CheckApiKey::class,
         'check.hmac' => \App\Http\Middleware\CheckHmac::class,
+        'custom.ratelimit' => \App\Http\Middleware\CustomRateLimiter::class,
     ];
 }

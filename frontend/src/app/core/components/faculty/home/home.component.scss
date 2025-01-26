@@ -20,9 +20,9 @@
     $direction: column,
     $align: flex-start,
     $justify: flex-start,
-    $gap: var(--spacing-md)
+    $gap: var(--spacing-lg)
   );
-  flex: 9;
+  flex: 1;
 
   #home_greetings {
     display: flex;
@@ -54,7 +54,7 @@
     user-select: none;
 
     .full-calendar {
-      max-height: 30rem;
+      max-height: 29rem;
       overflow-y: auto;
     }
   }
@@ -64,9 +64,9 @@
   @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
-    $gap: var(--spacing-md)
+    $gap: var(--spacing-lg)
   );
-  flex: 3;
+  flex: 0;
   min-height: 0;
 
   .active-year-sem-container {
@@ -132,13 +132,23 @@
     padding: var(--spacing-md);
 
     .card-title {
-      @include mixins.flex-layout($justify: flex-start, $gap: var(--spacing-xs));
+      @include mixins.flex-layout(
+        $justify: flex-start,
+        $gap: var(--spacing-xs)
+      );
       font-size: var(--font-size-mdx);
-      font-weight: 500;
+      font-weight: 600;
       flex-shrink: 0;
 
       span[mat-symbol] {
-        font-size: var(--font-size-lg);
+        font-size: var(--font-size-xl);
+        display: inline-block;
+        animation: pulse-wiggle 5s cubic-bezier(0.4, 0, 0.2, 1) 3;
+        transform-origin: center;
+        backface-visibility: hidden;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+        will-change: transform;
       }
     }
 
@@ -147,62 +157,136 @@
       min-height: 0;
       overflow-y: auto;
       padding: 0 2px;
-      @include mixins.flex-layout($align: stretch);
+      @include mixins.flex-layout($align: stretch, $justify: flex-start);
 
-      .loading-notifications {
-        height: 100%;
-        width: 80%;
-      }
-
-      .no-notifications {
-        height: 100%;
-        @include mixins.flex-layout($direction: column);
-        opacity: var(--opacity-semi-opaque);
-
-        .no-text {
-          @include mixins.flex-layout($gap: var(--spacing-xs));
-          font-size: var(--font-size-md);
-          text-align: center;
-
-          span[mat-symbol] {
-            font-size: var(--font-size-md);
-          }
-        }
-
-        img {
-          width: 80%;
-        }
-      }
-
-      .notifications-list {
+      .announcements-list {
         @include mixins.flex-layout(
           $direction: column,
           $align: stretch,
           $justify: flex-start,
-          $gap: var(--spacing-sm)
+          $gap: var(--spacing-md)
         );
 
-        .notification-item {
-          padding: var(--spacing-sm);
-          border-radius: var(--border-radius-sm);
+        .announcement-card {
+          @include mixins.flex-layout(
+            $direction: column,
+            $gap: var(--spacing-sm)
+          );
+          padding: var(--spacing-md);
+          border-radius: var(--border-radius-md);
           background-color: var(--main-bg);
-          border-left: 5px solid var(--primary-one);
-          box-shadow: var(--shadow-level-1);
+          box-shadow: var(--shadow-level-0);
 
-          .notification-message {
-            margin: 0 0 var(--spacing-xs) 0;
-            color: var(--neutral-base);
-            font-size: var(--font-size-md);
+          .header {
+            @include mixins.flex-layout(
+              $align: center,
+              $gap: var(--spacing-sm)
+            );
+
+            .icon-wrapper {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              width: 40px;
+              height: 40px;
+              border-radius: var(--border-radius-sm);
+              flex-shrink: 0;
+
+              span[mat-symbol] {
+                font-size: var(--font-size-xl);
+              }
+            }
+
+            h3 {
+              margin: 0;
+              font-size: var(--font-size-md);
+              font-weight: 500;
+            }
           }
 
-          .notification-timestamp {
-            display: block;
-            color: var(--neutral-base);
-            font-size: var(--font-size-sm);
-            opacity: var(--opacity-semi-opaque);
+          .content {
+            p {
+              margin: 0;
+              color: var(--neutral-base);
+              line-height: var(--line-height-md);
+              font-size: var(--font-size-smx);
+              text-align: left;
+
+              &.secondary-text {
+                margin-top: var(--spacing-sm);
+              }
+
+              .highlight {
+                font-weight: 600;
+
+                &.open,
+                &.published {
+                  color: var(--green-primary);
+                }
+
+                &.close {
+                  color: var(--primary-text);
+                }
+              }
+            }
+          }
+
+          // Specific card styles
+          &.preferences {
+            .icon-wrapper {
+              background-color: var(--purple-fade-lighter);
+              color: var(--purple-primary);
+            }
+
+            h3 {
+              color: var(--purple-primary);
+            }
+          }
+
+          &.schedule {
+            .icon-wrapper {
+              background-color: var(--blue-fade-lighter);
+              color: var(--blue-primary);
+            }
+
+            h3 {
+              color: var(--blue-primary);
+            }
           }
         }
       }
     }
+  }
+}
+
+@keyframes float-bounce {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-4px) rotate(3deg);
+  }
+  50% {
+    transform: translateY(-2px) rotate(-2deg);
+  }
+  75% {
+    transform: translateY(-4px) rotate(1deg);
+  }
+}
+
+@keyframes pulse-wiggle {
+  0%,
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+  25% {
+    transform: scale(1.1) rotate(-5deg);
+  }
+  50% {
+    transform: scale(1.05) rotate(0deg);
+  }
+  75% {
+    transform: scale(1.1) rotate(5deg);
   }
 }

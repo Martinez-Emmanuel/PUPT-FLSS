@@ -6,14 +6,15 @@ import { catchError, tap } from 'rxjs/operators';
 
 import { environment } from '../../../../../environments/environment.dev';
 
-export interface Notification {
-  faculty_notifications_id: number;
-  faculty_id: number;
-  message: string;
-  is_read: number;
-  created_at: string;
-  updated_at: string;
-  timestamp?: string;
+export interface FacultyNotificationResponse {
+  academic_year: string;
+  semester: string;
+  faculty_status: {
+    preferences_enabled: boolean;
+    schedule_published: boolean;
+    preferences_deadline: string | null;
+    preferences_start: string | null;
+  };
 }
 
 @Injectable({
@@ -22,19 +23,21 @@ export interface Notification {
 export class FacultyNotificationService {
   private baseUrl = environment.apiUrl;
 
-  private notificationsCache$ = new ReplaySubject<{
-    notifications: Notification[];
-  }>(1);
+  private notificationsCache$ = new ReplaySubject<FacultyNotificationResponse>(
+    1
+  );
   private cacheExpirationTime: number = 0;
-  private cacheTTL: number = 5 * 60 * 1000;
+  private cacheTTL: number = 5 * 60 * 1000; // 5 minutes
 
   constructor(private http: HttpClient) {}
 
   /**
-   * Fetch notifications for the authenticated faculty.
-   * Implements caching to minimize API calls.
+   * Fetch notifications and status for the faculty.
+   * @param facultyId - The ID of the faculty member
    */
-  getFacultyNotifications(): Observable<{ notifications: Notification[] }> {
+  getFacultyNotifications(
+    facultyId: number
+  ): Observable<FacultyNotificationResponse> {
     const now = Date.now();
 
     // If cache is available and valid, return cached data
@@ -44,8 +47,9 @@ export class FacultyNotificationService {
 
     // Fetch from API if cache is expired or doesn't exist
     return this.http
-      .get<{ notifications: Notification[] }>(
-        `${this.baseUrl}/faculty-notifications`
+      .get<FacultyNotificationResponse>(
+        `${this.baseUrl}/faculty-notifications`,
+        { params: { faculty_id: facultyId.toString() } }
       )
       .pipe(
         tap((response) => {
@@ -54,16 +58,6 @@ export class FacultyNotificationService {
         }),
         catchError(this.handleError)
       );
-  }
-
-  /**
-   * Mark a specific notification as read.
-   * @param notificationId - ID of the notification to mark as read.
-   */
-  markAsRead(notificationId: number): Observable<any> {
-    return this.http
-      .post(`${this.baseUrl}/faculty-notifications/${notificationId}/read`, {})
-      .pipe(catchError(this.handleError));
   }
 
   /**
