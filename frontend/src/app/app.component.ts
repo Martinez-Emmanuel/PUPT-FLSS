@@ -25,12 +25,9 @@ export class AppComponent implements OnInit {
   }
 
   getRouteState(outlet: RouterOutlet) {
-    // Get the current route's parent path if it exists
-    const parentPath = outlet?.activatedRouteData?.['role'] || 
-                      outlet?.activatedRouteData?.['animation'] || 
+    const parentPath = outlet?.activatedRouteData?.['role'] ||
+                      outlet?.activatedRouteData?.['animation'] ||
                       'default';
-    
-    // Return the parent path for animation state
     return parentPath;
   }
 }
