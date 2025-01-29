@@ -17,7 +17,7 @@ const authenticatedRoutes: Routes = [
       import('./core/components/admin/admin.routes').then(
         (m) => m.ADMIN_ROUTES
       ),
-    data: { role: 'admin' },
+    data: { role: 'admin', animation: 'admin' },
   },
   {
     path: 'superadmin',
@@ -25,7 +25,7 @@ const authenticatedRoutes: Routes = [
       import('./core/components/superadmin/superadmin.routes').then(
         (m) => m.SUPERADMIN_ROUTES
       ),
-    data: { role: 'superadmin' },
+    data: { role: 'superadmin', animation: 'superadmin' },
   },
 ];
 
