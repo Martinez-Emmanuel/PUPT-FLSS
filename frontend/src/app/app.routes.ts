@@ -35,7 +35,10 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./auth/login/login.component').then((m) => m.LoginComponent),
     canActivate: [UnauthGuard],
-    data: { animation: 'login' },
+    data: { 
+      animation: 'login',
+      pageTitle: 'Login' 
+    },
   },
   {
     path: 'auth/callback',

@@ -17,6 +17,7 @@ export const FACULTY_ROUTES: Routes = [
         path: 'home',
         loadComponent: () =>
           import('./home/home.component').then((m) => m.HomeComponent),
+        data: { pageTitle: 'Home' }
       },
       {
         path: 'preferences',
@@ -24,6 +25,7 @@ export const FACULTY_ROUTES: Routes = [
           import('./preferences/preferences.component').then(
             (m) => m.PreferencesComponent
           ),
+        data: { pageTitle: 'Set Preferences' }
       },
       {
         path: 'load-and-schedule',
@@ -31,6 +33,7 @@ export const FACULTY_ROUTES: Routes = [
           import('./load-and-schedule/load-and-schedule.component').then(
             (m) => m.LoadAndScheduleComponent
           ),
+        data: { pageTitle: 'Load and Schedule' }
       },
       {
         path: '**',

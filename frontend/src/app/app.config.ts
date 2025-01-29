@@ -11,6 +11,7 @@ import { CookieService } from 'ngx-cookie-service';
 
 import { routes } from './app.routes';
 import { AuthGuard } from './core/guards/auth.guard';
+import { Title } from '@angular/platform-browser';
 
 /** Global Material Ripple Configuration */
 const globalRippleConfig: RippleGlobalOptions = {
@@ -37,6 +38,7 @@ export const appConfig: ApplicationConfig = {
     /** Custom Providers */
     AuthGuard,
     CookieService,
+    Title,
 
     /** Angular Material Configurations */
     { provide: MAT_RIPPLE_GLOBAL_OPTIONS, useValue: globalRippleConfig },
