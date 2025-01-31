@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Jobs\NotifyAdminOfPreferenceChangeJob;
@@ -23,25 +22,25 @@ class PreferenceController extends Controller
     public function submitPreferences(Request $request)
     {
         $validatedData = $request->validate([
-            'faculty_id' => 'required|exists:faculty,id',
-            'active_semester_id' => 'required|exists:active_semesters,active_semester_id',
-            'course_assignment_id' => 'required|exists:course_assignments,course_assignment_id',
-            'preferred_days' => 'required|array',
-            'preferred_days.*.day' => 'required|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
+            'faculty_id'                  => 'required|exists:faculty,id',
+            'active_semester_id'          => 'required|exists:active_semesters,active_semester_id',
+            'course_assignment_id'        => 'required|exists:course_assignments,course_assignment_id',
+            'preferred_days'              => 'required|array',
+            'preferred_days.*.day'        => 'required|in:Monday,Tuesday,Wednesday,Thursday,Friday,Saturday,Sunday',
             'preferred_days.*.start_time' => 'required|date_format:H:i:s',
-            'preferred_days.*.end_time' => 'required|date_format:H:i:s',
+            'preferred_days.*.end_time'   => 'required|date_format:H:i:s',
         ]);
 
-        $facultyId = $validatedData['faculty_id'];
-        $activeSemesterId = $validatedData['active_semester_id'];
+        $facultyId          = $validatedData['faculty_id'];
+        $activeSemesterId   = $validatedData['active_semester_id'];
         $courseAssignmentId = $validatedData['course_assignment_id'];
 
-        $preferenceSetting = PreferencesSetting::where('faculty_id', $facultyId)->first();
-        $globalDeadline = $preferenceSetting->global_deadline;
+        $preferenceSetting  = PreferencesSetting::where('faculty_id', $facultyId)->first();
+        $globalDeadline     = $preferenceSetting->global_deadline;
         $individualDeadline = $preferenceSetting->individual_deadline;
 
         $currentDate = Carbon::now();
-        $deadline = $individualDeadline ?? $globalDeadline;
+        $deadline    = $individualDeadline ?? $globalDeadline;
 
         if ($preferenceSetting->is_enabled == 0 || ($deadline && $currentDate->greaterThan(Carbon::parse($deadline)->endOfDay()))) {
             return response()->json([
@@ -52,8 +51,8 @@ class PreferenceController extends Controller
         DB::transaction(function () use ($validatedData, $facultyId, $activeSemesterId, $courseAssignmentId) {
             $preference = Preference::updateOrCreate(
                 [
-                    'faculty_id' => $facultyId,
-                    'active_semester_id' => $activeSemesterId,
+                    'faculty_id'           => $facultyId,
+                    'active_semester_id'   => $activeSemesterId,
                     'course_assignment_id' => $courseAssignmentId,
                 ],
                 []
@@ -65,9 +64,9 @@ class PreferenceController extends Controller
                 ->get()
                 ->map(function ($day) {
                     return [
-                        'day' => $day->preferred_day,
+                        'day'        => $day->preferred_day,
                         'start_time' => $day->preferred_start_time,
-                        'end_time' => $day->preferred_end_time,
+                        'end_time'   => $day->preferred_end_time,
                     ];
                 })->toArray();
 
@@ -83,10 +82,10 @@ class PreferenceController extends Controller
                 // Create new preference days with start and end times
                 foreach ($newDays as $dayData) {
                     PreferenceDay::create([
-                        'preference_id' => $preference->preferences_id,
-                        'preferred_day' => $dayData['day'],
+                        'preference_id'        => $preference->preferences_id,
+                        'preferred_day'        => $dayData['day'],
                         'preferred_start_time' => $dayData['start_time'],
-                        'preferred_end_time' => $dayData['end_time'],
+                        'preferred_end_time'   => $dayData['end_time'],
                     ]);
                 }
             }
@@ -108,7 +107,7 @@ class PreferenceController extends Controller
             ->where('is_active', 1)
             ->first();
 
-        if (!$activeSemester) {
+        if (! $activeSemester) {
             return response()->json(['error' => 'No active semester found'], 404);
         }
 
@@ -126,8 +125,8 @@ class PreferenceController extends Controller
             ->get();
 
         $facultyPreferences = $faculty->groupBy('id')->map(function ($facultyGroup) use ($activeSemester) {
-            $faculty = $facultyGroup->first();
-            $facultyUser = $faculty->user;
+            $faculty           = $facultyGroup->first();
+            $facultyUser       = $faculty->user;
             $preferenceSetting = $faculty->preferenceSetting;
 
             $courses = $facultyGroup->map(function ($preference) {
@@ -137,54 +136,54 @@ class PreferenceController extends Controller
                         ->get()
                         ->map(function ($day) {
                             return [
-                                'day' => $day->preferred_day,
+                                'day'        => $day->preferred_day,
                                 'start_time' => $day->preferred_start_time,
-                                'end_time' => $day->preferred_end_time,
+                                'end_time'   => $day->preferred_end_time,
                             ];
                         })->values()->toArray();
 
                     return [
                         'course_assignment_id' => $preference->course_assignment_id ?? 'N/A',
-                        'course_details' => [
-                            'course_id' => $preference->course_id ?? 'N/A',
-                            'course_code' => $preference->course_code ?? null,
+                        'course_details'       => [
+                            'course_id'    => $preference->course_id ?? 'N/A',
+                            'course_code'  => $preference->course_code ?? null,
                             'course_title' => $preference->course_title ?? null,
                         ],
-                        'lec_hours' => is_numeric($preference->lec_hours) ? (int) $preference->lec_hours : 0,
-                        'lab_hours' => is_numeric($preference->lab_hours) ? (int) $preference->lab_hours : 0,
-                        'units' => $preference->units ?? 0,
-                        'preferred_days' => $preferenceDays,
-                        'created_at' => $preference->created_at ? Carbon::parse($preference->created_at)->toDateTimeString() : 'N/A',
-                        'updated_at' => $preference->updated_at ? Carbon::parse($preference->updated_at)->toDateTimeString() : 'N/A',
+                        'lec_hours'            => is_numeric($preference->lec_hours) ? (int) $preference->lec_hours : 0,
+                        'lab_hours'            => is_numeric($preference->lab_hours) ? (int) $preference->lab_hours : 0,
+                        'units'                => $preference->units ?? 0,
+                        'preferred_days'       => $preferenceDays,
+                        'created_at'           => $preference->created_at ? Carbon::parse($preference->created_at)->toDateTimeString() : 'N/A',
+                        'updated_at'           => $preference->updated_at ? Carbon::parse($preference->updated_at)->toDateTimeString() : 'N/A',
                     ];
                 }
                 return [];
             })->filter();
 
             return [
-                'faculty_id' => $faculty->id,
-                'faculty_name' => $facultyUser->formatted_name ?? 'N/A',
-                'faculty_code' => $facultyUser->code ?? 'N/A',
-                'faculty_type' => $faculty->facultyType->faculty_type ?? 'N/A',
-                'faculty_units' => $faculty->faculty_units,
-                'has_request' => (int) ($preferenceSetting->has_request ?? 0),
-                'is_enabled' => (int) ($preferenceSetting->is_enabled ?? 0),
+                'faculty_id'       => $faculty->id,
+                'faculty_name'     => $facultyUser->formatted_name ?? 'N/A',
+                'faculty_code'     => $facultyUser->code ?? 'N/A',
+                'faculty_type'     => $faculty->facultyType->faculty_type ?? 'N/A',
+                'faculty_units'    => $faculty->faculty_units,
+                'has_request'      => (int) ($preferenceSetting->has_request ?? 0),
+                'is_enabled'       => (int) ($preferenceSetting->is_enabled ?? 0),
                 'active_semesters' => [
                     [
-                        'active_semester_id' => $activeSemester->active_semester_id,
-                        'academic_year_id' => $activeSemester->academic_year_id,
-                        'academic_year' => $activeSemester->academicYear->year_start . '-' . $activeSemester->academicYear->year_end,
-                        'semester_id' => $activeSemester->semester_id,
-                        'semester_label' => $this->getSemesterLabel($activeSemester->semester_id),
-                        'global_start_date' => $preferenceSetting && $preferenceSetting->global_start_date
+                        'active_semester_id'    => $activeSemester->active_semester_id,
+                        'academic_year_id'      => $activeSemester->academic_year_id,
+                        'academic_year'         => $activeSemester->academicYear->year_start . '-' . $activeSemester->academicYear->year_end,
+                        'semester_id'           => $activeSemester->semester_id,
+                        'semester_label'        => $this->getSemesterLabel($activeSemester->semester_id),
+                        'global_start_date'     => $preferenceSetting && $preferenceSetting->global_start_date
                         ? Carbon::parse($preferenceSetting->global_start_date)->toDateString() : null,
                         'individual_start_date' => $preferenceSetting && $preferenceSetting->individual_start_date
                         ? Carbon::parse($preferenceSetting->individual_start_date)->toDateString() : null,
-                        'global_deadline' => $preferenceSetting && $preferenceSetting->global_deadline
+                        'global_deadline'       => $preferenceSetting && $preferenceSetting->global_deadline
                         ? Carbon::parse($preferenceSetting->global_deadline)->toDateString() : null,
-                        'individual_deadline' => $preferenceSetting && $preferenceSetting->individual_deadline
+                        'individual_deadline'   => $preferenceSetting && $preferenceSetting->individual_deadline
                         ? Carbon::parse($preferenceSetting->individual_deadline)->toDateString() : null,
-                        'courses' => $courses->toArray(),
+                        'courses'               => $courses->toArray(),
                     ],
                 ],
             ];
@@ -215,7 +214,7 @@ class PreferenceController extends Controller
             ->where('is_active', 1)
             ->first();
 
-        if (!$activeSemester) {
+        if (! $activeSemester) {
             return response()->json(['error' => 'No active semester found'], 404);
         }
 
@@ -230,8 +229,8 @@ class PreferenceController extends Controller
             ->get();
 
         $facultyPreferences = $faculty->groupBy('id')->map(function ($facultyGroup) use ($activeSemester) {
-            $faculty = $facultyGroup->first();
-            $facultyUser = $faculty->user;
+            $faculty           = $facultyGroup->first();
+            $facultyUser       = $faculty->user;
             $preferenceSetting = $faculty->preferenceSetting;
 
             $courses = $facultyGroup->flatMap(function ($preference) use ($activeSemester) {
@@ -241,9 +240,9 @@ class PreferenceController extends Controller
                         ->get()
                         ->map(function ($day) {
                             return [
-                                'day' => $day->preferred_day,
+                                'day'        => $day->preferred_day,
                                 'start_time' => $day->preferred_start_time,
-                                'end_time' => $day->preferred_end_time,
+                                'end_time'   => $day->preferred_end_time,
                             ];
                         })->values()->toArray();
 
@@ -265,17 +264,17 @@ class PreferenceController extends Controller
                     return $relatedCourses->map(function ($course) use ($preference, $preferenceDays) {
                         return [
                             'course_assignment_id' => $course->course_assignment_id ?? 'N/A',
-                            'course_details' => [
-                                'course_id' => $course->course_id ?? 'N/A',
-                                'course_code' => $course->course_code ?? null,
+                            'course_details'       => [
+                                'course_id'    => $course->course_id ?? 'N/A',
+                                'course_code'  => $course->course_code ?? null,
                                 'course_title' => $course->course_title ?? null,
                             ],
-                            'lec_hours' => is_numeric($course->lec_hours) ? (int) $course->lec_hours : 0,
-                            'lab_hours' => is_numeric($course->lab_hours) ? (int) $course->lab_hours : 0,
-                            'units' => $course->units ?? 0,
-                            'preferred_days' => $preferenceDays,
-                            'created_at' => $preference->created_at ? Carbon::parse($preference->created_at)->toDateTimeString() : 'N/A',
-                            'updated_at' => $preference->updated_at ? Carbon::parse($preference->updated_at)->toDateTimeString() : 'N/A',
+                            'lec_hours'            => is_numeric($course->lec_hours) ? (int) $course->lec_hours : 0,
+                            'lab_hours'            => is_numeric($course->lab_hours) ? (int) $course->lab_hours : 0,
+                            'units'                => $course->units ?? 0,
+                            'preferred_days'       => $preferenceDays,
+                            'created_at'           => $preference->created_at ? Carbon::parse($preference->created_at)->toDateTimeString() : 'N/A',
+                            'updated_at'           => $preference->updated_at ? Carbon::parse($preference->updated_at)->toDateTimeString() : 'N/A',
                         ];
                     });
                 }
@@ -283,29 +282,29 @@ class PreferenceController extends Controller
             })->filter();
 
             return [
-                'faculty_id' => $faculty->id,
-                'faculty_name' => $facultyUser->formatted_name ?? 'N/A',
-                'faculty_code' => $facultyUser->code ?? 'N/A',
-                'faculty_type' => $faculty->facultyType->faculty_type ?? 'N/A',
-                'faculty_units' => $faculty->faculty_units,
-                'has_request' => (int) ($preferenceSetting->has_request ?? 0),
-                'is_enabled' => (int) ($preferenceSetting->is_enabled ?? 0),
+                'faculty_id'       => $faculty->id,
+                'faculty_name'     => $facultyUser->formatted_name ?? 'N/A',
+                'faculty_code'     => $facultyUser->code ?? 'N/A',
+                'faculty_type'     => $faculty->facultyType->faculty_type ?? 'N/A',
+                'faculty_units'    => $faculty->faculty_units,
+                'has_request'      => (int) ($preferenceSetting->has_request ?? 0),
+                'is_enabled'       => (int) ($preferenceSetting->is_enabled ?? 0),
                 'active_semesters' => [
                     [
-                        'active_semester_id' => $activeSemester->active_semester_id,
-                        'academic_year_id' => $activeSemester->academic_year_id,
-                        'academic_year' => $activeSemester->academicYear->year_start . '-' . $activeSemester->academicYear->year_end,
-                        'semester_id' => $activeSemester->semester_id,
-                        'semester_label' => $this->getSemesterLabel($activeSemester->semester_id),
-                        'global_start_date' => $preferenceSetting && $preferenceSetting->global_start_date
+                        'active_semester_id'    => $activeSemester->active_semester_id,
+                        'academic_year_id'      => $activeSemester->academic_year_id,
+                        'academic_year'         => $activeSemester->academicYear->year_start . '-' . $activeSemester->academicYear->year_end,
+                        'semester_id'           => $activeSemester->semester_id,
+                        'semester_label'        => $this->getSemesterLabel($activeSemester->semester_id),
+                        'global_start_date'     => $preferenceSetting && $preferenceSetting->global_start_date
                         ? Carbon::parse($preferenceSetting->global_start_date)->toDateString() : null,
                         'individual_start_date' => $preferenceSetting && $preferenceSetting->individual_start_date
                         ? Carbon::parse($preferenceSetting->individual_start_date)->toDateString() : null,
-                        'global_deadline' => $preferenceSetting && $preferenceSetting->global_deadline ? Carbon::parse($preferenceSetting->global_deadline)->toDateString() : null,
-                        'individual_deadline' => $preferenceSetting && $preferenceSetting->individual_deadline
+                        'global_deadline'       => $preferenceSetting && $preferenceSetting->global_deadline ? Carbon::parse($preferenceSetting->global_deadline)->toDateString() : null,
+                        'individual_deadline'   => $preferenceSetting && $preferenceSetting->individual_deadline
                         ? Carbon::parse($preferenceSetting->individual_deadline)->toDateString()
                         : ($preferenceSetting && $preferenceSetting->global_deadline ? Carbon::parse($preferenceSetting->global_deadline)->toDateString() : null),
-                        'courses' => $courses->values()->toArray(),
+                        'courses'               => $courses->values()->toArray(),
                     ],
                 ],
             ];
@@ -329,7 +328,7 @@ class PreferenceController extends Controller
             ->where('is_active', 1)
             ->first();
 
-        if (!$activeSemester) {
+        if (! $activeSemester) {
             return response()->json(['error' => 'No active semester found'], 404);
         }
 
@@ -344,7 +343,7 @@ class PreferenceController extends Controller
             ])
             ->first();
 
-        if (!$faculty) {
+        if (! $faculty) {
             return response()->json(['error' => 'Faculty not found'], 404);
         }
 
@@ -353,46 +352,46 @@ class PreferenceController extends Controller
         $courses = $faculty->preferences->map(function ($preference) {
             $preferenceDays = $preference->preferenceDays->map(function ($day) {
                 return [
-                    'day' => $day->preferred_day,
+                    'day'        => $day->preferred_day,
                     'start_time' => $day->preferred_start_time,
-                    'end_time' => $day->preferred_end_time,
+                    'end_time'   => $day->preferred_end_time,
                 ];
             })->sortBy('day')->values()->toArray();
 
             return [
                 'course_assignment_id' => $preference->course_assignment_id ?? 'N/A',
-                'course_details' => [
-                    'course_id' => $preference->courseAssignment->course->course_id ?? 'N/A',
-                    'course_code' => $preference->courseAssignment->course->course_code ?? null,
+                'course_details'       => [
+                    'course_id'    => $preference->courseAssignment->course->course_id ?? 'N/A',
+                    'course_code'  => $preference->courseAssignment->course->course_code ?? null,
                     'course_title' => $preference->courseAssignment->course->course_title ?? null,
                 ],
-                'lec_hours' => is_numeric($preference->courseAssignment->course->lec_hours) ? (int) $preference->courseAssignment->course->lec_hours : 0,
-                'lab_hours' => is_numeric($preference->courseAssignment->course->lab_hours) ? (int) $preference->courseAssignment->course->lab_hours : 0,
-                'units' => $preference->courseAssignment->course->units ?? 0,
-                'preferred_days' => $preferenceDays,
-                'created_at' => $preference->created_at ? Carbon::parse($preference->created_at)->toDateTimeString() : 'N/A',
-                'updated_at' => $preference->updated_at ? Carbon::parse($preference->updated_at)->toDateTimeString() : 'N/A',
+                'lec_hours'            => is_numeric($preference->courseAssignment->course->lec_hours) ? (int) $preference->courseAssignment->course->lec_hours : 0,
+                'lab_hours'            => is_numeric($preference->courseAssignment->course->lab_hours) ? (int) $preference->courseAssignment->course->lab_hours : 0,
+                'units'                => $preference->courseAssignment->course->units ?? 0,
+                'preferred_days'       => $preferenceDays,
+                'created_at'           => $preference->created_at ? Carbon::parse($preference->created_at)->toDateTimeString() : 'N/A',
+                'updated_at'           => $preference->updated_at ? Carbon::parse($preference->updated_at)->toDateTimeString() : 'N/A',
             ];
         });
 
         $facultyPreference = [
-            'faculty_id' => $faculty->id,
-            'faculty_name' => $faculty->user->name ?? 'N/A',
-            'faculty_code' => $faculty->user->code ?? 'N/A',
-            'faculty_type' => $faculty->facultyType->faculty_type ?? 'N/A',
-            'faculty_units' => $faculty->faculty_units,
-            'has_request' => (int) ($preferenceSetting->has_request ?? 0),
-            'is_enabled' => (int) ($preferenceSetting->is_enabled ?? 0),
+            'faculty_id'       => $faculty->id,
+            'faculty_name'     => $faculty->user->name ?? 'N/A',
+            'faculty_code'     => $faculty->user->code ?? 'N/A',
+            'faculty_type'     => $faculty->facultyType->faculty_type ?? 'N/A',
+            'faculty_units'    => $faculty->faculty_units,
+            'has_request'      => (int) ($preferenceSetting->has_request ?? 0),
+            'is_enabled'       => (int) ($preferenceSetting->is_enabled ?? 0),
             'active_semesters' => [
                 [
-                    'active_semester_id' => $activeSemester->active_semester_id,
-                    'academic_year_id' => $activeSemester->academic_year_id,
-                    'academic_year' => $activeSemester->academicYear->year_start . '-' . $activeSemester->academicYear->year_end,
-                    'semester_id' => $activeSemester->semester_id,
-                    'semester_label' => $this->getSemesterLabel($activeSemester->semester_id),
-                    'global_deadline' => $preferenceSetting && $preferenceSetting->global_deadline ? Carbon::parse($preferenceSetting->global_deadline)->toDateString() : null,
+                    'active_semester_id'  => $activeSemester->active_semester_id,
+                    'academic_year_id'    => $activeSemester->academic_year_id,
+                    'academic_year'       => $activeSemester->academicYear->year_start . '-' . $activeSemester->academicYear->year_end,
+                    'semester_id'         => $activeSemester->semester_id,
+                    'semester_label'      => $this->getSemesterLabel($activeSemester->semester_id),
+                    'global_deadline'     => $preferenceSetting && $preferenceSetting->global_deadline ? Carbon::parse($preferenceSetting->global_deadline)->toDateString() : null,
                     'individual_deadline' => $preferenceSetting && $preferenceSetting->individual_deadline ? Carbon::parse($preferenceSetting->individual_deadline)->toDateString() : null,
-                    'courses' => $courses->toArray(),
+                    'courses'             => $courses->toArray(),
                 ],
             ],
         ];
@@ -407,20 +406,20 @@ class PreferenceController extends Controller
      */
     public function deletePreferences(Request $request, $preference_id)
     {
-        $facultyId = $request->query('faculty_id');
+        $facultyId        = $request->query('faculty_id');
         $activeSemesterId = $request->query('active_semester_id');
 
-        if (!$facultyId) {
+        if (! $facultyId) {
             return response()->json(['message' => 'Faculty ID is required.'], 400);
         }
 
-        if (!$activeSemesterId) {
+        if (! $activeSemesterId) {
             return response()->json(['message' => 'Active semester ID is required.'], 400);
         }
 
         // Check deadline
         $preferenceSetting = PreferencesSetting::where('faculty_id', $facultyId)->first();
-        $deadline = $preferenceSetting->individual_deadline ?? $preferenceSetting->global_deadline;
+        $deadline          = $preferenceSetting->individual_deadline ?? $preferenceSetting->global_deadline;
 
         if ($preferenceSetting->is_enabled == 0 || ($deadline && Carbon::now()->greaterThan(Carbon::parse($deadline)->endOfDay()))) {
             return response()->json([
@@ -434,7 +433,7 @@ class PreferenceController extends Controller
             ->where('course_assignment_id', $preference_id)
             ->first();
 
-        if (!$preference) {
+        if (! $preference) {
             return response()->json(['message' => 'Preference not found.'], 404);
         }
 
@@ -452,20 +451,20 @@ class PreferenceController extends Controller
      */
     public function deleteAllPreferences(Request $request)
     {
-        $facultyId = $request->query('faculty_id');
+        $facultyId        = $request->query('faculty_id');
         $activeSemesterId = $request->query('active_semester_id');
 
-        if (!$facultyId) {
+        if (! $facultyId) {
             return response()->json(['message' => 'Faculty ID is required.'], 400);
         }
 
-        if (!$activeSemesterId) {
+        if (! $activeSemesterId) {
             return response()->json(['message' => 'Active semester ID is required.'], 400);
         }
 
         // Check deadline
         $preferenceSetting = PreferencesSetting::where('faculty_id', $facultyId)->first();
-        $deadline = $preferenceSetting->individual_deadline ?? $preferenceSetting->global_deadline;
+        $deadline          = $preferenceSetting->individual_deadline ?? $preferenceSetting->global_deadline;
 
         if ($preferenceSetting->is_enabled == 0 || ($deadline && Carbon::now()->greaterThan(Carbon::parse($deadline)->endOfDay()))) {
             return response()->json([
@@ -498,22 +497,22 @@ class PreferenceController extends Controller
     {
         // Step 1: Validate the input
         $validated = $request->validate([
-            'status' => 'required|boolean',
-            'global_deadline' => 'nullable|date',
+            'status'            => 'required|boolean',
+            'global_deadline'   => 'nullable|date',
             'global_start_date' => 'nullable|date',
-            'send_email' => 'required|boolean',
+            'send_email'        => 'required|boolean',
         ]);
 
         $sendEmail = $validated['send_email'];
 
         DB::transaction(function () use ($validated, $sendEmail) {
-            $status = $validated['status'];
-            $global_deadline = $status && $validated['global_deadline'] ? Carbon::parse($validated['global_deadline'])->endOfDay() : null;
+            $status            = $validated['status'];
+            $global_deadline   = $status && $validated['global_deadline'] ? Carbon::parse($validated['global_deadline'])->endOfDay() : null;
             $global_start_date = $status && $validated['global_start_date'] ? Carbon::parse($validated['global_start_date'])->startOfDay() : null;
 
             // Current date and start date
             $currentDate = Carbon::now();
-            $startDate = $global_start_date;
+            $startDate   = $global_start_date;
 
             // Determine final status
             $finalStatus = false;
@@ -523,24 +522,24 @@ class PreferenceController extends Controller
             }
 
             PreferencesSetting::query()->update([
-                'is_enabled' => $finalStatus,
-                'global_deadline' => $global_deadline,
-                'global_start_date' => $global_start_date,
+                'is_enabled'          => $finalStatus,
+                'global_deadline'     => $global_deadline,
+                'global_start_date'   => $global_start_date,
                 'individual_deadline' => null,
-                'has_request' => 0,
-                'updated_at' => now(),
+                'has_request'         => 0,
+                'updated_at'          => now(),
             ]);
 
             // Handle faculties without settings
             $facultyWithoutSettings = Faculty::whereDoesntHave('preferenceSetting')->get();
             foreach ($facultyWithoutSettings as $faculty) {
                 PreferencesSetting::create([
-                    'faculty_id' => $faculty->id,
-                    'is_enabled' => $status,
-                    'global_deadline' => $global_deadline,
-                    'global_start_date' => $global_start_date,
+                    'faculty_id'          => $faculty->id,
+                    'is_enabled'          => $status,
+                    'global_deadline'     => $global_deadline,
+                    'global_start_date'   => $global_start_date,
                     'individual_deadline' => null,
-                    'has_request' => 0,
+                    'has_request'         => 0,
                 ]);
             }
 
@@ -557,7 +556,7 @@ class PreferenceController extends Controller
             }
 
             Log::info('Global Deadline (before email):', [
-                'deadline' => $global_deadline,
+                'deadline'  => $global_deadline,
                 'days_left' => $startDate && $global_deadline
                 ? $startDate->diffInDays($global_deadline)
                 : 'Start date or deadline not set',
@@ -571,16 +570,16 @@ class PreferenceController extends Controller
                     ->where('semester_id', $activeSemester->semester_id)
                     ->update([
                         'is_published' => 0,
-                        'updated_at' => now(),
+                        'updated_at'   => now(),
                     ]);
             }
         });
 
         return response()->json([
-            'message' => 'All preferences settings updated successfully',
-            'status' => $validated['status'],
-            'global_deadline' => $validated['global_deadline'],
-            'global_start_date' => $validated['global_start_date'],
+            'message'             => 'All preferences settings updated successfully',
+            'status'              => $validated['status'],
+            'global_deadline'     => $validated['global_deadline'],
+            'global_start_date'   => $validated['global_start_date'],
             'updated_preferences' => PreferencesSetting::all(),
         ], 200);
     }
@@ -592,23 +591,23 @@ class PreferenceController extends Controller
     {
         // Step 1: Validate the input
         $validated = $request->validate([
-            'faculty_id' => 'required|integer|exists:faculty,id',
-            'status' => 'required|boolean',
-            'individual_deadline' => 'nullable|date',
+            'faculty_id'            => 'required|integer|exists:faculty,id',
+            'status'                => 'required|boolean',
+            'individual_deadline'   => 'nullable|date',
             'individual_start_date' => 'nullable|date',
-            'send_email' => 'required|boolean',
+            'send_email'            => 'required|boolean',
         ]);
 
-        $faculty_id = $validated['faculty_id'];
-        $status = $validated['status'];
-        $individual_deadline = $status && $validated['individual_deadline'] ? Carbon::parse($validated['individual_deadline'])->endOfDay() : null;
+        $faculty_id            = $validated['faculty_id'];
+        $status                = $validated['status'];
+        $individual_deadline   = $status && $validated['individual_deadline'] ? Carbon::parse($validated['individual_deadline'])->endOfDay() : null;
         $individual_start_date = $status && $validated['individual_start_date'] ? Carbon::parse($validated['individual_start_date'])->startOfDay() : null;
-        $sendEmail = $validated['send_email'];
+        $sendEmail             = $validated['send_email'];
 
         DB::transaction(function () use ($validated, $faculty_id, $status, $individual_deadline, $individual_start_date, $sendEmail) {
             // Current date and start date
             $currentDate = Carbon::now();
-            $startDate = $individual_start_date;
+            $startDate   = $individual_start_date;
 
             // Determine final status
             $finalStatus = false;
@@ -620,22 +619,22 @@ class PreferenceController extends Controller
             $preferenceSetting = PreferencesSetting::firstOrCreate(
                 ['faculty_id' => $faculty_id],
                 [
-                    'has_request' => 0,
-                    'is_enabled' => 0,
-                    'global_deadline' => null,
-                    'individual_deadline' => null,
-                    'global_start_date' => null,
+                    'has_request'           => 0,
+                    'is_enabled'            => 0,
+                    'global_deadline'       => null,
+                    'individual_deadline'   => null,
+                    'global_start_date'     => null,
                     'individual_start_date' => null,
                 ]
             );
 
             $preferenceSetting->update([
-                'is_enabled' => $finalStatus,
-                'individual_deadline' => $individual_deadline,
+                'is_enabled'            => $finalStatus,
+                'individual_deadline'   => $individual_deadline,
                 'individual_start_date' => $individual_start_date,
-                'global_deadline' => null,
-                'global_start_date' => null,
-                'has_request' => 0,
+                'global_deadline'       => null,
+                'global_start_date'     => null,
+                'has_request'           => 0,
             ]);
 
             // Dispatch email job if sendEmail is true
@@ -651,7 +650,7 @@ class PreferenceController extends Controller
             }
 
             Log::info('Individual Deadline (before email):', [
-                'deadline' => $individual_deadline,
+                'deadline'  => $individual_deadline,
                 'days_left' => $startDate && $individual_deadline
                 ? $startDate->diffInDays($individual_deadline)
                 : 'Start date or deadline not set',
@@ -666,18 +665,18 @@ class PreferenceController extends Controller
                     ->where('semester_id', $activeSemester->semester_id)
                     ->update([
                         'is_published' => 0,
-                        'updated_at' => now(),
+                        'updated_at'   => now(),
                     ]);
             }
         });
 
         return response()->json([
-            'message' => 'Preference setting updated successfully for faculty',
-            'faculty_id' => $validated['faculty_id'],
-            'is_enabled' => $validated['status'],
-            'individual_deadline' => $validated['individual_deadline'],
+            'message'               => 'Preference setting updated successfully for faculty',
+            'faculty_id'            => $validated['faculty_id'],
+            'is_enabled'            => $validated['status'],
+            'individual_deadline'   => $validated['individual_deadline'],
             'individual_start_date' => $validated['individual_start_date'],
-            'updated_preference' => PreferencesSetting::where('faculty_id', $validated['faculty_id'])->first(),
+            'updated_preference'    => PreferencesSetting::where('faculty_id', $validated['faculty_id'])->first(),
         ], 200);
     }
 
@@ -690,14 +689,14 @@ class PreferenceController extends Controller
             'faculty_id' => 'required|exists:faculty,id',
         ]);
 
-        $facultyId = $validated['faculty_id'];
+        $facultyId         = $validated['faculty_id'];
         $preferenceSetting = PreferencesSetting::where('faculty_id', $facultyId)->first();
 
-        if (!$preferenceSetting) {
+        if (! $preferenceSetting) {
             PreferencesSetting::create([
-                'faculty_id' => $facultyId,
+                'faculty_id'  => $facultyId,
                 'has_request' => 1,
-                'is_enabled' => 0,
+                'is_enabled'  => 0,
             ]);
         } else {
             $preferenceSetting->has_request = 1;
@@ -716,7 +715,7 @@ class PreferenceController extends Controller
         }
 
         return response()->json([
-            'message' => 'Access request submitted successfully.',
+            'message'     => 'Access request submitted successfully.',
             'has_request' => 1,
         ], 200);
     }
@@ -734,7 +733,7 @@ class PreferenceController extends Controller
 
         $preferenceSetting = PreferencesSetting::where('faculty_id', $facultyId)->first();
 
-        if (!$preferenceSetting) {
+        if (! $preferenceSetting) {
             return response()->json([
                 'message' => 'No access request found to cancel.',
             ], 404);
@@ -744,7 +743,7 @@ class PreferenceController extends Controller
         $preferenceSetting->save();
 
         return response()->json([
-            'message' => 'Access request cancelled successfully.',
+            'message'     => 'Access request cancelled successfully.',
             'has_request' => 0,
         ], 200);
     }
