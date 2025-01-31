@@ -208,10 +208,10 @@
         border-radius: 50%;
         cursor: pointer;
         transition: all 0.3s ease;
-        @include mixins.gradient-primary-border;
+        border: 3px solid var(--neutral-border);
 
         &:hover {
-          box-shadow: 0 0 0 3px var(--neutral-hover);
+          border-color: var(--neutral-base);
         }
       }
 
