@@ -1,7 +1,18 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ViewChild, ElementRef, AfterViewInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { fadeAnimation } from '../../core/animations/animations';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
+import { DialogViewScheduleComponent } from '../dialog-view-schedule/dialog-view-schedule.component';
+import { LogoCacheService } from '../../core/services/cache/logo-cache.service';
+
+import { fadeAnimation, fabAnimation } from '../../core/animations/animations';
+
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
 
 interface TimeSlot {
   time: string;
@@ -30,14 +41,27 @@ type Day =
   | 'Sunday';
 
 @Component({
-    selector: 'app-faculty-schedule-timetable',
-    imports: [CommonModule],
-    templateUrl: './faculty-schedule-timetable.component.html',
-    styleUrls: ['./faculty-schedule-timetable.component.scss'],
-    animations: [fadeAnimation]
+  selector: 'app-faculty-schedule-timetable',
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatDialogModule,
+    MatTooltipModule,
+  ],
+  templateUrl: './faculty-schedule-timetable.component.html',
+  styleUrls: ['./faculty-schedule-timetable.component.scss'],
+  animations: [fadeAnimation, fabAnimation],
 })
-export class FacultyScheduleTimetableComponent implements OnInit {
+export class FacultyScheduleTimetableComponent implements OnInit, AfterViewInit {
+  @ViewChild('tableWrapper') tableWrapper!: ElementRef;
+
+  isFabVisible = true;
+  private lastScrollTop = 0;
+  private readonly SCROLL_THRESHOLD = 25;
+
   @Input() facultySchedule: any;
+  @Input() showPreview: boolean = true;
 
   days: Day[] = [
     'Monday',
@@ -51,9 +75,34 @@ export class FacultyScheduleTimetableComponent implements OnInit {
   timeSlots: TimeSlot[] = [];
   scheduleBlocks: ScheduleBlock[] = [];
 
+  private logoBase64: string = '';
+  private logoCacheService = inject(LogoCacheService);
+
+  constructor(private dialog: MatDialog) {}
+
   ngOnInit() {
     this.generateTimeSlots();
     this.processScheduleData();
+    this.initializeLogo();
+  }
+
+  ngAfterViewInit() {
+    const tableWrapperElement = this.tableWrapper.nativeElement;
+
+    tableWrapperElement.addEventListener('scroll', () => {
+      const currentScrollTop = tableWrapperElement.scrollTop;
+
+      if (
+        Math.abs(currentScrollTop - this.lastScrollTop) > this.SCROLL_THRESHOLD
+      ) {
+        if (currentScrollTop > this.lastScrollTop) {
+          this.isFabVisible = false;
+        } else {
+          this.isFabVisible = true;
+        }
+        this.lastScrollTop = currentScrollTop;
+      }
+    });
   }
 
   private generateTimeSlots() {
@@ -89,12 +138,12 @@ export class FacultyScheduleTimetableComponent implements OnInit {
             yearLevel: schedule.year_level,
             section: schedule.section_name,
           };
-        }
+        },
       );
     } else {
       console.warn(
         'No schedules found or invalid data structure:',
-        this.facultySchedule
+        this.facultySchedule,
       );
     }
   }
@@ -110,7 +159,7 @@ export class FacultyScheduleTimetableComponent implements OnInit {
 
   isScheduleBlockStart(day: string, slotIndex: number): boolean {
     return this.scheduleBlocks.some(
-      (b) => b.day === day && slotIndex === b.startSlot
+      (b) => b.day === day && slotIndex === b.startSlot,
     );
   }
 
@@ -146,7 +195,7 @@ export class FacultyScheduleTimetableComponent implements OnInit {
   getBlockProperty(
     day: string,
     slotIndex: number,
-    property: keyof ScheduleBlock
+    property: keyof ScheduleBlock,
   ): any {
     const block = this.getScheduleBlock(day, slotIndex);
     return block ? block[property] : null;
@@ -159,11 +208,11 @@ export class FacultyScheduleTimetableComponent implements OnInit {
         (s: any) =>
           s.day === day &&
           this.convertTimeToMinutes(s.start_time) ===
-            this.timeSlots[slotIndex].minutes
+            this.timeSlots[slotIndex].minutes,
       );
       if (schedule) {
         return `${this.formatTimeTo12Hour(
-          schedule.start_time
+          schedule.start_time,
         )} - ${this.formatTimeTo12Hour(schedule.end_time)}`;
       }
     }
@@ -224,13 +273,352 @@ export class FacultyScheduleTimetableComponent implements OnInit {
 
   private getScheduleBlock(
     day: string,
-    slotIndex: number
+    slotIndex: number,
   ): ScheduleBlock | undefined {
     return this.scheduleBlocks.find(
       (b) =>
         b.day === day &&
         slotIndex >= b.startSlot &&
-        slotIndex < b.startSlot + b.duration
+        slotIndex < b.startSlot + b.duration,
     );
+  }
+
+  private formatSemester(semester: number): string {
+    switch (semester) {
+      case 1:
+        return '1st Semester';
+      case 2:
+        return '2nd Semester';
+      case 3:
+        return 'Summer Semester';
+      default:
+        return `${semester}`;
+    }
+  }
+
+  private generateFileName(): string {
+    const formattedName = this.facultySchedule.faculty_name
+      .replace(',', '')
+      .replace(/\s+/g, '_');
+    const academicYear = `${this.facultySchedule.year_start}-${this.facultySchedule.year_end}`;
+    const semester = this.formatSemester(this.facultySchedule.semester).replace(
+      /\s+/g,
+      '_',
+    );
+
+    return `${formattedName}_Schedules_${academicYear}_${semester}`;
+  }
+
+  private initializeLogo(): void {
+    this.logoCacheService.getLogoBase64().subscribe((base64: string) => {
+      this.logoBase64 = base64;
+    });
+  }
+
+  private drawHeader(
+    doc: jsPDF,
+    startY: number,
+    pageWidth: number,
+    margin: number,
+    logoSize: number,
+    title: string,
+    subtitle: string,
+  ): number {
+    doc.setTextColor(0, 0, 0);
+
+    if (this.logoBase64) {
+      const logoXPosition = pageWidth / 25 + 25;
+      doc.addImage(
+        this.logoBase64,
+        'PNG',
+        logoXPosition,
+        startY - 5,
+        logoSize,
+        logoSize,
+      );
+    }
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(
+      'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
+      pageWidth / 2,
+      startY,
+      { align: 'center' },
+    );
+
+    let currentY = startY + 5;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(
+      'Gen. Santos Ave. Upper Bicutan, Taguig City',
+      pageWidth / 2,
+      currentY,
+      { align: 'center' },
+    );
+
+    currentY += 10;
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(title, pageWidth / 2, currentY, { align: 'center' });
+    currentY += 8;
+
+    if (subtitle) {
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'normal');
+      doc.text(subtitle, pageWidth / 2, currentY, { align: 'center' });
+      currentY += 8;
+    }
+
+    doc.setDrawColor(0, 0, 0);
+    doc.setLineWidth(0.5);
+    doc.line(margin, currentY, pageWidth - margin, currentY);
+    currentY += 7;
+
+    return currentY;
+  }
+
+  private calculateBoxHeight(
+    doc: jsPDF,
+    content: string[],
+    dayColumnWidth: number,
+  ): number {
+    const padding = 10;
+    let totalHeight = 5;
+
+    content.forEach((line: string, index: number) => {
+      doc.setFontSize(9);
+      doc.setFont('helvetica', index <= 1 ? 'bold' : 'normal');
+
+      const wrappedLines = doc.splitTextToSize(line, dayColumnWidth - padding);
+      totalHeight += wrappedLines.length * 5;
+    });
+
+    return totalHeight + 5;
+  }
+
+  onExportPdf() {
+    if (!this.facultySchedule || !this.facultySchedule.schedules) return;
+
+    const generatePdfFunction = (preview: boolean): Blob => {
+      const doc = new jsPDF('landscape', 'mm', 'a4');
+      const pageWidth = doc.internal.pageSize.width;
+      const pageHeight = doc.internal.pageSize.height;
+      const margin = 10;
+      const topMargin = 15;
+      const logoSize = 22;
+
+      let currentY = this.drawHeader(
+        doc,
+        topMargin,
+        pageWidth,
+        margin,
+        logoSize,
+        this.facultySchedule.faculty_name,
+        `For Academic Year ${this.facultySchedule.year_start}-${
+          this.facultySchedule.year_end
+        }, ${this.formatSemester(this.facultySchedule.semester)}`,
+      );
+
+      const days = [
+        'Monday',
+        'Tuesday',
+        'Wednesday',
+        'Thursday',
+        'Friday',
+        'Saturday',
+        'Sunday',
+      ];
+      const dayColumnWidth = (pageWidth - margin * 2) / days.length;
+      const maxContentHeight = pageHeight - margin;
+      let maxYPosition = currentY;
+
+      const startNewPage = () => {
+        doc.addPage();
+        currentY = this.drawHeader(
+          doc,
+          topMargin,
+          pageWidth,
+          margin,
+          logoSize,
+          doc.getNumberOfPages() > 1
+            ? 'Faculty Schedule (Continued)'
+            : 'Faculty Schedule',
+          `For Academic Year ${this.facultySchedule.year_start}-${
+            this.facultySchedule.year_end
+          }, ${this.formatSemester(this.facultySchedule.semester)}`,
+        );
+
+        days.forEach((day, index) => {
+          const xPosition = margin + index * dayColumnWidth;
+          doc.setFillColor(128, 0, 0);
+          doc.rect(xPosition, currentY, dayColumnWidth, 10, 'F');
+
+          doc.setDrawColor(200, 200, 200);
+          doc.setLineWidth(0.5);
+          doc.rect(xPosition, currentY, dayColumnWidth, 10);
+
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(10);
+          doc.setFont('helvetica', 'bold');
+          doc.text(day, xPosition + dayColumnWidth / 2, currentY + 7, {
+            align: 'center',
+          });
+        });
+        currentY += 10;
+        return currentY;
+      };
+
+      days.forEach((day, index) => {
+        const xPosition = margin + index * dayColumnWidth;
+        doc.setFillColor(128, 0, 0);
+        doc.rect(xPosition, currentY, dayColumnWidth, 10, 'F');
+
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.5);
+        doc.rect(xPosition, currentY, dayColumnWidth, 10);
+
+        doc.setTextColor(255, 255, 255);
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.text(day, xPosition + dayColumnWidth / 2, currentY + 7, {
+          align: 'center',
+        });
+      });
+
+      currentY += 10;
+
+      days.forEach((day, dayIndex) => {
+        const xPosition = margin + dayIndex * dayColumnWidth;
+        let yPosition = currentY;
+
+        const daySchedule = this.facultySchedule.schedules
+          .filter((item: any) => item.day === day)
+          .sort(
+            (a: any, b: any) =>
+              this.convertTimeToMinutes(a.start_time) -
+              this.convertTimeToMinutes(b.start_time),
+          );
+
+        if (daySchedule.length > 0) {
+          daySchedule.forEach((item: any) => {
+            const courseContent = [
+              item.course_details.course_code,
+              item.course_details.course_title,
+              `${item.program_code} ${item.year_level} - ${item.section_name}`,
+              item.room_code,
+              `${this.formatTimeTo12Hour(
+                item.start_time,
+              )} - ${this.formatTimeTo12Hour(item.end_time)}`,
+            ];
+
+            // Calculate dynamic box height based on content
+            const boxHeight = this.calculateBoxHeight(
+              doc,
+              courseContent,
+              dayColumnWidth,
+            );
+
+            if (yPosition + boxHeight > maxContentHeight) {
+              days.forEach((_, i) => {
+                const lineX = margin + i * dayColumnWidth;
+                doc.setDrawColor(200, 200, 200);
+                doc.setLineWidth(0.5);
+                doc.line(lineX, currentY, lineX, maxYPosition);
+              });
+              doc.line(
+                pageWidth - margin,
+                currentY,
+                pageWidth - margin,
+                maxYPosition,
+              );
+
+              yPosition = startNewPage();
+              maxYPosition = yPosition;
+            }
+
+            doc.setFillColor(240, 240, 240);
+            doc.rect(xPosition, yPosition, dayColumnWidth, boxHeight, 'F');
+
+            let textYPosition = yPosition + 5;
+            courseContent.forEach((line: string, index) => {
+              doc.setTextColor(0);
+              doc.setFontSize(9);
+              doc.setFont('helvetica', index <= 1 ? 'bold' : 'normal');
+
+              const wrappedLines = doc.splitTextToSize(
+                line,
+                dayColumnWidth - 10,
+              );
+              wrappedLines.forEach((wrappedLine: string) => {
+                doc.text(wrappedLine, xPosition + 5, textYPosition);
+                textYPosition += 5;
+              });
+
+              if (index === courseContent.length - 1) {
+                const timeTextWidth = doc.getTextWidth(line);
+                doc.setDrawColor(0, 0, 0);
+                doc.setLineWidth(0.2);
+                doc.line(
+                  xPosition + 5,
+                  textYPosition - 4,
+                  xPosition + 5 + timeTextWidth,
+                  textYPosition - 4,
+                );
+              }
+            });
+
+            yPosition += boxHeight + 5;
+            if (yPosition > maxYPosition) {
+              maxYPosition = yPosition;
+            }
+          });
+        }
+      });
+
+      days.forEach((_, i) => {
+        const lineX = margin + i * dayColumnWidth;
+        doc.setDrawColor(200, 200, 200);
+        doc.setLineWidth(0.5);
+        doc.line(lineX, currentY, lineX, maxYPosition);
+      });
+      doc.line(pageWidth - margin, currentY, pageWidth - margin, maxYPosition);
+      doc.line(margin, maxYPosition, pageWidth - margin, maxYPosition);
+
+      return doc.output('blob');
+    };
+
+    const pdfBlob = generatePdfFunction(this.showPreview);
+
+    if (this.showPreview) {
+      this.dialog.open(DialogViewScheduleComponent, {
+        maxWidth: '90vw',
+        width: '100%',
+        data: {
+          exportType: 'all',
+          entity: 'faculty',
+          entityData: this.facultySchedule.schedules,
+          customTitle: this.facultySchedule.faculty_name,
+          fileName: this.generateFileName(),
+          academicYear: `${this.facultySchedule.year_start}-${this.facultySchedule.year_end}`,
+          semester: this.formatSemester(this.facultySchedule.semester),
+          generatePdfFunction: generatePdfFunction,
+          showViewToggle: false,
+        },
+        disableClose: true,
+      });
+    } else {
+      const blobUrl = URL.createObjectURL(pdfBlob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `${this.generateFileName()}.pdf`;
+
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    }
   }
 }

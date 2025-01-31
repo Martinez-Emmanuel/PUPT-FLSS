@@ -9,7 +9,6 @@ import {
   group,
 } from '@angular/animations';
 
-// Anmation 1: Simple Fade - used in route transitions
 export const fadeAnimation = trigger('fadeAnimation', [
   transition('* <=> *', [
     style({ opacity: 0 }),
@@ -17,7 +16,6 @@ export const fadeAnimation = trigger('fadeAnimation', [
   ]),
 ]);
 
-// Animation 2: Slide In - used in mat sidenav
 export const slideInAnimation = trigger('slideInAnimation', [
   state(
     'void',
@@ -30,7 +28,6 @@ export const slideInAnimation = trigger('slideInAnimation', [
   transition('* => void', animate('750ms cubic-bezier(0.7, 0, 0.84, 0)')),
 ]);
 
-// Animation 3: Card Entrance - used for cards
 export const cardEntranceAnimation = trigger('cardEntranceAnimation', [
   transition('* <=> *', [
     query(
@@ -275,4 +272,21 @@ export const routeAnimation = trigger('routeAnimation', [
 
   // Default animation for other routes
   transition('* <=> *', routeFadeAnimation),
+]);
+
+export const fabAnimation = trigger('fabAnimation', [
+  state('show', style({
+    transform: 'translateY(0)',
+    opacity: 1
+  })),
+  state('hide', style({
+    transform: 'translateY(100%)',
+    opacity: 0
+  })),
+  transition('show => hide', [
+    animate('200ms cubic-bezier(0.4, 0.0, 0.2, 1)')
+  ]),
+  transition('hide => show', [
+    animate('250ms cubic-bezier(0.0, 0.0, 0.2, 1)')
+  ])
 ]);

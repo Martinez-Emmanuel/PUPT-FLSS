@@ -49,11 +49,28 @@ $day-colors: (
 }
 
 .faculty-schedule-timetable-container {
-  @include mixins.hide-scrollbar;
   height: 100%;
   width: 100%;
-  overflow-y: auto;
   border-radius: var(--border-radius-md);
+  position: relative;
+  overflow: hidden;
+
+  .table-wrapper {
+    @include mixins.hide-scrollbar;
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+
+    .export-fab {
+        position: absolute;
+        right: var(--spacing-lg);
+        bottom: var(--spacing-lg);
+        z-index: 100;
+        color: white;
+        background-color: var(--primary-one);
+        transform-origin: center;
+      }
+  }
 
   .faculty-schedule-timetable-table {
     @include mixins.default-transition;

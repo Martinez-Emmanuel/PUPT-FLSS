@@ -14,7 +14,7 @@
       </div>
 
       <!-- View Option Toggle (Only show for single faculty view) -->
-      @if (data.exportType !== 'all') {
+      @if (data.exportType !== 'all' && showViewToggle) {
         <div class="view-option">
           <mat-button-toggle-group
             name="viewOption"
