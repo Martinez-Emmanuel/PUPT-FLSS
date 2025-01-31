@@ -140,23 +140,23 @@
       }
 
       &[routerLink="home"].active span[mat-symbol="home"] {
-        animation: home-welcome 3s ease-in-out;
+        animation: home-welcome 1.5s ease-in-out;
         animation-iteration-count: 2;
         animation-fill-mode: forwards;
       }
 
       &[routerLink="preferences"].active span[mat-symbol="settings"] {
-        animation: settings-rotate-clockwise 2s cubic-bezier(0.4, 0, 0.2, 1),
-          settings-rotate-counterclockwise 2s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: settings-rotate-clockwise 1.5s cubic-bezier(0.4, 0, 0.2, 1),
+          settings-rotate-counterclockwise 1.5s cubic-bezier(0.4, 0, 0.2, 1);
         animation-iteration-count: 1, 1;
-        animation-delay: 0s, 2s;
+        animation-delay: 0s, 1.5s;
         animation-fill-mode: forwards;
         transform-origin: center center;
       }
 
       &[routerLink="load-and-schedule"].active
         span[mat-symbol="calendar_month"] {
-        animation: calendar-pulse 3s ease-in-out;
+        animation: calendar-pulse 1.5s ease-in-out;
         animation-iteration-count: 2;
         animation-fill-mode: forwards;
       }
