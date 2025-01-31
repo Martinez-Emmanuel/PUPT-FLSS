@@ -65,8 +65,8 @@ interface Program {
   year_levels: YearLevel[];
   year_levels_selected?: string;
   section_selected?: string;
-  academicYear: any;
-  semester: any;
+  academicYear?: string;
+  semester?: string;
 }
 
 @Component({
@@ -122,7 +122,7 @@ export class ReportProgramsComponent implements OnInit {
     private reportsService: ReportsService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private logoCacheService: LogoCacheService
+    private logoCacheService: LogoCacheService,
   ) {}
 
   ngOnInit(): void {
@@ -140,11 +140,9 @@ export class ReportProgramsComponent implements OnInit {
   }
 
   private initializeLogo(): void {
-    this.logoCacheService.getLogoBase64().subscribe(
-      (base64) => {
-        this.logoBase64 = base64;
-      }
-    );
+    this.logoCacheService.getLogoBase64().subscribe((base64) => {
+      this.logoBase64 = base64;
+    });
   }
 
   fetchProgramsData(): void {
@@ -165,11 +163,15 @@ export class ReportProgramsComponent implements OnInit {
             })),
             year_levels_selected: 'All',
             section_selected: 'All',
+            academicYear: `${response.programs_schedule_reports.year_start}-${response.programs_schedule_reports.year_end}`,
+            semester: this.getSemesterDisplay(
+              response.programs_schedule_reports.semester,
+            ),
           }));
 
         this.academicYear = `${response.programs_schedule_reports.year_start}-${response.programs_schedule_reports.year_end}`;
         this.semester = this.getSemesterDisplay(
-          response.programs_schedule_reports.semester
+          response.programs_schedule_reports.semester,
         );
 
         this.isLoading = false;
@@ -180,8 +182,8 @@ export class ReportProgramsComponent implements OnInit {
         // Check if there are any schedules available
         this.hasAnySchedules = this.filteredData.some((program) =>
           program.year_levels.some((yearLevel) =>
-            yearLevel.sections.some((section) => section.schedules.length > 0)
-          )
+            yearLevel.sections.some((section) => section.schedules.length > 0),
+          ),
         );
       },
       error: (error) => {
@@ -192,7 +194,7 @@ export class ReportProgramsComponent implements OnInit {
           'Close',
           {
             duration: 5000,
-          }
+          },
         );
       },
     });
@@ -232,7 +234,7 @@ export class ReportProgramsComponent implements OnInit {
       this.dataSource.data = this.filteredData.filter(
         (program) =>
           program.program_code.toLowerCase().includes(searchQuery) ||
-          program.program_title.toLowerCase().includes(searchQuery)
+          program.program_title.toLowerCase().includes(searchQuery),
       );
     }
   }
@@ -272,6 +274,9 @@ export class ReportProgramsComponent implements OnInit {
         entity: 'program',
         scheduleGroups: scheduleGroups,
         customTitle: 'All Program Schedules',
+        fileName: `All_Program_Schedules_${
+          this.academicYear
+        }_${this.semester.replace(/\s+/g, '_')}`,
         academicYear: this.academicYear,
         semester: this.semester,
         generatePdfFunction: generatePdfFunction,
@@ -304,18 +309,18 @@ export class ReportProgramsComponent implements OnInit {
         const uniqueSections = Array.from(
           new Set(
             program.year_levels.flatMap((yl) =>
-              yl.sections.map((sec) => sec.section_name)
-            )
-          )
+              yl.sections.map((sec) => sec.section_name),
+            ),
+          ),
         );
         options = ['All', ...uniqueSections];
       } else {
         const selectedYearLevel = program.year_levels.find(
-          (yl) => yl.year_level.toString() === program.year_levels_selected
+          (yl) => yl.year_level.toString() === program.year_levels_selected,
         );
         if (selectedYearLevel) {
           const sections = selectedYearLevel.sections.map(
-            (sec) => sec.section_name
+            (sec) => sec.section_name,
           );
           options = ['All', ...sections];
         } else {
@@ -378,7 +383,7 @@ export class ReportProgramsComponent implements OnInit {
           sections = yl.sections;
         } else {
           const section = yl.sections.find(
-            (sec) => sec.section_name === selectedSection
+            (sec) => sec.section_name === selectedSection,
           );
           if (section) {
             sections = [section];
@@ -395,7 +400,7 @@ export class ReportProgramsComponent implements OnInit {
       });
     } else {
       const yl = element.year_levels.find(
-        (yl) => yl.year_level.toString() === selectedYearLevel
+        (yl) => yl.year_level.toString() === selectedYearLevel,
       );
       if (yl) {
         let sections: any[] = [];
@@ -404,7 +409,7 @@ export class ReportProgramsComponent implements OnInit {
           sections = yl.sections;
         } else {
           const section = yl.sections.find(
-            (sec) => sec.section_name === selectedSection
+            (sec) => sec.section_name === selectedSection,
           );
           if (section) {
             sections = [section];
@@ -445,28 +450,31 @@ export class ReportProgramsComponent implements OnInit {
   onExportSingle(element: Program): void {
     const selectedYearLevel = element.year_levels_selected ?? 'All';
     const selectedSection = element.section_selected ?? 'All';
-
     const pdfBlob = this.createPdfBlob(element);
 
-    let fileName: string;
+    const academicYear = element.academicYear || '';
+    const semester = element.semester || '';
 
-    // If both year level and section are "All", use only the program code
+    let fileName: string;
     if (selectedYearLevel === 'All' && selectedSection === 'All') {
       fileName = `${element.program_code.replace(
         /\s+/g,
-        '_'
-      )}_schedule_report.pdf`;
+        '_',
+      )}_All_Schedules_${academicYear}_${semester.replace(/\s+/g, '_')}.pdf`;
     } else {
       const yearLevelPart =
-        selectedYearLevel !== 'All' ? `${selectedYearLevel}` : '';
+        selectedYearLevel !== 'All' ? `_Year${selectedYearLevel}` : '';
       const sectionPart =
         selectedSection !== 'All'
-          ? `${selectedSection.replace(/\s+/g, '_')}`
+          ? `_Section${selectedSection.replace(/\s+/g, '_')}`
           : '';
       fileName = `${element.program_code.replace(
         /\s+/g,
-        '_'
-      )}_${yearLevelPart}-${sectionPart}_schedule_report.pdf`;
+        '_',
+      )}${yearLevelPart}${sectionPart}_Schedules_${academicYear}_${semester.replace(
+        /\s+/g,
+        '_',
+      )}.pdf`;
     }
 
     const blobUrl = URL.createObjectURL(pdfBlob);
@@ -505,7 +513,7 @@ export class ReportProgramsComponent implements OnInit {
             margin,
             logoSize,
             `${program.program_code} - Year ${yearLevel.year_level} - Section ${section.section_name}`,
-            `For Academic Year ${this.academicYear}, ${this.semester}`
+            `For Academic Year ${this.academicYear}, ${this.semester}`,
           );
 
           this.drawScheduleTable(
@@ -513,7 +521,7 @@ export class ReportProgramsComponent implements OnInit {
             section.schedules ?? [],
             currentY,
             margin,
-            pageWidth
+            pageWidth,
           );
         });
       });
@@ -540,7 +548,7 @@ export class ReportProgramsComponent implements OnInit {
     const filteredYearLevels = program.year_levels.filter(
       (yl) =>
         selectedYearLevel === 'All' ||
-        yl.year_level.toString() === selectedYearLevel
+        yl.year_level.toString() === selectedYearLevel,
     );
 
     let isFirstPage = true;
@@ -548,7 +556,7 @@ export class ReportProgramsComponent implements OnInit {
     filteredYearLevels.forEach((yearLevel) => {
       const filteredSections = yearLevel.sections.filter(
         (sec) =>
-          selectedSection === 'All' || sec.section_name === selectedSection
+          selectedSection === 'All' || sec.section_name === selectedSection,
       );
 
       filteredSections.forEach((section) => {
@@ -565,7 +573,7 @@ export class ReportProgramsComponent implements OnInit {
           margin,
           logoSize,
           `${program.program_code} - Year ${yearLevel.year_level} - Section ${section.section_name}`,
-          `For Academic Year ${this.academicYear}, ${this.semester}`
+          `For Academic Year ${this.academicYear}, ${this.semester}`,
         );
 
         this.drawScheduleTable(
@@ -573,7 +581,7 @@ export class ReportProgramsComponent implements OnInit {
           section.schedules ?? [],
           currentY,
           margin,
-          pageWidth
+          pageWidth,
         );
       });
     });
@@ -583,7 +591,7 @@ export class ReportProgramsComponent implements OnInit {
       filteredYearLevels.every((yl) => yl.sections.length === 0)
     ) {
       console.error(
-        'No matching year levels or sections found for the selected options.'
+        'No matching year levels or sections found for the selected options.',
       );
     }
 
@@ -597,13 +605,20 @@ export class ReportProgramsComponent implements OnInit {
     margin: number,
     logoSize: number,
     title: string,
-    subtitle: string
+    subtitle: string,
   ): number {
     doc.setTextColor(0, 0, 0);
 
     if (this.logoBase64) {
       const logoXPosition = pageWidth / 25 + 25;
-      doc.addImage(this.logoBase64, 'PNG', logoXPosition, startY - 5, logoSize, logoSize);
+      doc.addImage(
+        this.logoBase64,
+        'PNG',
+        logoXPosition,
+        startY - 5,
+        logoSize,
+        logoSize,
+      );
     }
 
     doc.setFontSize(12);
@@ -612,7 +627,7 @@ export class ReportProgramsComponent implements OnInit {
       'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
       pageWidth / 2,
       startY,
-      { align: 'center' }
+      { align: 'center' },
     );
 
     let currentY = startY + 5;
@@ -622,7 +637,7 @@ export class ReportProgramsComponent implements OnInit {
       'Gen. Santos Ave. Upper Bicutan, Taguig City',
       pageWidth / 2,
       currentY,
-      { align: 'center' }
+      { align: 'center' },
     );
 
     currentY += 10;
@@ -651,7 +666,7 @@ export class ReportProgramsComponent implements OnInit {
     scheduleData: any[],
     startY: number,
     margin: number,
-    pageWidth: number
+    pageWidth: number,
   ): void {
     const hasSchedules = scheduleData && scheduleData.length > 0;
 
@@ -672,7 +687,7 @@ export class ReportProgramsComponent implements OnInit {
       'Thursday',
       'Friday',
       'Saturday',
-      'Sunday'
+      'Sunday',
     ];
     const dayColumnWidth = (pageWidth - margin * 2) / days.length;
     const pageHeight = doc.internal.pageSize.height;
@@ -693,7 +708,7 @@ export class ReportProgramsComponent implements OnInit {
         doc.getNumberOfPages() > 1
           ? 'Room Schedule (Continued)'
           : 'Room Schedule',
-        this.getAcademicYearSubtitle(scheduleData[0])
+        this.getAcademicYearSubtitle(scheduleData[0]),
       );
 
       days.forEach((day, index) => {
@@ -736,11 +751,25 @@ export class ReportProgramsComponent implements OnInit {
         .filter((item: any) => item.day === day)
         .sort(
           (a: any, b: any) =>
-            this.timeToMinutes(a.start_time) - this.timeToMinutes(b.start_time)
+            this.timeToMinutes(a.start_time) - this.timeToMinutes(b.start_time),
         );
 
       daySchedule.forEach((item: any) => {
-        const boxHeight = 40;
+        const scheduleContent = [
+          item.course_details.course_code,
+          item.course_details.course_title,
+          item.faculty_name,
+          item.room_code,
+          `${this.formatTimeTo12Hour(
+            item.start_time,
+          )} - ${this.formatTimeTo12Hour(item.end_time)}`,
+        ];
+
+        const boxHeight = this.calculateBoxHeight(
+          doc,
+          scheduleContent,
+          dayColumnWidth,
+        );
 
         if (yPosition + boxHeight > maxContentHeight) {
           days.forEach((_, i) => {
@@ -753,33 +782,23 @@ export class ReportProgramsComponent implements OnInit {
             pageWidth - margin,
             startY,
             pageWidth - margin,
-            maxYPosition
+            maxYPosition,
           );
 
           yPosition = startNewPage();
           maxYPosition = yPosition;
         }
 
-        const startTime = this.formatTime(item.start_time);
-        const endTime = this.formatTime(item.end_time);
-        const courseContent = [
-          item.course_details.course_code,
-          item.course_details.course_title,
-          item.faculty_name,
-          item.room_code,
-          `${startTime} - ${endTime}`,
-        ];
-
         doc.setFillColor(240, 240, 240);
         doc.rect(xPosition, yPosition, dayColumnWidth, boxHeight, 'F');
 
         let textYPosition = yPosition + 5;
-        courseContent.forEach((line: string, index) => {
+        scheduleContent.forEach((line: string, index) => {
           doc.setTextColor(0);
           doc.setFontSize(9);
           doc.setFont(
             index <= 1 ? 'helvetica' : 'helvetica',
-            index <= 1 ? 'bold' : 'normal'
+            index <= 1 ? 'bold' : 'normal',
           );
 
           const wrappedLines = doc.splitTextToSize(line, dayColumnWidth - 10);
@@ -788,7 +807,7 @@ export class ReportProgramsComponent implements OnInit {
             textYPosition += 5;
           });
 
-          if (index === courseContent.length - 1) {
+          if (index === scheduleContent.length - 1) {
             const timeTextWidth = doc.getTextWidth(line);
             doc.setDrawColor(0, 0, 0);
             doc.setLineWidth(0.2);
@@ -796,7 +815,7 @@ export class ReportProgramsComponent implements OnInit {
               xPosition + 5,
               textYPosition - 4,
               xPosition + 5 + timeTextWidth,
-              textYPosition - 4
+              textYPosition - 4,
             );
           }
         });
@@ -838,8 +857,34 @@ export class ReportProgramsComponent implements OnInit {
   hasSchedules(program: Program): boolean {
     return program.year_levels.some((yearLevel) =>
       yearLevel.sections.some(
-        (section) => section.schedules && section.schedules.length > 0
-      )
+        (section) => section.schedules && section.schedules.length > 0,
+      ),
     );
+  }
+
+  private calculateBoxHeight(
+    doc: jsPDF,
+    content: string[],
+    columnWidth: number,
+  ): number {
+    const padding = 10;
+    let totalHeight = 5;
+
+    content.forEach((line: string, index: number) => {
+      doc.setFontSize(9);
+      doc.setFont('helvetica', index <= 1 ? 'bold' : 'normal');
+
+      const wrappedLines = doc.splitTextToSize(line, columnWidth - padding);
+      totalHeight += wrappedLines.length * 5;
+    });
+
+    return totalHeight + 5;
+  }
+
+  private formatTimeTo12Hour(time: string): string {
+    const [hours, minutes] = time.split(':').map(Number);
+    const period = hours >= 12 ? 'PM' : 'AM';
+    const formattedHours = hours % 12 || 12;
+    return `${formattedHours}:${minutes.toString().padStart(2, '0')} ${period}`;
   }
 }

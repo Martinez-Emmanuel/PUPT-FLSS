@@ -88,7 +88,7 @@ export class ReportRoomsComponent
   constructor(
     private reportsService: ReportsService,
     public dialog: MatDialog,
-    private logoCacheService: LogoCacheService
+    private logoCacheService: LogoCacheService,
   ) {}
 
   ngOnInit(): void {
@@ -112,11 +112,9 @@ export class ReportRoomsComponent
   }
 
   initializeLogo(): void {
-    this.logoCacheService.getLogoBase64().subscribe(
-      (base64) => {
-        this.logoBase64 = base64;
-      }
-    );
+    this.logoCacheService.getLogoBase64().subscribe((base64) => {
+      this.logoBase64 = base64;
+    });
   }
 
   fetchRoomData(): void {
@@ -132,7 +130,7 @@ export class ReportRoomsComponent
           schedules: room.schedules,
           academicYear: `${response.room_schedule_reports.year_start}-${response.room_schedule_reports.year_end}`,
           semester: this.getSemesterDisplay(
-            response.room_schedule_reports.semester
+            response.room_schedule_reports.semester,
           ),
         }));
 
@@ -142,7 +140,7 @@ export class ReportRoomsComponent
         this.dataSource.paginator = this.paginator;
 
         this.hasAnySchedules = this.filteredData.some((room) =>
-          this.hasSchedules(room)
+          this.hasSchedules(room),
         );
       },
       error: (error) => {
@@ -187,7 +185,7 @@ export class ReportRoomsComponent
         (room) =>
           room.roomCode.toLowerCase().includes(searchQuery) ||
           room.location.toLowerCase().includes(searchQuery) ||
-          room.floorLevel.toLowerCase().includes(searchQuery)
+          room.floorLevel.toLowerCase().includes(searchQuery),
       );
     }
   }
@@ -223,6 +221,9 @@ export class ReportRoomsComponent
         entity: 'room',
         entityData: this.filteredData,
         customTitle: 'All Room Schedules',
+        fileName: `All_Room_Schedules_${
+          this.filteredData[0]?.academicYear
+        }_${this.filteredData[0]?.semester.replace(/\s+/g, '_')}`,
         academicYear: this.filteredData[0]?.academicYear,
         semester: this.filteredData[0]?.semester,
         generatePdfFunction: generatePdfFunction,
@@ -237,7 +238,9 @@ export class ReportRoomsComponent
     const blobUrl = URL.createObjectURL(pdfBlob);
     const a = document.createElement('a');
     a.href = blobUrl;
-    a.download = `${element.roomCode.replace(/\s+/g, '_')}_schedule_report.pdf`;
+    a.download = `${element.roomCode.replace(/\s+/g, '_')}_Schedules_${
+      element.academicYear
+    }_${element.semester.replace(/\s+/g, '_')}.pdf`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -272,7 +275,7 @@ export class ReportRoomsComponent
         margin,
         logoSize,
         `Room ${room.roomCode} Schedule`,
-        this.getAcademicYearSubtitle(room)
+        this.getAcademicYearSubtitle(room),
       );
 
       this.drawScheduleTable(
@@ -280,7 +283,7 @@ export class ReportRoomsComponent
         room.schedules ?? [],
         currentY,
         margin,
-        pageWidth
+        pageWidth,
       );
     });
 
@@ -302,7 +305,7 @@ export class ReportRoomsComponent
         margin,
         logoSize,
         `Room ${room.roomCode}`,
-        this.getAcademicYearSubtitle(room)
+        this.getAcademicYearSubtitle(room),
       );
       this.drawScheduleTable(doc, room.schedules, currentY, margin, pageWidth);
     }
@@ -317,13 +320,20 @@ export class ReportRoomsComponent
     margin: number,
     logoSize: number,
     title: string,
-    subtitle: string
+    subtitle: string,
   ): number {
     doc.setTextColor(0, 0, 0);
-    
+
     if (this.logoBase64) {
       const logoXPosition = pageWidth / 25 + 25;
-      doc.addImage(this.logoBase64, 'PNG', logoXPosition, startY - 5, logoSize, logoSize);
+      doc.addImage(
+        this.logoBase64,
+        'PNG',
+        logoXPosition,
+        startY - 5,
+        logoSize,
+        logoSize,
+      );
     }
 
     doc.setFontSize(12);
@@ -332,7 +342,7 @@ export class ReportRoomsComponent
       'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
       pageWidth / 2,
       startY,
-      { align: 'center' }
+      { align: 'center' },
     );
 
     let currentY = startY + 5;
@@ -342,7 +352,7 @@ export class ReportRoomsComponent
       'Gen. Santos Ave. Upper Bicutan, Taguig City',
       pageWidth / 2,
       currentY,
-      { align: 'center' }
+      { align: 'center' },
     );
 
     currentY += 10;
@@ -371,7 +381,7 @@ export class ReportRoomsComponent
     scheduleData: any[],
     startY: number,
     margin: number,
-    pageWidth: number
+    pageWidth: number,
   ): void {
     const hasSchedules = scheduleData && scheduleData.length > 0;
 
@@ -412,7 +422,7 @@ export class ReportRoomsComponent
         doc.getNumberOfPages() > 1
           ? 'Room Schedule (Continued)'
           : 'Room Schedule',
-        this.getAcademicYearSubtitle(scheduleData[0])
+        this.getAcademicYearSubtitle(scheduleData[0]),
       );
 
       days.forEach((day, index) => {
@@ -453,12 +463,24 @@ export class ReportRoomsComponent
         .filter((item: any) => item.day === day)
         .sort(
           (a: any, b: any) =>
-            this.timeToMinutes(a.start_time) - this.timeToMinutes(b.start_time)
+            this.timeToMinutes(a.start_time) - this.timeToMinutes(b.start_time),
         );
 
       if (daySchedule.length > 0) {
         daySchedule.forEach((item: any) => {
-          const boxHeight = 35;
+          const boxHeight = this.calculateBoxHeight(
+            doc,
+            [
+              item.course_details.course_code,
+              item.course_details.course_title,
+              `${item.program_code} ${item.year_level} - ${item.section_name}`,
+              item.faculty_name,
+              `${this.formatTime(item.start_time)} - ${this.formatTime(
+                item.end_time,
+              )}`,
+            ],
+            dayColumnWidth,
+          );
 
           if (yPosition + boxHeight > maxContentHeight) {
             days.forEach((_, i) => {
@@ -471,52 +493,35 @@ export class ReportRoomsComponent
               pageWidth - margin,
               startY,
               pageWidth - margin,
-              maxYPosition
+              maxYPosition,
             );
 
             yPosition = startNewPage();
             maxYPosition = yPosition;
           }
 
-          const startTime = this.formatTime(item.start_time);
-          const endTime = this.formatTime(item.end_time);
-          const courseContent = [
-            item.course_details.course_code,
-            item.course_details.course_title,
-            `${item.program_code} ${item.year_level} - ${item.section_name}`,
-            item.faculty_name,
-            `${startTime} - ${endTime}`,
-          ];
-
           doc.setFillColor(240, 240, 240);
           doc.rect(xPosition, yPosition, dayColumnWidth, boxHeight, 'F');
 
           let textYPosition = yPosition + 5;
-          courseContent.forEach((line: string, index) => {
+          [
+            item.course_details.course_code,
+            item.course_details.course_title,
+            `${item.program_code} ${item.year_level} - ${item.section_name}`,
+            item.faculty_name,
+            `${this.formatTime(item.start_time)} - ${this.formatTime(
+              item.end_time,
+            )}`,
+          ].forEach((line: string, index) => {
             doc.setTextColor(0);
             doc.setFontSize(9);
-            doc.setFont(
-              index <= 1 ? 'helvetica' : 'helvetica',
-              index <= 1 ? 'bold' : 'normal'
-            );
+            doc.setFont('helvetica', index <= 1 ? 'bold' : 'normal');
 
             const wrappedLines = doc.splitTextToSize(line, dayColumnWidth - 10);
             wrappedLines.forEach((wrappedLine: string) => {
               doc.text(wrappedLine, xPosition + 5, textYPosition);
               textYPosition += 5;
             });
-
-            if (index === courseContent.length - 1) {
-              const timeTextWidth = doc.getTextWidth(line);
-              doc.setDrawColor(0, 0, 0);
-              doc.setLineWidth(0.2);
-              doc.line(
-                xPosition + 5,
-                textYPosition - 4,
-                xPosition + 5 + timeTextWidth,
-                textYPosition - 4
-              );
-            }
           });
 
           yPosition += boxHeight + 5;
@@ -554,5 +559,24 @@ export class ReportRoomsComponent
 
   hasSchedules(room: Room): boolean {
     return room.schedules && room.schedules.length > 0;
+  }
+
+  private calculateBoxHeight(
+    doc: jsPDF,
+    content: string[],
+    columnWidth: number,
+  ): number {
+    const padding = 10;
+    let totalHeight = 5;
+
+    content.forEach((line: string, index: number) => {
+      doc.setFontSize(9);
+      doc.setFont('helvetica', index <= 1 ? 'bold' : 'normal');
+
+      const wrappedLines = doc.splitTextToSize(line, columnWidth - padding);
+      totalHeight += wrappedLines.length * 5;
+    });
+
+    return totalHeight + 5;
   }
 }
