@@ -22,6 +22,7 @@ import { fadeAnimation, cardEntranceSide } from '../../../animations/animations'
 @Component({
   selector: 'app-home',
   imports: [MatSymbolDirective, LoadingComponent, FullCalendarModule, DatePipe],
+  providers: [ReportsService, FacultyNotificationService, CookieService],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
   animations: [fadeAnimation, cardEntranceSide],
@@ -104,7 +105,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   }
   /**
    * Loads all necessary data for the faculty home page.
-   * 
+   *
    * This method fetches the faculty's schedule and notifications.
    * It updates the calendar events, academic year, semester, and faculty status.
    * If no faculty ID is available, it sets loading to false and returns early.
