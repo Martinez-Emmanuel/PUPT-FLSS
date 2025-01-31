@@ -16,12 +16,12 @@ import { AuthService } from '../../../services/auth/auth.service';
 import { CookieService } from 'ngx-cookie-service';
 
 @Component({
-    selector: 'app-main',
-    templateUrl: './main.component.html',
-    styleUrls: ['./main.component.scss'],
-    imports: [RouterModule, CommonModule, MatTooltipModule, MatSymbolDirective]
+  selector: 'app-faculty-main',
+  templateUrl: './faculty-main.component.html',
+  styleUrls: ['./faculty-main.component.scss'],
+  imports: [RouterModule, CommonModule, MatTooltipModule, MatSymbolDirective],
 })
-export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
+export class FacultyMainComponent implements OnInit, AfterViewInit, OnDestroy {
   private destroy$ = new Subject<void>();
   private isInitialLoad = true;
   private resizeObserver!: ResizeObserver;
@@ -39,7 +39,7 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
     public themeService: ThemeService,
     private authService: AuthService,
     private dialog: MatDialog,
-    private cookieService: CookieService
+    private cookieService: CookieService,
   ) {}
 
   ngOnInit(): void {
@@ -52,7 +52,7 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
     this.router.events
       .pipe(
         filter((event) => event instanceof NavigationEnd),
-        takeUntil(this.destroy$)
+        takeUntil(this.destroy$),
       )
       .subscribe(() => {
         setTimeout(() => this.updateSliderPosition(), 0);
@@ -143,7 +143,7 @@ export class MainComponent implements OnInit, AfterViewInit, OnDestroy {
             this.closeDropdown();
           });
         }
-      }
+      },
     );
   }
 

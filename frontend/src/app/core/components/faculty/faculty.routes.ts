@@ -5,7 +5,9 @@ export const FACULTY_ROUTES: Routes = [
   {
     path: '',
     loadComponent: () =>
-      import('./main/main.component').then((m) => m.MainComponent),
+      import('./faculty-main/faculty-main.component').then(
+        (m) => m.FacultyMainComponent,
+      ),
     canActivate: [AuthGuard],
     children: [
       {
@@ -17,23 +19,23 @@ export const FACULTY_ROUTES: Routes = [
         path: 'home',
         loadComponent: () =>
           import('./home/home.component').then((m) => m.HomeComponent),
-        data: { pageTitle: 'Home' }
+        data: { pageTitle: 'Home' },
       },
       {
         path: 'preferences',
         loadComponent: () =>
           import('./preferences/preferences.component').then(
-            (m) => m.PreferencesComponent
+            (m) => m.PreferencesComponent,
           ),
-        data: { pageTitle: 'Set Preferences' }
+        data: { pageTitle: 'Set Preferences' },
       },
       {
         path: 'load-and-schedule',
         loadComponent: () =>
           import('./load-and-schedule/load-and-schedule.component').then(
-            (m) => m.LoadAndScheduleComponent
+            (m) => m.LoadAndScheduleComponent,
           ),
-        data: { pageTitle: 'Load and Schedule' }
+        data: { pageTitle: 'Load and Schedule' },
       },
       {
         path: '**',
