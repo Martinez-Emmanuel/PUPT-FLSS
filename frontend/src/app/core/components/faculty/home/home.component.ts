@@ -1,4 +1,7 @@
 import { Component, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import { DatePipe } from '@angular/common';
+
+import { forkJoin } from 'rxjs';
 
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
@@ -15,8 +18,6 @@ import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 
 import { fadeAnimation, cardEntranceSide } from '../../../animations/animations';
-
-import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-home',
@@ -51,14 +52,13 @@ export class HomeComponent implements OnInit, AfterViewInit {
     private reportsService: ReportsService,
     private facultyNotifService: FacultyNotificationService,
     private cookieService: CookieService,
-    private changeDetectorRef: ChangeDetectorRef
+    private changeDetectorRef: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
     this.loadFacultyInfo();
     this.initializeCalendar();
-    this.fetchFacultySchedule();
-    this.fetchNotifications();
+    this.loadAllData();
   }
 
   ngAfterViewInit(): void {
@@ -102,56 +102,50 @@ export class HomeComponent implements OnInit, AfterViewInit {
       moreLinkText: (n) => `+${n} more`,
     };
   }
-
   /**
-   * Fetch faculty schedule from the back-end.
+   * Loads all necessary data for the faculty home page.
+   * 
+   * This method fetches the faculty's schedule and notifications.
+   * It updates the calendar events, academic year, semester, and faculty status.
+   * If no faculty ID is available, it sets loading to false and returns early.
    */
-  private fetchFacultySchedule(): void {
-    if (this.facultyId) {
-      this.reportsService
-        .getSingleFacultySchedule(Number(this.facultyId))
-        .subscribe({
-          next: (response) => {
-            this.processScheduleResponse(response);
-            this.updateCalendarEvents();
-            this.isLoading = false;
-            this.changeDetectorRef.detectChanges();
-            setTimeout(() => this.resizeCalendar(), 0);
-          },
-          error: (error) => {
-            console.error('Error fetching faculty schedule', error);
-            this.isLoading = false;
-            this.changeDetectorRef.detectChanges();
-          },
-        });
-    } else {
-      this.isLoading = false;
-      this.changeDetectorRef.detectChanges();
-    }
-  }
-
-  /**
-   * Fetch notifications and faculty status from the back-end.
-   */
-  private fetchNotifications(): void {
+  private loadAllData(): void {
     if (!this.facultyId) {
-      console.error('Faculty ID not found');
+      this.isLoading = false;
       return;
     }
 
-    this.facultyNotifService
-      .getFacultyNotifications(Number(this.facultyId))
-      .subscribe({
-        next: (response) => {
-          this.academicYear = response.academic_year;
-          this.semester = response.semester;
-          this.facultyStatus = response.faculty_status;
-          this.changeDetectorRef.detectChanges();
-        },
-        error: (error) => {
-          console.error('Error fetching faculty status:', error);
-        },
-      });
+    const scheduleRequest = this.reportsService.getSingleFacultySchedule(
+      Number(this.facultyId),
+    );
+    const notificationsRequest =
+      this.facultyNotifService.getFacultyNotifications(Number(this.facultyId));
+
+    forkJoin({
+      schedule: scheduleRequest,
+      notifications: notificationsRequest,
+    }).subscribe({
+      next: (response) => {
+        // Process schedule data
+        this.processScheduleResponse(response.schedule);
+        this.updateCalendarEvents();
+
+        // Process notifications data
+        this.academicYear = response.notifications.academic_year;
+        this.semester = response.notifications.semester;
+        this.facultyStatus = response.notifications.faculty_status;
+
+        // Update loading state and trigger change detection
+        this.isLoading = false;
+        this.changeDetectorRef.detectChanges();
+        setTimeout(() => this.resizeCalendar(), 0);
+      },
+      error: (error) => {
+        console.error('Error loading data:', error);
+        this.isLoading = false;
+        this.changeDetectorRef.detectChanges();
+      },
+    });
   }
 
   /**
