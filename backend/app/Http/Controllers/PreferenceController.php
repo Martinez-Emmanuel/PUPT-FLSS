@@ -349,6 +349,12 @@ class PreferenceController extends Controller
 
         $preferenceSetting = $faculty->preferenceSetting;
 
+        $isSchedulesPublished = DB::table('faculty_schedule_publication')
+            ->where('faculty_id', $faculty_id)
+            ->where('academic_year_id', $activeSemester->academic_year_id)
+            ->where('semester_id', $activeSemester->semester_id)
+            ->value('is_published') ?? 0;
+
         $courses = $faculty->preferences->map(function ($preference) {
             $preferenceDays = $preference->preferenceDays->map(function ($day) {
                 return [
@@ -375,14 +381,15 @@ class PreferenceController extends Controller
         });
 
         $facultyPreference = [
-            'faculty_id'       => $faculty->id,
-            'faculty_name'     => $faculty->user->name ?? 'N/A',
-            'faculty_code'     => $faculty->user->code ?? 'N/A',
-            'faculty_type'     => $faculty->facultyType->faculty_type ?? 'N/A',
-            'faculty_units'    => $faculty->faculty_units,
-            'has_request'      => (int) ($preferenceSetting->has_request ?? 0),
-            'is_enabled'       => (int) ($preferenceSetting->is_enabled ?? 0),
-            'active_semesters' => [
+            'faculty_id'             => $faculty->id,
+            'faculty_name'           => $faculty->user->name ?? 'N/A',
+            'faculty_code'           => $faculty->user->code ?? 'N/A',
+            'faculty_type'           => $faculty->facultyType->faculty_type ?? 'N/A',
+            'faculty_units'          => $faculty->faculty_units,
+            'has_request'            => (int) ($preferenceSetting->has_request ?? 0),
+            'is_enabled'             => (int) ($preferenceSetting->is_enabled ?? 0),
+            'is_schedules_published' => (int) $isSchedulesPublished,
+            'active_semesters'       => [
                 [
                     'active_semester_id'  => $activeSemester->active_semester_id,
                     'academic_year_id'    => $activeSemester->academic_year_id,

@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ViewChild, ElementRef, signal, computed, effect } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+
 import { finalize, of, Subscription, Subject, debounceTime, distinctUntilChanged, startWith, tap, switchMap } from 'rxjs';
 
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
@@ -65,7 +66,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     'programSelection' | 'courseList' | 'searchResults' | 'noResults'
   >('programSelection');
   showProgramSelection = computed(
-    () => this.searchState() === 'programSelection'
+    () => this.searchState() === 'programSelection',
   );
 
   // Data
@@ -77,7 +78,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   dynamicYearLevels = computed(() =>
     this.selectedProgram()
       ? this.selectedProgram()!.year_levels.map((yl) => yl.year_level)
-      : []
+      : [],
   );
 
   // Faculty Info
@@ -87,6 +88,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   // Preferences Status
   isPreferencesEnabled = signal(true);
   hasRequest = signal(false);
+  isSchedulesPublished = signal(false);
   activeSemesterId = signal<number | null>(null);
   submissionDeadline = signal<Date | null>(null);
   daysLeft = computed(() => {
@@ -118,7 +120,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     const filteredCourses = coursesToFilter.filter(
       (course) =>
         course.course_code.toLowerCase().includes(query) ||
-        course.course_title.toLowerCase().includes(query)
+        course.course_title.toLowerCase().includes(query),
     );
 
     const uniqueTitlesMap = new Map<string, Course>();
@@ -135,7 +137,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   // Table Data
   allSelectedCourses = signal<TableData[]>([]);
   dataSource = computed(
-    () => new MatTableDataSource(this.allSelectedCourses())
+    () => new MatTableDataSource(this.allSelectedCourses()),
   );
   isRemoving = signal<{ [course_code: string]: boolean }>({});
   displayedColumns: string[] = [
@@ -148,14 +150,14 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     'preferredDayTime',
   ];
   totalUnits = computed(() =>
-    this.dataSource().data.reduce((total, course) => total + course.units, 0)
+    this.dataSource().data.reduce((total, course) => total + course.units, 0),
   );
   totalHours = computed(() =>
     this.dataSource().data.reduce(
       (total, course) =>
         total + (course.lec_hours || 0) + (course.lab_hours || 0),
-      0
-    )
+      0,
+    ),
   );
 
   private subscriptions = new Subscription();
@@ -175,7 +177,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     private readonly dialog: MatDialog,
     private readonly preferencesService: PreferencesService,
     private readonly snackBar: MatSnackBar,
-    private readonly cookieService: CookieService
+    private readonly cookieService: CookieService,
   ) {
     effect(() => {
       this.dataSource().data;
@@ -206,8 +208,8 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   private subscribeToThemeChanges() {
     this.subscriptions.add(
       this.themeService.isDarkTheme$.subscribe((isDark) =>
-        this.isDarkTheme.set(isDark)
-      )
+        this.isDarkTheme.set(isDark),
+      ),
     );
   }
 
@@ -226,9 +228,9 @@ export class PreferencesComponent implements OnInit, OnDestroy {
           switchMap((resp) =>
             resp.preferences.is_enabled === 1
               ? this.preferencesService.getPrograms()
-              : of(null)
+              : of(null),
           ),
-          finalize(() => this.isLoading.set(false))
+          finalize(() => this.isLoading.set(false)),
         )
         .subscribe({
           next: (programsResponse) => {
@@ -236,7 +238,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
 
             const allCoursesMap = new Map<string, Course>();
             programsResponse.programs.forEach((program) =>
-              this.populateUniqueCourses(program, allCoursesMap)
+              this.populateUniqueCourses(program, allCoursesMap),
             );
 
             this.programs.set(programsResponse.programs);
@@ -244,7 +246,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
             this.allCourses.set([...allCoursesMap.values()]);
           },
           error: (error) => this.handleDataLoadingError(error),
-        })
+        }),
     );
   }
 
@@ -255,6 +257,9 @@ export class PreferencesComponent implements OnInit, OnDestroy {
       this.facultyName.set(facultyPreference.faculty_name);
       this.isPreferencesEnabled.set(facultyPreference.is_enabled === 1);
       this.hasRequest.set(facultyPreference.has_request === 1);
+      this.isSchedulesPublished.set(
+        facultyPreference.is_schedules_published === 1,
+      );
 
       const activeSemester = facultyPreference.active_semesters[0];
       this.academicYear.set(activeSemester.academic_year);
@@ -262,10 +267,11 @@ export class PreferencesComponent implements OnInit, OnDestroy {
       this.submissionDeadline.set(this.getSubmissionDeadline(activeSemester));
 
       this.allSelectedCourses.set(
-        this.mapPreferencesToTableData(activeSemester.courses)
+        this.mapPreferencesToTableData(activeSemester.courses),
       );
     } else {
       this.isPreferencesEnabled.set(true);
+      this.isSchedulesPublished.set(false);
     }
   }
 
@@ -333,7 +339,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
 
   private populateUniqueCourses(
     program: Program,
-    coursesMap: Map<string, Course>
+    coursesMap: Map<string, Course>,
   ): void {
     program.year_levels.forEach((yearLevel) => {
       yearLevel.semester.courses.forEach((course) => {
@@ -361,11 +367,11 @@ export class PreferencesComponent implements OnInit, OnDestroy {
       return Array.from(this.uniqueCourses().values());
     } else {
       const yearLevelData = program.year_levels.find(
-        (yl) => yl.year_level === yearLevel
+        (yl) => yl.year_level === yearLevel,
       );
       return yearLevelData
         ? yearLevelData.semester.courses.filter((course) =>
-            this.uniqueCourses().has(course.course_code)
+            this.uniqueCourses().has(course.course_code),
           )
         : [];
     }
@@ -384,14 +390,14 @@ export class PreferencesComponent implements OnInit, OnDestroy {
           if (query) {
             const results = this.filteredSearchResults();
             this.searchState.set(
-              results.length > 0 ? 'searchResults' : 'noResults'
+              results.length > 0 ? 'searchResults' : 'noResults',
             );
           } else {
             this.searchState.set(
-              this.selectedProgram() ? 'courseList' : 'programSelection'
+              this.selectedProgram() ? 'courseList' : 'programSelection',
             );
           }
-        })
+        }),
     );
   }
 
@@ -402,11 +408,11 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   private updateSearchState(query: string): void {
     if (query) {
       this.searchState.set(
-        this.filteredSearchResults().length > 0 ? 'searchResults' : 'noResults'
+        this.filteredSearchResults().length > 0 ? 'searchResults' : 'noResults',
       );
     } else {
       this.searchState.set(
-        this.selectedProgram() ? 'courseList' : 'programSelection'
+        this.selectedProgram() ? 'courseList' : 'programSelection',
       );
     }
   }
@@ -458,12 +464,12 @@ export class PreferencesComponent implements OnInit, OnDestroy {
       .deletePreference(
         course_assignment_id,
         this.facultyId()!,
-        this.activeSemesterId()!
+        this.activeSemesterId()!,
       )
       .subscribe({
         next: () => {
           this.allSelectedCourses.update((courses) =>
-            courses.filter((c) => c.course_code !== course.course_code)
+            courses.filter((c) => c.course_code !== course.course_code),
           );
           this.isRemoving.update((value) => {
             const updatedValue = { ...value };
@@ -488,14 +494,14 @@ export class PreferencesComponent implements OnInit, OnDestroy {
 
   private removeUnsubmittedCourse(course: TableData) {
     this.allSelectedCourses.update((courses) =>
-      courses.filter((c) => c.course_code !== course.course_code)
+      courses.filter((c) => c.course_code !== course.course_code),
     );
     this.showSnackBar('Course preference removed successfully.');
   }
 
   private isCourseAlreadyAdded(course: Course): boolean {
     const isAdded = this.allSelectedCourses().some(
-      (subject) => subject.course_code === course.course_code
+      (subject) => subject.course_code === course.course_code,
     );
     if (isAdded) this.showSnackBar('This course has already been selected.');
     return isAdded;
@@ -523,7 +529,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
       .subscribe((result) => {
         if (result) {
           const courseIndex = this.allSelectedCourses().findIndex(
-            (c) => c.course_code === element.course_code
+            (c) => c.course_code === element.course_code,
           );
 
           if (courseIndex !== -1) {
@@ -535,8 +541,8 @@ export class PreferencesComponent implements OnInit, OnDestroy {
                       preferredDays: result.days,
                       isSubmitted: true,
                     }
-                  : course
-              )
+                  : course,
+              ),
             );
           }
         }
@@ -618,8 +624,8 @@ export class PreferencesComponent implements OnInit, OnDestroy {
       .map(
         (pd) =>
           `${pd.day} (${this.formatTime(pd.start_time)} - ${this.formatTime(
-            pd.end_time
-          )})`
+            pd.end_time,
+          )})`,
       )
       .join('\n');
 
