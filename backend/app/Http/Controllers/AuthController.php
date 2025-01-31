@@ -13,22 +13,22 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $loginUserData = $request->validate([
-            'email' => 'required|string|email',
-            'password' => 'required|string|min:8|max:40',
+            'email'         => 'required|string|email',
+            'password'      => 'required|string|min:8|max:40',
             'allowed_roles' => 'required|array',
         ]);
 
         // Check if the user exists and the password is correct
         $user = User::with(['faculty.facultyType'])->where('email', $loginUserData['email'])->first();
 
-        if (!$user || !Hash::check($loginUserData['password'], $user->password)) {
+        if (! $user || ! Hash::check($loginUserData['password'], $user->password)) {
             return response()->json([
                 'message' => 'Invalid credentials. Check your email and password.',
             ], 401);
         }
 
         // Check if user has allowed role
-        if (!in_array($user->role, $loginUserData['allowed_roles'])) {
+        if (! in_array($user->role, $loginUserData['allowed_roles'])) {
             return response()->json([
                 'message' => 'Access forbidden. You are not authorized as ' . implode(' or ', $loginUserData['allowed_roles']) . '.',
             ], 403);
@@ -42,21 +42,21 @@ class AuthController extends Controller
         }
 
         $tokenResult = $user->createToken('user-token');
-        $token = $tokenResult->plainTextToken;
-        $expiration = Carbon::now()->addHours(24);
+        $token       = $tokenResult->plainTextToken;
+        $expiration  = Carbon::now()->addHours(24);
 
         $faculty = $user->faculty;
 
         // Prepare user data to be stored in the cookie
         $userData = json_encode([
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'role' => $user->role,
+            'id'      => $user->id,
+            'name'    => $user->first_name . ' ' . $user->last_name,
+            'email'   => $user->email,
+            'role'    => $user->role,
             'faculty' => $faculty ? [
-                'faculty_id' => $faculty->id,
+                'faculty_id'    => $faculty->id,
                 'faculty_email' => $user->email,
-                'faculty_type' => $faculty->facultyType->faculty_type ?? null,
+                'faculty_type'  => $faculty->facultyType->faculty_type ?? null,
                 'faculty_units' => $faculty->faculty_units,
             ] : null,
         ]);
@@ -66,10 +66,10 @@ class AuthController extends Controller
         Cookie::queue(Cookie::make('user_info', $userData, 1440));
 
         return response()->json([
-            'message' => 'Login successful.',
-            'token' => $token,
+            'message'    => 'Login successful.',
+            'token'      => $token,
             'expires_at' => $expiration,
-            'user' => json_decode($userData, true),
+            'user'       => json_decode($userData, true),
         ]);
     }
 
