@@ -12,7 +12,9 @@
       [showExportButton]="true"
       [showAddButton]="false"
       [showActiveYearAndSem]="false"
-      [buttonDisabled]="!hasAnyPreferences || isToggleAllChecked || isAnyIndividualToggleOn"
+      [buttonDisabled]="
+        !hasAnyPreferences || isToggleAllChecked || isAnyIndividualToggleOn
+      "
       [tooltipMessage]="
         !hasAnyPreferences
           ? 'No faculty preferences available for export'
@@ -21,8 +23,7 @@
           : ''
       "
       (export)="onExportAll()"
-      (inputChange)="onInputChange($event)"
-    >
+      (inputChange)="onInputChange($event)">
     </app-table-header>
   </div>
 
@@ -74,8 +75,7 @@
           <td mat-cell *matCellDef="let element" class="custom-cell">
             <div
               class="faculty-type"
-              [ngClass]="getFacultyTypeClass(element.facultyType)"
-            >
+              [ngClass]="getFacultyTypeClass(element.facultyType)">
               {{ element.facultyType }}
             </div>
           </td>
@@ -92,18 +92,25 @@
               [matTooltip]="
                 element.is_enabled || isToggleAllChecked
                   ? 'Preferences submission is open; viewing disabled'
+                  : !hasSubmittedPreferences(element)
+                  ? 'No preferences submitted yet'
                   : ''
-              "
-            >
+              ">
               <button
                 mat-button
                 class="view-button sec-ripple"
                 (click)="onView(element)"
-                [disabled]="element.is_enabled || isToggleAllChecked"
+                [disabled]="
+                  element.is_enabled ||
+                  isToggleAllChecked ||
+                  !hasSubmittedPreferences(element)
+                "
                 [ngClass]="{
-                  'disabled-button': element.is_enabled || isToggleAllChecked
-                }"
-              >
+                  'disabled-button':
+                    element.is_enabled ||
+                    isToggleAllChecked ||
+                    !hasSubmittedPreferences(element)
+                }">
                 <mat-icon>visibility</mat-icon>
                 <span>View Preferences</span>
               </button>
@@ -114,18 +121,25 @@
               [matTooltip]="
                 element.is_enabled || isToggleAllChecked
                   ? 'Preferences submission is open; download disabled'
+                  : !hasSubmittedPreferences(element)
+                  ? 'No preferences submitted yet'
                   : ''
-              "
-            >
+              ">
               <button
                 mat-button
                 class="export-button sec-ripple"
                 (click)="onExportSingle(element)"
-                [disabled]="element.is_enabled || isToggleAllChecked"
+                [disabled]="
+                  element.is_enabled ||
+                  isToggleAllChecked ||
+                  !hasSubmittedPreferences(element)
+                "
                 [ngClass]="{
-                  'disabled-button': element.is_enabled || isToggleAllChecked
-                }"
-              >
+                  'disabled-button':
+                    element.is_enabled ||
+                    isToggleAllChecked ||
+                    !hasSubmittedPreferences(element)
+                }">
                 <mat-icon>download</mat-icon>
                 <span>Download</span>
               </button>
@@ -145,8 +159,7 @@
                 [matTooltip]="
                   'This shows faculty members who have requested access\n
                      to submit their preferences'
-                "
-              ></span>
+                "></span>
             </div>
           </th>
           <td mat-cell *matCellDef="let element" class="custom-cell">
@@ -173,8 +186,7 @@
               <button
                 class="scheduled-button global pop"
                 (click)="onToggleAllPreferences($event, true)"
-                [matTooltip]="getTooltip('global')"
-              >
+                [matTooltip]="getTooltip('global')">
                 Scheduled
               </button>
               } @else {
@@ -184,8 +196,7 @@
                 [checked]="isToggleAllChecked"
                 [disabled]="getToggleState(allData[0]).isGlobalDisabled"
                 [matTooltip]="getTooltip('global')"
-                (change)="onToggleAllPreferences($event)"
-              >
+                (change)="onToggleAllPreferences($event)">
               </mat-slide-toggle>
               }
               <span
@@ -195,8 +206,7 @@
                 [matTooltip]="
                   'This button allows you to toggle faculty preferences\n
                    submission and set submission period'
-                "
-              ></span>
+                "></span>
             </div>
           </th>
           } @else {
@@ -206,8 +216,7 @@
                 class="header-toggle"
                 [checked]="false"
                 [disabled]="true"
-                matTooltip="No faculty data available"
-              >
+                matTooltip="No faculty data available">
               </mat-slide-toggle>
               <span
                 mat-symbol="help"
@@ -216,8 +225,7 @@
                 [matTooltip]="
                   'This button allows you to toggle faculty preferences\n
                    submission and set submission period'
-                "
-              ></span>
+                "></span>
             </div>
           </th>
           }
@@ -230,8 +238,7 @@
               <button
                 class="scheduled-button individual pop"
                 (click)="onToggleSinglePreferences(element, $event, true)"
-                [matTooltip]="getTooltip('individual', element)"
-              >
+                [matTooltip]="getTooltip('individual', element)">
                 Scheduled
               </button>
               } @else {
@@ -241,8 +248,7 @@
                 [checked]="element.is_enabled"
                 [disabled]="getToggleState(element).isIndividualDisabled"
                 [matTooltip]="getTooltip('individual', element)"
-                (change)="onToggleSinglePreferences(element, $event)"
-              >
+                (change)="onToggleSinglePreferences(element, $event)">
               </mat-slide-toggle>
               }
             </div>
@@ -273,8 +279,7 @@
         [pageSizeOptions]="[5, 10, 25, 50, 100]"
         [showFirstLastButtons]="true"
         (page)="updateDisplayedData()"
-        aria-label="Select page"
-      >
+        aria-label="Select page">
       </mat-paginator>
     </div>
   </div>
