@@ -91,10 +91,6 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   isSchedulesPublished = signal(false);
   activeSemesterId = signal<number | null>(null);
   submissionDeadline = signal<Date | null>(null);
-  daysLeft = computed(() => {
-    const deadline = this.submissionDeadline();
-    return this.calculateDaysLeft(deadline);
-  });
 
   // Search
   private searchQuerySubject = new Subject<string>();
@@ -264,7 +260,6 @@ export class PreferencesComponent implements OnInit, OnDestroy {
       const activeSemester = facultyPreference.active_semesters[0];
       this.academicYear.set(activeSemester.academic_year);
       this.semesterLabel.set(activeSemester.semester_label);
-      this.submissionDeadline.set(this.getSubmissionDeadline(activeSemester));
 
       this.allSelectedCourses.set(
         this.mapPreferencesToTableData(activeSemester.courses),
@@ -273,25 +268,6 @@ export class PreferencesComponent implements OnInit, OnDestroy {
       this.isPreferencesEnabled.set(true);
       this.isSchedulesPublished.set(false);
     }
-  }
-
-  private getSubmissionDeadline(activeSemester: any): Date | null {
-    const deadline =
-      activeSemester.individual_deadline || activeSemester.global_deadline;
-    return deadline ? new Date(deadline) : null;
-  }
-
-  private calculateDaysLeft(deadline: Date | null): string | number {
-    if (!deadline) return 'N/A';
-
-    const today = new Date();
-    deadline.setHours(0, 0, 0, 0);
-    today.setHours(0, 0, 0, 0);
-
-    const diffTime = deadline.getTime() - today.getTime();
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    return diffDays < 1 ? 'Today' : `${diffDays} days left`;
   }
 
   private mapPreferencesToTableData(courses: any[]): TableData[] {
@@ -551,7 +527,7 @@ export class PreferencesComponent implements OnInit, OnDestroy {
 
   public openViewPreferencesDialog(): void {
     this.dialog.open(DialogPrefComponent, {
-      maxWidth: '70rem',
+      maxWidth: '90vw',
       width: '100%',
       data: {
         facultyName: this.facultyName(),
@@ -565,7 +541,6 @@ export class PreferencesComponent implements OnInit, OnDestroy {
   public openRequestAccessDialog(): void {
     this.dialog
       .open(DialogRequestAccessComponent, {
-        width: '25rem',
         disableClose: true,
         data: {
           has_request: this.hasRequest(),
@@ -587,7 +562,6 @@ export class PreferencesComponent implements OnInit, OnDestroy {
                   }
                 },
                 error: (error) => {
-                  console.error('Error refreshing preferences:', error);
                   this.showSnackBar('Error refreshing preferences data.');
                 },
               });

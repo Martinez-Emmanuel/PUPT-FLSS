@@ -22,7 +22,7 @@ export const slideInAnimation = trigger('slideInAnimation', [
     style({
       transform: 'translateX(-100%)',
       opacity: 0,
-    })
+    }),
   ),
   transition('void => *', animate('750ms cubic-bezier(0.16, 1, 0.3, 1)')),
   transition('* => void', animate('750ms cubic-bezier(0.7, 0, 0.84, 0)')),
@@ -37,11 +37,11 @@ export const cardEntranceAnimation = trigger('cardEntranceAnimation', [
         stagger('75ms', [
           animate(
             '400ms ease-out',
-            style({ opacity: 1, transform: 'translateY(0)' })
+            style({ opacity: 1, transform: 'translateY(0)' }),
           ),
         ]),
       ],
-      { optional: true }
+      { optional: true },
     ),
   ]),
 ]);
@@ -55,11 +55,11 @@ export const cardEntranceSide = trigger('cardEntranceSide', [
         stagger('100ms', [
           animate(
             '400ms ease-out',
-            style({ opacity: 1, transform: 'translateX(0)' })
+            style({ opacity: 1, transform: 'translateX(0)' }),
           ),
         ]),
       ],
-      { optional: true }
+      { optional: true },
     ),
   ]),
 ]);
@@ -69,13 +69,13 @@ export const pageFloatUpAnimation = trigger('pageFloatUpAnimation', [
     style({ opacity: 0, transform: 'translateY(20px)' }),
     animate(
       '400ms ease-out',
-      style({ opacity: 1, transform: 'translateY(0)' })
+      style({ opacity: 1, transform: 'translateY(0)' }),
     ),
   ]),
   transition(':leave', [
     animate(
       '300ms ease-in',
-      style({ opacity: 0, transform: 'translateY(20px)' })
+      style({ opacity: 0, transform: 'translateY(20px)' }),
     ),
   ]),
 ]);
@@ -85,7 +85,7 @@ export const rowAdditionAnimation = trigger('rowAdditionAnimation', [
     style({ opacity: 0, transform: 'translateX(-50px)' }),
     animate(
       '500ms cubic-bezier(0.25, 1, 0.5, 1)',
-      style({ opacity: 1, transform: 'translateX(0)' })
+      style({ opacity: 1, transform: 'translateX(0)' }),
     ),
   ]),
 ]);
@@ -105,7 +105,7 @@ export const cardSwipeAnimation = trigger('cardSwipeAnimation', [
         opacity: 1,
         zIndex: 1,
         filter: 'blur(0)',
-      })
+      }),
     ),
   ]),
   transition(':decrement', [
@@ -122,7 +122,7 @@ export const cardSwipeAnimation = trigger('cardSwipeAnimation', [
         opacity: 1,
         zIndex: 1,
         filter: 'blur(0)',
-      })
+      }),
     ),
   ]),
 ]);
@@ -135,7 +135,7 @@ export const showHideFieldsAnimation = trigger('showHideFieldsAnimation', [
       height: '*',
       transform: 'translateY(0)',
       overflow: 'hidden',
-    })
+    }),
   ),
   state(
     'hidden',
@@ -144,7 +144,7 @@ export const showHideFieldsAnimation = trigger('showHideFieldsAnimation', [
       height: '0px',
       transform: 'translateY(-10px)',
       overflow: 'hidden',
-    })
+    }),
   ),
   transition('visible => hidden', [
     animate('300ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
@@ -159,13 +159,13 @@ export const slideTextAnimation = trigger('slideText', [
     'connecting',
     style({
       transform: 'translateY(0%)',
-    })
+    }),
   ),
   state(
     'redirecting',
     style({
       transform: 'translateY(-100%)',
-    })
+    }),
   ),
   transition('connecting => redirecting', [animate('0.6s ease-in-out')]),
   transition('redirecting => connecting', [animate('0.6s ease-in-out')]),
@@ -182,11 +182,7 @@ export const defaultRouteStyles = {
 
 export const routeSlideAnimation = [
   style({ position: 'relative' }),
-  query(
-    ':enter, :leave',
-    [style(defaultRouteStyles)],
-    { optional: true }
-  ),
+  query(':enter, :leave', [style(defaultRouteStyles)], { optional: true }),
   query(
     ':enter',
     [
@@ -195,7 +191,7 @@ export const routeSlideAnimation = [
         opacity: 0,
       }),
     ],
-    { optional: true }
+    { optional: true },
   ),
   query(
     ':leave',
@@ -205,7 +201,7 @@ export const routeSlideAnimation = [
         opacity: 1,
       }),
     ],
-    { optional: true }
+    { optional: true },
   ),
   group([
     query(
@@ -216,10 +212,10 @@ export const routeSlideAnimation = [
           style({
             transform: 'translateX(-50%)',
             opacity: 0,
-          })
+          }),
         ),
       ],
-      { optional: true }
+      { optional: true },
     ),
     query(
       ':enter',
@@ -229,31 +225,27 @@ export const routeSlideAnimation = [
           style({
             transform: 'translateX(0)',
             opacity: 1,
-          })
+          }),
         ),
       ],
-      { optional: true }
+      { optional: true },
     ),
   ]),
 ];
 
 export const routeFadeAnimation = [
   style({ position: 'relative' }),
-  query(
-    ':enter, :leave',
-    [style(defaultRouteStyles)],
-    { optional: true }
-  ),
+  query(':enter, :leave', [style(defaultRouteStyles)], { optional: true }),
   query(':enter', [style({ opacity: 0 })], { optional: true }),
   query(
     ':leave',
     [animate('500ms cubic-bezier(0.4, 0, 0.2, 1)', style({ opacity: 0 }))],
-    { optional: true }
+    { optional: true },
   ),
   query(
     ':enter',
     [animate('500ms cubic-bezier(0.4, 0, 0.2, 1)', style({ opacity: 1 }))],
-    { optional: true }
+    { optional: true },
   ),
 ];
 
@@ -265,7 +257,10 @@ export const routeAnimation = trigger('routeAnimation', [
   transition('callback => faculty', routeSlideAnimation),
 
   // When logging out (navigating from main routes to login)
-  transition('faculty => login, admin => login, superadmin => login', routeSlideAnimation),
+  transition(
+    'faculty => login, admin => login, superadmin => login',
+    routeSlideAnimation,
+  ),
 
   // For all other routes going to login, use simple fade
   transition('* => login', routeFadeAnimation),
@@ -275,18 +270,37 @@ export const routeAnimation = trigger('routeAnimation', [
 ]);
 
 export const fabAnimation = trigger('fabAnimation', [
-  state('show', style({
-    transform: 'translateY(0)',
-    opacity: 1
-  })),
-  state('hide', style({
-    transform: 'translateY(100%)',
-    opacity: 0
-  })),
-  transition('show => hide', [
-    animate('200ms cubic-bezier(0.4, 0.0, 0.2, 1)')
-  ]),
-  transition('hide => show', [
-    animate('250ms cubic-bezier(0.0, 0.0, 0.2, 1)')
-  ])
+  state(
+    'show',
+    style({
+      transform: 'translateY(0)',
+      opacity: 1,
+    }),
+  ),
+  state(
+    'hide',
+    style({
+      transform: 'translateY(100%)',
+      opacity: 0,
+    }),
+  ),
+  transition('show => hide', [animate('200ms cubic-bezier(0.4, 0.0, 0.2, 1)')]),
+  transition('hide => show', [animate('250ms cubic-bezier(0.0, 0.0, 0.2, 1)')]),
+]);
+
+export const slideUpDown = trigger('slideUpDown', [
+  state(
+    'void',
+    style({
+      transform: 'translateY(100%)',
+    }),
+  ),
+  state(
+    '*',
+    style({
+      transform: 'translateY(0)',
+    }),
+  ),
+  transition('void => *', [animate('300ms cubic-bezier(0.4, 0.0, 0.2, 1)')]),
+  transition('* => void', [animate('600ms cubic-bezier(0.2, 0.0, 0.0, 1)')]),
 ]);

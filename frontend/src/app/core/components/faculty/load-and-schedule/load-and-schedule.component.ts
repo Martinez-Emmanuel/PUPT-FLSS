@@ -53,12 +53,10 @@ export class LoadAndScheduleComponent implements OnInit {
           this.isLoading = false;
         },
         (error) => {
-          console.error('Error fetching faculty schedule:', error);
           this.isLoading = false;
         },
       );
     } else {
-      console.error('Faculty ID not found in cookies');
       this.isLoading = false;
     }
   }

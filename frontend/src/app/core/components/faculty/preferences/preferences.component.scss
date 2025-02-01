@@ -1,4 +1,5 @@
-@use "../../../../../styles/mixins";
+@use '../../../../../styles/mixins';
+@use '../../../../../styles/breakpoints' as bp;
 
 * {
   @include mixins.reset-styles;
@@ -22,8 +23,10 @@
   @include mixins.flex-layout(
     $direction: column,
     $align: stretch,
+    $justify: flex-start,
     $gap: var(--spacing-md)
   );
+  height: 100%;
 }
 
 /* First row - Header & Units Cards */
@@ -46,15 +49,13 @@
     }
 
     h1 {
-      @include mixins.gradient-primary(315deg);
+      @include mixins.gradient-primary-text(315deg);
       font-size: var(--font-size-2xxl);
       font-weight: 700;
-      background-clip: text;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+
+      @media screen and (max-width: bp.$breakpoint-sm) {
+        font-size: var(--font-size-2xl);
+      }
     }
 
     .pref-description {
@@ -82,10 +83,10 @@
       @include mixins.flex-layout($direction: column);
       height: inherit;
       border-radius: var(--border-radius-md);
-      padding: var(--spacing-md);
+      padding: var(--spacing-sm);
 
       h2 {
-        font-size: var(--font-size-2xxl);
+        font-size: var(--font-size-2xl);
       }
 
       h2,
@@ -368,7 +369,7 @@
     }
 
     .request-access-link::after {
-      content: "";
+      content: '';
       position: absolute;
       width: 100%;
       height: 1.5px;
@@ -391,25 +392,26 @@
 
   .button-options {
     @include mixins.flex-layout($gap: var(--spacing-sm));
+    width: 100%;
 
     .preferences-btn {
       @include mixins.gradient-primary(315deg);
       font-size: var(--font-size-md);
+      width: 100%;
+      text-wrap: nowrap;
     }
 
     .request-btn {
       @include mixins.gradient-secondary(315deg);
       font-size: var(--font-size-md);
+      width: 100%;
+      text-wrap: nowrap;
     }
   }
 }
 
 /* Media Query */
 @media screen and (max-width: 1024px) {
-  * {
-    @include mixins.hide-scrollbar;
-  }
-
   #courses_container {
     max-height: 25rem;
   }
@@ -440,8 +442,18 @@
     #courses_container {
       .courses-scroll-container,
       .programs-scroll-container {
-        padding-right: 0;
+        padding-right: var(--spacing-xs);
       }
     }
+  }
+}
+
+@media screen and (max-width: bp.$breakpoint-sm) {
+  .preferences-row-two {
+    padding-bottom: var(--spacing-5xxl);
+  }
+
+  .preferences-closed .button-options {
+    @include mixins.flex-layout($direction: column, $gap: var(--spacing-sm));
   }
 }

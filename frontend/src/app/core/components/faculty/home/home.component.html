@@ -9,9 +9,7 @@
     <!-- Home greetings -->
     <div id="home_greetings">
       <h1>Hello, {{ facultyName }}</h1>
-      <p>
-        Here's your class schedule for this month and other key information.
-      </p>
+      <p>Here's your schedule for this month and announcements.</p>
     </div>
 
     <!-- Calendar -->
@@ -19,8 +17,7 @@
       <full-calendar
         class="full-calendar"
         #calendar
-        [options]="calendarOptions"
-      ></full-calendar>
+        [options]="calendarOptions"></full-calendar>
     </div>
   </div>
 
@@ -28,18 +25,12 @@
   <div class="home-row-two" [@fadeAnimation]>
     <!-- Active Semester -->
     <div class="active-year-sem-container">
-      <!--Icon Container-->
-      <div class="icon-container">
+      <div class="text">
         <span mat-symbol="event_note" weight="200"></span>
+        A.Y. {{ academicYear }},
+        {{ semester }}
       </div>
-      <!--Text Container-->
-      <div class="text-container">
-        <p class="text">
-          A.Y. {{ academicYear }},
-          {{ semester }}
-        </p>
-        <p class="label">Current Academic Year & Semester</p>
-      </div>
+      <p class="label">▸ Current Academic Year & Semester</p>
     </div>
 
     <!--Announcement-->
@@ -77,7 +68,7 @@
                 Make sure to finalize your preferences on or before the
                 submission closes on
                 <strong>
-                  {{ facultyStatus.preferences_deadline | date : "MMMM d, y" }}.
+                  {{ facultyStatus.preferences_deadline | date : 'MMMM d, y' }}.
                 </strong>
               </p>
               } @else if (!facultyStatus.preferences_enabled &&

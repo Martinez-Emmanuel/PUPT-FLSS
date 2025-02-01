@@ -1,16 +1,16 @@
-@use "@angular/material" as mat;
-@use "styles/m3-theme" as m3-theme;
-@use "styles/theme";
-@use "styles/mixins";
-@use "styles/fonts";
+@use '@angular/material' as mat;
+@use 'styles/m3-theme' as m3-theme;
+@use 'styles/theme';
+@use 'styles/mixins';
+@use 'styles/fonts';
 
 @include mat.elevation-classes();
 @include mat.app-background();
 
 :root {
   // Typography
-  --font-base: "Inter Tight", "Helvetica Neue", sans-serif;
-  --font-header: "Trajan Pro", serif;
+  --font-base: 'Inter Tight', 'Helvetica Neue', sans-serif;
+  --font-header: 'Trajan Pro', serif;
 
   // Font Sizes
   --font-size-tiny: 0.4rem;
@@ -58,6 +58,8 @@
   --spacing-3xl: 3rem;
   --spacing-4xl: 4rem;
   --spacing-4xxl: 4.5rem;
+  --spacing-5xl: 5rem;
+  --spacing-5xxl: 5.5rem;
 
   // Border Radius
   --border-radius-base: 0.25rem;
@@ -99,13 +101,7 @@
   --dialog-smx: 21rem;
   --dialog-base: 25rem;
   --dialog-medium: 30rem;
-  --dialog-base-height: 60vh;
-
-  // Breakpoints
-  --breakpoint-sm: 576px;
-  --breakpoint-md: 768px;
-  --breakpoint-lg: 992px;
-  --breakpoint-xl: 1200px;
+  --dialog-base-height: 50vh;
 
   @include m3-theme.all-component-themes(m3-theme.$light-theme);
 
@@ -224,14 +220,18 @@ body {
 }
 
 span[mat-symbol] {
-  font-family: "Material Symbols Rounded" !important;
+  font-family: 'Material Symbols Rounded' !important;
   user-select: none;
 }
 
 .loading-wrapper {
   height: 100%;
-  width: 50%;
+  width: 40vw;
   align-self: center;
+
+  @media screen and (max-width: 675px) {
+    width: 70vw;
+  }
 }
 
 .dialog-base {
@@ -392,6 +392,10 @@ span[mat-symbol] {
   color: white !important;
 }
 
+.mat-bottom-sheet-container-large {
+  min-width: 25vw !important;
+}
+
 /* Full Calendar Styling */
 
 // Increase border radius on table's buttons
@@ -455,4 +459,27 @@ span[mat-symbol] {
   --fc-button-active-border-color: transparent;
 
   --fc-today-bg-color: var(--primary-one-fade);
+}
+
+@media screen and (max-width: 675px) {
+  .fc .fc-toolbar {
+    @include mixins.flex-layout(
+      $align: stretch,
+      $justify: center,
+      $direction: column,
+      $gap: var(--spacing-sm)
+    );
+  }
+
+  .fc-toolbar-chunk {
+    @include mixins.flex-layout($align: center, $justify: center);
+  }
+
+  .fc .fc-button-group {
+    width: 100%;
+  }
+
+  .fc-direction-ltr .fc-toolbar > * > :not(:first-child) {
+    width: 100%;
+  }
 }

@@ -1,14 +1,27 @@
 <div class="faculty-main-container">
-  <header class="faculty-main-header">
-    <!--System Name Header-->
+  <!-- Mobile Header-->
+  <div class="mobile-header">
     <div class="header-name">
       <img
         src="assets/images/pup_taguig_logo.svg"
         alt="University Logo"
-        class="university-logo"
-      />
+        class="university-logo" />
       <div class="header-text">
-        <div class="university-name">PUP – TAGUIG BRANCH</div>
+        <div class="university-name">PUP TAGUIG BRANCH</div>
+        <div class="system-name">FACULTY LOADING & SCHEDULING</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Desktop Header & Navigation Bar -->
+  <header class="desktop-header">
+    <div class="header-name">
+      <img
+        src="assets/images/pup_taguig_logo.svg"
+        alt="University Logo"
+        class="university-logo" />
+      <div class="header-text">
+        <div class="university-name">PUP TAGUIG BRANCH</div>
         <div class="system-name">FACULTY LOADING & SCHEDULING</div>
       </div>
     </div>
@@ -42,30 +55,99 @@
           class="profile-icon"
           (click)="toggleDropdown($event)"
           matTooltip="Click to open settings"
-          matTooltipPosition="below"
-        />
-        @if (isDropdownOpen) {
-        <div class="dropdown-menu">
-          <span matRipple class="dropdown-item" (click)="toggleTheme()">
-            <span
-              [mat-symbol]="
-                (themeService.isDarkTheme$ | async) ? 'light_mode' : 'dark_mode'
-              "
-            ></span>
-
-            Switch Theme
-          </span>
-          <span matRipple class="dropdown-item logout" (click)="logout()">
-            <span mat-symbol="logout"></span>
-            Logout
-          </span>
-        </div>
-        }
+          matTooltipPosition="below" />
       </div>
     </div>
   </header>
 
+  <!-- Desktop Account Bottom Sheet -->
+  <ng-template #bottomSheetTemplate>
+    <div class="desktop-bottom-sheet" (click)="$event.stopPropagation()">
+      <div
+        matRipple
+        class="bottom-sheet-item"
+        (click)="onBottomSheetAction('theme')">
+        <span
+          [mat-symbol]="
+            (themeService.isDarkTheme$ | async) ? 'light_mode' : 'dark_mode'
+          "></span>
+        Switch Theme
+      </div>
+      <div
+        matRipple
+        class="bottom-sheet-item logout"
+        (click)="onBottomSheetAction('logout')">
+        <span mat-symbol="door_open"></span>
+        Logout
+      </div>
+    </div>
+  </ng-template>
+
+  <!--Faculty Main Content-->
   <main class="faculty-main-content">
     <router-outlet></router-outlet>
   </main>
+
+  <!-- Mobile Navigation Bar -->
+  <nav class="mobile-navbar">
+    <a routerLink="home" routerLinkActive="active" class="bottom-nav-item">
+      <div class="icon-container">
+        <span mat-symbol="home"></span>
+      </div>
+      <span class="bottom-nav-label">Home</span>
+    </a>
+    <a
+      routerLink="preferences"
+      routerLinkActive="active"
+      class="bottom-nav-item">
+      <div class="icon-container">
+        <span mat-symbol="settings"></span>
+      </div>
+      <span class="bottom-nav-label">Preferences</span>
+    </a>
+    <a
+      routerLink="load-and-schedule"
+      routerLinkActive="active"
+      class="bottom-nav-item">
+      <div class="icon-container">
+        <span mat-symbol="calendar_month"></span>
+      </div>
+      <span class="bottom-nav-label">Schedule</span>
+    </a>
+    <button class="bottom-nav-item" (click)="toggleDropdown($event)">
+      <div class="icon-container">
+        <span mat-symbol="person"></span>
+      </div>
+      <span class="bottom-nav-label">Account</span>
+    </button>
+  </nav>
+
+  <!-- Mobile Account Dropdown -->
+  @if (isDropdownOpen) {
+  <div class="mobile-dropdown" [@slideUpDown]>
+    <div class="mobile-dropdown-header">
+      <img
+        src="assets/images/default_faculty_icon.png"
+        alt="Profile Icon"
+        class="mobile-profile-icon" />
+      <div class="mobile-account-info">
+        <div class="account-name">{{ facultyName }}</div>
+        <div class="account-email">{{ facultyEmail }}</div>
+      </div>
+    </div>
+    <div class="mobile-dropdown-content">
+      <button matRipple class="mobile-dropdown-item" (click)="toggleTheme()">
+        <span
+          [mat-symbol]="
+            (themeService.isDarkTheme$ | async) ? 'light_mode' : 'dark_mode'
+          "></span>
+        Switch Theme
+      </button>
+      <button matRipple class="mobile-dropdown-item logout" (click)="logout()">
+        <span mat-symbol="door_open"></span>
+        Logout
+      </button>
+    </div>
+  </div>
+  }
 </div>

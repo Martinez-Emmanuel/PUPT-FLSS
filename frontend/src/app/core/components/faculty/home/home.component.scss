@@ -1,4 +1,5 @@
-@use "../../../../../styles/mixins";
+@use '../../../../../styles/mixins';
+@use '../../../../../styles/breakpoints' as bp;
 
 * {
   @include mixins.reset-styles;
@@ -13,6 +14,15 @@
     $gap: var(--spacing-lg)
   );
   height: 100%;
+  overflow: auto;
+
+  @media screen and (max-width: 1000px) {
+    @include mixins.flex-layout(
+      $justify: flex-start,
+      $direction: column,
+      $gap: var(--spacing-md)
+    );
+  }
 }
 
 .home-row-one {
@@ -23,6 +33,8 @@
     $gap: var(--spacing-lg)
   );
   flex: 1;
+  height: 100%;
+  width: 100%;
 
   #home_greetings {
     display: flex;
@@ -31,20 +43,23 @@
 
     h1 {
       @include mixins.reset-styles;
-      width: max-content;
+      width: fit-content;
       font-size: var(--font-size-2xxl);
       font-weight: 700;
 
-      @include mixins.gradient-primary(315deg);
-      background-clip: text;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      @include mixins.gradient-primary-text(315deg);
     }
 
     p {
       @include mixins.reset-styles;
-      width: max-content;
+      width: fit-content;
       font-size: var(--font-size-mdx);
+    }
+
+    @media screen and (max-width: bp.$breakpoint-sm) {
+      h1 {
+        font-size: var(--font-size-2xl);
+      }
     }
   }
 
@@ -52,9 +67,10 @@
     height: 100%;
     width: 100%;
     user-select: none;
+    overflow: hidden;
 
     .full-calendar {
-      max-height: 29rem;
+      height: 100%;
       overflow-y: auto;
     }
   }
@@ -67,39 +83,19 @@
     $gap: var(--spacing-lg)
   );
   flex: 0;
-  min-height: 0;
+  height: 100%;
+  width: 100%;
 
   .active-year-sem-container {
     @include mixins.flex-layout(
       $align: flex-start,
-      $justify: flex-start,
-      $gap: var(--spacing-xs)
+      $direction: column,
+      $justify: flex-start
     );
     @include mixins.gradient-primary(315deg);
     padding: var(--spacing-sm);
     border-radius: var(--border-radius-md);
     color: white;
-    flex-shrink: 0;
-
-    .icon-container {
-      height: 100%;
-      @include mixins.flex-layout;
-
-      span[mat-symbol] {
-        font-size: var(--font-size-2xxl);
-      }
-    }
-
-    .text-container {
-      height: 100%;
-
-      @include mixins.flex-layout(
-        $direction: column,
-        $align: flex-start,
-        $justify: flex-start,
-        $gap: var(--spacing-xxxs)
-      );
-    }
 
     .text,
     .label {
@@ -108,7 +104,7 @@
     }
 
     .text {
-      @include mixins.flex-layout($gap: var(--spacing-xs));
+      @include mixins.flex-layout($gap: var(--spacing-xxs));
       font-weight: 500;
       font-size: var(--font-size-mdx);
     }
@@ -130,6 +126,10 @@
     background-color: var(--admin-bg);
     border-radius: var(--border-radius-md);
     padding: var(--spacing-md);
+
+    @media screen and (max-width: bp.$breakpoint-sm) {
+      margin-bottom: var(--spacing-md);
+    }
 
     .card-title {
       @include mixins.flex-layout(
@@ -166,10 +166,13 @@
           $justify: flex-start,
           $gap: var(--spacing-md)
         );
+        width: 100%;
 
         .announcement-card {
           @include mixins.flex-layout(
             $direction: column,
+            $align: stretch,
+            $justify: flex-start,
             $gap: var(--spacing-sm)
           );
           padding: var(--spacing-md);
@@ -180,6 +183,7 @@
           .header {
             @include mixins.flex-layout(
               $align: center,
+              $justify: flex-start,
               $gap: var(--spacing-sm)
             );
 

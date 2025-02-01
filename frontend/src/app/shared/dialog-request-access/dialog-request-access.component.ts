@@ -34,7 +34,7 @@ export class DialogRequestAccessComponent {
     @Inject(MAT_DIALOG_DATA) public data: DialogRequestAccessData,
     private dialogRef: MatDialogRef<DialogRequestAccessComponent>,
     private preferencesService: PreferencesService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
   ) {
     this.hasRequest = data.has_request;
   }
@@ -48,18 +48,17 @@ export class DialogRequestAccessComponent {
     this.preferencesService.requestAccess(this.data.facultyId).subscribe({
       next: () => {
         this.snackBar.open(
-          'Request for submission access successfully sent to administrator.',
+          'Request for submission access successfully sent.',
           'Close',
-          { duration: 3000 }
+          { duration: 3000 },
         );
-        // Return true to indicate successful request
         this.dialogRef.close(true);
       },
       error: () => {
         this.snackBar.open(
-          'Failed to submit request for access to administrator. Try again.',
+          'Failed to submit request for access. Try again.',
           'Close',
-          { duration: 3000 }
+          { duration: 3000 },
         );
         this.isLoading = false;
       },
@@ -73,7 +72,7 @@ export class DialogRequestAccessComponent {
         this.snackBar.open(
           'Request for submission access has been canceled.',
           'Close',
-          { duration: 3000 }
+          { duration: 3000 },
         );
         // Return false to indicate request cancellation
         this.dialogRef.close(false);
@@ -82,7 +81,7 @@ export class DialogRequestAccessComponent {
         this.snackBar.open(
           'Request for submission access cancellation has failed. Please try again.',
           'Close',
-          { duration: 3000 }
+          { duration: 3000 },
         );
         this.isLoading = false;
       },

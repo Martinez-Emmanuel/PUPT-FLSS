@@ -1,4 +1,6 @@
-@use "../../../../../styles/mixins";
+@use '../../../../../styles/mixins';
+@use '../../../../../styles/breakpoints' as bp;
+
 * {
   @include mixins.reset-styles;
   @include mixins.default-transition;
@@ -34,10 +36,11 @@
       font-size: var(--font-size-2xxl);
       font-weight: 700;
 
-      @include mixins.gradient-primary(315deg);
-      background-clip: text;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      @include mixins.gradient-primary-text(315deg);
+
+      @media screen and (max-width: bp.$breakpoint-sm) {
+        font-size: var(--font-size-2xl);
+      }
     }
 
     p {
@@ -61,7 +64,10 @@
       border-radius: var(--border-radius-md);
 
       .mini-heading {
-        @include mixins.flex-layout($justify: flex-start, $gap: var(--spacing-xxs));
+        @include mixins.flex-layout(
+          $justify: flex-start,
+          $gap: var(--spacing-xxs)
+        );
         font-weight: 600;
         max-width: max-content;
 
@@ -130,5 +136,26 @@
     .schedule-overview {
       width: auto;
     }
+
+    .schedule-overview {
+      @include mixins.flex-layout(
+        $direction: column,
+        $align: stretch,
+        $gap: var(--spacing-sm)
+      );
+
+      .summary-numbers {
+        @include mixins.flex-layout(
+          $justify: flex-start,
+          $gap: var(--spacing-md)
+        );
+      }
+    }
+  }
+}
+
+@media screen and (max-width: bp.$breakpoint-sm) {
+  .row-two {
+    margin-bottom: var(--spacing-lg);
   }
 }

@@ -1,4 +1,5 @@
-@use "../../../../../styles/mixins";
+@use '../../../../../styles/mixins';
+@use '../../../../../styles/breakpoints' as bp;
 
 * {
   color: var(--neutral-base);
@@ -15,10 +16,20 @@
   height: 100%;
   box-sizing: border-box;
   padding: var(--spacing-2xl);
-  background-color: var(--main-bg); // Prevent flicker when refreshed
+  background-color: var(--main-bg);
 }
 
-.faculty-main-header {
+.faculty-main-content {
+  @include mixins.hide-scrollbar;
+  height: 100%;
+  overflow-y: auto;
+}
+
+// ==========================
+// DESKTOP VIEW STYLES
+// ==========================
+
+.desktop-header {
   @include mixins.flex-layout(
     $align: stretch,
     $justify: space-between,
@@ -136,16 +147,16 @@
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
         will-change: transform;
-        transition: transform 0.3s ease-out;
+        transition: all 0.3s ease-out;
       }
 
-      &[routerLink="home"].active span[mat-symbol="home"] {
+      &[routerLink='home'].active span[mat-symbol='home'] {
         animation: home-welcome 1.5s ease-in-out;
         animation-iteration-count: 2;
         animation-fill-mode: forwards;
       }
 
-      &[routerLink="preferences"].active span[mat-symbol="settings"] {
+      &[routerLink='preferences'].active span[mat-symbol='settings'] {
         animation: settings-rotate-clockwise 1.5s cubic-bezier(0.4, 0, 0.2, 1),
           settings-rotate-counterclockwise 1.5s cubic-bezier(0.4, 0, 0.2, 1);
         animation-iteration-count: 1, 1;
@@ -154,8 +165,8 @@
         transform-origin: center center;
       }
 
-      &[routerLink="load-and-schedule"].active
-        span[mat-symbol="calendar_month"] {
+      &[routerLink='load-and-schedule'].active
+        span[mat-symbol='calendar_month'] {
         animation: calendar-pulse 1.5s ease-in-out;
         animation-iteration-count: 2;
         animation-fill-mode: forwards;
@@ -196,102 +207,312 @@
         opacity: var(--opacity-semi-opaque);
       }
     }
+  }
 
-    .profile-dropdown {
-      @include mixins.flex-layout;
-      position: relative;
-      // flex-shrink: 0;
+  .profile-dropdown {
+    @include mixins.flex-layout;
 
-      .profile-icon {
-        width: 3rem;
-        height: 3rem;
-        border-radius: 50%;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        border: 3px solid var(--neutral-border);
+    .profile-icon {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 3px solid var(--neutral-border);
 
-        &:hover {
-          border-color: var(--neutral-base);
-        }
+      &:hover {
+        border-color: var(--neutral-base);
+      }
+    }
+  }
+}
+
+.desktop-bottom-sheet {
+  width: 100%;
+  padding: var(--spacing-xs) 0;
+
+  .bottom-sheet-item {
+    @include mixins.ellipsis;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-md);
+    color: var(--neutral-base);
+    transition: background-color 0.3s ease;
+    border-radius: var(--border-radius-xl);
+    font-weight: 500;
+    user-select: none;
+    cursor: pointer;
+
+    &:hover {
+      background-color: var(--neutral-option);
+    }
+
+    &.logout {
+      color: var(--primary-text);
+
+      span.material-symbols-rounded {
+        color: var(--primary-text);
       }
 
-      .dropdown-menu {
-        position: absolute;
-        top: 100%;
-        right: 0;
-        background-color: var(--neutral-light);
-        box-shadow: var(--shadow-level-1);
-        border-radius: var(--border-radius-md);
-        z-index: 15;
+      &:hover {
+        background-color: var(--primary-fade);
+      }
+    }
 
-        .dropdown-item {
-          @include mixins.ellipsis;
-          display: flex;
-          align-items: center;
-          gap: var(--spacing-xs);
-          padding: var(--spacing-md) var(--spacing-md);
-          color: var(--neutral-base);
-          transition: background-color 0.3s ease;
-          border-radius: var(--border-radius-sm);
-          font-weight: 500;
-          user-select: none;
-          cursor: pointer;
+    span.material-symbols-rounded {
+      display: flex;
+      align-items: center;
+      font-size: var(--font-size-lg);
+      font-weight: 500;
+    }
+  }
+}
 
-          &:hover {
-            background-color: var(--neutral-option);
-          }
+// ==========================
+// MOBILE VIEW STYLES
+// ==========================
 
-          &.logout {
-            color: var(--primary-text);
+/* Mobile Tab Header */
+.mobile-header {
+  display: none;
+  width: 100%;
+  margin-top: var(--spacing-sm);
 
-            span.material-symbols-rounded {
-              color: var(--primary-text);
-            }
+  .header-name {
+    @include mixins.flex-layout($justify: flex-start);
+    gap: var(--spacing-md);
+    width: 100%;
 
-            &:hover {
-              background-color: var(--primary-fade);
-            }
-          }
+    .university-logo {
+      width: 3rem;
+      height: auto;
+      flex-shrink: 0;
+    }
 
-          span.material-symbols-rounded {
-            display: flex;
-            align-items: center;
-            font-size: var(--font-size-lg);
-            font-weight: 500;
-          }
+    .header-text {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+
+      .university-name,
+      .system-name {
+        @include mixins.ellipsis;
+        font-family: var(--font-header);
+        font-size: var(--font-size-smx);
+        font-weight: 600;
+      }
+
+      .university-name {
+        color: var(--primary-one);
+      }
+    }
+  }
+}
+
+/* Mobile Navigation Bar */
+.mobile-navbar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: var(--neutral-light);
+  box-shadow: var(--shadow-level-1);
+  z-index: 1000;
+  padding: var(--spacing-xs) 0;
+  justify-content: space-around;
+  align-items: center;
+  height: auto;
+
+  .bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--spacing-xxs);
+    padding: var(--spacing-xs);
+    text-decoration: none;
+    color: var(--neutral-base);
+    border: none;
+    background: none;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.2s ease;
+
+    &.active {
+      .icon-container {
+        background-color: var(--primary-fade);
+        border-radius: var(--border-radius-xl);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      span[mat-symbol] {
+        color: var(--primary-text);
+        position: relative;
+        z-index: 1;
+        transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .bottom-nav-label {
+        color: var(--primary-text);
+        font-weight: 500;
+        transition: color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+    }
+
+    .icon-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: var(--spacing-xxs) var(--spacing-mdx);
+      border-radius: var(--border-radius-xl);
+      transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    span[mat-symbol] {
+      font-size: var(--font-size-xl);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .bottom-nav-label {
+      font-size: var(--font-size-smx);
+      font-weight: 500;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    // Hover effect only for the inactive icon
+    &:hover:not(.active) {
+      .icon-container {
+        background-color: var(--neutral-option);
+      }
+    }
+  }
+}
+
+/* Mobile Account Dropdown */
+.mobile-dropdown {
+  @include mixins.default-transition;
+  display: none;
+  position: fixed;
+  bottom: var(--spacing-5xl);
+  left: 0;
+  right: 0;
+  background-color: var(--neutral-light);
+  box-shadow: var(--shadow-level-2);
+  z-index: 999;
+  border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+  overflow: hidden;
+  transform-origin: bottom;
+  will-change: transform, opacity;
+
+  .mobile-dropdown-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--neutral-border);
+
+    .mobile-profile-icon {
+      width: 3rem;
+      height: 3rem;
+      border-radius: 50%;
+      border: 2px solid var(--neutral-border);
+    }
+
+    .mobile-account-info {
+      .account-name {
+        font-weight: 600;
+        font-size: var(--font-size-mdx);
+      }
+      .account-email {
+        font-size: var(--font-size-mdx);
+        opacity: var(--opacity-semi-opaque);
+      }
+    }
+  }
+
+  .mobile-dropdown-content {
+    padding: var(--spacing-md);
+
+    .mobile-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-sm);
+      width: 100%;
+      padding: var(--spacing-md);
+      border: none;
+      background: none;
+      font-size: var(--font-size-mdx);
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: var(--border-radius-xl);
+
+      &:hover {
+        background-color: var(--neutral-option);
+      }
+
+      &.logout {
+        color: var(--primary-text);
+
+        span[mat-symbol] {
+          color: var(--primary-text);
+        }
+
+        &:hover {
+          background-color: var(--primary-fade);
         }
       }
     }
   }
 }
 
-.faculty-main-content {
-  @include mixins.hide-scrollbar;
-  height: 100%;
-  overflow-y: auto;
-}
-
-.spinner-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--opacity-semi-transparent);
-  z-index: 9999;
-
-  padding: var(--spacing-lg);
-  border-radius: var(--border-radius-base);
-}
+// ==========================
+// MEDIA QUERIES
+// ==========================
 
 @media screen and (max-width: 800px) {
   .nav-text {
     display: none;
   }
 }
+
+@media screen and (max-width: bp.$breakpoint-sm) {
+  .faculty-main-container {
+    padding: var(--spacing-lg);
+  }
+
+  .desktop-header {
+    display: none;
+  }
+
+  .faculty-main-content {
+    padding-bottom: 4.5rem;
+  }
+
+  .mobile-navbar {
+    display: flex;
+  }
+
+  .mobile-dropdown {
+    &:not(:empty) {
+      display: block;
+    }
+  }
+
+  .mobile-header {
+    display: block;
+  }
+
+  .faculty-main-header {
+    display: none;
+  }
+}
+
+// ==========================
+// KEYFRAMES FOR ANIMATIONS
+// ==========================
 
 @keyframes home-welcome {
   0%,

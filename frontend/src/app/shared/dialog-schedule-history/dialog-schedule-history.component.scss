@@ -1,4 +1,5 @@
-@use "../../../styles/mixins";
+@use '../../../styles/mixins';
+@use '../../../styles/breakpoints' as bp;
 
 .dialog-schedule-history-container {
   @include mixins.flex-layout(
@@ -8,10 +9,6 @@
     $gap: var(--spacing-md)
   );
   padding: var(--spacing-lg);
-
-  .loading-wrapper {
-    height: 60vh;
-  }
 }
 
 .dialog-header {
@@ -45,8 +42,7 @@
   }
 
   .field-section {
-    display: flex;
-    gap: 16px;
+    @include mixins.flex-layout($gap: var(--spacing-sm));
 
     mat-form-field {
       flex: 1;
@@ -55,12 +51,12 @@
 }
 
 .dialog-content {
-  height: 60vh;
+  height: 50vh;
   overflow-y: hidden;
 }
 
 .no-schedule-message {
-  height: 60vh;
+  height: 50vh;
   @include mixins.flex-layout($gap: var(--spacing-xs));
 
   span[mat-symbol] {
@@ -73,5 +69,12 @@
 
   .close-button {
     color: var(--primary-text);
+  }
+}
+
+@media screen and (max-width: bp.$breakpoint-sm) {
+  .dialog-header {
+    flex-direction: column;
+    gap: var(--spacing-xs);
   }
 }

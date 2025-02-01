@@ -142,7 +142,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
         setTimeout(() => this.resizeCalendar(), 0);
       },
       error: (error) => {
-        console.error('Error loading data:', error);
         this.isLoading = false;
         this.changeDetectorRef.detectChanges();
       },
@@ -159,7 +158,6 @@ export class HomeComponent implements OnInit, AfterViewInit {
     if (facultySchedule.is_published === 1) {
       this.events = this.createEventsFromSchedule(facultySchedule);
     } else {
-      console.log('Schedule is not published yet.');
       this.events = [];
     }
   }

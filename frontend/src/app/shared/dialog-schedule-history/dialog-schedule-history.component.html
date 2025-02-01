@@ -6,7 +6,7 @@
         <span mat-symbol="history"></span>
         <h2>Schedule History</h2>
       </div>
-      <p>View your past load and schedule from previous semesters</p>
+      <p>Your load and schedule from previous semesters</p>
     </div>
 
     <div class="field-section">
@@ -15,8 +15,7 @@
         <mat-select
           [(ngModel)]="selectedYear"
           (selectionChange)="onYearChange()"
-          [disabled]="!academicYears.length"
-        >
+          [disabled]="!academicYears.length">
           @for (year of academicYears; track year.academic_year_id) {
           <mat-option [value]="year.academic_year_id">
             {{ year.academic_year }}
@@ -30,8 +29,7 @@
         <mat-select
           [(ngModel)]="selectedSemester"
           (selectionChange)="onSemesterChange()"
-          [disabled]="!semesters.length"
-        >
+          [disabled]="!semesters.length">
           @for (semester of semesters; track semester.active_semester_id) {
           <mat-option [value]="semester.active_semester_id">
             {{ semester.semester_number }}
@@ -59,8 +57,7 @@
     @if (facultySchedule) {
     <app-faculty-schedule-timetable
       [facultySchedule]="facultySchedule"
-      [showPreview]="false"
-    ></app-faculty-schedule-timetable>
+      [showPreview]="false"></app-faculty-schedule-timetable>
     }
   </div>
   } }

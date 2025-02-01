@@ -1,4 +1,4 @@
-@use "../../../styles/mixins";
+@use '../../../styles/mixins';
 
 @include mixins.custom-spinner;
 
@@ -10,6 +10,7 @@
     $gap: var(--spacing-xl)
   );
   padding: var(--spacing-lg);
+  max-width: var(--dialog-small);
 
   .content {
     @include mixins.flex-layout(
