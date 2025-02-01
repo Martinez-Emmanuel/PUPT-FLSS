@@ -382,7 +382,7 @@ class PreferenceController extends Controller
 
         $facultyPreference = [
             'faculty_id'             => $faculty->id,
-            'faculty_name'           => $faculty->user->name ?? 'N/A',
+            'faculty_name'           => $faculty->user->formatted_name ?? 'N/A',
             'faculty_code'           => $faculty->user->code ?? 'N/A',
             'faculty_type'           => $faculty->facultyType->faculty_type ?? 'N/A',
             'faculty_units'          => $faculty->faculty_units,
