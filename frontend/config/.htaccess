@@ -28,6 +28,16 @@
     Header set Expires 0
   </FilesMatch>
 
+  # Cache font files for 1 year
+  <FilesMatch "\.(woff2?|ttf|eot|svg)$">
+    Header set Cache-Control "public, max-age=31536000"
+  </FilesMatch>
+
+  # Cache Google Fonts CSS for 1 day
+  <FilesMatch "^(?:googleapis\.com|gstatic\.com).*\.css$">
+    Header set Cache-Control "public, max-age=86400"
+  </FilesMatch>
+
   # Security Headers
   Header set X-Content-Type-Options "nosniff"
   Header set X-XSS-Protection "1; mode=block"
