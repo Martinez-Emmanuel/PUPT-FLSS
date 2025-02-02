@@ -1,7 +1,61 @@
+# Enable rewrite engine
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]
+</IfModule>
+
+# Cache Control Headers
+<IfModule mod_headers.c>
+  # Cache PWA assets for 1 year (versioned files)
+  <FilesMatch ".(js|css|ico|jpg|jpeg|png|gif|webp)$">
+    Header set Cache-Control "public, max-age=31536000"
+  </FilesMatch>
+
+  # Don't cache service worker files
+  <FilesMatch "ngsw.*\.js$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires 0
+  </FilesMatch>
+
+  # Don't cache manifest files
+  <FilesMatch "manifest\.webmanifest$">
+    Header set Cache-Control "no-cache"
+    Header set Pragma "no-cache"
+    Header set Expires 0
+  </FilesMatch>
+
+  # Security Headers
+  Header set X-Content-Type-Options "nosniff"
+  Header set X-XSS-Protection "1; mode=block"
+  Header set X-Frame-Options "SAMEORIGIN"
+  Header set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/plain
+  AddOutputFilterByType DEFLATE text/html
+  AddOutputFilterByType DEFLATE text/xml
+  AddOutputFilterByType DEFLATE text/css
+  AddOutputFilterByType DEFLATE text/javascript
+  AddOutputFilterByType DEFLATE application/xml
+  AddOutputFilterByType DEFLATE application/xhtml+xml
+  AddOutputFilterByType DEFLATE application/rss+xml
+  AddOutputFilterByType DEFLATE application/javascript
+  AddOutputFilterByType DEFLATE application/x-javascript
+  AddOutputFilterByType DEFLATE application/json
+  AddOutputFilterByType DEFLATE application/manifest+json
+</IfModule>
+
+# Set proper MIME types
+<IfModule mod_mime.c>
+  AddType application/manifest+json webmanifest
+  AddType application/x-javascript js
+  AddType text/css css
+  AddType image/svg+xml svg
+  AddType image/webp webp
 </IfModule>

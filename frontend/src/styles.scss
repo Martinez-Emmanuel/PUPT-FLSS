@@ -134,6 +134,7 @@ body {
 }
 
 * {
+  -webkit-tap-highlight-color: transparent;
   font-family: var(--font-base);
   @include mixins.custom-scrollbar;
 }

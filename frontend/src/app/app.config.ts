@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection, isDevMode } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
@@ -12,6 +12,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { routes } from './app.routes';
 import { AuthGuard } from './core/guards/auth.guard';
 import { Title } from '@angular/platform-browser';
+import { provideServiceWorker } from '@angular/service-worker';
 
 /** Global Material Ripple Configuration */
 const globalRippleConfig: RippleGlobalOptions = {
@@ -42,6 +43,9 @@ export const appConfig: ApplicationConfig = {
 
     /** Angular Material Configurations */
     { provide: MAT_RIPPLE_GLOBAL_OPTIONS, useValue: globalRippleConfig },
-    { provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: globalDialogConfig },
+    { provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: globalDialogConfig }, provideServiceWorker('ngsw-worker.js', {
+            enabled: !isDevMode(),
+            registrationStrategy: 'registerWhenStable:30000'
+          }),
   ],
 };
