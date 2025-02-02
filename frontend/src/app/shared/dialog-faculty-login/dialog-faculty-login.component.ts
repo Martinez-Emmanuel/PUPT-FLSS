@@ -1,11 +1,6 @@
-import { CommonModule } from '@angular/common';
 import { Component, Inject, OnInit } from '@angular/core';
-import {
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { MatButtonModule } from '@angular/material/button';
@@ -15,10 +10,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 import { AuthService, LoginError } from '../../core/services/auth/auth.service';
-import { RoleService } from '../../core/services/role/role.service';
 
 @Component({
   selector: 'app-dialog-faculty-login',
@@ -32,6 +28,8 @@ import { RoleService } from '../../core/services/role/role.service';
     MatTooltipModule,
     MatProgressSpinnerModule,
     MatSymbolDirective,
+    MatFormFieldModule,
+    MatInputModule,
     CommonModule,
   ],
 })
@@ -46,9 +44,8 @@ export class DialogFacultyLoginComponent implements OnInit {
     private formBuilder: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private roleService: RoleService,
     private snackBar: MatSnackBar,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
   ) {}
 
   ngOnInit(): void {

@@ -1,20 +1,16 @@
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Component, Inject, OnInit } from '@angular/core';
-import {
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { MatButtonModule } from '@angular/material/button';
-import { MatRippleModule } from '@angular/material/core';
-import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 import { AuthService, LoginError } from '../../core/services/auth/auth.service';
@@ -28,10 +24,11 @@ import { RoleService } from '../../core/services/role/role.service';
     ReactiveFormsModule,
     MatButtonModule,
     MatIconModule,
-    MatRippleModule,
     MatTooltipModule,
     MatProgressSpinnerModule,
     MatSymbolDirective,
+    MatFormFieldModule,
+    MatInputModule,
     CommonModule,
   ],
 })
@@ -48,7 +45,6 @@ export class DialogAdminLoginComponent implements OnInit {
     private router: Router,
     private roleService: RoleService,
     private snackBar: MatSnackBar,
-    @Inject(MAT_DIALOG_DATA) public data: any
   ) {}
 
   ngOnInit(): void {
@@ -97,13 +93,13 @@ export class DialogAdminLoginComponent implements OnInit {
             const expiryDate = new Date(response.expires_at);
             this.authService.setSanctumToken(
               response.token,
-              response.expires_at
+              response.expires_at,
             );
             this.authService.setUserInfo(response.user, response.expires_at);
             const expirationTime = expiryDate.getTime() - Date.now();
             setTimeout(() => this.onAutoLogout(), expirationTime);
             const redirectUrl = this.roleService.getHomeUrlForRole(
-              response.user.role
+              response.user.role,
             );
             this.dialogRef.close();
             this.router.navigateByUrl(redirectUrl, { replaceUrl: true });

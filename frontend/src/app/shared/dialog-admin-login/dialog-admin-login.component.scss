@@ -1,7 +1,19 @@
-@use "../../../styles/mixins";
+@use '../../../styles/mixins';
 
 :host {
   @include mixins.custom-spinner(var(--primary-text));
+  width: 100%;
+
+  ::ng-deep {
+    .mat-mdc-form-field {
+      width: 100%;
+
+      .prefix-icon {
+        color: var(--neutral-base);
+        font-size: var(--font-size-xl);
+      }
+    }
+  }
 }
 
 .dialog-login-container {
@@ -9,10 +21,10 @@
     $direction: column,
     $align: stretch,
     $justify: flex-start,
-    $gap: var(--spacing-md)
+    $gap: var(--spacing-lg)
   );
   padding: var(--spacing-lgx);
-  max-width: var(--dialog-smx);
+  min-width: var(--dialog-smx);
 }
 
 .dialog-login-title {
@@ -25,9 +37,19 @@
 
   .title-text {
     @include mixins.gradient-primary-text(315deg);
+    @include mixins.flex-layout(
+      $direction: row,
+      $align: center,
+      $gap: var(--spacing-xs)
+    );
     margin: 0;
     font-size: var(--font-size-2xl);
     font-weight: 600;
+
+    .admin-icon {
+      @include mixins.flex-layout;
+      font-size: var(--font-size-2xl);
+    }
   }
 
   .title-desc {
@@ -35,115 +57,23 @@
   }
 }
 
-.dialog-login-content {
-  padding-top: var(--spacing-sm);
+.dialog-login-form {
+  width: 100%;
 
-  .field-container {
-    position: relative;
-    margin-bottom: var(--spacing-lgx);
-
-    &.has-error .input-container .login-input {
-      border-color: var(--primary-one);
-    }
-  }
-
-  .input-container {
-    position: relative;
-
-    .password-visibility-toggle {
-      position: absolute;
-      right: var(--spacing-xs);
-      top: 50%;
-      transform: translateY(-50%);
-      border-radius: var(--border-radius-xl);
-      padding: var(--spacing-xs);
-      opacity: var(--opacity-semi-opaque);
-      cursor: pointer;
-
-      &:hover {
-        background-color: var(--neutral-fade);
-      }
-    }
-
-    .input-icon {
-      position: absolute;
-      left: var(--spacing-md);
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--neutral-base);
-      opacity: var(--opacity-semi-opaque);
-      font-size: var(--font-size-lg);
-    }
-
-    .login-input {
-      @include mixins.default-transition;
-      @include mixins.flex-layout;
-      width: 100%;
-      padding: 10px 10px 10px 50px;
-      background: var(--neutral-fade);
-      border-radius: var(--border-radius-xl);
-      box-sizing: border-box;
-      border: 2px solid transparent;
-      color: var(--neutral-base);
-      transition: border-color 0.5s ease;
-      height: var(--spacing-3xl);
-      font-size: var(--font-size-md);
-
-      &:focus {
-        outline: none;
-        border-color: var(--primary-one);
-      }
-
-      &.ng-invalid.ng-touched {
-        border-color: var(--primary-one);
-      }
-    }
-  }
-
-  .error-message {
-    @include mixins.flex-layout;
-    position: absolute;
-    min-height: var(--spacing-lg);
-    left: var(--spacing-sm);
-    visibility: hidden;
-    overflow: hidden;
-    gap: var(--spacing-xxs);
-    font-size: var(--font-size-xsx);
-
-    span.material-symbols-rounded {
-      @include mixins.flex-layout;
-      font-size: var(--font-size-md);
-    }
-
-    span {
-      color: var(--primary-text);
-      font-weight: 400;
-    }
-
-    &.show {
-      animation: slideDown 0.5s ease forwards;
-      visibility: visible;
-    }
-  }
-}
-
-@keyframes slideDown {
-  0% {
-    height: 0;
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-
-  100% {
-    height: auto;
-    opacity: 1;
-    transform: translateY(0);
+  .form-content {
+    @include mixins.flex-layout(
+      $direction: column,
+      $align: stretch,
+      $justify: flex-start,
+      $gap: var(--spacing-xs)
+    );
   }
 }
 
 // =================
 // Dialog Actions
 // =================
+
 .dialog-login-actions {
   @include mixins.flex-layout(
     $direction: row,
@@ -151,6 +81,7 @@
     $justify: flex-end,
     $gap: var(--spacing-sm)
   );
+  padding-top: var(--spacing-sm);
 
   .close-button {
     color: var(--primary-text);
@@ -158,11 +89,11 @@
 
   .login-button {
     @include mixins.gradient-primary(315deg);
-  }
 
-  .button-disabled {
-    background: var(--neutral-fade);
-    color: var(--neutral-base) !important;
-    opacity: var(--opacity-semi-opaque);
+    &.button-disabled {
+      background: var(--neutral-fade) !important;
+      color: var(--neutral-base) !important;
+      opacity: var(--opacity-semi-opaque);
+    }
   }
 }
