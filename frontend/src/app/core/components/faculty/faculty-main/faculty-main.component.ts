@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatBottomSheet, MatBottomSheetModule } from '@angular/material/bottom-sheet';
+import { MatBottomSheet, MatBottomSheetModule, MatBottomSheetRef } from '@angular/material/bottom-sheet';
 import { MatRippleModule } from '@angular/material/core';
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
@@ -41,6 +41,7 @@ export class FacultyMainComponent implements OnInit, AfterViewInit, OnDestroy {
   private resizeObserver!: ResizeObserver;
   public isDropdownOpen = false;
   private documentClickListener!: () => void;
+  private bottomSheetRef: MatBottomSheetRef | null = null;
 
   private readonly MOBILE_BREAKPOINT = 512;
   private readonly SLIDER_TRANSITION_SCALE = 0.95;
@@ -93,6 +94,9 @@ export class FacultyMainComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
     }
+    if (this.bottomSheetRef) {
+      this.bottomSheetRef.dismiss();
+    }
     this.removeDocumentClickListener();
   }
 
@@ -105,12 +109,9 @@ export class FacultyMainComponent implements OnInit, AfterViewInit, OnDestroy {
     event.stopPropagation();
 
     if (window.innerWidth > this.MOBILE_BREAKPOINT) {
-      const bottomSheetRef = this.bottomSheet.open(
-        this.bottomSheetTemplate,
-        {},
-      );
+      this.bottomSheetRef = this.bottomSheet.open(this.bottomSheetTemplate, {});
 
-      bottomSheetRef.afterDismissed().subscribe((result) => {
+      this.bottomSheetRef.afterDismissed().subscribe((result) => {
         if (result === 'theme') {
           this.toggleTheme();
         } else if (result === 'logout') {
@@ -245,6 +246,10 @@ export class FacultyMainComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   logout() {
+    if (this.bottomSheetRef) {
+      this.bottomSheetRef.dismiss();
+    }
+
     const dialogConfig: DialogData = {
       title: 'Log Out',
       content:
@@ -276,12 +281,17 @@ export class FacultyMainComponent implements OnInit, AfterViewInit, OnDestroy {
         this.authService.logout().subscribe({
           next: () => {
             this.authService.clearCookies();
-
             loadingDialogRef.close();
+            if (this.bottomSheetRef) {
+              this.bottomSheetRef.dismiss();
+            }
             this.router.navigate(['/login']);
           },
           error: () => {
             loadingDialogRef.close();
+            if (this.bottomSheetRef) {
+              this.bottomSheetRef.dismiss();
+            }
           },
         });
       }
