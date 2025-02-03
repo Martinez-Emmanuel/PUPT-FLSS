@@ -18,7 +18,7 @@ import { provideServiceWorker } from '@angular/service-worker';
 const globalRippleConfig: RippleGlobalOptions = {
   animation: {
     enterDuration: 500,
-    exitDuration: 150,
+    exitDuration: 500,
   },
 };
 

@@ -414,6 +414,9 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     };
 
     this.allSelectedCourses.update((courses) => [...courses, newCourse]);
+    this.showSnackBar(
+      `${course.course_code} successfully added to your preferences.`,
+    );
   }
 
   public removeCourse(course: TableData): void {
@@ -452,13 +455,15 @@ export class PreferencesComponent implements OnInit, OnDestroy {
             delete updatedValue[course.course_code];
             return updatedValue;
           });
-          this.showSnackBar('Course preference removed successfully.');
+          this.showSnackBar(
+            `${course.course_code} has been removed from your preferences.`,
+          );
         },
         error: (error) => {
           const message =
             error.status === 403
               ? 'Submission is now closed. You cannot modify your preferences anymore.'
-              : 'Error removing course preference.';
+              : `Error removing ${course.course_code} from your preferences.`;
           this.showSnackBar(message);
           this.isRemoving.update((value) => ({
             ...value,
@@ -472,14 +477,16 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     this.allSelectedCourses.update((courses) =>
       courses.filter((c) => c.course_code !== course.course_code),
     );
-    this.showSnackBar('Course preference removed successfully.');
+    this.showSnackBar(
+      `${course.course_code} has been removed from your preferences.`,
+    );
   }
 
   private isCourseAlreadyAdded(course: Course): boolean {
     const isAdded = this.allSelectedCourses().some(
       (subject) => subject.course_code === course.course_code,
     );
-    if (isAdded) this.showSnackBar('This course has already been selected.');
+    if (isAdded) this.showSnackBar('You already selected this course.');
     return isAdded;
   }
 
@@ -629,5 +636,9 @@ export class PreferencesComponent implements OnInit, OnDestroy {
     return element.preferredDays.some((pd) => pd.start_time && pd.end_time)
       ? 'Click to modify schedule'
       : '';
+  }
+
+  public filterByYearLevel(year: number | null): void {
+    this.selectedYearLevel.set(year);
   }
 }

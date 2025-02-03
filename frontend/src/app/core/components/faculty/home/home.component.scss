@@ -39,7 +39,6 @@
   #home_greetings {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xxs);
 
     h1 {
       @include mixins.reset-styles;
@@ -89,13 +88,34 @@
   .active-year-sem-container {
     @include mixins.flex-layout(
       $align: flex-start,
-      $direction: column,
-      $justify: flex-start
+      $justify: flex-start,
+      $gap: var(--spacing-xs)
     );
     @include mixins.gradient-primary(315deg);
-    padding: var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-md) var(--spacing-xs)
+      var(--spacing-xs);
     border-radius: var(--border-radius-md);
     color: white;
+    flex-shrink: 0;
+
+    .icon-container {
+      height: 100%;
+
+      span[mat-symbol] {
+        font-size: var(--font-size-2xxl);
+      }
+    }
+
+    .text-container {
+      height: 100%;
+
+      @include mixins.flex-layout(
+        $direction: column,
+        $align: flex-start,
+        $justify: flex-start,
+        $gap: var(--spacing-xxxs)
+      );
+    }
 
     .text,
     .label {
@@ -104,7 +124,7 @@
     }
 
     .text {
-      @include mixins.flex-layout($gap: var(--spacing-xxs));
+      @include mixins.flex-layout($gap: var(--spacing-xs));
       font-weight: 500;
       font-size: var(--font-size-mdx);
     }

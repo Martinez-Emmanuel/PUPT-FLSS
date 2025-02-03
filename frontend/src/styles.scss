@@ -393,8 +393,24 @@ span[mat-symbol] {
   color: white !important;
 }
 
-.mat-bottom-sheet-container-large {
+.mat-bottom-sheet-container {
   min-width: 25vw !important;
+}
+
+.export-pdf-fab {
+  &.mat-mdc-extended-fab {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    @include mixins.flex-layout($gap: var(--spacing-xs));
+  }
+
+  &.mat-mdc-extended-fab > .mat-icon,
+  &.mat-mdc-extended-fab > .material-icons {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+
+    // border: 2px solid yellow;
+  }
 }
 
 /* Full Calendar Styling */
@@ -441,6 +457,10 @@ span[mat-symbol] {
 
 .fc .fc-scrollgrid-liquid {
   @include mixins.default-transition;
+}
+
+.fc-scroller-liquid-absolute {
+  @include mixins.hide-scrollbar;
 }
 
 .fc-v-event {

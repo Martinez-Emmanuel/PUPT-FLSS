@@ -25,12 +25,18 @@
   <div class="home-row-two" [@fadeAnimation]>
     <!-- Active Semester -->
     <div class="active-year-sem-container">
-      <div class="text">
-        <span mat-symbol="event_note" weight="200"></span>
-        A.Y. {{ academicYear }},
-        {{ semester }}
+      <!--Icon Container-->
+      <div class="icon-container">
+        <span mat-symbol="event_note" weight="300"></span>
       </div>
-      <p class="label">▸ Current Academic Year & Semester</p>
+      <!--Text Container-->
+      <div class="text-container">
+        <p class="text">
+          A.Y. {{ academicYear }},
+          {{ semester }}
+        </p>
+        <p class="label">Current Academic Year & Semester</p>
+      </div>
     </div>
 
     <!--Announcement-->

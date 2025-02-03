@@ -25,11 +25,7 @@
   );
 
   .page-header {
-    @include mixins.flex-layout(
-      $direction: column,
-      $align: flex-start,
-      $gap: var(--spacing-xxs)
-    );
+    @include mixins.flex-layout($direction: column, $align: flex-start);
 
     h1 {
       @include mixins.reset-styles;
@@ -59,6 +55,11 @@
 
     .schedule-summary,
     .schedule-history {
+      @include mixins.flex-layout(
+        $direction: column,
+        $align: stretch,
+        $gap: var(--spacing-xxs)
+      );
       color: white;
       padding: var(--spacing-xs) var(--spacing-sm);
       border-radius: var(--border-radius-md);
@@ -125,7 +126,7 @@
   }
 }
 
-@media screen and (max-width: 1024px) {
+@media screen and (max-width: bp.$breakpoint-md) {
   .row-one {
     @include mixins.flex-layout(
       $direction: column,
@@ -136,7 +137,15 @@
     .schedule-overview {
       width: auto;
     }
+  }
+}
 
+@media screen and (max-width: bp.$breakpoint-sm) {
+  .row-two {
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .row-one {
     .schedule-overview {
       @include mixins.flex-layout(
         $direction: column,
@@ -151,11 +160,5 @@
         );
       }
     }
-  }
-}
-
-@media screen and (max-width: bp.$breakpoint-sm) {
-  .row-two {
-    margin-bottom: var(--spacing-lg);
   }
 }

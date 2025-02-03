@@ -1,4 +1,5 @@
-@use "../../../styles/mixins";
+@use '../../../styles/mixins';
+@use '../../../styles/breakpoints' as bp;
 
 :host {
   @include mixins.custom-spinner(var(--primary-text));
@@ -12,7 +13,7 @@
     $gap: var(--spacing-lg)
   );
   padding: var(--spacing-lg);
-  width: var(--dialog-base);
+  max-width: var(--dialog-base);
 }
 
 .dialog-title {
@@ -64,7 +65,7 @@
       overflow: hidden;
 
       &::before {
-        content: "";
+        content: '';
         position: absolute;
         inset: 0;
         z-index: -1;
@@ -102,7 +103,7 @@
     flex: 1;
     overflow-y: auto;
     min-height: 0;
-    max-height: 30rem;
+    max-height: 40vh;
     padding-right: var(--spacing-xs);
   }
 
@@ -150,5 +151,17 @@
     background: var(--neutral-fade) !important;
     color: var(--neutral-base) !important;
     opacity: var(--opacity-semi-opaque);
+  }
+}
+
+@media (max-width: bp.$breakpoint-sm) {
+  .dialog-content {
+    .day-buttons-container {
+      @include mixins.flex-layout(
+        $justify: space-between,
+        $align: stretch,
+        $gap: var(--spacing-xxs)
+      );
+    }
   }
 }

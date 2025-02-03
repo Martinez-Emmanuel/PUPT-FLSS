@@ -27,6 +27,52 @@
     $gap: var(--spacing-md)
   );
   height: 100%;
+
+  .total-container {
+    @include mixins.flex-layout($gap: var(--spacing-md));
+
+    &.mobile {
+      display: none;
+    }
+
+    .total {
+      @include mixins.flex-layout($direction: column);
+      border-radius: var(--border-radius-md);
+      padding: var(--spacing-sm);
+      text-align: center;
+
+      h2 {
+        font-size: var(--font-size-2xl);
+      }
+
+      h2,
+      span {
+        color: white;
+      }
+    }
+
+    .units {
+      @include mixins.gradient-primary(315deg);
+    }
+
+    .hours {
+      @include mixins.gradient-secondary(315deg);
+    }
+
+    @media screen and (max-width: bp.$breakpoint-md) {
+      &.desktop {
+        display: none;
+      }
+
+      &.mobile {
+        @include mixins.flex-layout($align: stretch, $gap: var(--spacing-md));
+
+        & .total {
+          flex: 1;
+        }
+      }
+    }
+  }
 }
 
 /* First row - Header & Units Cards */
@@ -37,8 +83,7 @@
     @include mixins.flex-layout(
       $direction: column,
       $align: none,
-      $justify: none,
-      $gap: var(--spacing-xxs)
+      $justify: none
     );
     height: 100%;
     flex: 1;
@@ -72,37 +117,6 @@
       }
     }
   }
-
-  #total_container {
-    @include mixins.flex-layout;
-    gap: var(--spacing-sm);
-    height: 100%;
-    text-align: center;
-
-    .total {
-      @include mixins.flex-layout($direction: column);
-      height: inherit;
-      border-radius: var(--border-radius-md);
-      padding: var(--spacing-sm);
-
-      h2 {
-        font-size: var(--font-size-2xl);
-      }
-
-      h2,
-      span {
-        color: white;
-      }
-    }
-
-    .units {
-      @include mixins.gradient-primary(315deg);
-    }
-
-    .hours {
-      @include mixins.gradient-secondary(315deg);
-    }
-  }
 }
 
 /* Second Row - Course List and Table */
@@ -117,6 +131,7 @@
     height: 100%;
   }
 
+  /* Courses Picker Container */
   #courses_container {
     flex: 2;
     display: flex;
@@ -133,10 +148,21 @@
       span[mat-symbol] {
         padding: var(--spacing-sm);
       }
-    }
 
-    .clear-filter {
-      @include mixins.flex-layout($direction: row-reverse);
+      .filter-button {
+        margin-right: var(--spacing-xs) !important;
+
+        .mat-icon {
+          @include mixins.flex-layout;
+          font-size: var(--font-size-xl);
+        }
+      }
+
+      .active-filter {
+        color: var(--primary-text);
+        background-color: var(--primary-fade);
+        margin-right: var(--spacing-xs);
+      }
     }
 
     #courses_list,
@@ -242,91 +268,95 @@
       }
     }
   }
-}
 
-/* Preferences Table Styling */
-#table_container {
-  @include mixins.default-transition;
-  @include mixins.hide-scrollbar;
-  @include mixins.flex-layout($direction: column, $align: none, $justify: none);
-  flex: 5;
-  overflow: auto;
-  background-color: var(--neutral-light);
-
-  .table-main {
+  /* Preferences Table Styling */
+  #table_container {
     @include mixins.default-transition;
-    width: 100%;
-    background-color: var(--neutral-light);
-    table-layout: fixed;
-  }
-
-  .table-header {
-    @include mixins.sticky;
-    color: white;
-    text-align: center;
-    background-color: var(--primary-one);
-  }
-
-  .table-cell {
-    @include mixins.default-transition;
-    padding: var(--spacing-sm);
-    text-wrap: wrap;
-    text-align: center;
+    @include mixins.hide-scrollbar;
+    @include mixins.flex-layout(
+      $direction: column,
+      $align: none,
+      $justify: none
+    );
+    flex: 5;
+    overflow: auto;
     background-color: var(--neutral-light);
 
-    .day-time-button-container {
-      @include mixins.flex-layout;
+    .table-main {
+      @include mixins.default-transition;
+      width: 100%;
+      background-color: var(--neutral-light);
+      table-layout: fixed;
+    }
 
-      .day-time-button {
-        color: var(--primary-text);
-        transition: opacity 0.3s ease;
-        cursor: pointer;
-        white-space: pre-line;
+    .table-header {
+      @include mixins.sticky;
+      color: white;
+      text-align: center;
+      background-color: var(--primary-one);
+    }
+
+    .table-cell {
+      @include mixins.default-transition;
+      padding: var(--spacing-sm);
+      text-wrap: wrap;
+      text-align: center;
+      background-color: var(--neutral-light);
+
+      .day-time-button-container {
+        @include mixins.flex-layout;
+
+        .day-time-button {
+          color: var(--primary-text);
+          transition: opacity 0.3s ease;
+          cursor: pointer;
+          white-space: pre-line;
+          text-align: left;
+          line-height: 1.5;
+
+          &:hover {
+            opacity: var(--opacity-semi-opaque);
+          }
+        }
+      }
+
+      &.title-cell {
+        width: 15rem;
+      }
+
+      &.day-time-cell {
+        min-width: 10rem;
         text-align: left;
-        line-height: 1.5;
+        padding: var(--spacing-sm) var(--spacing-md);
+      }
 
-        &:hover {
-          opacity: var(--opacity-semi-opaque);
+      .remove-button {
+        @include mixins.flex-layout;
+
+        span[mat-symbol] {
+          font-size: var(--font-size-lg);
+          color: var(--primary-text);
+          @include mixins.flex-layout;
         }
       }
     }
 
-    &.title-cell {
-      width: 15rem;
-    }
+    .no-data-text {
+      @include mixins.default-transition;
+      @include mixins.flex-layout($gap: var(--spacing-xs));
+      width: 100%;
+      text-align: center;
+      background-color: var(--neutral-light);
+      font-size: var(--font-size-md);
+      padding: var(--spacing-lg) 0;
 
-    &.picker-cell {
-      width: 20rem;
-      text-align: left;
-      padding: var(--spacing-sm) var(--spacing-md);
-    }
-
-    .remove-button {
-      @include mixins.flex-layout;
+      span {
+        opacity: var(--opacity-semi-opaque);
+      }
 
       span[mat-symbol] {
-        font-size: var(--font-size-lg);
-        color: var(--primary-text);
-        @include mixins.flex-layout;
+        font-size: 100%;
       }
-    }
-  }
-
-  .no-data-text {
-    @include mixins.default-transition;
-    @include mixins.flex-layout($gap: var(--spacing-xs));
-    width: 100%;
-    text-align: center;
-    background-color: var(--neutral-light);
-    font-size: var(--font-size-md);
-    padding: var(--spacing-lg) 0;
-
-    span {
-      opacity: var(--opacity-semi-opaque);
-    }
-
-    span[mat-symbol] {
-      font-size: 100%;
     }
   }
 }
@@ -410,8 +440,33 @@
   }
 }
 
+.year-level-item {
+  .menu-item-content {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+
+    .mat-icon {
+      margin-right: 0;
+      font-size: var(--font-size-lg);
+      width: var(--font-size-lg);
+      height: var(--font-size-lg);
+    }
+  }
+
+  &.mdc-list-item--selected,
+  &.mat-mdc-menu-item.mdc-list-item--selected {
+    background-color: var(--primary-fade);
+
+    .menu-item-content,
+    mat-icon {
+      color: var(--primary-text);
+    }
+  }
+}
+
 /* Media Query */
-@media screen and (max-width: 1024px) {
+@media screen and (max-width: bp.$breakpoint-md) {
   #courses_container {
     max-height: 25rem;
   }

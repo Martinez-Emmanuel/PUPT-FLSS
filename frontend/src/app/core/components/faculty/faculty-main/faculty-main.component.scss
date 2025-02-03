@@ -157,10 +157,10 @@
       }
 
       &[routerLink='preferences'].active span[mat-symbol='settings'] {
-        animation: settings-rotate-clockwise 1.5s cubic-bezier(0.4, 0, 0.2, 1),
-          settings-rotate-counterclockwise 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: settings-rotate-clockwise 2s cubic-bezier(0.4, 0, 0.2, 1),
+          settings-rotate-counterclockwise 2s cubic-bezier(0.4, 0, 0.2, 1);
         animation-iteration-count: 1, 1;
-        animation-delay: 0s, 1.5s;
+        animation-delay: 0s, 2s;
         animation-fill-mode: forwards;
         transform-origin: center center;
       }
@@ -510,6 +510,36 @@
   }
 }
 
+/* Mobile Navbar Icon Animations */
+.mobile-navbar
+  a[routerLink='home'].active
+  div.icon-container
+  span[mat-symbol='home'] {
+  animation: home-welcome 1.5s ease-in-out;
+  animation-iteration-count: 2;
+  animation-fill-mode: forwards;
+}
+
+.mobile-navbar
+  a[routerLink='preferences'].active
+  div.icon-container
+  span[mat-symbol='settings'] {
+  animation: settings-rotate-clockwise 2s cubic-bezier(0.4, 0, 0.2, 1),
+    settings-rotate-counterclockwise 2s cubic-bezier(0.4, 0, 0.2, 1);
+  animation-iteration-count: 1, 1;
+  animation-delay: 0s, 2s;
+  animation-fill-mode: forwards;
+}
+
+.mobile-navbar
+  a[routerLink='load-and-schedule'].active
+  div.icon-container
+  span[mat-symbol='calendar_month'] {
+  animation: calendar-pulse 1.5s ease-in-out;
+  animation-iteration-count: 2;
+  animation-fill-mode: forwards;
+}
+
 // ==========================
 // KEYFRAMES FOR ANIMATIONS
 // ==========================
@@ -517,52 +547,52 @@
 @keyframes home-welcome {
   0%,
   100% {
-    transform: scale(1.15) translateY(0);
+    transform: scale(1.05) translateY(0);
   }
   20% {
-    transform: scale(1.25) translateY(-2px);
+    transform: scale(1.1) translateY(-2px);
   }
   35% {
-    transform: scale(1.25) translateY(-2px) rotate(8deg);
+    transform: scale(1.1) translateY(-2px) rotate(8deg);
   }
   50% {
-    transform: scale(1.25) translateY(-2px) rotate(-8deg);
+    transform: scale(1.1) translateY(-2px) rotate(-8deg);
   }
   65% {
-    transform: scale(1.25) translateY(-2px) rotate(4deg);
+    transform: scale(1.1) translateY(-2px) rotate(4deg);
   }
   80% {
-    transform: scale(1.25) translateY(-2px);
+    transform: scale(1.1) translateY(-2px);
   }
 }
 
 @keyframes settings-rotate-clockwise {
   0% {
-    transform: scale(1.15) rotate(0deg);
+    transform: scale(1.05) rotate(0deg);
   }
   100% {
-    transform: scale(1.15) rotate(720deg);
+    transform: scale(1.05) rotate(720deg);
   }
 }
 
 @keyframes settings-rotate-counterclockwise {
   0% {
-    transform: scale(1.15) rotate(720deg);
+    transform: scale(1.05) rotate(720deg);
   }
   100% {
-    transform: scale(1.15) rotate(0deg);
+    transform: scale(1.05) rotate(0deg);
   }
 }
 
 @keyframes calendar-pulse {
   0%,
   100% {
-    transform: scale(1.15) rotate(0deg);
+    transform: scale(1.05) rotate(0deg);
   }
   25% {
-    transform: scale(1.25) rotate(-5deg);
+    transform: scale(1.1) rotate(-5deg);
   }
   75% {
-    transform: scale(1.25) rotate(5deg);
+    transform: scale(1.1) rotate(5deg);
   }
 }

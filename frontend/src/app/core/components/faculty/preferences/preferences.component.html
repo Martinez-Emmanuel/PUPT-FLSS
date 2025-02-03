@@ -13,13 +13,15 @@
         <div class="pref-description">
           Select your preferred courses and schedule for the upcoming
           <span class="highlight"
-            >A.Y. {{ academicYear() }}, {{ semesterLabel() }}</span
+            >A.Y. {{ academicYear() }}, {{ semesterLabel() }}.</span
           >
         </div>
       </div>
 
       @if(isPreferencesEnabled()) {
-      <div id="total_container" [class.disabled]="!isPreferencesEnabled()">
+      <div
+        class="total-container desktop"
+        [class.disabled]="!isPreferencesEnabled()">
         <div class="total units" [@fadeAnimation]>
           <h2>{{ totalUnits() }}</h2>
           <span>Total Units Selected</span>
@@ -53,7 +55,13 @@
               <mat-icon>close</mat-icon>
             </button>
             } @if (!showProgramSelection() && !searchQuery()) {
-            <button mat-icon-button [matMenuTriggerFor]="filterMenu" matSuffix>
+            <button
+              mat-icon-button
+              matSuffix
+              class="filter-button"
+              [matMenuTriggerFor]="filterMenu"
+              [matMenuTriggerRestoreFocus]="false"
+              [class.active-filter]="selectedYearLevel() !== null">
               <mat-icon>filter_list</mat-icon>
             </button>
             }
@@ -62,13 +70,24 @@
 
         <mat-menu #filterMenu="matMenu">
           @for (year of dynamicYearLevels(); track year) {
-          <button mat-menu-item (click)="selectedYearLevel.set(year)">
-            Year Level: {{ year }}
+          <button
+            mat-menu-item
+            class="year-level-item"
+            [class.mdc-list-item--selected]="selectedYearLevel() === year"
+            (click)="$event.stopPropagation(); filterByYearLevel(year)">
+            <span class="menu-item-content">
+              @if (selectedYearLevel() === year) {
+              <mat-icon>check</mat-icon>
+              }
+              <span>Year Level: {{ year }}</span>
+            </span>
           </button>
           }
           <!-- Clear filter option -->
-          <button mat-menu-item (click)="selectedYearLevel.set(null)">
-            Clear Filter
+          <button
+            mat-menu-item
+            (click)="$event.stopPropagation(); selectedYearLevel.set(null)">
+            Reset to All Year Levels
           </button>
         </mat-menu>
 
@@ -156,6 +175,23 @@
         }
       </div>
 
+      @if (isPreferencesEnabled()) {
+      <div
+        class="total-container mobile"
+        [class.disabled]="!isPreferencesEnabled()">
+        <div class="total units" [@fadeAnimation]>
+          <h2>{{ totalUnits() }}</h2>
+          <span>Total Units Selected</span>
+        </div>
+
+        <!-- Total Hours -->
+        <div class="total hours" [@fadeAnimation]>
+          <h2>{{ totalHours() }}</h2>
+          <span>Total Hours Selected</span>
+        </div>
+      </div>
+      }
+
       <!-- Preferences Table -->
       <div id="table_container" [@fadeAnimation]>
         <table
@@ -238,7 +274,7 @@
             <td
               mat-cell
               *matCellDef="let element"
-              class="table-cell picker-cell">
+              class="table-cell day-time-cell">
               <div class="day-time-button-container">
                 <div
                   (click)="openDayTimeDialog(element)"

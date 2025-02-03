@@ -50,13 +50,16 @@
 
     <button
       mat-fab
-      extended
-      class="export-fab"
-      color="primary"
-      (click)="onExportPdf()"
-      [@fabAnimation]="isFabVisible ? 'show' : 'hide'">
-      <mat-icon>{{ showPreview ? 'picture_as_pdf' : 'download' }}</mat-icon>
-      <span>{{ showPreview ? 'Export PDF' : 'Download PDF' }}</span>
+      [class.mat-mdc-extended-fab]="isLabelVisible"
+      class="export-pdf-fab"
+      [@fabAnimation]="isLabelVisible ? 'extended' : 'collapsed'"
+      (click)="onExportPdf()">
+      <mat-icon class="fab-icon">{{
+        showPreview ? 'picture_as_pdf' : 'download'
+      }}</mat-icon>
+      <span class="fab-label">
+        {{ showPreview ? 'Export PDF' : 'Download PDF' }}
+      </span>
     </button>
   </div>
 </div>

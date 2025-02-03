@@ -53,10 +53,12 @@ type Day =
   styleUrls: ['./faculty-schedule-timetable.component.scss'],
   animations: [fadeAnimation, fabAnimation],
 })
-export class FacultyScheduleTimetableComponent implements OnInit, AfterViewInit {
+export class FacultyScheduleTimetableComponent
+  implements OnInit, AfterViewInit
+{
   @ViewChild('tableWrapper') tableWrapper!: ElementRef;
 
-  isFabVisible = true;
+  isLabelVisible = true;
   private lastScrollTop = 0;
   private readonly SCROLL_THRESHOLD = 25;
 
@@ -96,9 +98,9 @@ export class FacultyScheduleTimetableComponent implements OnInit, AfterViewInit 
         Math.abs(currentScrollTop - this.lastScrollTop) > this.SCROLL_THRESHOLD
       ) {
         if (currentScrollTop > this.lastScrollTop) {
-          this.isFabVisible = false;
+          this.isLabelVisible = false;
         } else {
-          this.isFabVisible = true;
+          this.isLabelVisible = true;
         }
         this.lastScrollTop = currentScrollTop;
       }

@@ -271,21 +271,20 @@ export const routeAnimation = trigger('routeAnimation', [
 
 export const fabAnimation = trigger('fabAnimation', [
   state(
-    'show',
+    'extended',
     style({
-      transform: 'translateY(0)',
-      opacity: 1,
+      width: '140px',
     }),
   ),
   state(
-    'hide',
+    'collapsed',
     style({
-      transform: 'translateY(100%)',
-      opacity: 0,
+      width: '56px',
     }),
   ),
-  transition('show => hide', [animate('200ms cubic-bezier(0.4, 0.0, 0.2, 1)')]),
-  transition('hide => show', [animate('250ms cubic-bezier(0.0, 0.0, 0.2, 1)')]),
+  transition('extended <=> collapsed', [
+    animate('225ms cubic-bezier(0.4, 0.0, 0.2, 1)'),
+  ]),
 ]);
 
 export const slideUpDown = trigger('slideUpDown', [
