@@ -13,8 +13,8 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         $loginUserData = $request->validate([
-            'email'         => 'required|string|email',
-            'password'      => 'required|string|min:8|max:40',
+            'email'         => 'required|string|email|max:254',
+            'password'      => 'required|string|min:8|max:128',
             'allowed_roles' => 'required|array',
         ]);
 

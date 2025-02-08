@@ -27,23 +27,24 @@
       <!--Email-->
       <mat-form-field appearance="fill">
         <mat-label for="emailInput">Email Address</mat-label>
-        <mat-icon matPrefix class="prefix-icon" aria-hidden="true"
-          >mail</mat-icon
-        >
+        <mat-icon matPrefix class="prefix-icon" aria-hidden="true">
+          mail
+        </mat-icon>
         <input
           matInput
           type="email"
           formControlName="email"
           autocomplete="email"
+          maxlength="254"
           id="emailInput"
           aria-required="true"
           aria-describedby="emailErrors" />
         @if (email?.errors?.['required']) {
         <mat-error id="emailErrors">Email is required.</mat-error>
         } @if (email?.errors?.['email']) {
-        <mat-error id="emailErrors"
-          >Please enter a valid email address.</mat-error
-        >
+        <mat-error id="emailErrors">
+          Please enter a valid email address.
+        </mat-error>
         }
       </mat-form-field>
 
@@ -59,7 +60,7 @@
           formControlName="password"
           autocomplete="current-password"
           minlength="8"
-          maxlength="40"
+          maxlength="128"
           id="passwordInput"
           aria-required="true"
           aria-describedby="passwordErrors" />
@@ -76,10 +77,9 @@
         </button>
         } @if (password?.errors?.['required']) {
         <mat-error id="passwordErrors">Account Password is required.</mat-error>
-        } @if (password?.errors?.['minlength']) {
-        <mat-error id="passwordErrors">Password is too short.</mat-error>
-        } @if (password?.errors?.['maxlength']) {
-        <mat-error id="passwordErrors">Password is too long.</mat-error>
+        } @if (password?.errors?.['minlength'] ||
+        password?.errors?.['maxlength']) {
+        <mat-error id="passwordErrors">Invalid password.</mat-error>
         }
       </mat-form-field>
 

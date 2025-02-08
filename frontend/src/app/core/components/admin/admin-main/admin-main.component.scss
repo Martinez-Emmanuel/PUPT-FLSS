@@ -1,5 +1,5 @@
-@use "../../../../../styles/mixins";
-@use "../../../../../styles/breakpoints.scss" as bp;
+@use '../../../../../styles/mixins';
+@use '../../../../../styles/breakpoints.scss' as bp;
 
 * {
   @include mixins.reset-styles;
@@ -19,7 +19,7 @@
 .sidenav {
   width: fit-content;
   background-color: transparent;
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-md);
   user-select: none;
 
   &.sidenav-mobile {
@@ -55,7 +55,7 @@
   .navbar-list {
     display: grid;
     grid-template-rows: 1fr auto;
-    min-height: calc(100vh - 15rem);
+    min-height: calc(100% - 15rem);
 
     .navbar-group-one {
       @include mixins.flex-layout(
@@ -99,7 +99,7 @@
     }
 
     .navbar-group-two {
-      padding-top: var(--spacing-md);
+      padding-top: var(--spacing-sm);
       border-top: 1px solid var(--neutral-option);
 
       .mobile-admin-account {
@@ -175,7 +175,7 @@
       padding-right: var(--spacing-xxs);
       .toggle-button {
         @include mixins.flex-layout;
-        color: var(--gradient-light-end)
+        color: var(--gradient-light-end);
       }
     }
 
