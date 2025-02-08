@@ -43,7 +43,7 @@ export const ADMIN_ROUTES: Routes = [
           import('./academic-year/academic-year.component').then(
             (m) => m.AcademicYearComponent
           ),
-        data: { pageTitle: 'Manage Academic Years' },
+        data: { pageTitle: 'Academic Years' },
       },
       {
         path: 'reports',

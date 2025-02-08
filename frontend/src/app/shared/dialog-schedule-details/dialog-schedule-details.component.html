@@ -1,0 +1,78 @@
+<div
+  class="dialog-schedule-details"
+  [style.--schedule-primary-color]="data.color.primary"
+  [style.--schedule-text-color]="data.color.text">
+  <!-- Header -->
+  <div class="dialog-header">
+    <div class="header-content">
+      <h2>{{ data.schedule.course_details.course_code }}</h2>
+      <p>{{ data.schedule.course_details.course_title }}</p>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="dialog-content">
+    <!-- Time and Room -->
+    <div class="detail-section">
+      <div class="detail-item">
+        <span mat-symbol="schedule"></span>
+        <div class="detail-text">
+          <p class="label">Schedule</p>
+          <p class="value">
+            {{ data.schedule.day }},
+            {{ formatTime(data.schedule.start_time) }} -
+            {{ formatTime(data.schedule.end_time) }}
+          </p>
+        </div>
+      </div>
+
+      <div class="detail-item">
+        <span mat-symbol="meeting_room"></span>
+        <div class="detail-text">
+          <p class="label">Room</p>
+          <p class="value">{{ data.schedule.room_code }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Class Details -->
+    <div class="detail-section">
+      <div class="detail-item">
+        <span mat-symbol="school"></span>
+        <div class="detail-text">
+          <p class="label">Program</p>
+          <p class="value">
+            {{ data.schedule.program_code }} - {{ data.schedule.program_title }}
+          </p>
+        </div>
+      </div>
+
+      <div class="detail-item">
+        <span mat-symbol="groups"></span>
+        <div class="detail-text">
+          <p class="label">Section</p>
+          <p class="value">
+            Year {{ data.schedule.year_level }} - Section
+            {{ data.schedule.section_name }}
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Course Details -->
+    <div class="detail-section">
+      <div class="detail-item">
+        <span mat-symbol="book"></span>
+        <div class="detail-text">
+          <p class="label">Units</p>
+          <p class="value">
+            {{ data.schedule.course_details.units }} units ({{
+              data.schedule.course_details.lec
+            }}
+            lec, {{ data.schedule.course_details.lab }} lab)
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

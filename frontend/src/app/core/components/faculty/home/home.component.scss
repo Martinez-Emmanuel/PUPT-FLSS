@@ -314,3 +314,37 @@
     transform: scale(1.1) rotate(5deg);
   }
 }
+
+:host ::ng-deep {
+  // Style for the event text in month view
+  .fc-daygrid-event {
+    white-space: nowrap;
+    border-radius: var(--border-radius-xl);
+    padding: 2px var(--spacing-xs);
+    transition: background-color var(--duration-short) ease;
+
+    &:hover {
+      cursor: pointer;
+    }
+  }
+
+  // Style for the event dot in month view
+  .fc-daygrid-event-dot {
+    transition: border-color var(--duration-short) ease;
+  }
+
+  // Remove the default background in month view
+  .fc-daygrid-dot-event {
+    background-color: transparent !important;
+    transition: background-color var(--duration-short) ease;
+
+    &:hover {
+      background-color: var(--neutral-hover) !important;
+    }
+  }
+
+  // Add transition for smooth theme switching
+  .fc-view-harness {
+    transition: background-color var(--duration-short) ease;
+  }
+}

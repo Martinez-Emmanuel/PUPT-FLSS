@@ -15,6 +15,7 @@ import { LoadingComponent } from '../../../../shared/loading/loading.component';
 
 import { OverviewService, OverviewDetails, RequestNotification } from '../../../services/admin/overview/overview.service';
 import { PreferencesService } from '../../../services/faculty/preference/preferences.service';
+import { CookieService } from 'ngx-cookie-service';
 
 import { fadeAnimation, cardEntranceSide } from '../../../animations/animations';
 import { CommonModule } from '@angular/common';
@@ -37,12 +38,14 @@ interface CurriculumInfo {
   templateUrl: './overview.component.html',
   styleUrls: ['./overview.component.scss'],
   animations: [fadeAnimation, cardEntranceSide],
-  standalone: true,
 })
 export class OverviewComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private readonly ANIMATION_DELAY = 100;
   private readonly SNACKBAR_DURATION = 3000;
+
+  // Admin info
+  adminName: string = '';
 
   // Academic info
   activeYear = 'N/A';
@@ -78,10 +81,12 @@ export class OverviewComponent implements OnInit, OnDestroy {
     private snackBar: MatSnackBar,
     private overviewService: OverviewService,
     private preferencesService: PreferencesService,
+    private cookieService: CookieService,
     private router: Router
   ) {}
 
   ngOnInit(): void {
+    this.initializeAdminInfo();
     this.loadAllData();
   }
 
@@ -90,9 +95,14 @@ export class OverviewComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
+  private initializeAdminInfo(): void {
+    const fullName = this.cookieService.get('user_name');
+    this.adminName = fullName.split(' ')[0];
+  }
+
   private loadAllData(resetAnimation = true): void {
     this.isLoading = true;
-    this.notificationsLoaded = false; // Reset the notifications loaded state
+    this.notificationsLoaded = false;
 
     forkJoin({
       overview: this.overviewService.getOverviewDetails(),

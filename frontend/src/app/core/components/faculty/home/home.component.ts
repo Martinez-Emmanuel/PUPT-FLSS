@@ -1,11 +1,13 @@
 import { Component, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { MatDialog } from '@angular/material/dialog';
 
 import { forkJoin } from 'rxjs';
 
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 
 import { LoadingComponent } from '../../../../shared/loading/loading.component';
+import { DialogScheduleDetailsComponent } from '../../../../shared/dialog-schedule-details/dialog-schedule-details.component';
 
 import { CookieService } from 'ngx-cookie-service';
 import { ReportsService } from '../../../services/admin/reports/reports.service';
@@ -18,6 +20,30 @@ import interactionPlugin from '@fullcalendar/interaction';
 import timeGridPlugin from '@fullcalendar/timegrid';
 
 import { fadeAnimation, cardEntranceSide } from '../../../animations/animations';
+
+interface ScheduleColor {
+  primary: string;
+  secondary: string;
+  text: string;
+}
+
+interface CourseSchedule {
+  course_details: {
+    course_code: string;
+    course_title: string;
+    units: number;
+    lec: number;
+    lab: number;
+  };
+  day: string;
+  start_time: string;
+  end_time: string;
+  room_code: string;
+  program_code: string;
+  program_title: string;
+  year_level: string;
+  section_name: string;
+}
 
 @Component({
   selector: 'app-home',
@@ -49,11 +75,74 @@ export class HomeComponent implements OnInit, AfterViewInit {
     preferences_start: null as string | null,
   };
 
+  private readonly scheduleColors: ScheduleColor[] = [
+    {
+      primary: 'var(--primary-text)',
+      secondary: 'var(--primary-fade)',
+      text: 'var(--primary-text-two)',
+    },
+    {
+      primary: 'var(--blue-primary)',
+      secondary: 'var(--blue-fade)',
+      text: 'var(--blue-text)',
+    },
+    {
+      primary: 'var(--purple-primary)',
+      secondary: 'var(--purple-fade)',
+      text: 'var(--purple-text)',
+    },
+    {
+      primary: 'var(--aqua-primary)',
+      secondary: 'var(--aqua-fade)',
+      text: 'var(--aqua-text)',
+    },
+    {
+      primary: 'var(--green-primary)',
+      secondary: 'var(--green-fade)',
+      text: 'var(--green-text)',
+    },
+    {
+      primary: 'var(--pink-primary)',
+      secondary: 'var(--pink-fade)',
+      text: 'var(--pink-text)',
+    },
+  ];
+
+  private courseColorMap = new Map<string, ScheduleColor>();
+  private facultySchedule: {
+    schedules: CourseSchedule[];
+    start_date: string;
+    end_date: string;
+    is_published: number;
+  } | null = null;
+
+  private readonly SCHEDULE_PUBLISHED = 1;
+
+  private isScheduleValid(): boolean {
+    return (
+      !!this.facultySchedule &&
+      this.facultySchedule.is_published === this.SCHEDULE_PUBLISHED
+    );
+  }
+
+  private isCalendarApiAvailable(): boolean {
+    return !!(this.calendarComponent && this.calendarComponent.getApi());
+  }
+
+  private hasFacultyId(): boolean {
+    return !!this.facultyId;
+  }
+
+  private getCourseColor(courseCode: string): ScheduleColor | null {
+    return this.courseColorMap.get(courseCode) || null;
+  }
+
   constructor(
     private reportsService: ReportsService,
     private facultyNotifService: FacultyNotificationService,
     private cookieService: CookieService,
     private changeDetectorRef: ChangeDetectorRef,
+    private dialog: MatDialog,
   ) {}
 
   ngOnInit(): void {
@@ -101,6 +190,12 @@ export class HomeComponent implements OnInit, AfterViewInit {
         meridiem: 'short',
       },
       moreLinkText: (n) => `+${n} more`,
+      eventClick: (info) => {
+        const schedule = this.findScheduleForEvent(info.event);
+        if (schedule) {
+          this.showScheduleDetails(schedule);
+        }
+      },
     };
   }
   /**
@@ -111,7 +206,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
    * If no faculty ID is available, it sets loading to false and returns early.
    */
   private loadAllData(): void {
-    if (!this.facultyId) {
+    if (!this.hasFacultyId()) {
       this.isLoading = false;
       return;
     }
@@ -153,20 +248,21 @@ export class HomeComponent implements OnInit, AfterViewInit {
    * @param response - The schedule data from the back-end.
    */
   private processScheduleResponse(response: any): void {
-    const facultySchedule = response.faculty_schedule;
+    this.facultySchedule = response.faculty_schedule;
 
-    if (facultySchedule.is_published === 1) {
-      this.events = this.createEventsFromSchedule(facultySchedule);
-    } else {
+    if (!this.isScheduleValid()) {
       this.events = [];
+      return;
     }
+
+    this.events = this.createEventsFromSchedule(this.facultySchedule);
   }
 
   /**
    * Update calendar events based on the fetched schedule.
    */
   private updateCalendarEvents(): void {
-    if (this.calendarComponent && this.calendarComponent.getApi()) {
+    if (this.isCalendarApiAvailable()) {
       const calendarApi = this.calendarComponent.getApi();
       calendarApi.removeAllEvents();
       calendarApi.addEventSource(this.events);
@@ -182,23 +278,35 @@ export class HomeComponent implements OnInit, AfterViewInit {
    * Resize the calendar to fit the container.
    */
   private resizeCalendar(): void {
-    if (this.calendarComponent && this.calendarComponent.getApi()) {
+    if (this.isCalendarApiAvailable()) {
       const calendarApi = this.calendarComponent.getApi();
       calendarApi.updateSize();
     }
   }
 
-  /**
-   * Create calendar events from the faculty schedule.
-   * @param facultySchedule - The schedule data.
-   * @returns An array of EventInput objects.
-   */
-  private createEventsFromSchedule(facultySchedule: any): EventInput[] {
+  private assignColorsToSchedules(schedules: CourseSchedule[]): void {
+    schedules.forEach((schedule) => {
+      const courseCode = schedule.course_details.course_code;
+      if (!this.courseColorMap.has(courseCode)) {
+        const colorIndex =
+          this.courseColorMap.size % this.scheduleColors.length;
+        this.courseColorMap.set(courseCode, this.scheduleColors[colorIndex]);
+      }
+    });
+  }
+
+  private createEventsFromSchedule(
+    facultySchedule: typeof this.facultySchedule,
+  ): EventInput[] {
+    if (!facultySchedule) return [];
+
     const events: EventInput[] = [];
     const startDate = new Date(facultySchedule.start_date);
     const endDate = new Date(facultySchedule.end_date);
 
-    facultySchedule.schedules.forEach((schedule: any) => {
+    this.assignColorsToSchedules(facultySchedule.schedules);
+
+    facultySchedule.schedules.forEach((schedule) => {
       const dayIndex = [
         'Sunday',
         'Monday',
@@ -208,15 +316,32 @@ export class HomeComponent implements OnInit, AfterViewInit {
         'Friday',
         'Saturday',
       ].indexOf(schedule.day);
-      let currentDate = new Date(startDate);
 
+      if (dayIndex === -1) return;
+
+      const color = this.getCourseColor(schedule.course_details.course_code);
+      if (!color) return;
+
+      const currentDate = new Date(startDate.getTime());
       while (currentDate <= endDate) {
         if (currentDate.getDay() === dayIndex) {
-          const dateStr = currentDate.toISOString().split('T')[0];
+          const [hours, minutes] = schedule.start_time.split(':');
+          const [endHours, endMinutes] = schedule.end_time.split(':');
+
+          const start = new Date(currentDate.getTime());
+          start.setHours(parseInt(hours), parseInt(minutes));
+
+          const end = new Date(currentDate.getTime());
+          end.setHours(parseInt(endHours), parseInt(endMinutes));
+
           events.push({
-            title: `${schedule.course_details.course_code}`,
-            start: `${dateStr}T${schedule.start_time}`,
-            end: `${dateStr}T${schedule.end_time}`,
+            title: `${schedule.course_details.course_code}\n${schedule.room_code}`,
+            start,
+            end,
+            backgroundColor: color.secondary,
+            borderColor: color.primary,
+            textColor: color.text,
+            extendedProps: { schedule },
           });
         }
         currentDate.setDate(currentDate.getDate() + 1);
@@ -224,5 +349,21 @@ export class HomeComponent implements OnInit, AfterViewInit {
     });
 
     return events;
+  }
+
+  private showScheduleDetails(schedule: CourseSchedule): void {
+    const color = this.getCourseColor(schedule.course_details.course_code);
+    if (!color) return;
+
+    this.dialog.open(DialogScheduleDetailsComponent, {
+      data: {
+        schedule,
+        color,
+      },
+    });
+  }
+
+  private findScheduleForEvent(event: any): CourseSchedule | null {
+    return event.extendedProps?.schedule || null;
   }
 }

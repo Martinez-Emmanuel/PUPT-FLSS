@@ -482,6 +482,10 @@ span[mat-symbol] {
   --fc-today-bg-color: var(--primary-one-fade);
 }
 
+.fc-theme-standard .fc-popover {
+  background-color: var(--neutral-light);
+}
+
 @media screen and (max-width: 675px) {
   .fc .fc-toolbar {
     @include mixins.flex-layout(

@@ -1,4 +1,5 @@
 @use "../../../../../styles/mixins";
+@use "../../../../../styles/breakpoints" as bp;
 
 * {
   @include mixins.reset-styles;
@@ -11,7 +12,7 @@
 }
 
 .sidenav {
-  width: 16rem;
+  width: max-content;
   background-color: var(--neutral-sidebar);
   padding: var(--spacing-sm) var(--spacing-md);
 
@@ -42,49 +43,112 @@
   }
 
   .navbar-list {
-    @include mixins.flex-layout(
-      $direction: column,
-      $align: stretch,
-      $justify: none,
-      $gap: var(--spacing-lg)
-    );
+    display: grid;
+    grid-template-rows: 1fr auto;
+    min-height: calc(100vh - 15rem);
 
-    .list-subheader {
-      font-weight: 600;
-      color: var(--primary-one);
-      padding: 0 var(--spacing-md) var(--spacing-xs) var(--spacing-md);
-    }
+    .navbar-group-one {
+      @include mixins.flex-layout(
+        $direction: column,
+        $align: stretch,
+        $justify: none,
+        $gap: var(--spacing-md)
+      );
 
-    .list-item {
-      transition: transform var(--duration-medium) ease;
-      width: calc(100% - 3px);
-
-      &:hover {
-        transform: translateX(3px);
-      }
-    }
-
-    .active-link {
-      background-color: var(--primary-one);
-      transition: background-color var(--duration-long) ease,
-        transform var(--duration-medium) ease;
-
-      span {
-        color: white;
+      .list-subheader {
+        font-weight: 600;
+        color: var(--primary-one);
+        padding: 0 var(--spacing-md) var(--spacing-xs) var(--spacing-md);
       }
 
-      &:hover {
-        transform: translateX(3px);
-      }
-    }
+      .list-item {
+        transition: transform var(--duration-medium) ease;
+        width: calc(100% - 3px);
 
-    .mat-mdc-list-item.active-link,
-    .mdc-list-item.mdc-list-item--activated {
-      &:focus,
-      &:focus-visible,
-      &::before,
-      &::after {
+        &:hover {
+          transform: translateX(3px);
+        }
+      }
+
+      .active-link {
         background-color: var(--primary-one);
+        transition: background-color var(--duration-long) ease,
+          transform var(--duration-medium) ease;
+
+        span {
+          color: white;
+        }
+
+        &:hover {
+          transform: translateX(3px);
+        }
+      }
+
+      .mat-mdc-list-item.active-link,
+      .mdc-list-item.mdc-list-item--activated {
+        &:focus,
+        &:focus-visible,
+        &::before,
+        &::after {
+          background-color: var(--primary-one);
+        }
+      }
+    }
+
+    .navbar-group-two {
+      padding-top: var(--spacing-md);
+      border-top: 1px solid var(--neutral-option);
+
+      .mobile-admin-account {
+        @include mixins.flex-layout(
+          $direction: row,
+          $align: center,
+          $justify: flex-start,
+          $gap: var(--spacing-xs)
+        );
+        font-size: var(--font-size-smx);
+
+        background-color: var(--neutral-option);
+        border-radius: var(--border-radius-xl);
+        padding: 6px 12px 6px 7px;
+        margin: var(--spacing-xs);
+
+        .account-text {
+          text-align: left;
+          line-height: var(--line-height-sm);
+
+          .account-name {
+            font-weight: 500;
+          }
+
+          .account-role {
+            opacity: var(--opacity-semi-opaque);
+          }
+        }
+
+        .profile-dropdown {
+          @include mixins.flex-layout;
+          position: relative;
+
+          .profile-icon {
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            user-select: none;
+          }
+        }
+      }
+
+      .list-item {
+        span {
+          &.light-icon {
+            color: var(--primary-one) !important;
+          }
+
+          &.dark-icon {
+            color: var(--secondary-text) !important;
+          }
+        }
       }
     }
   }
@@ -108,12 +172,16 @@
     padding: 0;
 
     .toggle-button-container {
-      padding: 0 var(--spacing-lg) 0 0;
+      padding-right: var(--spacing-xxs);
+      .toggle-button {
+        @include mixins.flex-layout;
+      }
     }
 
     .sidenav-header {
       @include mixins.flex-layout($align: stretch, $justify: space-between);
       width: inherit;
+      height: 100%;
 
       .title-container .page-title {
         @include mixins.flex-layout;
@@ -220,5 +288,30 @@
     @include mixins.hide-scrollbar;
     height: inherit;
     overflow: auto;
+  }
+}
+
+@media (max-width: bp.$breakpoint-md) {
+  .sidenav-content {
+    @include mixins.flex-layout(
+      $direction: column,
+      $align: stretch,
+      $justify: flex-start
+    );
+    padding: var(--spacing-md);
+
+    .main-toolbar {
+      .sidenav-header {
+        .title-container {
+          .page-title {
+            font-size: var(--font-size-2xl);
+          }
+        }
+      }
+    }
+
+    .sidenav-main {
+      padding: var(--spacing-md);
+    }
   }
 }

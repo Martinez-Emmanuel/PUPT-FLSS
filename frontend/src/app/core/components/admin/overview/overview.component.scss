@@ -1,4 +1,5 @@
 @use "../../../../../styles/mixins";
+@use "../../../../../styles/breakpoints" as bp;
 
 * {
   @include mixins.reset-styles;
@@ -167,8 +168,7 @@
           $gap: var(--spacing-sm)
         );
 
-        .overview-group-one,
-        .overview-group-two {
+        .overview-group {
           @include mixins.flex-layout($align: stretch, $gap: var(--spacing-sm));
           flex: 1;
 
@@ -346,6 +346,7 @@
         $gap: var(--spacing-sm)
       );
       height: inherit;
+      margin-bottom: var(--spacing-md);
 
       .request-icon {
         font-size: var(--font-size-lg);
@@ -381,15 +382,22 @@
           );
           opacity: var(--opacity-semi-opaque);
 
+          .no-img {
+            width: auto;
+            height: auto;
+            max-width: 15rem;
+          }
+
           .no-text {
             @include mixins.flex-layout(
               $align: center,
               $justify: center,
               $gap: var(--spacing-xxs)
             );
+            font-size: var(--font-size-sm);
 
             span[mat-symbol] {
-              font-size: var(--font-size-md);
+              font-size: var(--font-size-sm);
             }
           }
         }
@@ -487,7 +495,7 @@
 // MEDIA QUERIES
 // ==============
 
-@media screen and (max-width: 1230px) {
+@media screen and (max-width: bp.$breakpoint-lgx) {
   .overview-main-container {
     @include mixins.flex-layout(
       $direction: column,
@@ -498,7 +506,7 @@
   }
 }
 
-@media screen and (max-width: 1110px) {
+@media screen and (max-width: bp.$breakpoint-lg) {
   .overview-header-container {
     @include mixins.flex-layout(
       $direction: column,
@@ -509,7 +517,7 @@
   }
 }
 
-@media screen and (max-width: 800px) {
+@media screen and (max-width: bp.$breakpoint-md) {
   .overview-main-container .main-cluster-one {
     @include mixins.flex-layout(
       $direction: column,
@@ -517,7 +525,6 @@
       $justify: flex-start,
       $gap: var(--spacing-md)
     );
-
     height: auto;
 
     &.main-cluster-one .quick-stats {
@@ -535,6 +542,20 @@
         $align: stretch,
         $gap: var(--spacing-md)
       );
+    }
+  }
+}
+
+@media screen and (max-width: bp.$breakpoint-sm) {
+  .overview-main-container .main-cluster-one {
+    &.main-cluster-one .academic-and-action {
+      .academic-overview .overview-group {
+        @include mixins.flex-layout(
+          $direction: column,
+          $align: stretch,
+          $gap: var(--spacing-sm)
+        );
+      }
     }
   }
 }

@@ -59,7 +59,6 @@
 
 .dialog-login-form {
   width: 100%;
-  min-width: var(--dialog-smx);
 
   .form-content {
     @include mixins.flex-layout(

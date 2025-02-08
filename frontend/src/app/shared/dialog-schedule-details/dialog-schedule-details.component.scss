@@ -1,0 +1,75 @@
+@use '../../../styles/mixins.scss';
+
+.dialog-schedule-details {
+  border-radius: var(--border-radius-md);
+  background: var(--main-bg);
+
+  .dialog-header {
+    padding: var(--spacing-md) var(--spacing-mdx);
+    color: white;
+    background-color: var(--schedule-primary-color);
+
+    .header-content {
+      @include mixins.flex-layout(
+        $direction: column,
+        $align: stretch,
+        $justify: flex-start
+      );
+
+      h2,
+      p {
+        margin: 0;
+      }
+
+      h2 {
+        font-weight: 600;
+      }
+
+      color: var(--schedule-text-color);
+    }
+  }
+
+  .dialog-content {
+    padding: var(--spacing-lg);
+
+    .detail-section {
+      &:not(:last-child) {
+        margin-bottom: var(--spacing-md);
+        padding-bottom: var(--spacing-md);
+        border-bottom: 1px solid var(--neutral-option);
+      }
+
+      .detail-item {
+        @include mixins.flex-layout(
+          $align: flex-start,
+          $justify: flex-start,
+          $gap: var(--spacing-sm)
+        );
+
+        &:not(:last-child) {
+          margin-bottom: var(--spacing-md);
+        }
+
+        span[mat-symbol] {
+          font-size: var(--font-size-lg);
+          padding-top: var(--spacing-xxxs);
+          color: var(--schedule-primary-color);
+        }
+
+        .detail-text {
+          flex: 1;
+
+          p {
+            margin: 0;
+            line-height: var(--line-height-md);
+          }
+
+          .label {
+            font-weight: 500;
+            color: var(--schedule-primary-color);
+          }
+        }
+      }
+    }
+  }
+}

@@ -9,7 +9,7 @@
   <!--Overview Header-->
   <header class="overview-header-container" [@fadeAnimation]>
     <div class="overview-greetings">
-      <h1 id="admin_name">Hello, Admin Marissa!</h1>
+      <h1 id="admin_name">Hello, Admin {{ adminName }}</h1>
       <p id="description">
         Here's the key overview of the loading and scheduling this semester.
       </p>
@@ -31,8 +31,7 @@
           <img
             src="../../../../../assets/images/faculty.svg"
             alt="Faculty Icon"
-            class="stats-icon"
-          />
+            class="stats-icon" />
           <div class="stats-info">
             <h2 class="card-title">Active Faculty</h2>
             <div class="card-content">{{ activeFacultyCount }}</div>
@@ -43,8 +42,7 @@
           <img
             src="../../../../../assets/images/schedule.svg"
             alt="Programs Icon"
-            class="stats-icon"
-          />
+            class="stats-icon" />
           <div class="stats-info">
             <h2 class="card-title">Active Programs</h2>
             <div class="card-content">{{ activeProgramsCount }}</div>
@@ -55,8 +53,7 @@
           <img
             src="../../../../../assets/images/curriculum.svg"
             alt="Curriculum Icon"
-            class="stats-icon"
-          />
+            class="stats-icon" />
           <div class="stats-info">
             <h2 class="card-title">Active Curricula</h2>
             <div class="card-content">
@@ -76,8 +73,7 @@
           <svg
             style="width: 0; height: 0; position: absolute"
             aria-hidden="true"
-            focusable="false"
-          >
+            focusable="false">
             <defs>
               <linearGradient id="gradient" gradientTransform="rotate(90)">
                 <stop offset="0%" stop-color="var(--gradient-light-start)" />
@@ -87,10 +83,11 @@
           </svg>
 
           <!-- Overview Group One -->
-          <div class="overview-group-one">
+          <div class="overview-group one">
             <!-- Preferences Submitted Progress Bar -->
             <div class="overview-item preferences-submitted">
               <h3 class="item-title">Preferences Submitted</h3>
+
               <div class="progress-container">
                 <svg class="circular-progress" viewBox="0 0 100 100">
                   <circle class="progress-bg" cx="50" cy="50" r="45"></circle>
@@ -102,8 +99,7 @@
                     [style.strokeDashoffset]="
                       getCircleOffset(preferencesProgress)
                     "
-                    [style.opacity]="preferencesProgress > 0 ? 1 : 0"
-                  ></circle>
+                    [style.opacity]="preferencesProgress > 0 ? 1 : 0"></circle>
                   <g transform="rotate(90 50 50)">
                     <text x="50" y="50" class="progress-text">
                       {{ preferencesProgress }}%
@@ -127,8 +123,7 @@
                     [style.strokeDashoffset]="
                       getCircleOffset(schedulingProgress)
                     "
-                    [style.opacity]="schedulingProgress > 0 ? 1 : 0"
-                  ></circle>
+                    [style.opacity]="schedulingProgress > 0 ? 1 : 0"></circle>
                   <g transform="rotate(90 50 50)">
                     <text x="50" y="50" class="progress-text">
                       {{ schedulingProgress }}%
@@ -140,7 +135,7 @@
           </div>
 
           <!-- Overview Group Two -->
-          <div class="overview-group-two">
+          <div class="overview-group two">
             <!-- Room Utilization Progress Bar -->
             <div class="overview-item rooms-utilized">
               <h3 class="item-title">Rooms Utilization</h3>
@@ -153,8 +148,7 @@
                     cy="50"
                     r="45"
                     [style.strokeDashoffset]="getCircleOffset(roomUtilization)"
-                    [style.opacity]="roomUtilization > 0 ? 1 : 0"
-                  ></circle>
+                    [style.opacity]="roomUtilization > 0 ? 1 : 0"></circle>
                   <g transform="rotate(90 50 50)">
                     <text x="50" y="55" class="progress-text">
                       {{ roomUtilization }}%
@@ -176,8 +170,7 @@
                     cy="50"
                     r="45"
                     [style.strokeDashoffset]="getCircleOffset(publishProgress)"
-                    [style.opacity]="publishProgress > 0 ? 1 : 0"
-                  ></circle>
+                    [style.opacity]="publishProgress > 0 ? 1 : 0"></circle>
                   <g transform="rotate(90 50 50)">
                     <text x="50" y="55" class="progress-text">
                       {{ publishProgress }}%
@@ -202,8 +195,7 @@
               <!--Action: Toggle Faculty Preferences Submission-->
               <div
                 class="item faculty-pref"
-                (click)="togglePreferencesSubmission()"
-              >
+                (click)="togglePreferencesSubmission()">
                 <span mat-symbol="groups"></span>
                 <span class="desc">
                   {{
@@ -216,8 +208,7 @@
               <!--Action: Publish Schedule-->
               <div
                 class="item publish-sched"
-                (click)="togglePublishSchedules()"
-              >
+                (click)="togglePublishSchedules()">
                 <span mat-symbol="schedule_send"></span>
                 <span class="desc">
                   {{
@@ -259,15 +250,14 @@
             [matTooltip]="
               'These are faculties who requested to access their preferences submission'
             "
-            matTooltipPosition="above"
-          ></span>
+            matTooltipPosition="above"></span>
         </h2>
         <div class="requests-content">
           @if (!notificationsLoaded) {
           <div class="requests-loading"></div>
           } @else if (!requestNotifications.length && !isAnimatingOut) {
           <div class="no-requests">
-            <img src="../../../../../assets/images/empty.svg" />
+            <img class="no-img" src="../../../../../assets/images/empty.svg" />
             <div class="no-text">
               <span mat-symbol="info"></span>
               <em>No pending requests.</em>
@@ -276,8 +266,7 @@
           } @else {
           <div
             class="requests-list"
-            [@cardEntranceSide]="requestNotifications.length"
-          >
+            [@cardEntranceSide]="requestNotifications.length">
             @for (request of requestNotifications; track request.faculty_id) {
             <div class="request-item">
               <div class="request-content">

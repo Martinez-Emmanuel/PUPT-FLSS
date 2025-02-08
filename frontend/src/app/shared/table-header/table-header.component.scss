@@ -7,7 +7,6 @@
 .header-container {
   @include mixins.flex-layout($align: stretch, $justify: space-between);
   @include mixins.default-transition;
-  // background-color: var(--main-bg);
   padding-bottom: var(--spacing-sm);
 
   .input-container {
@@ -85,13 +84,17 @@
     gap: var(--spacing-md);
   }
 
+  .tooltip-container {
+    width: 100%;
+  }
+
   .custom-mat-button {
     color: white;
+    width: 100%;
   }
 
   .add-button {
     background-color: var(--primary-one);
-    // min-width: 10rem;
   }
 
   .button-wrapper {

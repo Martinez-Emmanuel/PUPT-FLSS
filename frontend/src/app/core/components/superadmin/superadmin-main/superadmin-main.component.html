@@ -9,94 +9,122 @@
     [@slideInAnimation]
     [attr.role]="(isHandset$ | async) ? 'dialog' : 'navigation'"
     [mode]="(isHandset$ | async) ? 'push' : 'side'"
-    [opened]="(isHandset$ | async) === false"
-  >
+    [opened]="(isHandset$ | async) === false">
     <div class="side-toolbar">
       <img
         src="../../../../../assets/images/pup_taguig_logo.svg"
         alt="PUP Taguig Logo"
-        class="side-toolbar-img"
-      />
+        class="side-toolbar-img" />
       <div class="header-name">
         <div class="university-name">PUP TAGUIG</div>
         <div class="system-name">FACULTY LOADING<br />& SCHEDULING</div>
       </div>
     </div>
     <mat-nav-list class="navbar-list">
-      <!-- <div class="group">
-        <h4 class="list-subheader">Dashboard</h4>
-        <a
-          mat-list-item
-          class="list-item"
-          routerLink="/superadmin/dashboard"
-          routerLinkActive="active-link"
-        >
-          <span mat-symbol="dashboard" matListItemIcon></span>
-          <span matListItemTitle>Dashboard</span>
-        </a>
-      </div> -->
+      <div class="navbar-group-one">
+        <div class="group">
+          <h4 class="list-subheader">Management</h4>
+          <a
+            mat-list-item
+            class="list-item"
+            routerLink="/superadmin/admin"
+            routerLinkActive="active-link">
+            <span mat-symbol="admin_panel_settings" matListItemIcon></span>
+            <span matListItemTitle>Manage Admin</span>
+          </a>
+          <a
+            mat-list-item
+            class="list-item"
+            routerLink="/superadmin/faculty"
+            routerLinkActive="active-link">
+            <span mat-symbol="groups" matListItemIcon></span>
+            <span matListItemTitle>Manage Faculty</span>
+          </a>
+        </div>
 
-      <div class="group">
-        <h4 class="list-subheader">Management</h4>
-        <a
-          mat-list-item
-          class="list-item"
-          routerLink="/superadmin/admin"
-          routerLinkActive="active-link"
-        >
-          <span mat-symbol="admin_panel_settings" matListItemIcon></span>
-          <span matListItemTitle>Manage Admin</span>
-        </a>
-        <a
-          mat-list-item
-          class="list-item"
-          routerLink="/superadmin/faculty"
-          routerLinkActive="active-link"
-        >
-          <span mat-symbol="groups" matListItemIcon></span>
-          <span matListItemTitle>Manage Faculty</span>
-        </a>
+        <div class="group">
+          <h4 class="list-subheader">Maintenance</h4>
+          <a
+            mat-list-item
+            class="list-item"
+            routerLink="/superadmin/curriculum"
+            routerLinkActive="active-link">
+            <span mat-symbol="list_alt" matListItemIcon></span>
+            <span matListItemTitle>Curriculum</span>
+          </a>
+          <a
+            mat-list-item
+            class="list-item"
+            routerLink="/superadmin/programs"
+            routerLinkActive="active-link">
+            <span mat-symbol="school" matListItemIcon></span>
+            <span matListItemTitle>Programs</span>
+          </a>
+          <a
+            mat-list-item
+            class="list-item"
+            routerLink="/superadmin/buildings"
+            routerLinkActive="active-link">
+            <span mat-symbol="apartment" matListItemIcon></span>
+            <span matListItemTitle>Buildings</span>
+          </a>
+          <a
+            mat-list-item
+            class="list-item"
+            routerLink="/superadmin/rooms"
+            routerLinkActive="active-link">
+            <span mat-symbol="meeting_room" matListItemIcon></span>
+            <span matListItemTitle>Rooms</span>
+          </a>
+        </div>
       </div>
 
-      <div class="group">
-        <h4 class="list-subheader">Maintenance</h4>
-        <a
-          mat-list-item
-          class="list-item"
-          routerLink="/superadmin/curriculum"
-          routerLinkActive="active-link"
-        >
-          <span mat-symbol="list_alt" matListItemIcon></span>
-          <span matListItemTitle>Curriculum</span>
+      @if (isHandset$ | async) {
+      <div class="navbar-group-two">
+        <div class="mobile-admin-settings">
+          <!-- Theme Toggle -->
+          <a mat-list-item class="list-item" (click)="toggleTheme()">
+            <span
+              [mat-symbol]="
+                (themeService.isDarkTheme$ | async) ? 'dark_mode' : 'light_mode'
+              "
+              [ngClass]="
+                (themeService.isDarkTheme$ | async) ? 'dark-icon' : 'light-icon'
+              "
+              matListItemIcon></span>
+            <span
+              matListItemTitle
+              [ngClass]="
+                (themeService.isDarkTheme$ | async) ? 'dark-icon' : 'light-icon'
+              ">
+              {{
+                (themeService.isDarkTheme$ | async) ? "Dark Mode" : "Light Mode"
+              }}
+            </span>
+          </a>
+        </div>
+
+        <!-- Logout -->
+        <a mat-list-item class="list-item" (click)="logout()">
+          <span mat-symbol="door_open" matListItemIcon></span>
+          <span matListItemTitle>Logout</span>
         </a>
-        <a
-          mat-list-item
-          class="list-item"
-          routerLink="/superadmin/programs"
-          routerLinkActive="active-link"
-        >
-          <span mat-symbol="school" matListItemIcon></span>
-          <span matListItemTitle>Programs</span>
-        </a>
-        <a
-          mat-list-item
-          class="list-item"
-          routerLink="/superadmin/buildings"
-          routerLinkActive="active-link"
-        >
-          <span mat-symbol="apartment" matListItemIcon></span>
-          <span matListItemTitle>Buildings</span>
-        </a>
-        <a
-          mat-list-item
-          class="list-item"
-          routerLink="/superadmin/rooms"
-          routerLinkActive="active-link"
-        >
-          <span mat-symbol="meeting_room" matListItemIcon></span>
-          <span matListItemTitle>Rooms</span>
-        </a>
+
+        <!-- Admin Account Info -->
+        <div class="mobile-admin-account">
+          <div class="profile-dropdown">
+            <img
+              src="../../../../../assets/images/default_superadmin_icon.png"
+              alt="Profile Icon"
+              class="profile-icon" />
+          </div>
+          <div class="account-text">
+            <div class="account-name">{{ accountName }}</div>
+            <div class="account-role">Super Administrator</div>
+          </div>
+        </div>
       </div>
+      }
     </mat-nav-list>
   </mat-sidenav>
 
@@ -112,8 +140,7 @@
           aria-label="Toggle sidenav"
           mat-icon-button
           (click)="drawer.toggle()"
-          class="toggle-button"
-        >
+          class="toggle-button">
           <mat-icon aria-label="Side nav toggle icon">menu</mat-icon>
         </button>
       </div>
@@ -125,11 +152,12 @@
         <div class="title-container">
           <h2 class="page-title">{{ pageTitle }}</h2>
         </div>
-
         <!-- Admin Account -->
+        @if ((isHandset$ | async) === false) {
         <div class="header-account">
           <div class="account-text">
             <div class="account-name">{{ accountName }}</div>
+
             <div class="account-role">Super Administrator</div>
           </div>
           <div class="profile-dropdown">
@@ -139,8 +167,7 @@
               class="profile-icon"
               (click)="toggleDropdown($event)"
               matTooltip="Click to open settings"
-              matTooltipPosition="below"
-            />
+              matTooltipPosition="below" />
             @if (isDropdownOpen) {
             <div class="dropdown-menu">
               <span class="dropdown-item" (click)="toggleTheme()">
@@ -149,8 +176,7 @@
                     (themeService.isDarkTheme$ | async)
                       ? 'light_mode'
                       : 'dark_mode'
-                  "
-                ></span>
+                  "></span>
 
                 Switch Theme
               </span>
@@ -162,8 +188,10 @@
             }
           </div>
         </div>
+        }
       </header>
     </mat-toolbar>
+
     <!-- Main Content -->
     <div class="sidenav-main">
       <router-outlet></router-outlet>
