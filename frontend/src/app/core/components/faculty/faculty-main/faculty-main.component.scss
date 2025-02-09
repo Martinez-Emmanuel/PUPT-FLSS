@@ -277,11 +277,10 @@
 .mobile-header {
   display: none;
   width: 100%;
-  margin-top: var(--spacing-sm);
+  margin-top: var(--spacing-xs);
 
   .header-name {
-    @include mixins.flex-layout($justify: flex-start);
-    gap: var(--spacing-md);
+    @include mixins.flex-layout($justify: flex-start, $gap: var(--spacing-sm));
     width: 100%;
 
     .university-logo {
@@ -312,18 +311,20 @@
 
 /* Mobile Navigation Bar */
 .mobile-navbar {
+  @include mixins.glass-effect;
   display: none;
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: var(--neutral-light);
-  box-shadow: var(--shadow-level-1);
   z-index: 1000;
-  padding: var(--spacing-xs) 0;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-top: 1px solid var(--glass-border);
   justify-content: space-around;
   align-items: center;
   height: auto;
+  transition: all 0.3s ease-in-out;
+  isolation: isolate;
 
   .bottom-nav-item {
     display: flex;
@@ -343,8 +344,6 @@
     &.active {
       .icon-container {
         background-color: var(--primary-fade);
-        border-radius: var(--border-radius-xl);
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
 
       span[mat-symbol] {
@@ -382,10 +381,9 @@
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    // Hover effect only for the inactive icon
     &:hover:not(.active) {
       .icon-container {
-        background-color: var(--neutral-option);
+        @include mixins.glass-hover;
       }
     }
   }
@@ -394,15 +392,15 @@
 /* Mobile Account Dropdown */
 .mobile-dropdown {
   @include mixins.default-transition;
+  @include mixins.glass-effect(20px);
   display: none;
   position: fixed;
   bottom: var(--spacing-5xl);
   left: 0;
   right: 0;
-  background-color: var(--neutral-light);
-  box-shadow: var(--shadow-level-2);
   z-index: 999;
   border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
+  border: 1px solid var(--glass-border);
   overflow: hidden;
   transform-origin: bottom;
   will-change: transform, opacity;
@@ -412,7 +410,7 @@
     align-items: center;
     gap: var(--spacing-md);
     padding: var(--spacing-lg);
-    border-bottom: 1px solid var(--neutral-border);
+    border-bottom: 1px solid var(--glass-border);
 
     .mobile-profile-icon {
       width: 3rem;
@@ -487,12 +485,9 @@
     display: none;
   }
 
-  .faculty-main-content {
-    padding-bottom: 4rem;
-  }
-
   .mobile-navbar {
     display: flex;
+    animation: slideUp 0.3s ease-out;
   }
 
   .mobile-dropdown {
@@ -594,5 +589,16 @@
   }
   75% {
     transform: scale(1.1) rotate(5deg);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }

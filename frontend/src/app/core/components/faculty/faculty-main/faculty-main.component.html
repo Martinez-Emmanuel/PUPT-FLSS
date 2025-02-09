@@ -75,6 +75,7 @@
       </div>
       <div
         matRipple
+        matRippleColor="#a932321a"
         class="bottom-sheet-item logout"
         (click)="onBottomSheetAction('logout')">
         <span mat-symbol="door_open"></span>
@@ -143,7 +144,11 @@
           "></span>
         Switch Theme
       </button>
-      <button matRipple class="mobile-dropdown-item logout" (click)="logout()">
+      <button
+        matRipple
+        [matRippleColor]="'#a932321a'"
+        class="mobile-dropdown-item logout"
+        (click)="logout()">
         <span mat-symbol="door_open"></span>
         Logout
       </button>

@@ -82,6 +82,11 @@
   // For gradient soft-secondary
   --gradient-soft-gray-start: #adadad;
   --gradient-soft-gray-end: #e0e0e0;
+
+  /* Blur/Glass effect colors */
+  --glass-bg: rgba(255, 255, 255, 0.6);
+  --glass-border: rgba(223, 223, 223, 0.5);
+  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
 }
 
 .dark-theme {
@@ -168,4 +173,9 @@
   // For gradient soft-secondary
   --gradient-soft-gray-start: #3a3a3a;
   --gradient-soft-gray-end: #4a4a4a;
+
+  /* Blur/Glass effect colors */
+  --glass-bg: rgba(18, 18, 18, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
 }

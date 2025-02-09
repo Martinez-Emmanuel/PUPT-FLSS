@@ -23,6 +23,10 @@
       $gap: var(--spacing-md)
     );
   }
+
+  @media screen and (max-width: bp.$breakpoint-sm) {
+    padding-bottom: var(--spacing-5xl);
+  }
 }
 
 .home-row-one {
@@ -146,10 +150,6 @@
     background-color: var(--admin-bg);
     border-radius: var(--border-radius-md);
     padding: var(--spacing-md);
-
-    @media screen and (max-width: bp.$breakpoint-sm) {
-      margin-bottom: var(--spacing-md);
-    }
 
     .card-title {
       @include mixins.flex-layout(

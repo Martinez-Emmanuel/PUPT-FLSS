@@ -139,3 +139,18 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Glass/Blur effect with customizable blur strength */
+@mixin glass-effect($blur-strength: 10px) {
+  background: var(--glass-bg);
+  backdrop-filter: blur($blur-strength);
+  -webkit-backdrop-filter: blur($blur-strength);
+  box-shadow: var(--glass-shadow);
+}
+
+/* Glass hover effect for interactive elements */
+@mixin glass-hover($blur-strength: 5px) {
+  backdrop-filter: blur($blur-strength);
+  -webkit-backdrop-filter: blur($blur-strength);
+  background-color: var(--neutral-option);
+}
