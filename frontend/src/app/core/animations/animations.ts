@@ -303,3 +303,13 @@ export const slideUpDown = trigger('slideUpDown', [
   transition('void => *', [animate('300ms cubic-bezier(0.4, 0.0, 0.2, 1)')]),
   transition('* => void', [animate('600ms cubic-bezier(0.2, 0.0, 0.0, 1)')]),
 ]);
+
+export const slideInOut = trigger('slideInOut', [
+  transition(':enter', [
+    style({ transform: 'translateY(-100%)' }),
+    animate('300ms ease-out', style({ transform: 'translateY(0)' })),
+  ]),
+  transition(':leave', [
+    animate('300ms ease-in', style({ transform: 'translateY(-100%)' })),
+  ]),
+]);

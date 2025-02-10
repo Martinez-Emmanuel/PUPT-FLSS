@@ -1,0 +1,19 @@
+@use '../../../styles/mixins.scss';
+
+.offline-status-bar { 
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  @include mixins.flex-layout($gap: var(--spacing-xxs));
+  background-color: var(--primary-const);
+  color: white;
+  padding: var(--spacing-xxs);
+  font-size: var(--font-size-xsx);
+  font-weight: 500;
+
+  span[mat-symbol] {
+    font-size: 1em;
+  }
+}

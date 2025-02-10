@@ -1,3 +1,7 @@
+<!-- Offline Status Bar: Displays in overlay when offline -->
+<app-offline-status></app-offline-status>
+
+<!-- App Container: Main container for the app -->
 <div class="app-container" [@routeAnimation]="getRouteState(outlet)">
   <router-outlet #outlet="outlet"></router-outlet>
 </div>
