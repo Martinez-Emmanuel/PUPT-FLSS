@@ -1,12 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import {
-  FormBuilder,
-  FormGroup,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
+
 import { AuthService } from '../../core/services/auth/auth.service';
 
 @Component({
@@ -47,13 +44,21 @@ export class ResetPasswordComponent implements OnInit {
     private router: Router,
     private snackBar: MatSnackBar,
   ) {
-    this.resetForm = this.formBuilder.group(
-      {
-        password: ['', [Validators.required, Validators.minLength(8)]],
-        password_confirmation: ['', [Validators.required]],
-      },
-      { validator: this.checkPasswords },
-    );
+    this.resetForm = this.formBuilder.group({
+      password: ['', [Validators.required, Validators.minLength(8)]],
+      password_confirmation: ['', [
+        Validators.required,
+        (control: AbstractControl): ValidationErrors | null => {
+          if (!control.value) return null;
+          const password = this.resetForm?.get('password')?.value;
+          return password === control.value ? null : { passwordMismatch: true };
+        }
+      ]],
+    });
+
+    this.resetForm.get('password')?.valueChanges.subscribe(() => {
+      this.resetForm.get('password_confirmation')?.updateValueAndValidity();
+    });
   }
 
   ngOnInit() {
@@ -96,13 +101,6 @@ export class ResetPasswordComponent implements OnInit {
 
   get confirmPasswordHasValue() {
     return this.passwordConfirmation?.value?.length > 0;
-  }
-
-  checkPasswords(group: FormGroup) {
-    const password = group.get('password')?.value;
-    const confirmPassword = group.get('password_confirmation')?.value;
-
-    return password === confirmPassword ? null : { passwordMismatch: true };
   }
 
   togglePasswordVisibility() {
