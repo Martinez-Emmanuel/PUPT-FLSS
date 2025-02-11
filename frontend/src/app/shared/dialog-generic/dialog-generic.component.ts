@@ -19,20 +19,15 @@ export interface DialogData {
 }
 
 @Component({
-    selector: 'app-dialog-generic',
-    imports: [
-        CommonModule,
-        MatDialogModule,
-        MatButtonModule,
-        LoadingComponent,
-    ],
-    templateUrl: './dialog-generic.component.html',
-    styleUrls: ['./dialog-generic.component.scss']
+  selector: 'app-dialog-generic',
+  imports: [CommonModule, MatDialogModule, MatButtonModule, LoadingComponent],
+  templateUrl: './dialog-generic.component.html',
+  styleUrls: ['./dialog-generic.component.scss'],
 })
 export class DialogGenericComponent {
   constructor(
     public dialogRef: MatDialogRef<DialogGenericComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: DialogData
+    @Inject(MAT_DIALOG_DATA) public data: DialogData,
   ) {}
 
   onNoClick(): void {
@@ -40,7 +35,6 @@ export class DialogGenericComponent {
   }
 
   onActionClick(action: string | undefined): void {
-    console.log('Action clicked:', action);
     this.dialogRef.close(action);
   }
 }

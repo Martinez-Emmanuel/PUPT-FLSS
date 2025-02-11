@@ -53,6 +53,7 @@
       width: 3.5rem;
       height: auto;
       flex-shrink: 0;
+      user-select: none;
     }
 
     .header-text {
@@ -219,6 +220,7 @@
       cursor: pointer;
       transition: all 0.3s ease;
       border: 3px solid var(--neutral-border);
+      user-select: none;
 
       &:hover {
         border-color: var(--neutral-base);
@@ -417,6 +419,7 @@
       height: 3rem;
       border-radius: 50%;
       border: 2px solid var(--neutral-border);
+      user-select: none;
     }
 
     .mobile-account-info {

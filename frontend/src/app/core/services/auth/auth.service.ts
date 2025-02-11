@@ -219,6 +219,21 @@ export class AuthService {
   }
 
   // ==============================
+  // Password management methods
+  // ==============================
+  changePassword(
+    currentPassword: string,
+    newPassword: string,
+    newPasswordConfirmation: string,
+  ): Observable<any> {
+    return this.http.post(`${this.baseUrl}/change-password`, {
+      current_password: currentPassword,
+      password: newPassword,
+      password_confirmation: newPasswordConfirmation,
+    });
+  }
+
+  // ==============================
   // Helper methods
   // ==============================
   private generateRandomState(): string {

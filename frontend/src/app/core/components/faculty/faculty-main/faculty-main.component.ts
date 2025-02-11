@@ -12,6 +12,7 @@ import { Subject, fromEvent } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
+import { DialogChangePasswordComponent } from '../../../../shared/dialog-change-password/dialog-change-password.component';
 
 import { ThemeService } from '../../../services/theme/theme.service';
 import { AuthService } from '../../../services/auth/auth.service';
@@ -116,6 +117,8 @@ export class FacultyMainComponent implements OnInit, AfterViewInit, OnDestroy {
           this.toggleTheme();
         } else if (result === 'logout') {
           this.logout();
+        } else if (result === 'change-password') {
+          this.openChangePasswordDialog();
         }
       });
     } else {
@@ -262,7 +265,6 @@ export class FacultyMainComponent implements OnInit, AfterViewInit, OnDestroy {
     const confirmDialogRef = this.dialog.open(DialogGenericComponent, {
       data: dialogConfig,
       disableClose: true,
-      panelClass: this.DIALOG_CLASSES.base,
     });
 
     confirmDialogRef.afterClosed().subscribe((result) => {
@@ -303,6 +305,34 @@ export class FacultyMainComponent implements OnInit, AfterViewInit, OnDestroy {
       this.toggleTheme();
     } else if (action === 'logout') {
       this.logout();
+    } else if (action === 'change-password') {
+      this.openChangePasswordDialog();
     }
+  }
+
+  openChangePasswordDialog() {
+    if (this.bottomSheetRef) {
+      this.bottomSheetRef.dismiss();
+    }
+
+    const dialogRef = this.dialog.open(DialogChangePasswordComponent, {
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result?.message) {
+        const successDialogConfig: DialogData = {
+          title: 'Success!',
+          content: result.message,
+          showProgressBar: false,
+          actionText: 'Close',
+        };
+
+        this.dialog.open(DialogGenericComponent, {
+          data: successDialogConfig,
+          disableClose: true,
+        });
+      }
+    });
   }
 }

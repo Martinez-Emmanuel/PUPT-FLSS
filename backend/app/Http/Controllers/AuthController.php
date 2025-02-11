@@ -88,4 +88,30 @@ class AuthController extends Controller
 
         return response()->json(['message' => 'Unauthenticated.'], 401);
     }
+
+    public function changePassword(Request $request)
+    {
+        $request->validate([
+            'current_password' => 'required|string|min:8|max:128',
+            'password'         => 'required|string|min:8|max:128|confirmed|different:current_password',
+        ]);
+
+        $user = $request->user();
+
+        // Verify current password
+        if (! Hash::check($request->current_password, $user->password)) {
+            return response()->json([
+                'message' => 'Current password is incorrect.',
+                'errors'  => ['current_password' => ['The provided password does not match our records.']],
+            ], 422);
+        }
+
+        // Update password
+        $user->password = $request->password;
+        $user->save();
+
+        return response()->json([
+            'message' => 'Your password has been changed successfully.',
+        ]);
+    }
 }

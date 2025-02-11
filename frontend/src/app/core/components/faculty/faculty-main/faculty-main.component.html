@@ -75,6 +75,13 @@
       </div>
       <div
         matRipple
+        class="bottom-sheet-item"
+        (click)="onBottomSheetAction('change-password')">
+        <span mat-symbol="key"></span>
+        Change Password
+      </div>
+      <div
+        matRipple
         matRippleColor="#a932321a"
         class="bottom-sheet-item logout"
         (click)="onBottomSheetAction('logout')">
@@ -143,6 +150,13 @@
             (themeService.isDarkTheme$ | async) ? 'light_mode' : 'dark_mode'
           "></span>
         Switch Theme
+      </button>
+      <button
+        matRipple
+        class="mobile-dropdown-item"
+        (click)="openChangePasswordDialog()">
+        <span mat-symbol="key"></span>
+        Change Password
       </button>
       <button
         matRipple
