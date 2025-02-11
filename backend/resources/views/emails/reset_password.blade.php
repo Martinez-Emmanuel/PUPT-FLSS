@@ -129,7 +129,7 @@
         </div>
 
         <div class="content">
-            <p class="greeting"><b>Dear {{ $faculty_name }},</b></p>
+            <p class="greeting"><b>Dear {{ $user_name }},</b></p>
 
             <p>We received a request to reset your password for your PUPT Faculty Loading and Scheduling System account. To proceed with the password reset, please click the button below:</p>
 

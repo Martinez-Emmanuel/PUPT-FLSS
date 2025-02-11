@@ -119,6 +119,11 @@ export class DialogAdminLoginComponent implements OnInit {
     this.dialogRef.close();
   }
 
+  onForgotPassword(): void {
+    this.dialogRef.close();
+    this.router.navigate(['/reset-password']);
+  }
+
   private showErrorSnackbar(message: string): void {
     this.snackBar.open(message, 'Close', {
       duration: 5000,

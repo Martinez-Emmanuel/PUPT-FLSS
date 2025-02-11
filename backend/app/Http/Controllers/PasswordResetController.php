@@ -16,14 +16,13 @@ class PasswordResetController extends Controller
     {
         $request->validate(['email' => 'required|email']);
 
-        // Check if user exists and is a faculty member
         $user = User::where('email', $request->email)
-            ->where('role', 'faculty')
+            ->whereIn('role', ['faculty', 'admin', 'superadmin'])
             ->first();
 
         if (! $user) {
             return response()->json([
-                'message' => 'If a faculty account exists with this email, you will receive a password reset link shortly.',
+                'message' => 'If an account exists in PUPT-FLSS with this email, you will receive a password reset link shortly.',
             ], 200);
         }
 
@@ -32,15 +31,15 @@ class PasswordResetController extends Controller
 
         // Send email with reset link
         Mail::send('emails.reset_password', [
-            'faculty_name' => $user->first_name . ' ' . $user->last_name,
-            'reset_link'   => config('app.frontend_url') . "/reset-password/{$token}?email=" . urlencode($user->email),
+            'user_name'  => $user->first_name . ' ' . $user->last_name,
+            'reset_link' => config('app.frontend_url') . "/reset-password/{$token}?email=" . urlencode($user->email),
         ], function ($message) use ($user) {
             $message->to($user->email)
                 ->subject('Reset Your PUPT-FLSS Password');
         });
 
         return response()->json([
-            'message' => 'If a faculty account exists with this email, you will receive a password reset link shortly.',
+            'message' => 'If an account exists in PUPT-FLSS with this email, you will receive a password reset link shortly.',
         ], 200);
     }
 
@@ -55,9 +54,8 @@ class PasswordResetController extends Controller
             'password' => 'required|min:8|max:128|confirmed',
         ]);
 
-        // Check if user exists and is a faculty member
         $user = User::where('email', $request->email)
-            ->where('role', 'faculty')
+            ->whereIn('role', ['faculty', 'admin', 'superadmin'])
             ->first();
 
         if (! $user) {
@@ -91,7 +89,7 @@ class PasswordResetController extends Controller
         ]);
 
         $user = User::where('email', $request->email)
-            ->where('role', 'faculty')
+            ->whereIn('role', ['faculty', 'admin', 'superadmin'])
             ->first();
 
         if (! $user || ! Password::tokenExists($user, $request->token)) {
