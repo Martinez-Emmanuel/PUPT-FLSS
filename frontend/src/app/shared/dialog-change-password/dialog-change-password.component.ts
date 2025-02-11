@@ -14,7 +14,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 
 import { AuthService } from '../../core/services/auth/auth.service';
-import { fadeAnimation } from '../../core/animations/animations';
 
 @Component({
   selector: 'app-dialog-change-password',
@@ -31,7 +30,6 @@ import { fadeAnimation } from '../../core/animations/animations';
   ],
   templateUrl: './dialog-change-password.component.html',
   styleUrls: ['./dialog-change-password.component.scss'],
-  animations: [fadeAnimation],
 })
 export class DialogChangePasswordComponent implements OnInit, OnDestroy {
   passwordForm!: FormGroup;

@@ -90,7 +90,7 @@
                 (themeService.isDarkTheme$ | async) ? 'dark-icon' : 'light-icon'
               ">
               {{
-                (themeService.isDarkTheme$ | async) ? "Dark Mode" : "Light Mode"
+                (themeService.isDarkTheme$ | async) ? 'Dark Mode' : 'Light Mode'
               }}
             </span>
           </a>
@@ -100,6 +100,12 @@
         <a mat-list-item class="list-item" (click)="logout()">
           <span mat-symbol="door_open" matListItemIcon></span>
           <span matListItemTitle>Logout</span>
+        </a>
+
+        <!-- Change Password -->
+        <a mat-list-item class="list-item" (click)="openChangePasswordDialog()">
+          <span mat-symbol="lock" matListItemIcon></span>
+          <span matListItemTitle>Change Password</span>
         </a>
 
         <!-- Admin Account Info -->
@@ -180,6 +186,15 @@
               matRipple
               (click)="logout()">
               <span mat-symbol="door_open"></span>
+            </div>
+
+            <!-- Change Password Button -->
+            <div
+              class="panel-button change-password"
+              matTooltip="Change Password"
+              matRipple
+              (click)="openChangePasswordDialog()">
+              <span mat-symbol="lock"></span>
             </div>
           </div>
 

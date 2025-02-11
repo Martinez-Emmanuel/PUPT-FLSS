@@ -17,11 +17,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { DialogGenericComponent, DialogData } from '../../../../shared/dialog-generic/dialog-generic.component';
-import { slideInAnimation, fadeAnimation } from '../../../animations/animations';
+import { DialogChangePasswordComponent } from '../../../../shared/dialog-change-password/dialog-change-password.component';
 
 import { AuthService } from '../../../services/auth/auth.service';
 import { ThemeService } from '../../../services/theme/theme.service';
 import { CookieService } from 'ngx-cookie-service';
+
+import { slideInAnimation, fadeAnimation } from '../../../animations/animations';
 
 @Component({
   selector: 'app-admin-main',
@@ -149,6 +151,28 @@ export class AdminMainComponent implements OnInit {
         console.error('Logout failed', error);
         loadingDialogRef.close();
       },
+    });
+  }
+
+  openChangePasswordDialog() {
+    const dialogRef = this.dialog.open(DialogChangePasswordComponent, {
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result?.message) {
+        const successDialogConfig: DialogData = {
+          title: 'Success!',
+          content: result.message,
+          showProgressBar: false,
+          actionText: 'Close',
+        };
+
+        this.dialog.open(DialogGenericComponent, {
+          data: successDialogConfig,
+          disableClose: true,
+        });
+      }
     });
   }
 }
