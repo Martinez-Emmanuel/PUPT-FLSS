@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
+import { Router } from '@angular/router';
 
 import { Subject, takeUntil } from 'rxjs';
 
@@ -44,6 +45,7 @@ export class DialogChangePasswordComponent implements OnInit, OnDestroy {
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<DialogChangePasswordComponent>,
     private authService: AuthService,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -160,5 +162,10 @@ export class DialogChangePasswordComponent implements OnInit, OnDestroy {
 
   onCancel(): void {
     this.dialogRef.close();
+  }
+
+  onForgotPassword(): void {
+    this.dialogRef.close();
+    this.router.navigate(['/reset-password']);
   }
 }

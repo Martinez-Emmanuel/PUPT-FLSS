@@ -54,7 +54,6 @@ export const routes: Routes = [
       import(
         './auth/request-password-reset/request-password-reset.component'
       ).then((m) => m.RequestPasswordResetComponent),
-    canActivate: [UnauthGuard],
     data: { pageTitle: 'Reset Password' },
   },
   {
@@ -64,7 +63,6 @@ export const routes: Routes = [
         (m) => m.ResetPasswordComponent,
       ),
 
-    canActivate: [UnauthGuard],
     data: { animation: 'reset-password', pageTitle: 'Reset Password' },
   },
   ...authenticatedRoutes.map((route) => ({
