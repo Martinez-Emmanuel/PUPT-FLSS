@@ -10,7 +10,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSymbolDirective } from '../../../../imports/mat-symbol.directive';
 
-import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
+import { TableDialogComponent, DialogConfig, DialogFieldConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
 import { InputField, TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
@@ -95,7 +95,7 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
     private facultyService: FacultyService,
     private hrisHealthService: HrisHealthService,
     private router: Router,
-    private facultyTypeService: FacultyTypeService
+    private facultyTypeService: FacultyTypeService,
   ) {}
 
   ngOnInit() {
@@ -112,14 +112,14 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
 
   ngAfterViewInit() {
     const facultyTypeColumn = this.columns.find(
-      (col) => col.key === 'faculty_type'
+      (col) => col.key === 'faculty_type',
     );
     if (facultyTypeColumn) {
       facultyTypeColumn.template = this.facultyTypeTemplate;
     }
 
     const facultyUnitsColumn = this.columns.find(
-      (col) => col.key === 'faculty_units'
+      (col) => col.key === 'faculty_units',
     );
     if (facultyUnitsColumn) {
       facultyUnitsColumn.template = this.facultyUnitsTemplate;
@@ -159,7 +159,7 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
             (faculty.faculty?.faculty_type?.additional_units ?? 0)
           )
             .toString()
-            .includes(lowerSearch)
+            .includes(lowerSearch),
       );
     }
     this.cdr.markForCheck();
@@ -185,13 +185,13 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
           this.snackBar.open(
             'Error fetching faculty. Please try again.',
             'Close',
-            { duration: 3000 }
+            { duration: 3000 },
           );
           this.isLoading = false;
           this.cdr.markForCheck();
           return of([]);
         }),
-        takeUntil(this.destroy$)
+        takeUntil(this.destroy$),
       )
       .subscribe((faculty) => {
         console.log('Fetched faculty:', faculty); // Debug log
@@ -208,99 +208,107 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
    * @returns DialogConfig object.
    */
   private getDialogConfig(faculty?: Faculty): DialogConfig {
+    const baseFields: DialogFieldConfig[] = [
+      {
+        label: 'Faculty Code',
+        formControlName: 'code',
+        type: 'text',
+        maxLength: 12,
+        required: true,
+        disabled: !!faculty,
+      },
+      {
+        label: 'Last Name',
+        formControlName: 'last_name',
+        type: 'text',
+        maxLength: 50,
+        required: true,
+      },
+      {
+        label: 'First Name',
+        formControlName: 'first_name',
+        type: 'text',
+        maxLength: 50,
+        required: true,
+      },
+      {
+        label: 'Middle Name',
+        formControlName: 'middle_name',
+        type: 'text',
+        maxLength: 50,
+        required: false,
+      },
+      {
+        label: 'Suffix Name',
+        formControlName: 'suffix_name',
+        type: 'text',
+        maxLength: 50,
+        required: false,
+      },
+      {
+        label: 'Email',
+        formControlName: 'email',
+        type: 'text',
+        maxLength: 100,
+        required: true,
+      },
+      {
+        label: 'Type',
+        formControlName: 'faculty_type_id',
+        type: 'select',
+        options: [
+          {
+            value: 'configure',
+            label: 'Configure faculty types...',
+            metadata: {
+              isConfig: true,
+              icon: 'settings',
+            },
+          },
+          ...this.facultyTypes.map((type) => ({
+            value: type.faculty_type_id,
+            label: type.faculty_type,
+          })),
+        ],
+        required: true,
+      },
+      {
+        label: 'Status',
+        formControlName: 'status',
+        type: 'select',
+        options: this.facultyStatuses.map((status) => ({
+          value: status,
+          label: status,
+        })),
+        required: true,
+      },
+    ];
+
+    // Add password fields only when creating a new faculty
+    const passwordFields: DialogFieldConfig[] = !faculty
+      ? [
+          {
+            label: 'Password',
+            formControlName: 'password',
+            type: 'text',
+            maxLength: 100,
+            required: true,
+          },
+          {
+            label: 'Confirm Password',
+            formControlName: 'confirmPassword',
+            type: 'text',
+            maxLength: 100,
+            required: true,
+            confirmPassword: true,
+          },
+        ]
+      : [];
+
     return {
       title: faculty ? 'Edit Faculty' : 'Add Faculty',
       isEdit: !!faculty,
-      fields: [
-        {
-          label: 'Faculty Code',
-          formControlName: 'code',
-          type: 'text',
-          maxLength: 12,
-          required: true,
-          disabled: !!faculty,
-        },
-        {
-          label: 'Last Name',
-          formControlName: 'last_name',
-          type: 'text',
-          maxLength: 50,
-          required: true,
-        },
-        {
-          label: 'First Name',
-          formControlName: 'first_name',
-          type: 'text',
-          maxLength: 50,
-          required: true,
-        },
-        {
-          label: 'Middle Name',
-          formControlName: 'middle_name',
-          type: 'text',
-          maxLength: 50,
-          required: false,
-        },
-        {
-          label: 'Suffix Name',
-          formControlName: 'suffix_name',
-          type: 'text',
-          maxLength: 50,
-          required: false,
-        },
-        {
-          label: 'Password',
-          formControlName: 'password',
-          type: 'text',
-          maxLength: 100,
-          required: false,
-        },
-        {
-          label: 'Confirm Password',
-          formControlName: 'confirmPassword',
-          type: 'text',
-          maxLength: 100,
-          required: false,
-          confirmPassword: true,
-        },
-        {
-          label: 'Email',
-          formControlName: 'email',
-          type: 'text',
-          maxLength: 100,
-          required: true,
-        },
-        {
-          label: 'Type',
-          formControlName: 'faculty_type_id',
-          type: 'select',
-          options: [
-            {
-              value: 'configure',
-              label: 'Configure faculty types...',
-              metadata: {
-                isConfig: true,
-                icon: 'settings',
-              },
-            },
-            ...this.facultyTypes.map((type) => ({
-              value: type.faculty_type_id,
-              label: type.faculty_type,
-            })),
-          ],
-          required: true,
-        },
-        {
-          label: 'Status',
-          formControlName: 'status',
-          type: 'select',
-          options: this.facultyStatuses.map((status) => ({
-            value: status,
-            label: status,
-          })),
-          required: true,
-        },
-      ],
+      fields: [...baseFields, ...passwordFields],
       initialValue: faculty
         ? {
             code: faculty.code,
@@ -311,8 +319,6 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
             email: faculty.email,
             faculty_type_id: faculty.faculty?.faculty_type_id,
             status: faculty.status,
-            password: '********',
-            confirmPassword: '********',
           }
         : undefined,
     };
@@ -352,7 +358,7 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
       this.snackBar.open(
         'Faculty details can only be added in HRIS when the system is online. Please add faculty in HRIS.',
         'Close',
-        { duration: 5000 }
+        { duration: 5000 },
       );
       return;
     }
@@ -376,10 +382,10 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
               this.snackBar.open(
                 'Error adding faculty. Please try again.',
                 'Close',
-                { duration: 3000 }
+                { duration: 3000 },
               );
               return of(null);
-            })
+            }),
           )
           .subscribe((newFaculty) => {
             if (newFaculty) {
@@ -402,7 +408,7 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
       this.snackBar.open(
         'Faculty details can only be modified in HRIS when the system is online. Please make changes in HRIS.',
         'Close',
-        { duration: 5000 }
+        { duration: 5000 },
       );
       return;
     }
@@ -455,10 +461,10 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
               this.snackBar.open(
                 'Error updating faculty. Please try again.',
                 'Close',
-                { duration: 3000 }
+                { duration: 3000 },
               );
               return of(null);
-            })
+            }),
           )
           .subscribe((updatedFacultyResponse) => {
             if (updatedFacultyResponse) {
@@ -496,7 +502,7 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
       .checkHealth()
       .pipe(
         takeUntil(this.destroy$),
-        catchError(() => of(false))
+        catchError(() => of(false)),
       )
       .subscribe((isHealthy) => {
         this.isHrisHealthy = isHealthy;
@@ -521,7 +527,7 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
   async loadFacultyTypes(): Promise<void> {
     try {
       this.facultyTypes = await firstValueFrom(
-        this.facultyTypeService.getFacultyTypes()
+        this.facultyTypeService.getFacultyTypes(),
       );
     } catch (error) {
       this.snackBar.open('Error loading faculty types', 'Close', {
