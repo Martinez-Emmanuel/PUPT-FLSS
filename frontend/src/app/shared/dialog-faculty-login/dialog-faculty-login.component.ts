@@ -145,4 +145,9 @@ export class DialogFacultyLoginComponent implements OnInit {
       panelClass: ['error-snackbar'],
     });
   }
+
+  public onForgotPassword(): void {
+    this.dialogRef.close();
+    this.router.navigate(['/reset-password']);
+  }
 }

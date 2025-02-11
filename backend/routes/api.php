@@ -22,6 +22,8 @@ use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\YearLevelController;
+use App\Http\Controllers\PasswordResetController;
+
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -36,6 +38,10 @@ Route::middleware('custom.ratelimit:login')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 });
+
+Route::post('/password/email', [PasswordResetController::class, 'sendResetLinkEmail']);
+Route::post('/password/reset', [PasswordResetController::class, 'reset']);
+Route::post('/password/verify-token', [PasswordResetController::class, 'verifyToken']);
 
 /*
 |-----------------------------

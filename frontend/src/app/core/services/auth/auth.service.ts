@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 
 import { Observable } from 'rxjs';
 import { map, tap, switchMap, finalize, catchError } from 'rxjs/operators';
-import { throwError } from 'rxjs';
 
 import { CookieService } from 'ngx-cookie-service';
 
@@ -45,7 +44,7 @@ export class AuthService {
     private http: HttpClient,
     private cookieService: CookieService,
     private router: Router,
-    private hrisHealthService: HrisHealthService
+    private hrisHealthService: HrisHealthService,
   ) {}
 
   // ==============================
@@ -119,7 +118,7 @@ export class AuthService {
 
           return this.processFacultyData(
             response.faculty_data,
-            response.access_token
+            response.access_token,
           ).pipe(
             tap((processResponse) => {
               const expiryDate = new Date(processResponse.expires_at);
@@ -127,7 +126,7 @@ export class AuthService {
               // Store Sanctum token
               this.setSanctumToken(
                 processResponse.token,
-                processResponse.expires_at
+                processResponse.expires_at,
               );
 
               const userInfo = {
@@ -144,9 +143,9 @@ export class AuthService {
 
               this.setUserInfo(userInfo, expiryDate.toISOString());
             }),
-            map(() => response)
+            map(() => response),
           );
-        })
+        }),
       );
   }
 
@@ -155,7 +154,7 @@ export class AuthService {
     return this.http.post(
       `${this.hrisUrl}/api/oauth/validate`,
       {},
-      { headers }
+      { headers },
     );
   }
 
@@ -172,7 +171,7 @@ export class AuthService {
   flssLogin(
     email: string,
     password: string,
-    allowedRoles: string[]
+    allowedRoles: string[],
   ): Observable<any> {
     const loginData = {
       email: email,
@@ -187,8 +186,36 @@ export class AuthService {
       finalize(() => {
         this.clearCookies();
         this.router.navigate(['/login']);
-      })
+      }),
     );
+  }
+
+  // ==============================
+  // Password Reset methods
+  // ==============================
+  sendPasswordResetEmail(email: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/password/email`, { email });
+  }
+
+  verifyResetToken(token: string, email: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/password/verify-token`, {
+      token,
+      email,
+    });
+  }
+
+  resetPassword(
+    token: string,
+    email: string,
+    password: string,
+    password_confirmation: string,
+  ): Observable<any> {
+    return this.http.post(`${this.baseUrl}/password/reset`, {
+      token,
+      email,
+      password,
+      password_confirmation,
+    });
   }
 
   // ==============================
@@ -198,7 +225,7 @@ export class AuthService {
     const array = new Uint32Array(8);
     crypto.getRandomValues(array);
     return Array.from(array, (dec) => dec.toString(16).padStart(8, '0')).join(
-      ''
+      '',
     );
   }
 
@@ -242,7 +269,7 @@ export class AuthService {
       '/',
       '',
       true,
-      'Strict'
+      'Strict',
     );
     this.cookieService.set(
       'user_name',
@@ -251,7 +278,7 @@ export class AuthService {
       '/',
       '',
       true,
-      'Strict'
+      'Strict',
     );
     this.cookieService.set(
       'user_email',
@@ -260,7 +287,7 @@ export class AuthService {
       '/',
       '',
       true,
-      'Strict'
+      'Strict',
     );
     this.cookieService.set(
       'user_role',
@@ -269,7 +296,7 @@ export class AuthService {
       '/',
       '',
       true,
-      'Strict'
+      'Strict',
     );
 
     if (user.faculty) {
@@ -280,7 +307,7 @@ export class AuthService {
         '/',
         '',
         true,
-        'Strict'
+        'Strict',
       );
       this.cookieService.set(
         'faculty_type',
@@ -289,7 +316,7 @@ export class AuthService {
         '/',
         '',
         true,
-        'Strict'
+        'Strict',
       );
       this.cookieService.set(
         'faculty_units',
@@ -298,7 +325,7 @@ export class AuthService {
         '/',
         '',
         true,
-        'Strict'
+        'Strict',
       );
     }
   }
@@ -330,13 +357,13 @@ export class AuthService {
   handleLogin(
     email: string,
     password: string,
-    allowedRoles: string[]
+    allowedRoles: string[],
   ): Observable<LoginResponse> {
     return this.flssLogin(email, password, allowedRoles).pipe(
       catchError((error) => {
         const errorMessage = this.handleLoginError(error);
         throw { message: errorMessage, status: error.status };
-      })
+      }),
     );
   }
 
