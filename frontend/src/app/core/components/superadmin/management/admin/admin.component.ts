@@ -7,7 +7,7 @@ import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
-import { TableDialogComponent, DialogConfig } from '../../../../../shared/table-dialog/table-dialog.component';
+import { TableDialogComponent, DialogConfig, DialogFieldConfig } from '../../../../../shared/table-dialog/table-dialog.component';
 import { TableGenericComponent } from '../../../../../shared/table-generic/table-generic.component';
 import { InputField, TableHeaderComponent } from '../../../../../shared/table-header/table-header.component';
 import { LoadingComponent } from '../../../../../shared/loading/loading.component';
@@ -46,7 +46,6 @@ export class AdminComponent implements OnInit, OnDestroy {
     { key: 'code', label: 'Admin Code' },
     { key: 'fullName', label: 'Name' },
     { key: 'email', label: 'Email' },
-    { key: 'passwordDisplay', label: 'Password' },
     { key: 'status', label: 'Status' },
   ];
 
@@ -55,7 +54,6 @@ export class AdminComponent implements OnInit, OnDestroy {
     'code',
     'fullName',
     'email',
-    'passwordDisplay',
     'status',
     'action',
   ];
@@ -72,7 +70,7 @@ export class AdminComponent implements OnInit, OnDestroy {
     private cdr: ChangeDetectorRef,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private adminService: AdminService
+    private adminService: AdminService,
   ) {}
 
   ngOnInit() {
@@ -97,7 +95,6 @@ export class AdminComponent implements OnInit, OnDestroy {
             fullName: `${admin.last_name}, ${admin.first_name} ${
               admin.middle_name ?? ''
             } ${admin.suffix_name ?? ''}`,
-            passwordDisplay: '••••••••',
           }));
           this.filteredAdmins = [...this.admins];
           this.isLoading = false;
@@ -109,7 +106,7 @@ export class AdminComponent implements OnInit, OnDestroy {
             'Close',
             {
               duration: 3000,
-            }
+            },
           );
           this.isLoading = false;
           this.cdr.markForCheck();
@@ -136,7 +133,7 @@ export class AdminComponent implements OnInit, OnDestroy {
           admin.code.toLowerCase().includes(lowerSearch) ||
           admin.fullName.toLowerCase().includes(lowerSearch) ||
           admin.role.toLowerCase().includes(lowerSearch) ||
-          admin.status.toLowerCase().includes(lowerSearch)
+          admin.status.toLowerCase().includes(lowerSearch),
       );
     }
     this.cdr.markForCheck();
@@ -149,76 +146,88 @@ export class AdminComponent implements OnInit, OnDestroy {
   }
 
   private getDialogConfig(admin?: User): DialogConfig {
+    const baseFields: DialogFieldConfig[] = [
+      {
+        label: 'Admin Code',
+        formControlName: 'code',
+        type: 'text',
+        maxLength: 20,
+        required: true,
+        disabled: true,
+      },
+      {
+        label: 'Last Name',
+        formControlName: 'last_name',
+        type: 'text',
+        maxLength: 50,
+        required: true,
+      },
+      {
+        label: 'First Name',
+        formControlName: 'first_name',
+        type: 'text',
+        maxLength: 50,
+        required: true,
+      },
+      {
+        label: 'Middle Name',
+        formControlName: 'middle_name',
+        type: 'text',
+        maxLength: 50,
+      },
+      {
+        label: 'Suffix',
+        formControlName: 'suffix_name',
+        type: 'text',
+        maxLength: 50,
+      },
+      {
+        label: 'Email',
+        formControlName: 'email',
+        type: 'text',
+        maxLength: 100,
+        required: true,
+      },
+      {
+        label: 'Status',
+        formControlName: 'status',
+        type: 'select',
+        options: this.adminStatuses,
+        required: true,
+      },
+    ];
+
+    // Add password fields only when creating a new admin
+    const passwordFields: DialogFieldConfig[] = !admin
+      ? [
+          {
+            label: 'Password',
+            formControlName: 'password',
+            type: 'text',
+            maxLength: 100,
+            required: true,
+          },
+          {
+            label: 'Confirm Password',
+            formControlName: 'confirmPassword',
+            type: 'text',
+            maxLength: 100,
+            required: true,
+            confirmPassword: true,
+          },
+        ]
+      : [];
+
     return {
       title: 'Admin',
       isEdit: !!admin,
-      fields: [
-        {
-          label: 'Admin Code',
-          formControlName: 'code',
-          type: 'text',
-          maxLength: 20,
-          required: true,
-          disabled: true,
-        },
-        {
-          label: 'Last Name',
-          formControlName: 'last_name',
-          type: 'text',
-          maxLength: 50,
-          required: true,
-        },
-        {
-          label: 'First Name',
-          formControlName: 'first_name',
-          type: 'text',
-          maxLength: 50,
-          required: true,
-        },
-        {
-          label: 'Middle Name',
-          formControlName: 'middle_name',
-          type: 'text',
-          maxLength: 50,
-        },
-        {
-          label: 'Suffix',
-          formControlName: 'suffix_name',
-          type: 'text',
-          maxLength: 50,
-        },
-        {
-          label: 'Email',
-          formControlName: 'email',
-          type: 'text',
-          maxLength: 100,
-          required: true,
-        },
-        {
-          label: 'Password',
-          formControlName: 'password',
-          type: 'text',
-          maxLength: 100,
-          required: !admin,
-        },
-        {
-          label: 'Confirm Password',
-          formControlName: 'confirmPassword',
-          type: 'text',
-          maxLength: 100,
-          required: !admin,
-          confirmPassword: true,
-        },
-        {
-          label: 'Status',
-          formControlName: 'status',
-          type: 'select',
-          options: this.adminStatuses,
-          required: true,
-        },
-      ],
+      fields: [...baseFields, ...passwordFields],
       initialValue: admin
-        ? { ...admin, password: '' }
+        ? {
+            ...admin,
+            password: undefined,
+            confirmPassword: undefined,
+          }
         : { status: 'Active', role: 'admin' },
     };
   }
@@ -246,7 +255,6 @@ export class AdminComponent implements OnInit, OnDestroy {
                   fullName: `${newAdmin.last_name}, ${newAdmin.first_name} ${
                     newAdmin.middle_name ?? ''
                   } ${newAdmin.suffix_name ?? ''}`,
-                  passwordDisplay: '••••••••',
                 };
                 this.admins = [...this.admins, adminWithDisplay];
                 this.filteredAdmins = [...this.admins];
@@ -262,7 +270,7 @@ export class AdminComponent implements OnInit, OnDestroy {
                   'Close',
                   {
                     duration: 3000,
-                  }
+                  },
                 );
                 console.error('Error adding admin:', error);
               },
@@ -276,7 +284,7 @@ export class AdminComponent implements OnInit, OnDestroy {
           'Close',
           {
             duration: 3000,
-          }
+          },
         );
         console.error('Error generating admin code:', error);
       },
@@ -314,11 +322,10 @@ export class AdminComponent implements OnInit, OnDestroy {
           ...existingAdmin,
           ...updatedAdminResponse,
           fullName: this.formatAdminName(updatedAdminResponse),
-          passwordDisplay: '••••••••',
         };
 
         this.admins = this.admins.map((admin) =>
-          admin.id === id ? updatedAdminWithDisplay : admin
+          admin.id === id ? updatedAdminWithDisplay : admin,
         );
 
         const searchTerm = this.searchControl.value;

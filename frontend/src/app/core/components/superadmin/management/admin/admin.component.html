@@ -13,8 +13,7 @@
       [showExportButton]="false"
       [inputFields]="headerInputFields"
       (inputChange)="onInputChange($event)"
-      (add)="openAddAdminDialog()"
-    ></app-table-header>
+      (add)="openAddAdminDialog()"></app-table-header>
   </div>
 
   <!-- Admin Management Table -->
@@ -25,8 +24,7 @@
       [displayedColumns]="displayedColumns"
       [showViewButton]="false"
       [showDeleteButton]="false"
-      (edit)="openEditAdminDialog($event)"
-    ></app-table-generic>
+      (edit)="openEditAdminDialog($event)"></app-table-generic>
   </div>
 
   }
