@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Location } from '@angular/common';
 
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -38,6 +39,7 @@ export class RequestPasswordResetComponent {
     private authService: AuthService,
     private router: Router,
     private snackBar: MatSnackBar,
+    private location: Location,
   ) {
     this.resetForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
@@ -76,6 +78,6 @@ export class RequestPasswordResetComponent {
   }
 
   onCancel() {
-    this.router.navigate(['/login']);
+    this.location.back();
   }
 }
