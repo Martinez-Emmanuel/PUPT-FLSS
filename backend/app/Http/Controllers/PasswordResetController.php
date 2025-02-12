@@ -69,7 +69,6 @@ class PasswordResetController extends Controller
 
         $user->password = $request->password;
 
-        $user->setRememberToken(Str::random(60));
         $user->save();
 
         // Delete the token
