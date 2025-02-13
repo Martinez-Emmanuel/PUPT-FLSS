@@ -123,10 +123,10 @@ export class CallbackComponent implements OnInit, OnDestroy {
       });
 
       window.location.href = `${
-        environmentOAuth.hrisFrontendUrl
+        environmentOAuth.fesrFrontendUrl
       }/auth/oauth/consent?${params.toString()}`;
     } else {
-      this.authService.initiateHrisLogin();
+      this.authService.initiateFesrLogin();
     }
   }
 

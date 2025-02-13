@@ -10,7 +10,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { environment } from '../../../../environments/environment.dev';
 import { environmentOAuth } from '../../../../environments/env.auth';
 
-import { HrisHealthService } from '../health/hris-health.service';
+import { FesrHealthService } from '../health/fesr-health.service';
 
 export interface LoginError {
   message: string;
@@ -35,7 +35,7 @@ interface OAuthTokenResponse {
 })
 export class AuthService {
   private baseUrl = environment.apiUrl;
-  private hrisUrl = environmentOAuth.hrisUrl;
+  private fesrUrl = environmentOAuth.fesrUrl;
   private clientId = environmentOAuth.clientId;
   private clientSecret = environmentOAuth.clientSecret;
   private redirectUri = `${environment.appUrl}/auth/callback`;
@@ -44,18 +44,18 @@ export class AuthService {
     private http: HttpClient,
     private cookieService: CookieService,
     private router: Router,
-    private hrisHealthService: HrisHealthService,
+    private fesrHealthService: FesrHealthService,
   ) {}
 
   // ==============================
-  // OAuth-based HRIS auth methods
+  // OAuth-based FESR auth methods
   // ==============================
-  checkHrisHealth(): Observable<boolean> {
-    return this.hrisHealthService.checkHealth();
+  checkFesrHealth(): Observable<boolean> {
+    return this.fesrHealthService.checkHealth();
   }
 
   // Initiate OAuth flow
-  initiateHrisLogin(): void {
+  initiateFesrLogin(): void {
     const state = this.generateRandomState();
     console.log('Generated state:', state);
 
@@ -70,7 +70,7 @@ export class AuthService {
     });
 
     window.location.href = `${
-      environmentOAuth.hrisFrontendUrl
+      environmentOAuth.fesrFrontendUrl
     }/auth/oauth?${params.toString()}`;
   }
 
@@ -103,7 +103,7 @@ export class AuthService {
     };
 
     return this.http
-      .post<OAuthTokenResponse>(`${this.hrisUrl}/api/oauth/token`, tokenRequest)
+      .post<OAuthTokenResponse>(`${this.fesrUrl}/api/oauth/token`, tokenRequest)
       .pipe(
         switchMap((response) => {
           if (!response.access_token) {
@@ -149,19 +149,19 @@ export class AuthService {
       );
   }
 
-  validateHrisToken(token: string): Observable<any> {
+  validateFesrToken(token: string): Observable<any> {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
     return this.http.post(
-      `${this.hrisUrl}/api/oauth/validate`,
+      `${this.fesrUrl}/api/oauth/validate`,
       {},
       { headers },
     );
   }
 
-  processFacultyData(facultyData: any, hrisToken: string): Observable<any> {
+  processFacultyData(facultyData: any, fesrToken: string): Observable<any> {
     return this.http.post(`${this.baseUrl}/oauth/process-faculty`, {
       faculty_data: facultyData,
-      hris_token: hrisToken,
+      fesr_token: fesrToken,
     });
   }
 
@@ -251,12 +251,12 @@ export class AuthService {
     return this.cookieService.get('token');
   }
 
-  private setToken(hrisToken: string, expiresIn: number): void {
+  private setToken(fesrToken: string, expiresIn: number): void {
     const expiryDate = new Date();
     expiryDate.setSeconds(expiryDate.getSeconds() + expiresIn);
 
-    // Store HRIS token separately
-    this.cookieService.set('hris_token', hrisToken, {
+    // Store FESR token separately
+    this.cookieService.set('fesr_token', fesrToken, {
       expires: expiryDate,
       path: '/',
       sameSite: 'Lax',
@@ -348,7 +348,7 @@ export class AuthService {
   clearCookies(): void {
     const cookiesToClear = [
       'token',
-      'hris_token',
+      'fesr_token',
       'oauth_state',
       'user_id',
       'user_name',

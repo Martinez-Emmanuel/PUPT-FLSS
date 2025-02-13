@@ -106,11 +106,11 @@ CREATE TABLE `faculty` (
   `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT,
   `user_id` bigint UNSIGNED NOT NULL,
   `faculty_type_id` bigint UNSIGNED NOT NULL,
-  `hris_user_id` bigint UNSIGNED DEFAULT NULL,
+  `fesr_user_id` bigint UNSIGNED DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `faculty_hris_user_id_unique` (`hris_user_id`),
+  UNIQUE KEY `faculty_fesr_user_id_unique` (`fesr_user_id`),
   KEY `faculty_user_id_foreign` (`user_id`),
   CONSTRAINT `faculty_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `faculty_faculty_type_id_foreign` FOREIGN KEY (`faculty_type_id`) REFERENCES `faculty_type` (`faculty_type_id`) ON DELETE RESTRICT

@@ -18,7 +18,7 @@ import { slideTextAnimation } from '../../core/animations/animations';
   animations: [slideTextAnimation],
 })
 export class DialogRedirectComponent implements OnInit {
-  checkingHris: boolean;
+  checkingFesr: boolean;
   redirecting: boolean;
 
   constructor(
@@ -26,18 +26,18 @@ export class DialogRedirectComponent implements OnInit {
     private authService: AuthService,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
-    this.checkingHris = data.checkingHris;
+    this.checkingFesr = data.checkingFesr;
     this.redirecting = false;
   }
 
   ngOnInit(): void {
-    if (!this.checkingHris) {
+    if (!this.checkingFesr) {
       this.initiateRedirection();
     }
   }
 
-  updateState(checkingHris: boolean, redirecting: boolean): void {
-    this.checkingHris = checkingHris;
+  updateState(checkingFesr: boolean, redirecting: boolean): void {
+    this.checkingFesr = checkingFesr;
     this.redirecting = redirecting;
     if (this.redirecting) {
       this.initiateRedirection();
@@ -47,12 +47,12 @@ export class DialogRedirectComponent implements OnInit {
   initiateRedirection(): void {
     setTimeout(() => {
       this.dialogRef.close();
-      this.authService.initiateHrisLogin();
+      this.authService.initiateFesrLogin();
     }, 2000);
   }
 
   get currentTextState(): 'connecting' | 'redirecting' {
-    if (this.checkingHris) return 'connecting';
+    if (this.checkingFesr) return 'connecting';
     if (this.redirecting) return 'redirecting';
 
     return 'connecting';

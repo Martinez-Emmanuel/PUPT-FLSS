@@ -38,7 +38,7 @@ export interface Faculty {
     id: number;
     user_id: number;
     faculty_type_id: number;
-    hris_user_id: number | null;
+    fesr_user_id: number | null;
     created_at: string;
     updated_at: string;
     faculty_type: {

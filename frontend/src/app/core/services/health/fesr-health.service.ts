@@ -55,15 +55,15 @@ export interface HealthCheckResponse {
 }
 
 /**
- * Service responsible for monitoring HRIS system health status.
+ * Service responsible for monitoring FESR system health status.
  * Implements caching, retry logic, and comprehensive health evaluation
  * to ensure reliable system status reporting.
  */
 @Injectable({
   providedIn: 'root',
 })
-export class HrisHealthService {
-  private readonly hrisUrl = environmentOAuth.hrisUrl;
+export class FesrHealthService {
+  private readonly fesrUrl = environmentOAuth.fesrUrl;
   private healthCheckCache: { timestamp: number; status: boolean } | null =
     null;
 
@@ -90,31 +90,33 @@ export class HrisHealthService {
       return of(this.healthCheckCache!.status);
     }
 
-    return this.http.get<HealthCheckResponse>(`${this.hrisUrl}/api/health`).pipe(
-      timeout(this.TIMEOUT_MS),
-      map((response) => {
-        const isHealthy = this.evaluateHealthStatus(response);
-        this.cacheHealthStatus(isHealthy);
-        return isHealthy;
-      }),
-      retry({
-        count: this.MAX_RETRIES,
-        delay: (error, retryCount) => {
-          const retryDelay =
-            this.INITIAL_RETRY_DELAY_MS * Math.pow(2, retryCount - 1);
-          console.warn(
-            `Health check retry attempt ${retryCount}/${this.MAX_RETRIES}`,
-            error
-          );
-          return timer(retryDelay);
-        },
-      }),
-      catchError((error) => {
-        console.error('Health check failed after retries:', error);
-        this.cacheHealthStatus(false);
-        return of(false);
-      })
-    );
+    return this.http
+      .get<HealthCheckResponse>(`${this.fesrUrl}/api/health`)
+      .pipe(
+        timeout(this.TIMEOUT_MS),
+        map((response) => {
+          const isHealthy = this.evaluateHealthStatus(response);
+          this.cacheHealthStatus(isHealthy);
+          return isHealthy;
+        }),
+        retry({
+          count: this.MAX_RETRIES,
+          delay: (error, retryCount) => {
+            const retryDelay =
+              this.INITIAL_RETRY_DELAY_MS * Math.pow(2, retryCount - 1);
+            console.warn(
+              `Health check retry attempt ${retryCount}/${this.MAX_RETRIES}`,
+              error,
+            );
+            return timer(retryDelay);
+          },
+        }),
+        catchError((error) => {
+          console.error('Health check failed after retries:', error);
+          this.cacheHealthStatus(false);
+          return of(false);
+        }),
+      );
   }
 
   /**
@@ -161,18 +163,18 @@ export class HrisHealthService {
       return true;
     } else if (isApiHealthy && isDatabaseAcceptable) {
       console.warn(
-        `HRIS system metrics show warnings, but API and Database are acceptable
-        for basic functionality. Proceeding with caution.`
+        `FESR system metrics show warnings, but API and Database are acceptable
+        for basic functionality. Proceeding with caution.`,
       );
       return true;
     } else if (isApiHealthy) {
       console.warn(
-        `HRIS database has issues, but API is healthy.
-        OAuth might work, data transfer might be affected.`
+        `FESR database has issues, but API is healthy.
+        OAuth might work, data transfer might be affected.`,
       );
       return true;
     } else {
-      console.error(`HRIS API is unhealthy. Blocking access.`);
+      console.error(`FESR API is unhealthy. Blocking access.`);
       return false;
     }
   }

@@ -13,6 +13,7 @@ use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\FacultyNotificationController;
 use App\Http\Controllers\FacultyTypeController;
 use App\Http\Controllers\OAuthController;
+use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PreferenceController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\ReportsController;
@@ -22,8 +23,6 @@ use App\Http\Controllers\ScheduleController;
 use App\Http\Controllers\SemesterController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\YearLevelController;
-use App\Http\Controllers\PasswordResetController;
-
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -272,7 +271,7 @@ Route::prefix('external')->group(function () {
 });
 
 /**
- * Human Resource Information System (HRIS)
+ * Faculty Data Management and Evaluation System with Research Repository (FESR)
  */
 Route::post('/oauth/process-faculty', [OAuthController::class, 'processFaculty']);
 Route::post('/webhooks/faculty', [WebhookController::class, 'handleFacultyWebhook']);

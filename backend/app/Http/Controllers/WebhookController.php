@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use App\Jobs\SendFacultyUpdateWebhook;
@@ -13,20 +12,22 @@ use Illuminate\Support\Facades\Log;
 class WebhookController extends Controller
 {
 
-    protected $hrisWebhookUrl;
+    protected $fesrWebhookUrl;
     protected $webhookSecret;
     protected $maxPayloadSize;
 
     public function __construct()
     {
-        $this->hrisWebhookUrl = env('HRIS_WEBHOOK_URL', 'http://localhost:3000/api/webhooks/faculty');
-        $this->webhookSecret = env('WEBHOOK_SECRET');
+        $this->fesrWebhookUrl = env('FESR_WEBHOOK_URL', 'http://localhost:3000/api/webhooks/faculty');
+
+        $this->webhookSecret  = env('WEBHOOK_SECRET');
         $this->maxPayloadSize = 1024 * 1024; // 1MB limit
-        Log::info('WebhookController initialized with URL: ' . $this->hrisWebhookUrl);
+        Log::info('WebhookController initialized with URL: ' . $this->fesrWebhookUrl);
+
     }
 
     /**
-     * Handle incoming webhooks from the HRIS system for faculty updates.
+     * Handle incoming webhooks from the FESR system for faculty updates.
      *
      * @param Request $request The incoming HTTP request containing the webhook payload.
      * @return \Illuminate\Http\JsonResponse A JSON response indicating the status of the webhook processing.
@@ -35,9 +36,9 @@ class WebhookController extends Controller
     public function handleFacultyWebhook(Request $request)
     {
         try {
-            Log::info('Received webhook from HRIS', [
+            Log::info('Received webhook from FESR', [
                 'headers' => $request->headers->all(),
-                'body' => $request->all(),
+                'body'    => $request->all(),
             ]);
 
             $payloadSize = strlen($request->getContent());
@@ -46,13 +47,14 @@ class WebhookController extends Controller
                 return response()->json(['error' => 'Payload too large'], 413);
             }
 
-            if (!$request->isJson()) {
+            if (! $request->isJson()) {
                 Log::error('Invalid content type', ['content_type' => $request->header('Content-Type')]);
                 return response()->json(['error' => 'Invalid content type'], 415);
             }
 
-            $signature = $request->header('X-HRIS-Secret');
-            if (!$signature) {
+            $signature = $request->header('X-FESR-Secret');
+
+            if (! $signature) {
                 Log::error('No signature provided in headers');
                 return response()->json(['error' => 'No signature provided'], 401);
             }
@@ -61,7 +63,7 @@ class WebhookController extends Controller
             Log::debug('Raw content for verification:', ['content' => $request->getContent()]);
 
             // Verify signature using raw content
-            if (!$this->verifySignature($request->getContent(), $signature)) {
+            if (! $this->verifySignature($request->getContent(), $signature)) {
                 Log::error('Invalid signature', [
                     'received' => $signature,
                     'expected' => $this->generateSignature($request->getContent()),
@@ -71,12 +73,12 @@ class WebhookController extends Controller
 
             Log::info('Signature verified successfully');
 
-            $payload = $request->json()->all();
-            $event = $payload['event'] ?? null;
+            $payload     = $request->json()->all();
+            $event       = $payload['event'] ?? null;
             $facultyData = $payload['faculty_data'] ?? null;
-            $webhookId = $payload['webhook_id'] ?? null;
+            $webhookId   = $payload['webhook_id'] ?? null;
 
-            if (!$event || !$facultyData || !$webhookId) {
+            if (! $event || ! $facultyData || ! $webhookId) {
                 Log::error('Invalid payload structure', ['payload' => $payload]);
                 return response()->json(['error' => 'Invalid payload'], 400);
             }
@@ -89,8 +91,8 @@ class WebhookController extends Controller
             }
 
             Log::info('Processing webhook', [
-                'webhook_id' => $webhookId,
-                'event' => $event,
+                'webhook_id'   => $webhookId,
+                'event'        => $event,
                 'faculty_data' => $facultyData,
             ]);
 
@@ -113,7 +115,7 @@ class WebhookController extends Controller
     }
 
     /**
-     * Send outgoing webhooks to the HRIS system for faculty updates.
+     * Send outgoing webhooks to the FESR system for faculty updates.
      *
      * @param string $event The type of event that triggered the webhook (e.g., 'faculty.updated').
      * @param array $facultyData The data related to the faculty update.
@@ -126,13 +128,13 @@ class WebhookController extends Controller
     public function sendFacultyWebhook($event, $facultyData)
     {
         try {
-            if (!$this->webhookSecret) {
+            if (! $this->webhookSecret) {
                 Log::error('Cannot send webhook: Webhook secret is not set');
                 return false;
             }
 
             Log::info('Dispatching webhook job', [
-                'event' => $event,
+                'event'        => $event,
                 'faculty_data' => $facultyData,
             ]);
 
@@ -148,7 +150,7 @@ class WebhookController extends Controller
     }
 
     /**
-     * Handle faculty updates received from the HRIS webhook.
+     * Handle faculty updates received from the FESR webhook.
      *
      * @param array $facultyData The data of the faculty member being updated.
      * @return bool True if the faculty was updated successfully, false otherwise.
@@ -162,53 +164,54 @@ class WebhookController extends Controller
             return \DB::transaction(function () use ($facultyData) {
                 $requiredFields = ['faculty_code', 'first_name', 'last_name', 'email', 'status', 'faculty_type'];
                 foreach ($requiredFields as $field) {
-                    if (!isset($facultyData[$field]) || empty($facultyData[$field])) {
+                    if (! isset($facultyData[$field]) || empty($facultyData[$field])) {
                         throw new \InvalidArgumentException("Missing required field: {$field}");
                     }
                 }
 
                 $user = User::where('code', $facultyData['faculty_code'])->first();
 
-                if (!$user) {
+                if (! $user) {
                     Log::error('User not found for faculty update', ['faculty_code' => $facultyData['faculty_code']]);
                     return false;
                 }
 
                 $faculty = $user->faculty;
-                if (!$faculty) {
+                if (! $faculty) {
                     Log::error('Faculty record not found for user', ['user_id' => $user->id]);
                     return false;
                 }
 
                 // Update user data
                 $user->update([
-                    'first_name' => $facultyData['first_name'],
+                    'first_name'  => $facultyData['first_name'],
                     'middle_name' => $facultyData['middle_name'],
-                    'last_name' => $facultyData['last_name'],
+                    'last_name'   => $facultyData['last_name'],
                     'suffix_name' => $facultyData['name_extension'],
-                    'email' => $facultyData['email'],
-                    'status' => $facultyData['status'],
+                    'email'       => $facultyData['email'],
+                    'status'      => $facultyData['status'],
                 ]);
 
-                // Update faculty data and hris_user_id if provided
+// Update faculty data and fesr_user_id if provided
+
                 $facultyUpdateData = [];
 
                 // Get or create faculty type
                 $facultyType = FacultyType::firstOrCreate(
                     ['faculty_type' => $facultyData['faculty_type']],
                     [
-                        'regular_units' => 0,
+                        'regular_units'    => 0,
                         'additional_units' => 0,
                     ]
                 );
                 $facultyUpdateData['faculty_type_id'] = $facultyType->faculty_type_id;
 
-                // If HRIS sends back the UserID, update it
-                if (isset($facultyData['hris_user_id'])) {
-                    $facultyUpdateData['hris_user_id'] = $facultyData['hris_user_id'];
-                    Log::info('Updating faculty with HRIS UserID', [
+                // If FESR sends back the UserID, update it
+                if (isset($facultyData['fesr_user_id'])) {
+                    $facultyUpdateData['fesr_user_id'] = $facultyData['fesr_user_id'];
+                    Log::info('Updating faculty with FESR UserID', [
                         'faculty_code' => $facultyData['faculty_code'],
-                        'hris_user_id' => $facultyData['hris_user_id'],
+                        'fesr_user_id' => $facultyData['fesr_user_id'],
                     ]);
                 }
 
@@ -216,15 +219,15 @@ class WebhookController extends Controller
 
                 Log::info('Faculty updated successfully via webhook', [
                     'faculty_code' => $facultyData['faculty_code'],
-                    'hris_user_id' => $faculty->hris_user_id,
+                    'fesr_user_id' => $faculty->fesr_user_id,
                 ]);
 
                 return true;
             });
         } catch (\Exception $e) {
             Log::error('Error updating faculty:', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
+                'error'        => $e->getMessage(),
+                'trace'        => $e->getTraceAsString(),
                 'faculty_data' => $facultyData,
             ]);
             throw $e;
@@ -239,7 +242,7 @@ class WebhookController extends Controller
      */
     protected function generateSignature($payload)
     {
-        if (!$this->webhookSecret) {
+        if (! $this->webhookSecret) {
             Log::error('Webhook secret is not set');
             return null;
         }
@@ -262,7 +265,7 @@ class WebhookController extends Controller
      */
     protected function verifySignature($payload, $signature)
     {
-        if (!$signature || !$this->webhookSecret) {
+        if (! $signature || ! $this->webhookSecret) {
             Log::error('Missing signature or webhook secret');
             return false;
         }
@@ -270,7 +273,7 @@ class WebhookController extends Controller
         Log::debug('Signature comparison:', [
             'received' => $signature,
             'expected' => $expectedSignature,
-            'secret' => $this->webhookSecret,
+            'secret'   => $this->webhookSecret,
         ]);
         return hash_equals($expectedSignature, $signature);
     }

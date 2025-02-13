@@ -5,20 +5,19 @@
   </div>
   } @else {
 
-  <!-- HRIS Status Banner -->
+  <!-- FESR Status Banner -->
   <div
-    class="hris-status-banner"
-    [ngClass]="{ online: isHrisHealthy, offline: !isHrisHealthy }"
-  >
-    <span [mat-symbol]="isHrisHealthy ? 'cloud_done' : 'cloud_off'"></span>
-    <span
-      >HRIS is {{ isHrisHealthy ? "online" : "offline" }}.
+    class="fesr-status-banner"
+    [ngClass]="{ online: isFesrHealthy, offline: !isFesrHealthy }">
+    <span [mat-symbol]="isFesrHealthy ? 'cloud_done' : 'cloud_off'"></span>
+    <span>
+      FESR is {{ isFesrHealthy ? 'online' : 'offline' }}.
       {{
-        isHrisHealthy
-          ? "Faculty management is read-only. Please make changes in HRIS."
-          : "Faculty can be managed here while HRIS is offline."
-      }}</span
-    >
+        isFesrHealthy
+          ? 'Faculty management is read-only. Please make changes in FESR.'
+          : 'Faculty can be managed here while FESR is offline.'
+      }}
+    </span>
   </div>
 
   <!-- Table Header -->
@@ -28,10 +27,9 @@
       [addButtonLabel]="'Add Faculty'"
       [inputFields]="headerInputFields"
       [showExportButton]="false"
-      [buttonDisabled]="isHrisHealthy"
+      [buttonDisabled]="isFesrHealthy"
       (inputChange)="onInputChange($event)"
-      (add)="openAddFacultyDialog()"
-    ></app-table-header>
+      (add)="openAddFacultyDialog()"></app-table-header>
   </div>
 
   <!-- Faculty Management Table -->
@@ -43,9 +41,8 @@
       [displayedColumns]="displayedColumns"
       [showViewButton]="false"
       [showDeleteButton]="false"
-      [disableEdit]="isHrisHealthy"
-      (edit)="openEditFacultyDialog($event)"
-    ></app-table-generic>
+      [disableEdit]="isFesrHealthy"
+      (edit)="openEditFacultyDialog($event)"></app-table-generic>
   </div>
 
   }
@@ -57,9 +54,8 @@
     class="faculty-type"
     [ngClass]="
       getFacultyTypeClass(element.faculty?.faculty_type?.faculty_type ?? 'N/A')
-    "
-  >
-    {{ element.faculty?.faculty_type?.faculty_type ?? "N/A" }}
+    ">
+    {{ element.faculty?.faculty_type?.faculty_type ?? 'N/A' }}
   </div>
 </ng-template>
 

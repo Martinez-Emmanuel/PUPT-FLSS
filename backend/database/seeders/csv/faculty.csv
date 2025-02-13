@@ -1,4 +1,4 @@
-"id","user_id","hris_user_id","faculty_type","faculty_units","created_at","updated_at"
+"id","user_id","fesr_user_id","faculty_type","faculty_units","created_at","updated_at"
 "1","1","0101","Full-Time","25","2024-10-23 14:59:17","2024-10-23 14:59:17"
 "2","4","0202","Part-Time","25","2024-10-23 14:59:17","2024-10-23 14:59:17"
 "3","5","0303","Temporary","25","2024-10-23 14:59:17","2024-10-23 14:59:17"

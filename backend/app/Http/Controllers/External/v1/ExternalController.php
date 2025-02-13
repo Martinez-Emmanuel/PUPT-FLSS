@@ -35,7 +35,7 @@ class ExternalController extends Controller
             )
             ->first();
 
-        if (!$activeSemester) {
+        if (! $activeSemester) {
             return response()->json(['message' => 'No active semester found.'], 404);
         }
 
@@ -46,7 +46,7 @@ class ExternalController extends Controller
             ->where('faculty_schedule_publication.is_published', 1)
             ->exists();
 
-        if (!$hasPublishedSchedules) {
+        if (! $hasPublishedSchedules) {
             return response()->json([
                 'message' => "PUP Taguig faculty load and schedules for " . "A.Y. " .
                 $activeSemester->year_start . "-" . $activeSemester->year_end .
@@ -134,44 +134,44 @@ class ExternalController extends Controller
         foreach ($facultySchedules as $schedule) {
             // Only process faculty members who have schedules
             if ($schedule->schedule_id) {
-                if (!isset($faculties[$schedule->faculty_id])) {
+                if (! isset($faculties[$schedule->faculty_id])) {
                     $faculties[$schedule->faculty_id] = [
-                        'faculty_id' => $schedule->faculty_id,
-                        'last_name' => $users[$schedule->user_id]->last_name ?? null,
-                        'first_name' => $users[$schedule->user_id]->first_name ?? null,
-                        'middle_name' => $users[$schedule->user_id]->middle_name ?? null,
-                        'suffix_name' => $users[$schedule->user_id]->suffix_name ?? null,
-                        'faculty_code' => $schedule->faculty_code,
-                        'faculty_type' => $schedule->faculty_type,
-                        'assigned_units' => 0,
-                        'schedules' => [],
+                        'faculty_id'      => $schedule->faculty_id,
+                        'last_name'       => $users[$schedule->user_id]->last_name ?? null,
+                        'first_name'      => $users[$schedule->user_id]->first_name ?? null,
+                        'middle_name'     => $users[$schedule->user_id]->middle_name ?? null,
+                        'suffix_name'     => $users[$schedule->user_id]->suffix_name ?? null,
+                        'faculty_code'    => $schedule->faculty_code,
+                        'faculty_type'    => $schedule->faculty_type,
+                        'assigned_units'  => 0,
+                        'schedules'       => [],
                         'tracked_courses' => [],
                     ];
                 }
 
                 // Only add units if we haven't counted this course assignment before
-                if (!in_array($schedule->course_assignment_id, $faculties[$schedule->faculty_id]['tracked_courses'])) {
+                if (! in_array($schedule->course_assignment_id, $faculties[$schedule->faculty_id]['tracked_courses'])) {
                     $faculties[$schedule->faculty_id]['assigned_units'] += $schedule->units;
                     $faculties[$schedule->faculty_id]['tracked_courses'][] = $schedule->course_assignment_id;
                 }
 
                 $faculties[$schedule->faculty_id]['schedules'][] = [
-                    'day' => $schedule->day,
-                    'start_time' => $schedule->start_time,
-                    'end_time' => $schedule->end_time,
-                    'room_code' => $schedule->room_code,
-                    'program_code' => $schedule->program_code,
-                    'program_title' => $schedule->program_title,
-                    'year_level' => $schedule->year_level,
-                    'section_name' => $schedule->section_name,
+                    'day'            => $schedule->day,
+                    'start_time'     => $schedule->start_time,
+                    'end_time'       => $schedule->end_time,
+                    'room_code'      => $schedule->room_code,
+                    'program_code'   => $schedule->program_code,
+                    'program_title'  => $schedule->program_title,
+                    'year_level'     => $schedule->year_level,
+                    'section_name'   => $schedule->section_name,
                     'course_details' => [
                         'course_assignment_id' => $schedule->course_assignment_id,
-                        'course_title' => $schedule->course_title,
-                        'course_code' => $schedule->course_code,
-                        'lec' => $schedule->lec_hours,
-                        'lab' => $schedule->lab_hours,
-                        'units' => $schedule->units,
-                        'tuition_hours' => $schedule->tuition_hours,
+                        'course_title'         => $schedule->course_title,
+                        'course_code'          => $schedule->course_code,
+                        'lec'                  => $schedule->lec_hours,
+                        'lab'                  => $schedule->lab_hours,
+                        'units'                => $schedule->units,
+                        'tuition_hours'        => $schedule->tuition_hours,
                     ],
                 ];
             }
@@ -189,11 +189,11 @@ class ExternalController extends Controller
         return response()->json([
             'pupt_faculty_schedules' => [
                 'academic_year_start' => $activeSemester->year_start,
-                'academic_year_end' => $activeSemester->year_end,
-                'semester' => $activeSemester->semester,
-                'start_date' => $activeSemester->start_date,
-                'end_date' => $activeSemester->end_date,
-                'faculties' => array_values($faculties),
+                'academic_year_end'   => $activeSemester->year_end,
+                'semester'            => $activeSemester->semester,
+                'start_date'          => $activeSemester->start_date,
+                'end_date'            => $activeSemester->end_date,
+                'faculties'           => array_values($faculties),
             ],
         ]);
     }
@@ -205,7 +205,7 @@ class ExternalController extends Controller
      */
     public static function ECRSScheduleChange(string $action, bool $isPublished, ?int $facultyId = null): void
     {
-        if (!$isPublished) {
+        if (! $isPublished) {
             return;
         }
 
@@ -215,9 +215,9 @@ class ExternalController extends Controller
             $ecrsResponse = Http::post($ecrsApiUrl);
 
             $logContext = [
-                'status' => $ecrsResponse->status(),
-                'response' => $ecrsResponse->json(),
-                'action' => $action,
+                'status'       => $ecrsResponse->status(),
+                'response'     => $ecrsResponse->json(),
+                'action'       => $action,
                 'is_published' => $isPublished,
             ];
 
@@ -235,10 +235,10 @@ class ExternalController extends Controller
             }
         } catch (\Exception $e) {
             Log::error('Error while notifying ECRS about schedule publication', [
-                'error' => $e->getMessage(),
-                'action' => $action,
+                'error'        => $e->getMessage(),
+                'action'       => $action,
                 'is_published' => $isPublished,
-                'faculty_id' => $facultyId,
+                'faculty_id'   => $facultyId,
             ]);
         }
     }
@@ -264,7 +264,7 @@ class ExternalController extends Controller
             )
             ->first();
 
-        if (!$activeSemester) {
+        if (! $activeSemester) {
             return response()->json(['message' => 'No active semester found.'], 404);
         }
 
@@ -275,7 +275,7 @@ class ExternalController extends Controller
             ->where('faculty_schedule_publication.is_published', 1)
             ->exists();
 
-        if (!$hasPublishedSchedules) {
+        if (! $hasPublishedSchedules) {
             return response()->json([
                 'message' => "PUP Taguig faculty load and schedules for " . "A.Y. " .
                 $activeSemester->year_start . "-" . $activeSemester->year_end .
@@ -306,7 +306,7 @@ class ExternalController extends Controller
             ->whereNotNull('schedules.end_time')
             ->select(
                 'schedules.schedule_id as course_schedule_id',
-                'faculty.hris_user_id as user_login_id',
+                'faculty.fesr_user_id as user_login_id',
                 'programs.program_title as program',
                 'courses.course_code',
                 'courses.course_title as course_subjects',
@@ -317,7 +317,7 @@ class ExternalController extends Controller
                 'schedules.start_time',
                 'schedules.end_time'
             )
-            ->orderBy('faculty.hris_user_id')
+            ->orderBy('faculty.fesr_user_id')
             ->orderBy('section_courses.section_course_id')
             ->orderBy('schedules.day')
             ->orderBy('schedules.start_time')
@@ -343,12 +343,12 @@ class ExternalController extends Controller
 
             return [
                 'course_schedule_id' => $firstSchedule->course_schedule_id,
-                'user_login_id' => $firstSchedule->user_login_id,
-                'program' => $firstSchedule->program,
-                'course_code' => $firstSchedule->course_code,
-                'course_subjects' => $firstSchedule->course_subjects,
-                'year_section' => $firstSchedule->year_level . '-' . $firstSchedule->section_name,
-                'schedule' => $combinedSchedule,
+                'user_login_id'      => $firstSchedule->user_login_id,
+                'program'            => $firstSchedule->program,
+                'course_code'        => $firstSchedule->course_code,
+                'course_subjects'    => $firstSchedule->course_subjects,
+                'year_section'       => $firstSchedule->year_level . '-' . $firstSchedule->section_name,
+                'schedule'           => $combinedSchedule,
             ];
         })
             ->sortBy('user_login_id')
@@ -380,7 +380,7 @@ class ExternalController extends Controller
             )
             ->first();
 
-        if (!$activeSemester) {
+        if (! $activeSemester) {
             return response()->json(['message' => 'No active semester found.'], 404);
         }
 
@@ -391,7 +391,7 @@ class ExternalController extends Controller
             ->where('faculty_schedule_publication.is_published', 1)
             ->exists();
 
-        if (!$hasPublishedSchedules) {
+        if (! $hasPublishedSchedules) {
             return response()->json([
                 'message' => "PUP Taguig faculty load and schedules for " . "A.Y. " .
                 $activeSemester->year_start . "-" . $activeSemester->year_end .
@@ -436,7 +436,7 @@ class ExternalController extends Controller
             })
             ->where('faculty_schedule_publication.is_published', '=', 1)
             ->select(
-                'faculty.hris_user_id as user_login_id',
+                'faculty.fesr_user_id as user_login_id',
                 'current_schedules.schedule_id as course_schedule_id',
                 'courses.course_title as subject',
                 DB::raw("'" . $this->formatSemesterLabel($activeSemester->semester) . "' as semester"),
@@ -444,7 +444,7 @@ class ExternalController extends Controller
             )
             ->whereNotNull('current_schedules.schedule_id')
             ->distinct()
-            ->orderBy('faculty.hris_user_id')
+            ->orderBy('faculty.fesr_user_id')
             ->orderBy('current_schedules.schedule_id')
             ->get();
 
@@ -480,7 +480,7 @@ class ExternalController extends Controller
             )
             ->first();
 
-        if (!$activeSemester) {
+        if (! $activeSemester) {
             return response()->json(['message' => 'No active semester found.'], 404);
         }
 
@@ -541,29 +541,29 @@ class ExternalController extends Controller
         $rooms = $labSchedules->groupBy('room_id')->map(function ($roomSchedules) {
             $firstSchedule = $roomSchedules->first();
             return [
-                'room_code' => $firstSchedule->room_code,
-                'location' => $firstSchedule->location,
+                'room_code'   => $firstSchedule->room_code,
+                'location'    => $firstSchedule->location,
                 'floor_level' => $firstSchedule->floor_level,
-                'capacity' => $firstSchedule->capacity,
-                'schedules' => $roomSchedules->map(function ($schedule) {
+                'capacity'    => $firstSchedule->capacity,
+                'schedules'   => $roomSchedules->map(function ($schedule) {
                     return [
-                        'schedule_id' => $schedule->schedule_id,
-                        'day' => $schedule->day,
-                        'start_time' => $schedule->start_time,
-                        'end_time' => $schedule->end_time,
-                        'faculty_name' => $schedule->faculty_name,
-                        'faculty_code' => $schedule->faculty_code,
-                        'program_code' => $schedule->program_code,
-                        'program_title' => $schedule->program_title,
-                        'year_level' => $schedule->year_level,
-                        'section_name' => $schedule->section_name,
+                        'schedule_id'    => $schedule->schedule_id,
+                        'day'            => $schedule->day,
+                        'start_time'     => $schedule->start_time,
+                        'end_time'       => $schedule->end_time,
+                        'faculty_name'   => $schedule->faculty_name,
+                        'faculty_code'   => $schedule->faculty_code,
+                        'program_code'   => $schedule->program_code,
+                        'program_title'  => $schedule->program_title,
+                        'year_level'     => $schedule->year_level,
+                        'section_name'   => $schedule->section_name,
                         'course_details' => [
-                            'course_id' => $schedule->course_id,
-                            'course_title' => $schedule->course_title,
-                            'course_code' => $schedule->course_code,
-                            'lec' => $schedule->lec,
-                            'lab' => $schedule->lab,
-                            'units' => $schedule->units,
+                            'course_id'     => $schedule->course_id,
+                            'course_title'  => $schedule->course_title,
+                            'course_code'   => $schedule->course_code,
+                            'lec'           => $schedule->lec,
+                            'lab'           => $schedule->lab,
+                            'units'         => $schedule->units,
                             'tuition_hours' => $schedule->tuition_hours,
                         ],
                     ];
@@ -574,9 +574,9 @@ class ExternalController extends Controller
         return response()->json([
             'computer_laboratory_schedules' => [
                 'academic_year_start' => $activeSemester->year_start,
-                'academic_year_end' => $activeSemester->year_end,
-                'semester' => $activeSemester->semester,
-                'rooms' => $rooms,
+                'academic_year_end'   => $activeSemester->year_end,
+                'semester'            => $activeSemester->semester,
+                'rooms'               => $rooms,
             ],
         ]);
     }

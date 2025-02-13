@@ -1,6 +1,6 @@
 @use "../../../../../../styles/mixins";
 
-.hris-status-banner {
+.fesr-status-banner {
   @include mixins.flex-layout(
     $align: center,
     $justify: center,

@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Jobs;
 
 use App\Jobs\Middleware\PreventDuplicateWebhooks;
@@ -32,8 +31,8 @@ class SendFacultyUpdateWebhook implements ShouldQueue
      */
     public function backoff()
     {
-        $delays = [];
-        $delay = 60;
+        $delays   = [];
+        $delay    = 60;
         $maxDelay = 24 * 60 * 60;
 
         // Generate delays with exponential backoff
@@ -83,9 +82,9 @@ class SendFacultyUpdateWebhook implements ShouldQueue
      */
     public function __construct(string $event, array $facultyData)
     {
-        $this->event = $event;
-        $this->facultyData = $facultyData;
-        $this->webhookUrl = env('HRIS_WEBHOOK_URL', 'http://localhost:3000/api/webhooks/faculty');
+        $this->event         = $event;
+        $this->facultyData   = $facultyData;
+        $this->webhookUrl    = env('FESR_WEBHOOK_URL', 'http://localhost:3000/api/webhooks/faculty');
         $this->webhookSecret = env('WEBHOOK_SECRET');
 
         // Generate a unique ID for this webhook request
@@ -112,13 +111,13 @@ class SendFacultyUpdateWebhook implements ShouldQueue
             $cacheKey = $this->getIdempotencyKey();
             if (Cache::has($cacheKey)) {
                 Log::info('Webhook already processed successfully', [
-                    'webhook_id' => $this->webhookId,
+                    'webhook_id'      => $this->webhookId,
                     'idempotency_key' => $cacheKey,
                 ]);
                 return;
             }
 
-            if (!$this->webhookSecret) {
+            if (! $this->webhookSecret) {
                 Log::error('Cannot send webhook: Webhook secret is not set');
                 $this->fail(new \Exception('Webhook secret is not set'));
                 return;
@@ -129,30 +128,30 @@ class SendFacultyUpdateWebhook implements ShouldQueue
                     $query->where('code', $this->facultyData['faculty_code']);
                 })->first();
 
-                if ($faculty && $faculty->hris_user_id) {
-                    $this->facultyData['hris_user_id'] = $faculty->hris_user_id;
+                if ($faculty && $faculty->fesr_user_id) {
+                    $this->facultyData['fesr_user_id'] = $faculty->fesr_user_id;
                 }
             }
 
-            Log::info('Sending webhook to HRIS', [
-                'webhook_id' => $this->webhookId,
-                'event' => $this->event,
+            Log::info('Sending webhook to FESR', [
+                'webhook_id'   => $this->webhookId,
+                'event'        => $this->event,
                 'faculty_data' => $this->facultyData,
-                'webhook_url' => $this->webhookUrl,
-                'attempt' => $this->attempts(),
+                'webhook_url'  => $this->webhookUrl,
+                'attempt'      => $this->attempts(),
             ]);
 
             $payload = [
-                'webhook_id' => $this->webhookId,
-                'event' => $this->event,
+                'webhook_id'   => $this->webhookId,
+                'event'        => $this->event,
                 'faculty_data' => $this->facultyData,
-                'timestamp' => now()->toIso8601String(),
+                'timestamp'    => now()->toIso8601String(),
             ];
 
             $jsonPayload = json_encode($payload);
-            $signature = $this->generateSignature($jsonPayload);
+            $signature   = $this->generateSignature($jsonPayload);
 
-            if (!$signature) {
+            if (! $signature) {
                 Log::error('Cannot send webhook: Failed to generate signature');
                 $this->fail(new \Exception('Failed to generate signature'));
                 return;
@@ -160,22 +159,22 @@ class SendFacultyUpdateWebhook implements ShouldQueue
 
             $response = Http::timeout($this->timeout)
                 ->withHeaders([
-                    'Content-Type' => 'application/json',
-                    'x-hris-secret' => $signature,
-                    'x-webhook-id' => $this->webhookId,
+                    'Content-Type'  => 'application/json',
+                    'x-fesr-secret' => $signature,
+                    'x-webhook-id'  => $this->webhookId,
                 ])
                 ->post($this->webhookUrl, $payload);
 
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 Log::error('Webhook request failed', [
                     'webhook_id' => $this->webhookId,
-                    'status' => $response->status(),
-                    'body' => $response->body(),
-                    'attempt' => $this->attempts(),
+                    'status'     => $response->status(),
+                    'body'       => $response->body(),
+                    'attempt'    => $this->attempts(),
                 ]);
 
                 if ($response->status() >= 400 && $response->status() < 500
-                    && !in_array($response->status(), [408, 429])) {
+                    && ! in_array($response->status(), [408, 429])) {
                     $this->fail(new \Exception("Webhook request failed with client error {$response->status()}"));
                     return;
                 }
@@ -194,8 +193,8 @@ class SendFacultyUpdateWebhook implements ShouldQueue
 
             Log::info('Webhook sent successfully', [
                 'webhook_id' => $this->webhookId,
-                'status' => $response->status(),
-                'body' => $response->json(),
+                'status'     => $response->status(),
+                'body'       => $response->json(),
             ]);
 
             // Mark this webhook as successfully processed
@@ -203,8 +202,8 @@ class SendFacultyUpdateWebhook implements ShouldQueue
         } catch (\Exception $e) {
             Log::error('Error sending webhook', [
                 'webhook_id' => $this->webhookId,
-                'error' => $e->getMessage(),
-                'attempt' => $this->attempts(),
+                'error'      => $e->getMessage(),
+                'attempt'    => $this->attempts(),
             ]);
 
             throw $e;
@@ -216,7 +215,7 @@ class SendFacultyUpdateWebhook implements ShouldQueue
      */
     protected function generateSignature(string $payload): ?string
     {
-        if (!$this->webhookSecret) {
+        if (! $this->webhookSecret) {
             return null;
         }
 

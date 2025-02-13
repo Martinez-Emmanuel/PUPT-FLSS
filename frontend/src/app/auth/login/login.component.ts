@@ -78,14 +78,14 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.isRedirectDialogOpen = true;
     const dialogRef = this.dialog.open(DialogRedirectComponent, {
       disableClose: true,
-      data: { checkingHris: true },
+      data: { checkingFesr: true },
     });
 
     dialogRef.afterClosed().subscribe(() => {
       this.isRedirectDialogOpen = false;
     });
 
-    this.authService.checkHrisHealth().subscribe({
+    this.authService.checkFesrHealth().subscribe({
       next: (isHealthy) => {
         if (isHealthy) {
           dialogRef.componentInstance.updateState(false, true);
@@ -95,7 +95,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        console.error('Error checking HRIS health:', error);
+        console.error('Error checking FESR health:', error);
         dialogRef.close();
         this.openFacultyLoginDialog();
       },

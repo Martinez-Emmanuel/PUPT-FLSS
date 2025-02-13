@@ -31,28 +31,28 @@ class FacultyController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'first_name' => 'required|string',
-            'middle_name' => 'nullable|string',
-            'last_name' => 'required|string',
-            'suffix_name' => 'nullable|string',
-            'code' => 'required|string|unique:users',
-            'email' => 'required|email|unique:users',
-            'role' => 'required|string',
-            'status' => 'required|string',
+            'first_name'      => 'required|string',
+            'middle_name'     => 'nullable|string',
+            'last_name'       => 'required|string',
+            'suffix_name'     => 'nullable|string',
+            'code'            => 'required|string|unique:users',
+            'email'           => 'required|email|unique:users',
+            'role'            => 'required|string',
+            'status'          => 'required|string',
             'faculty_type_id' => 'required|exists:faculty_type,faculty_type_id',
-            'password' => 'required|string',
+            'password'        => 'required|string',
         ]);
 
         $user = User::create([
-            'first_name' => $validatedData['first_name'],
+            'first_name'  => $validatedData['first_name'],
             'middle_name' => $validatedData['middle_name'],
-            'last_name' => $validatedData['last_name'],
+            'last_name'   => $validatedData['last_name'],
             'suffix_name' => $validatedData['suffix_name'],
-            'code' => $validatedData['code'],
-            'email' => $validatedData['email'],
-            'role' => 'faculty',
-            'status' => $validatedData['status'],
-            'password' => $validatedData['password'],
+            'code'        => $validatedData['code'],
+            'email'       => $validatedData['email'],
+            'role'        => 'faculty',
+            'status'      => $validatedData['status'],
+            'password'    => $validatedData['password'],
         ]);
 
         $faculty = $user->faculty()->create([
@@ -61,16 +61,16 @@ class FacultyController extends Controller
 
         $facultyType = $faculty->facultyType;
 
-        // Send webhook to HRIS about new faculty
+        // Send webhook to FESR about new faculty
         $facultyData = [
-            'faculty_code' => $validatedData['code'],
-            'first_name' => $validatedData['first_name'],
-            'middle_name' => $validatedData['middle_name'],
-            'last_name' => $validatedData['last_name'],
+            'faculty_code'   => $validatedData['code'],
+            'first_name'     => $validatedData['first_name'],
+            'middle_name'    => $validatedData['middle_name'],
+            'last_name'      => $validatedData['last_name'],
             'name_extension' => $validatedData['suffix_name'],
-            'email' => $validatedData['email'],
-            'status' => $validatedData['status'],
-            'faculty_type' => $facultyType->faculty_type,
+            'email'          => $validatedData['email'],
+            'status'         => $validatedData['status'],
+            'faculty_type'   => $facultyType->faculty_type,
         ];
 
         $this->webhookController->sendFacultyWebhook('faculty.created', $facultyData);
@@ -88,23 +88,23 @@ class FacultyController extends Controller
         }
 
         $validatedData = $request->validate([
-            'first_name' => 'required|string',
-            'middle_name' => 'nullable|string',
-            'last_name' => 'required|string',
-            'suffix_name' => 'nullable|string',
-            'email' => 'required|email',
-            'status' => 'required|string',
+            'first_name'      => 'required|string',
+            'middle_name'     => 'nullable|string',
+            'last_name'       => 'required|string',
+            'suffix_name'     => 'nullable|string',
+            'email'           => 'required|email',
+            'status'          => 'required|string',
             'faculty_type_id' => 'required|exists:faculty_type,faculty_type_id',
-            'password' => 'nullable|string',
+            'password'        => 'nullable|string',
         ]);
 
         $user->update([
-            'first_name' => $validatedData['first_name'],
+            'first_name'  => $validatedData['first_name'],
             'middle_name' => $validatedData['middle_name'],
-            'last_name' => $validatedData['last_name'],
+            'last_name'   => $validatedData['last_name'],
             'suffix_name' => $validatedData['suffix_name'],
-            'email' => $validatedData['email'],
-            'status' => $validatedData['status'],
+            'email'       => $validatedData['email'],
+            'status'      => $validatedData['status'],
         ]);
 
         $user->faculty()->updateOrCreate(
@@ -115,16 +115,16 @@ class FacultyController extends Controller
         // Get faculty type details for webhook
         $facultyType = $user->faculty->facultyType;
 
-        // Send webhook to HRIS about faculty update
+        // Send webhook to FESR about faculty update
         $facultyData = [
-            'faculty_code' => $user->code,
-            'first_name' => $validatedData['first_name'],
-            'middle_name' => $validatedData['middle_name'],
-            'last_name' => $validatedData['last_name'],
+            'faculty_code'   => $user->code,
+            'first_name'     => $validatedData['first_name'],
+            'middle_name'    => $validatedData['middle_name'],
+            'last_name'      => $validatedData['last_name'],
             'name_extension' => $validatedData['suffix_name'],
-            'email' => $validatedData['email'],
-            'status' => $validatedData['status'],
-            'faculty_type' => $facultyType->faculty_type,
+            'email'          => $validatedData['email'],
+            'status'         => $validatedData['status'],
+            'faculty_type'   => $facultyType->faculty_type,
         ];
 
         $this->webhookController->sendFacultyWebhook('faculty.updated', $facultyData);
@@ -167,11 +167,11 @@ class FacultyController extends Controller
 
         $response = $facultyDetails->map(function ($faculty) {
             return [
-                'faculty_id' => $faculty->id,
-                'name' => $faculty->user->formatted_name ?? 'N/A',
-                'code' => $faculty->user->code ?? 'N/A',
+                'faculty_id'    => $faculty->id,
+                'name'          => $faculty->user->formatted_name ?? 'N/A',
+                'code'          => $faculty->user->code ?? 'N/A',
                 'faculty_email' => $faculty->user->email ?? 'N/A',
-                'faculty_type' => $faculty->facultyType->faculty_type ?? 'N/A',
+                'faculty_type'  => $faculty->facultyType->faculty_type ?? 'N/A',
                 'faculty_units' => $faculty->faculty_units,
             ];
         })

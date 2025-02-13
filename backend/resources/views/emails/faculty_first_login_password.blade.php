@@ -141,7 +141,7 @@
             <p><strong>What you need to know:</strong></p>
             <ul>
                 <li>For security reasons, we recommend that you change this password after your first login.</li>
-                <li>Keep your FLSS backup password safe - you'll only need it if the main login through PUP-HRIS is
+                <li>Keep your FLSS backup password safe - you will need it if the main login through PUP-FESR is
                     unavailable.</li>
             </ul>
 
@@ -151,7 +151,7 @@
 
         <div class="footer">
             <p class="copyright">
-                © 2024 Polytechnic University of the Philippines - Taguig Branch<br>
+                © 2025 Polytechnic University of the Philippines - Taguig Branch<br>
                 Faculty Loading and Scheduling System<br>
                 All rights reserved.
             </p>
