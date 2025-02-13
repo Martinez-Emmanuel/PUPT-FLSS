@@ -53,7 +53,7 @@ class OAuthController extends Controller
             $facultyData = $request->input('faculty_data');
             $fesrToken   = $request->input('fesr_token');
 
-// Only look up by FESR UserID
+        // Only look up by FESR UserID
             $faculty = Faculty::where('fesr_user_id', $facultyData['UserID'])->first();
 
             $user = $faculty ? $faculty->user : null;
@@ -102,8 +102,7 @@ class OAuthController extends Controller
             // Generate Sanctum token
             $token = $user->createToken('fesr-oauth', ['*'])->plainTextToken;
 
-// Store FESR token reference
-
+            // Store FESR token reference
             $tokenModel = PersonalAccessToken::findToken($token);
             if (! $tokenModel) {
                 throw new \Exception('Failed to create access token');

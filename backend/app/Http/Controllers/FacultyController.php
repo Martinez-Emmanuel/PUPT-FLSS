@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\WebhookController;
+use App\Jobs\SendFacultyFirstLoginPasswordJob;
+
 use App\Models\Faculty;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -60,6 +62,9 @@ class FacultyController extends Controller
         ]);
 
         $facultyType = $faculty->facultyType;
+
+// Send email with password to faculty
+SendFacultyFirstLoginPasswordJob::dispatch($user, $validatedData['password']);
 
         // Send webhook to FESR about new faculty
         $facultyData = [

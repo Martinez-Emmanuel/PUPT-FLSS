@@ -7,7 +7,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Your FLSS Backup Account Password</title>
     <style type="text/css">
-        /* [Previous CSS styles remain the same] */
         body {
             margin: 0;
             padding: 20px;
@@ -132,7 +131,7 @@
             <p class="greeting"><b>Dear {{ $faculty_name }},</b></p>
 
             <p>Welcome to the PUP Taguig Faculty Loading and Scheduling System! Your account has been successfully
-                created. We've also created a backup password for your FLSS account:</p>
+                created. Below is your backup password for your PUPT-FLSS account:</p>
 
             <div class="password-container">
                 <span class="password-display">{{ $password }}</span>
@@ -140,8 +139,8 @@
 
             <p><strong>What you need to know:</strong></p>
             <ul>
-                <li>For security reasons, we recommend that you change this password after your first login.</li>
-                <li>Keep your FLSS backup password safe - you will need it if the main login through PUP-FESR is
+                <li>For security reasons, <b>we recommend that you change this password after your first login.</b></li>
+                <li>Keep your PUPT-FLSS backup password safe - you will need it if the primary login through PUP-FESR is
                     unavailable.</li>
             </ul>
 
