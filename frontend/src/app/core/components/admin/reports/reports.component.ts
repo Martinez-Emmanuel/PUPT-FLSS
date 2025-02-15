@@ -8,17 +8,20 @@ import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
 import { ReportsService } from '../../../services/admin/reports/reports.service';
 
 @Component({
-    selector: 'app-reports',
-    imports: [CommonModule, MatTabsModule, RouterModule, MatSymbolDirective],
-    templateUrl: './reports.component.html',
-    styleUrl: './reports.component.scss',
-    encapsulation: ViewEncapsulation.None
+  selector: 'app-reports',
+  imports: [CommonModule, MatTabsModule, RouterModule, MatSymbolDirective],
+  templateUrl: './reports.component.html',
+  styleUrl: './reports.component.scss',
+  encapsulation: ViewEncapsulation.None,
 })
 export class ReportsComponent implements OnInit {
+  selectedTabIndex = 0;
+  private tabRoutes = ['faculty', 'programs', 'rooms'];
+
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private reportsService: ReportsService
+    private reportsService: ReportsService,
   ) {}
 
   ngOnInit() {
@@ -26,11 +29,18 @@ export class ReportsComponent implements OnInit {
 
     if (this.route.firstChild === null) {
       this.router.navigate(['faculty'], { relativeTo: this.route });
+    } else {
+      const currentPath = this.route.firstChild?.snapshot.url[0]?.path;
+      const tabIndex = this.tabRoutes.indexOf(currentPath);
+      if (tabIndex !== -1) {
+        this.selectedTabIndex = tabIndex;
+      }
     }
   }
 
   onTabChange(event: any) {
-    const tabRoutes = ['faculty', 'programs', 'rooms'];
-    this.router.navigate([tabRoutes[event.index]], { relativeTo: this.route });
+    this.router.navigate([this.tabRoutes[event.index]], {
+      relativeTo: this.route,
+    });
   }
 }

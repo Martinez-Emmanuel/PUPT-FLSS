@@ -3,6 +3,7 @@
     <router-outlet></router-outlet>
   </div>
   <mat-tab-group
+    [(selectedIndex)]="selectedTabIndex"
     animationDuration="250ms"
     (selectedTabChange)="onTabChange($event)"
     class="reports-tab"
