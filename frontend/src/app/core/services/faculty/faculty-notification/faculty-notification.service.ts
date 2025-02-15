@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 
-import { Observable, throwError, ReplaySubject } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { Observable, throwError } from 'rxjs';
+import { catchError, shareReplay } from 'rxjs/operators';
 
 import { environment } from '../../../../../environments/environment.dev';
 
@@ -22,12 +22,9 @@ export interface FacultyNotificationResponse {
 })
 export class FacultyNotificationService {
   private baseUrl = environment.apiUrl;
-
-  private notificationsCache$ = new ReplaySubject<FacultyNotificationResponse>(
-    1
-  );
-  private cacheExpirationTime: number = 0;
-  private cacheTTL: number = 5 * 60 * 1000; // 5 minutes
+  private notificationsCache: {
+    [facultyId: number]: Observable<FacultyNotificationResponse>;
+  } = {};
 
   constructor(private http: HttpClient) {}
 
@@ -36,28 +33,29 @@ export class FacultyNotificationService {
    * @param facultyId - The ID of the faculty member
    */
   getFacultyNotifications(
-    facultyId: number
+    facultyId: number,
   ): Observable<FacultyNotificationResponse> {
-    const now = Date.now();
-
-    // If cache is available and valid, return cached data
-    if (now < this.cacheExpirationTime) {
-      return this.notificationsCache$.asObservable();
+    if (!this.notificationsCache[facultyId]) {
+      this.notificationsCache[facultyId] = this.http
+        .get<FacultyNotificationResponse>(
+          `${this.baseUrl}/faculty-notifications`,
+          { params: { faculty_id: facultyId.toString() } },
+        )
+        .pipe(shareReplay(1), catchError(this.handleError));
     }
+    return this.notificationsCache[facultyId];
+  }
 
-    // Fetch from API if cache is expired or doesn't exist
-    return this.http
-      .get<FacultyNotificationResponse>(
-        `${this.baseUrl}/faculty-notifications`,
-        { params: { faculty_id: facultyId.toString() } }
-      )
-      .pipe(
-        tap((response) => {
-          this.notificationsCache$.next(response);
-          this.cacheExpirationTime = Date.now() + this.cacheTTL;
-        }),
-        catchError(this.handleError)
-      );
+  /**
+   * Clears the notifications cache for a specific faculty or all faculties
+   * @param facultyId - Optional faculty ID to clear specific cache
+   */
+  clearCache(facultyId?: number): void {
+    if (facultyId) {
+      delete this.notificationsCache[facultyId];
+    } else {
+      this.notificationsCache = {};
+    }
   }
 
   /**

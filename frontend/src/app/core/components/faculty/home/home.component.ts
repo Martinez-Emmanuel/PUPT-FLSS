@@ -48,7 +48,6 @@ interface CourseSchedule {
 @Component({
   selector: 'app-home',
   imports: [MatSymbolDirective, LoadingComponent, FullCalendarModule, DatePipe],
-  providers: [ReportsService, FacultyNotificationService, CookieService],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
   animations: [fadeAnimation, cardEntranceSide],
