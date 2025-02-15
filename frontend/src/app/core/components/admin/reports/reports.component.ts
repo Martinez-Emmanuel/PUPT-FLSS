@@ -15,8 +15,12 @@ import { ReportsService } from '../../../services/admin/reports/reports.service'
   encapsulation: ViewEncapsulation.None,
 })
 export class ReportsComponent implements OnInit {
+  tabs: { label: string; route: string; icon: string }[] = [
+    { label: 'Faculty', route: 'faculty', icon: 'person' },
+    { label: 'Programs', route: 'programs', icon: 'school' },
+    { label: 'Rooms', route: 'rooms', icon: 'meeting_room' },
+  ];
   selectedTabIndex = 0;
-  private tabRoutes = ['faculty', 'programs', 'rooms'];
 
   constructor(
     private router: Router,
@@ -28,10 +32,10 @@ export class ReportsComponent implements OnInit {
     this.reportsService.clearAllCaches();
 
     if (this.route.firstChild === null) {
-      this.router.navigate(['faculty'], { relativeTo: this.route });
+      this.router.navigate([this.tabs[0].route], { relativeTo: this.route });
     } else {
-      const currentPath = this.route.firstChild?.snapshot.url[0]?.path;
-      const tabIndex = this.tabRoutes.indexOf(currentPath);
+      const currentPath = this.route.firstChild.snapshot.url[0]?.path;
+      const tabIndex = this.tabs.findIndex((tab) => tab.route === currentPath);
       if (tabIndex !== -1) {
         this.selectedTabIndex = tabIndex;
       }
@@ -39,7 +43,7 @@ export class ReportsComponent implements OnInit {
   }
 
   onTabChange(event: any) {
-    this.router.navigate([this.tabRoutes[event.index]], {
+    this.router.navigate([this.tabs[event.index].route], {
       relativeTo: this.route,
     });
   }
