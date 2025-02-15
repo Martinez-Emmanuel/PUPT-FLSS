@@ -79,6 +79,7 @@
         </div>
       </div>
 
+      <!-- Mobile Admin Controls -->
       @if (isHandset$ | async) {
       <div class="navbar-group-two">
         <div class="mobile-admin-settings">
@@ -98,7 +99,7 @@
                 (themeService.isDarkTheme$ | async) ? 'dark-icon' : 'light-icon'
               ">
               {{
-                (themeService.isDarkTheme$ | async) ? "Dark Mode" : "Light Mode"
+                (themeService.isDarkTheme$ | async) ? 'Dark Mode' : 'Light Mode'
               }}
             </span>
           </a>
@@ -108,6 +109,12 @@
         <a mat-list-item class="list-item" (click)="logout()">
           <span mat-symbol="door_open" matListItemIcon></span>
           <span matListItemTitle>Logout</span>
+        </a>
+
+        <!-- Change Password -->
+        <a mat-list-item class="list-item" (click)="openChangePasswordDialog()">
+          <span mat-symbol="lock" matListItemIcon></span>
+          <span matListItemTitle>Change Password</span>
         </a>
 
         <!-- Admin Account Info -->
@@ -150,42 +157,68 @@
       <header class="sidenav-header">
         <!--Page Title-->
         <div class="title-container">
-          <h2 class="page-title">{{ pageTitle }}</h2>
+          <h1 class="page-title">{{ pageTitle }}</h1>
         </div>
-        <!-- Admin Account -->
+
+        <!-- Admin Panel - Only show when not in handset mode -->
         @if ((isHandset$ | async) === false) {
-        <div class="header-account">
-          <div class="account-text">
-            <div class="account-name">{{ accountName }}</div>
-
-            <div class="account-role">Super Administrator</div>
-          </div>
-          <div class="profile-dropdown">
-            <img
-              src="assets/images/default_superadmin_icon.png"
-              alt="Profile Icon"
-              class="profile-icon"
-              (click)="toggleDropdown($event)"
-              matTooltip="Click to open settings"
-              matTooltipPosition="below" />
-            @if (isDropdownOpen) {
-            <div class="dropdown-menu">
-              <span class="dropdown-item" (click)="toggleTheme()">
-                <span
-                  [mat-symbol]="
-                    (themeService.isDarkTheme$ | async)
-                      ? 'light_mode'
-                      : 'dark_mode'
-                  "></span>
-
-                Switch Theme
-              </span>
-              <span class="dropdown-item logout" (click)="logout()">
-                <span mat-symbol="logout"></span>
-                Logout
-              </span>
+        <div class="admin-panel">
+          <!--Admin Settings-->
+          <div class="admin-settings">
+            <!-- Night Mode Button -->
+            <div
+              class="panel-button theme"
+              [matTooltip]="
+                (themeService.isDarkTheme$ | async)
+                  ? 'Switch to light mode'
+                  : 'Switch to dark mode'
+              "
+              matRipple
+              (click)="toggleTheme()">
+              <span
+                [mat-symbol]="
+                  (themeService.isDarkTheme$ | async)
+                    ? 'dark_mode'
+                    : 'light_mode'
+                "
+                [ngClass]="
+                  (themeService.isDarkTheme$ | async)
+                    ? 'dark-icon'
+                    : 'light-icon'
+                "></span>
             </div>
-            }
+
+            <!-- Logout Button -->
+            <div
+              class="panel-button logout"
+              matTooltip="Log out"
+              matRipple
+              (click)="logout()">
+              <span mat-symbol="door_open"></span>
+            </div>
+
+            <!-- Change Password Button -->
+            <div
+              class="panel-button change-password"
+              matTooltip="Change Password"
+              matRipple
+              (click)="openChangePasswordDialog()">
+              <span mat-symbol="lock"></span>
+            </div>
+          </div>
+
+          <!-- Admin Account -->
+          <div class="admin-account">
+            <div class="account-text">
+              <div class="account-name">{{ accountName }}</div>
+              <div class="account-role">Super Administrator</div>
+            </div>
+            <div class="profile-dropdown">
+              <img
+                src="../../../../../assets/images/default_superadmin_icon.png"
+                alt="Profile Icon"
+                class="profile-icon" />
+            </div>
           </div>
         </div>
         }

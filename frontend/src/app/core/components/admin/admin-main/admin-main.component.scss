@@ -131,7 +131,6 @@
 
         .profile-dropdown {
           @include mixins.flex-layout;
-          position: relative;
 
           .profile-icon {
             width: 2.5rem;

@@ -11,6 +11,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog } from '@angular/material/dialog';
 
 import { MatSymbolDirective } from '../../../imports/mat-symbol.directive';
@@ -20,6 +21,8 @@ import { slideInAnimation, fadeAnimation } from '../../../animations/animations'
 import { AuthService } from '../../../services/auth/auth.service';
 import { ThemeService } from '../../../services/theme/theme.service';
 import { CookieService } from 'ngx-cookie-service';
+import { DialogChangePasswordComponent } from '../../../../shared/dialog-change-password/dialog-change-password.component';
+
 @Component({
   selector: 'app-superadmin-main',
   templateUrl: './superadmin-main.component.html',
@@ -33,6 +36,7 @@ import { CookieService } from 'ngx-cookie-service';
     MatListModule,
     MatIconModule,
     MatSymbolDirective,
+    MatTooltipModule,
   ],
   animations: [fadeAnimation, slideInAnimation],
 })
@@ -212,6 +216,28 @@ export class SuperadminMainComponent implements OnInit, AfterViewInit, OnDestroy
         console.error('Logout failed', error);
         loadingDialogRef.close();
       },
+    });
+  }
+
+  public openChangePasswordDialog() {
+    const dialogRef = this.dialog.open(DialogChangePasswordComponent, {
+      disableClose: true,
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      if (result?.message) {
+        const successDialogConfig: DialogData = {
+          title: 'Success!',
+          content: result.message,
+          showProgressBar: false,
+          actionText: 'Close',
+        };
+
+        this.dialog.open(DialogGenericComponent, {
+          data: successDialogConfig,
+          disableClose: true,
+        });
+      }
     });
   }
 }

@@ -56,8 +56,8 @@
       );
 
       .list-subheader {
-        font-weight: 600;
-        color: var(--primary-one);
+        font-weight: 500;
+        color: var(--primary-text);
         padding: 0 var(--spacing-md) var(--spacing-xs) var(--spacing-md);
       }
 
@@ -164,10 +164,11 @@
   padding: var(--spacing-2xl);
   height: 100%;
 
+  // Toolbar
   .main-toolbar {
     position: sticky;
     top: 0;
-    z-index: 4;
+    z-index: 3;
     background: none;
     padding: 0;
 
@@ -175,13 +176,14 @@
       padding-right: var(--spacing-xxs);
       .toggle-button {
         @include mixins.flex-layout;
+        color: var(--gradient-light-end);
       }
     }
 
     .sidenav-header {
       @include mixins.flex-layout($align: stretch, $justify: space-between);
-      width: inherit;
       height: 100%;
+      width: inherit;
 
       .title-container .page-title {
         @include mixins.flex-layout;
@@ -192,91 +194,68 @@
         font-weight: 600;
       }
 
-      .header-account {
-        @include mixins.flex-layout(
-          $direction: row-reverse,
-          $gap: var(--spacing-sm)
-        );
-        font-size: var(--font-size-smx);
-        background-color: var(--neutral-option);
-        border-radius: var(--border-radius-xl);
-        padding: var(--spacing-xxs) var(--spacing-md) var(--spacing-xxs)
-          var(--spacing-xs);
+      .admin-panel {
+        @include mixins.flex-layout($align: stretch, $gap: var(--spacing-sm));
 
-        .account-text {
-          text-align: left;
-          line-height: var(--line-height-sm);
+        .admin-settings {
+          @include mixins.flex-layout($gap: var(--spacing-sm));
 
-          .account-name {
-            font-weight: 500;
-          }
-
-          .account-role {
-            opacity: var(--opacity-semi-opaque);
-          }
-        }
-
-        .profile-dropdown {
-          @include mixins.flex-layout;
-          position: relative;
-
-          .profile-icon {
-            width: 2.5rem;
-            height: 2.5rem;
+          .panel-button {
+            @include mixins.flex-layout;
+            background-color: var(--neutral-option);
             border-radius: 50%;
+            padding: var(--spacing-smx);
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin: 0.1rem 0;
 
-            &:hover {
-              box-shadow: 0 0 0 3px var(--neutral-hover);
+            .light-icon {
+              color: var(--primary-one);
+              user-select: none;
+            }
+
+            .dark-icon {
+              color: var(--secondary-text);
+              user-select: none;
             }
           }
 
-          .dropdown-menu {
-            position: absolute;
-            top: 100%;
-            left: 0%;
-            background-color: var(--neutral-light);
-            box-shadow: var(--shadow-level-1);
-            border-radius: var(--border-radius-md);
+          mat-icon {
+            color: var(--neutral-base);
+          }
+        }
 
-            .dropdown-item {
-              @include mixins.ellipsis;
-              display: flex;
-              align-items: center;
-              gap: var(--spacing-xs);
-              padding: var(--spacing-md);
-              color: var(--neutral-base);
-              transition: background-color 0.3s ease;
-              border-radius: var(--border-radius-sm);
-              font-size: var(--font-size-md);
+        .admin-account {
+          @include mixins.flex-layout(
+            $direction: row-reverse,
+            $gap: var(--spacing-sm)
+          );
+          font-size: var(--font-size-smx);
+          background-color: var(--neutral-option);
+          border-radius: var(--border-radius-xl);
+          padding: 0 var(--spacing-md) 0 var(--spacing-xs);
+          margin: 2px 0;
+
+
+          .account-text {
+            text-align: left;
+            line-height: var(--line-height-sm);
+
+            .account-name {
               font-weight: 500;
-              cursor: pointer;
+            }
+
+            .account-role {
+              opacity: var(--opacity-semi-opaque);
+            }
+          }
+
+          .profile-dropdown {
+            @include mixins.flex-layout;
+
+            .profile-icon {
+              width: 2.5rem;
+              height: 2.5rem;
+              border-radius: 50%;
               user-select: none;
-
-              &:hover {
-                background-color: var(--neutral-option);
-              }
-
-              &.logout {
-                color: var(--primary-text);
-
-                span.material-symbols-rounded {
-                  color: var(--primary-text);
-                }
-
-                &:hover {
-                  background-color: var(--primary-fade);
-                }
-              }
-
-              span.material-symbols-rounded {
-                display: flex;
-                align-items: center;
-                font-size: var(--font-size-lg);
-                font-weight: 500;
-              }
             }
           }
         }
