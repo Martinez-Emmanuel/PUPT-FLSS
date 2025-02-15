@@ -1,5 +1,5 @@
-@use "../../../../../styles/mixins";
-@use "../../../../../styles/breakpoints" as bp;
+@use '../../../../../styles/mixins';
+@use '../../../../../styles/breakpoints' as bp;
 
 * {
   @include mixins.reset-styles;
@@ -129,7 +129,6 @@
     .quick-stats {
       @include mixins.flex-layout($gap: var(--spacing-md));
       flex: 0;
-      // border: 1px solid blue;
 
       & .stats {
         @include mixins.flex-layout($align: stretch);
@@ -157,7 +156,6 @@
         $justify: center,
         $gap: var(--spacing-md)
       );
-      // border: 1px solid salmon;
 
       /* Academic Overview */
       .academic-overview {
@@ -282,7 +280,7 @@
               transition: transform 0.3s ease;
 
               &::before {
-                content: "";
+                content: '';
                 position: absolute;
                 top: 0;
                 left: 0;
@@ -296,7 +294,7 @@
 
               span[mat-symbol] {
                 @include mixins.gradient-primary-text;
-                font-family: "Material Symbols Rounded";
+                font-family: 'Material Symbols Rounded';
                 font-size: var(--font-size-3xl);
                 position: relative;
               }
@@ -346,7 +344,6 @@
         $gap: var(--spacing-sm)
       );
       height: inherit;
-      margin-bottom: var(--spacing-md);
 
       .request-icon {
         font-size: var(--font-size-lg);
@@ -527,7 +524,7 @@
     );
     height: auto;
 
-    &.main-cluster-one .quick-stats {
+    .quick-stats {
       @include mixins.flex-layout(
         $direction: column,
         $align: stretch,
@@ -536,7 +533,7 @@
       );
     }
 
-    &.main-cluster-one .academic-and-action {
+    .academic-and-action {
       @include mixins.flex-layout(
         $direction: column,
         $align: stretch,
@@ -544,11 +541,17 @@
       );
     }
   }
+
+  .overview-main-container .main-cluster-two {
+    .requests {
+      margin-bottom: var(--spacing-md);
+    }
+  }
 }
 
 @media screen and (max-width: bp.$breakpoint-sm) {
   .overview-main-container .main-cluster-one {
-    &.main-cluster-one .academic-and-action {
+    .academic-and-action {
       .academic-overview .overview-group {
         @include mixins.flex-layout(
           $direction: column,
@@ -556,6 +559,12 @@
           $gap: var(--spacing-sm)
         );
       }
+    }
+  }
+
+  .overview-main-container .main-cluster-two {
+    .requests {
+      margin-bottom: var(--spacing-md);
     }
   }
 }
