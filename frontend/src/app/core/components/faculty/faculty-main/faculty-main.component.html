@@ -97,7 +97,7 @@
   </main>
 
   <!-- Mobile Navigation Bar -->
-  <nav class="mobile-navbar">
+  <nav class="mobile-navbar" [class.dropdown-open]="isDropdownOpen">
     <a routerLink="home" routerLinkActive="active" class="bottom-nav-item">
       <div class="icon-container">
         <span mat-symbol="home"></span>

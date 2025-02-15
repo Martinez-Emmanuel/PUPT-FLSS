@@ -314,6 +314,7 @@
 /* Mobile Navigation Bar */
 .mobile-navbar {
   @include mixins.glass-effect;
+  @include mixins.default-transition;
   display: none;
   position: fixed;
   bottom: 0;
@@ -325,8 +326,11 @@
   justify-content: space-around;
   align-items: center;
   height: auto;
-  transition: all 0.3s ease-in-out;
   isolation: isolate;
+
+  &.dropdown-open {
+    box-shadow: none;
+  }
 
   .bottom-nav-item {
     display: flex;
@@ -393,8 +397,8 @@
 
 /* Mobile Account Dropdown */
 .mobile-dropdown {
-  @include mixins.default-transition;
   @include mixins.glass-effect(20px);
+  @include mixins.default-transition;
   display: none;
   position: fixed;
   bottom: var(--spacing-5xl);
@@ -402,7 +406,7 @@
   right: 0;
   z-index: 999;
   border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0;
-  border: 1px solid var(--glass-border);
+  border-top: 1px solid var(--glass-border);
   overflow: hidden;
   transform-origin: bottom;
   will-change: transform, opacity;
