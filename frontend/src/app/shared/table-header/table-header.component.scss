@@ -107,6 +107,10 @@
 
   .export-button {
     background-color: var(--neutral-button);
+
+    span {
+      text-wrap: nowrap;
+    }
   }
 }
 
