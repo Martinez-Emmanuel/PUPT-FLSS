@@ -265,6 +265,7 @@ export class FacultyMainComponent implements OnInit, AfterViewInit, OnDestroy {
     const confirmDialogRef = this.dialog.open(DialogGenericComponent, {
       data: dialogConfig,
       disableClose: true,
+      panelClass: 'dialog-base',
     });
 
     confirmDialogRef.afterClosed().subscribe((result) => {
