@@ -5,7 +5,7 @@ export const SUPERADMIN_ROUTES: Routes = [
     path: '',
     loadComponent: () =>
       import('./superadmin-main/superadmin-main.component').then(
-        (m) => m.SuperadminMainComponent
+        (m) => m.SuperadminMainComponent,
       ),
     children: [
       { path: '', redirectTo: 'admin', pathMatch: 'full' },
@@ -13,7 +13,7 @@ export const SUPERADMIN_ROUTES: Routes = [
         path: 'dashboard',
         loadComponent: () =>
           import('./dashboard/dashboard.component').then(
-            (m) => m.DashboardComponent
+            (m) => m.DashboardComponent,
           ),
         data: { pageTitle: 'Dashboard' },
       },
@@ -21,7 +21,7 @@ export const SUPERADMIN_ROUTES: Routes = [
         path: 'admin',
         loadComponent: () =>
           import('./management/admin/admin.component').then(
-            (m) => m.AdminComponent
+            (m) => m.AdminComponent,
           ),
         data: { pageTitle: 'Manage Admin' },
       },
@@ -32,7 +32,7 @@ export const SUPERADMIN_ROUTES: Routes = [
             path: '',
             loadComponent: () =>
               import('./management/faculty/faculty.component').then(
-                (m) => m.FacultyComponent
+                (m) => m.FacultyComponent,
               ),
             data: { pageTitle: 'Manage Faculty' },
           },
@@ -50,7 +50,7 @@ export const SUPERADMIN_ROUTES: Routes = [
         path: 'programs',
         loadComponent: () =>
           import('./maintenance/programs/programs.component').then(
-            (m) => m.ProgramsComponent
+            (m) => m.ProgramsComponent,
           ),
         data: { pageTitle: 'Programs' },
       },
@@ -58,7 +58,7 @@ export const SUPERADMIN_ROUTES: Routes = [
         path: 'curriculum',
         loadComponent: () =>
           import('./maintenance/curriculum/curriculum.component').then(
-            (m) => m.CurriculumComponent
+            (m) => m.CurriculumComponent,
           ),
         data: { pageTitle: 'Curriculum' },
       },
@@ -82,7 +82,7 @@ export const SUPERADMIN_ROUTES: Routes = [
             path: '',
             loadComponent: () =>
               import('./maintenance/rooms/rooms.component').then(
-                (m) => m.RoomsComponent
+                (m) => m.RoomsComponent,
               ),
             data: { pageTitle: 'Rooms' },
           },
@@ -100,9 +100,17 @@ export const SUPERADMIN_ROUTES: Routes = [
         path: 'buildings',
         loadComponent: () =>
           import('./maintenance/buildings/buildings.component').then(
-            (m) => m.BuildingsComponent
+            (m) => m.BuildingsComponent,
           ),
         data: { pageTitle: 'Buildings' },
+      },
+      {
+        path: 'logos',
+        loadComponent: () =>
+          import('./maintenance/logos/logos.component').then(
+            (m) => m.LogosComponent,
+          ),
+        data: { pageTitle: 'Logos' },
       },
       { path: '**', redirectTo: 'admin' },
     ],

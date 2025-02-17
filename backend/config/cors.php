@@ -15,26 +15,20 @@ return [
     |
      */
 
-    'paths' => ['api/*', 'sanctum/csrf-cookie'],
+    'paths'                    => ['api/*', 'sanctum/csrf-cookie', 'storage/*'],
 
-    'allowed_methods' => ['GET', 'POST', 'PUT', 'DELETE'],
+    'allowed_methods'          => ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
 
-    'allowed_origins' => [
-        '*',
-        // 'https://app.pupt-flss.com',
-        // 'https://beta.pupt-flss.com',
-        // 'http://localhost:4200',
-        // 'http://127.0.0.1:4200',
-    ],
+    'allowed_origins'          => ['*'],
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['*'],
+    'allowed_headers'          => ['*'],
 
-    'exposed_headers' => [],
+    'exposed_headers'          => ['*'],
 
-    'max_age' => 3600,
+    'max_age'                  => 3600,
 
-    'supports_credentials' => false,
+    'supports_credentials'     => false,
 
 ];

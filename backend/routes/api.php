@@ -12,6 +12,7 @@ use App\Http\Controllers\External\v1\ExternalController;
 use App\Http\Controllers\FacultyController;
 use App\Http\Controllers\FacultyNotificationController;
 use App\Http\Controllers\FacultyTypeController;
+use App\Http\Controllers\LogoController;
 use App\Http\Controllers\OAuthController;
 use App\Http\Controllers\PasswordResetController;
 use App\Http\Controllers\PreferenceController;
@@ -148,6 +149,18 @@ Route::middleware('auth:sanctum')->group(function () {
      * Faculty Type
      */
     Route::apiResource('faculty-types', FacultyTypeController::class);
+
+    /**
+     * Logos
+     */
+    Route::prefix('logos')->group(function () {
+        Route::get('/', [LogoController::class, 'index']);
+        Route::post('/upload', [LogoController::class, 'upload']);
+        Route::get('/image/{type}', [LogoController::class, 'getImage'])->where('type', 'university|government');
+        Route::get('/details/{type}', [LogoController::class, 'show'])->where('type', 'university|government');
+        Route::delete('/{type}', [LogoController::class, 'delete'])->where('type', 'university|government');
+
+    });
 
     /**
      * Preferences

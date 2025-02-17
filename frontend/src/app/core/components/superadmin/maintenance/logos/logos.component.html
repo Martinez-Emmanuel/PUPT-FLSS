@@ -1,0 +1,119 @@
+<div class="logos-container">
+  @if (isLoading) {
+  <div class="loading-wrapper">
+    <app-loading></app-loading>
+  </div>
+  } @else {
+  <div class="logos-card-container" [@fadeAnimation]>
+    <!-- University Logo Card -->
+    <mat-card class="logo-card">
+      <!-- Header -->
+      <mat-card-header>
+        <mat-card-title class="logo-title">
+          <span mat-symbol="school"></span>
+          University Logo
+        </mat-card-title>
+        <mat-card-subtitle class="logo-subtitle">
+          Upload the university logo for reports.
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <!-- Content -->
+      <mat-card-content class="logo-content">
+        @if (universityLogo) {
+        <div class="logo-preview">
+          <img
+            [src]="universityLogo.url"
+            [alt]="universityLogo.file_name"
+            [matTooltip]="universityLogo.file_name" />
+        </div>
+        } @else {
+        <div class="no-logo">
+          <mat-icon>image</mat-icon>
+          <p class="no-logo-text">No image selected yet.</p>
+        </div>
+        }
+      </mat-card-content>
+
+      <!-- Actions -->
+      <mat-card-actions class="logo-actions">
+        <button
+          mat-button
+          color="primary"
+          (click)="triggerFileInput('university')">
+          <mat-icon>{{ universityLogo ? 'loop' : 'upload' }}</mat-icon>
+          {{ universityLogo ? 'Change Logo' : 'Upload Logo' }}
+        </button>
+        @if (universityLogo) {
+        <button mat-button color="warn" (click)="confirmDelete('university')">
+          <mat-icon>delete</mat-icon>
+          Remove
+        </button>
+        }
+      </mat-card-actions>
+    </mat-card>
+
+    <!-- Government Brand Card -->
+    <mat-card class="logo-card">
+      <!-- Header -->
+      <mat-card-header>
+        <mat-card-title class="logo-title">
+          <span mat-symbol="account_balance"></span>
+          Government Brand
+        </mat-card-title>
+        <mat-card-subtitle class="logo-subtitle">
+          Upload the government brand for reports.
+        </mat-card-subtitle>
+      </mat-card-header>
+
+      <!-- Content -->
+      <mat-card-content class="logo-content">
+        @if (governmentLogo) {
+        <div class="logo-preview">
+          <img
+            [src]="governmentLogo.url"
+            [alt]="governmentLogo.file_name"
+            [matTooltip]="governmentLogo.file_name" />
+        </div>
+        } @else {
+        <div class="no-logo">
+          <mat-icon>image</mat-icon>
+          <p class="no-logo-text">No image selected yet.</p>
+        </div>
+        }
+      </mat-card-content>
+
+      <!-- Actions -->
+      <mat-card-actions class="logo-actions">
+        <button
+          mat-button
+          color="primary"
+          (click)="triggerFileInput('government')">
+          <mat-icon>{{ governmentLogo ? 'loop' : 'upload' }}</mat-icon>
+          {{ governmentLogo ? 'Change Logo' : 'Upload Logo' }}
+        </button>
+        @if (governmentLogo) {
+        <button mat-button color="warn" (click)="confirmDelete('government')">
+          <mat-icon>delete</mat-icon>
+          Remove
+        </button>
+        }
+      </mat-card-actions>
+    </mat-card>
+  </div>
+
+  <!-- Hidden file inputs -->
+  <input
+    type="file"
+    #universityInput
+    style="display: none"
+    accept="image/jpeg,image/png,image/jpg"
+    (change)="onFileSelected($event, 'university')" />
+  <input
+    type="file"
+    #governmentInput
+    style="display: none"
+    accept="image/jpeg,image/png,image/jpg"
+    (change)="onFileSelected($event, 'government')" />
+  }
+</div>
