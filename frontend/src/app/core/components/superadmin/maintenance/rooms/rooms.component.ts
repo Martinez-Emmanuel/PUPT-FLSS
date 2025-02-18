@@ -17,7 +17,7 @@ import { DialogExportComponent } from '../../../../../shared/dialog-export/dialo
 import { RoomWithDetails, RoomService } from '../../../../services/superadmin/rooms/rooms.service';
 import { Building, BuildingsService } from '../../../../services/superadmin/buildings/buildings.service';
 import { RoomType, RoomTypesService } from '../../../../services/superadmin/room-types/room-types.service';
-import { LogoCacheService } from '../../../../services/cache/logo-cache.service';
+import { ReportHeaderService } from '../../../../services/report-header/report-header.service';
 
 import { fadeAnimation } from '../../../../animations/animations';
 
@@ -76,7 +76,6 @@ export class RoomsComponent implements OnInit, OnDestroy {
 
   isLoading = true;
   searchControl = new FormControl('');
-  private logoBase64: string = '';
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -86,11 +85,10 @@ export class RoomsComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef,
-    private logoCacheService: LogoCacheService
+    private reportHeaderService: ReportHeaderService,
   ) {}
 
   ngOnInit() {
-    this.initializeLogo();
     this.fetchInitialData();
     this.setupSearch();
   }
@@ -98,15 +96,6 @@ export class RoomsComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  private initializeLogo() {
-    this.logoCacheService
-      .getLogoBase64()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((base64) => {
-        this.logoBase64 = base64;
-      });
   }
 
   private fetchInitialData() {
@@ -132,17 +121,17 @@ export class RoomsComponent implements OnInit, OnDestroy {
                       ?.building_name || '',
                   room_type_name:
                     roomTypes.find(
-                      (rt) => rt.room_type_id === room.room_type_id
+                      (rt) => rt.room_type_id === room.room_type_id,
                     )?.type_name || '',
-                })
-              )
-            )
+                }),
+              ),
+            ),
           );
         }),
         finalize(() => {
           this.isLoading = false;
           this.cdr.markForCheck();
-        })
+        }),
       )
       .subscribe({
         next: (rooms) => {
@@ -175,7 +164,7 @@ export class RoomsComponent implements OnInit, OnDestroy {
             room.room_type_name.toLowerCase().includes(term) ||
             room.floor_level.toLowerCase().includes(term) ||
             room.status.toLowerCase().includes(term) ||
-            room.capacity.toString().includes(term)
+            room.capacity.toString().includes(term),
         );
         this.roomsSubject.next(filteredRooms);
       });
@@ -391,48 +380,9 @@ export class RoomsComponent implements OnInit, OnDestroy {
     const doc = new jsPDF('p', 'mm', 'legal');
     const pageWidth = doc.internal.pageSize.width;
     const margin = 10;
-    const logoSize = 22;
-    const topMargin = 15;
-    let currentY = topMargin;
+    let currentY = 15;
 
     try {
-      const addHeader = (title: string) => {
-        currentY = topMargin;
-
-        if (this.logoBase64) {
-          doc.addImage(this.logoBase64, 'PNG', margin, 10, logoSize, logoSize);
-        }
-
-        doc.setFontSize(12);
-        doc.setFont('times', 'bold');
-        doc.text(
-          'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
-          pageWidth / 2,
-          currentY,
-          { align: 'center' }
-        );
-        currentY += 5;
-
-        doc.setFontSize(12);
-        doc.text(
-          'Gen. Santos Ave. Upper Bicutan, Taguig City',
-          pageWidth / 2,
-          currentY,
-          { align: 'center' }
-        );
-        currentY += 10;
-
-        doc.setFontSize(15);
-        doc.setTextColor(0, 0, 0);
-        doc.text(title, pageWidth / 2, currentY, { align: 'center' });
-        currentY += 8;
-
-        doc.setDrawColor(0, 0, 0);
-        doc.setLineWidth(0.5);
-        doc.line(margin, currentY, pageWidth - margin, currentY);
-        currentY += 7;
-      };
-
       const addTable = (data: any[], startY: number) => {
         if (data.length === 0) {
           doc.setFontSize(10);
@@ -491,26 +441,12 @@ export class RoomsComponent implements OnInit, OnDestroy {
       const rooms = allRooms.filter((room) => room.status === 'Available');
       const buildings = this.buildingsSubject.getValue();
 
-      addHeader('Room Report - All Rooms');
-      const allRoomsData = rooms.map((room, index) => [
-        (index + 1).toString(),
-        room.room_code,
-        room.building_name,
-        room.floor_level,
-        room.room_type_name,
-        room.capacity.toString(),
-        room.status,
-      ]);
-      addTable(allRoomsData, currentY);
-
-      buildings.forEach((building) => {
-        doc.addPage();
-
-        addHeader(`Room Report - ${building.building_name}`);
-
-        const buildingRooms = rooms
-          .filter((room) => room.building_id === building.building_id)
-          .map((room, index) => [
+      // Add header for all rooms page
+      this.reportHeaderService
+        .addHeader(doc, 'Room Report - All Rooms', currentY)
+        .subscribe((newY) => {
+          currentY = newY;
+          const allRoomsData = rooms.map((room, index) => [
             (index + 1).toString(),
             room.room_code,
             room.building_name,
@@ -519,9 +455,37 @@ export class RoomsComponent implements OnInit, OnDestroy {
             room.capacity.toString(),
             room.status,
           ]);
+          addTable(allRoomsData, currentY);
 
-        addTable(buildingRooms, currentY);
-      });
+          // Add building-specific pages
+          buildings.forEach((building) => {
+            doc.addPage();
+            currentY = 15;
+
+            this.reportHeaderService
+              .addHeader(
+                doc,
+                `Room Report - ${building.building_name}`,
+                currentY,
+              )
+              .subscribe((newY) => {
+                currentY = newY;
+                const buildingRooms = rooms
+                  .filter((room) => room.building_id === building.building_id)
+                  .map((room, index) => [
+                    (index + 1).toString(),
+                    room.room_code,
+                    room.building_name,
+                    room.floor_level,
+                    room.room_type_name,
+                    room.capacity.toString(),
+                    room.status,
+                  ]);
+
+                addTable(buildingRooms, currentY);
+              });
+          });
+        });
 
       return doc.output('blob');
     } catch (error) {

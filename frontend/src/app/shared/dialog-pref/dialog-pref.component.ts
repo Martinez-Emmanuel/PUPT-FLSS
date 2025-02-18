@@ -2,9 +2,8 @@ import { Component, Inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { Subject } from 'rxjs';
 
-import { takeUntil } from 'rxjs';
+import { Subject } from 'rxjs';
 
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
@@ -16,7 +15,7 @@ import { MatSymbolDirective } from '../../core/imports/mat-symbol.directive';
 import { LoadingComponent } from '../loading/loading.component';
 
 import { PreferencesService } from '../../core/services/faculty/preference/preferences.service';
-import { LogoCacheService } from '../../core/services/cache/logo-cache.service';
+import { ReportHeaderService } from '../../core/services/report-header/report-header.service';
 
 import { fadeAnimation } from '../../core/animations/animations';
 
@@ -63,7 +62,6 @@ export class DialogPrefComponent implements OnInit, OnDestroy {
   selectedView: 'table-view' | 'pdf-view' = 'table-view';
   pdfBlobUrl: SafeResourceUrl | null = null;
 
-  private logoBase64: string = '';
   private destroy$ = new Subject<void>();
 
   constructor(
@@ -71,11 +69,10 @@ export class DialogPrefComponent implements OnInit, OnDestroy {
     public dialogRef: MatDialogRef<DialogPrefComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogPrefData,
     private sanitizer: DomSanitizer,
-    private logoCacheService: LogoCacheService
+    private reportHeaderService: ReportHeaderService,
   ) {}
 
   ngOnInit(): void {
-    this.initializeLogo();
     this.isLoading = true;
     this.facultyName = this.data.facultyName;
 
@@ -112,17 +109,8 @@ export class DialogPrefComponent implements OnInit, OnDestroy {
         (error) => {
           console.error('Error loading faculty preferences:', error);
           this.isLoading = false;
-        }
+        },
       );
-  }
-
-  private initializeLogo() {
-    this.logoCacheService
-      .getLogoBase64()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((base64) => {
-        this.logoBase64 = base64;
-      });
   }
 
   onViewChange(): void {
@@ -157,163 +145,133 @@ export class DialogPrefComponent implements OnInit, OnDestroy {
   generateFacultyPDF(
     isAll: boolean,
     coursesArray: Course[][],
-    showPreview: boolean = false
+    showPreview: boolean = false,
   ): Blob | void {
     const doc = new jsPDF('p', 'mm', 'legal') as any;
-    const pageWidth = doc.internal.pageSize.width;
-    const margin = 10;
-    const topMargin = 15;
-    const logoSize = 22;
-    let currentY = topMargin;
+    let currentY = 15;
 
-    const headerFont = { font: 'times', style: 'bold', size: 12 };
-    const normalFont = { font: 'times', style: 'normal', size: 12 };
-    const centerAlign = { align: 'center' };
+    try {
+      // Add header using the report header service
+      this.reportHeaderService
+        .addHeader(
+          doc,
+          isAll
+            ? 'All Faculty Preferences Report'
+            : 'Faculty Preferences Report',
+          currentY,
+        )
+        .subscribe((newY) => {
+          currentY = newY;
 
-    /**
-     * Adds the header to the PDF.
-     */
-    const addHeader = () => {
+          coursesArray.forEach((courses) => {
+            if (!courses || courses.length === 0) return;
 
-      if (this.logoBase64) {
-        doc.addImage(this.logoBase64, 'PNG', margin, 10, logoSize, logoSize);
-      }
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            const facultyInfo = [
+              `Faculty Name: ${this.facultyName}`,
+              `Academic Year: ${this.academicYear}`,
+              `Semester: ${this.semesterLabel}`,
+            ];
 
-      doc.setFontSize(headerFont.size);
-      doc.setFont(headerFont.font, headerFont.style);
-      doc.text(
-        'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
-        pageWidth / 2,
-        topMargin,
-        centerAlign
-      );
-      doc.text(
-        'Gen. Santos Ave. Upper Bicutan, Taguig City',
-        pageWidth / 2,
-        topMargin + 5,
-        centerAlign
-      );
-      doc.setFontSize(15);
+            facultyInfo.forEach((info) => {
+              doc.text(info, 10, currentY);
+              currentY += 5;
+            });
+            currentY += 5;
 
-      if (isAll) {
-        doc.text(
-          'All Faculty Preferences Report',
-          pageWidth / 2,
-          topMargin + 15,
-          centerAlign
-        );
-      } else {
-        doc.text(
-          'Faculty Preferences Report',
-          pageWidth / 2,
-          topMargin + 15,
-          centerAlign
-        );
-      }
+            const courseData = courses.map((course: Course, index: number) => [
+              (index + 1).toString(),
+              course.course_code || 'N/A',
+              course.course_title || 'N/A',
+              course.lec_hours.toString(),
+              course.lab_hours.toString(),
+              course.units.toString(),
+              this.formatPreferredDaysAndTime(course),
+            ]);
 
-      doc.setDrawColor(0, 0, 0);
-      doc.setLineWidth(0.5);
-      doc.line(margin, topMargin + 20, pageWidth - margin, topMargin + 20);
+            // Table Configuration
+            const tableHead = [
+              [
+                '#',
+                'Course Code',
+                'Course Title',
+                'Lec',
+                'Lab',
+                'Units',
+                'Preferred Day & Time',
+              ],
+            ];
+            const tableConfig = {
+              startY: currentY,
+              head: tableHead,
+              body: courseData,
+              theme: 'grid',
+              headStyles: {
+                fillColor: [128, 0, 0],
+                textColor: [255, 255, 255],
+                fontSize: 9,
+              },
+              bodyStyles: {
+                fontSize: 8,
+                textColor: [0, 0, 0],
+              },
+              styles: {
+                lineWidth: 0.1,
+                overflow: 'linebreak',
+                cellPadding: 2,
+              },
+              columnStyles: {
+                0: { cellWidth: 10 },
+                1: { cellWidth: 30 },
+                2: { cellWidth: 50 },
+                3: { cellWidth: 13 },
+                4: { cellWidth: 13 },
+                5: { cellWidth: 13 },
+                6: { cellWidth: 50 },
+              },
+              margin: { left: 10, right: 10 },
+            };
 
-      currentY = topMargin + 25;
-    };
+            (doc as any).autoTable(tableConfig);
 
-    addHeader();
+            currentY = doc.autoTable.previous.finalY + 10;
+            if (currentY > 270) {
+              doc.addPage();
+              this.reportHeaderService
+                .addHeader(
+                  doc,
+                  isAll
+                    ? 'All Faculty Preferences Report'
+                    : 'Faculty Preferences Report',
+                  15,
+                )
+                .subscribe((newPageY) => {
+                  currentY = newPageY;
+                });
+            }
+          });
 
-    coursesArray.forEach((courses, facultyIndex) => {
-      if (!courses || courses.length === 0) return;
+          const pdfBlob = doc.output('blob');
+          if (showPreview) {
+            return pdfBlob;
+          } else {
+            let fileName = 'faculty_preferences_report.pdf';
 
-      doc.setFontSize(normalFont.size);
-      doc.setFont(normalFont.font, normalFont.style);
-      const facultyInfo = [
-        `Faculty Name: ${this.facultyName}`,
-        `Academic Year: ${this.academicYear}`,
-        `Semester: ${this.semesterLabel}`,
-      ];
+            if (isAll && coursesArray.length > 0) {
+              fileName = `${this.sanitizeFileName(
+                this.facultyName,
+              )}_preferences_report.pdf`;
+            }
 
-      facultyInfo.forEach((info) => {
-        doc.text(info, margin, currentY);
-        currentY += 5;
-      });
-      currentY += 5;
+            doc.save(fileName);
+          }
+        });
 
-      const courseData = courses.map((course: Course, index: number) => [
-        (index + 1).toString(),
-        course.course_code || 'N/A',
-        course.course_title || 'N/A',
-        course.lec_hours.toString(),
-        course.lab_hours.toString(),
-        course.units.toString(),
-        this.formatPreferredDaysAndTime(course),
-      ]);
-
-      // Table Configuration
-      const tableHead = [
-        [
-          '#',
-          'Course Code',
-          'Course Title',
-          'Lec',
-          'Lab',
-          'Units',
-          'Preferred Day & Time',
-        ],
-      ];
-      const tableConfig = {
-        startY: currentY,
-        head: tableHead,
-        body: courseData,
-        theme: 'grid',
-        headStyles: {
-          fillColor: [128, 0, 0],
-          textColor: [255, 255, 255],
-          fontSize: 9,
-        },
-        bodyStyles: {
-          fontSize: 8,
-          textColor: [0, 0, 0],
-        },
-        styles: {
-          lineWidth: 0.1,
-          overflow: 'linebreak',
-          cellPadding: 2,
-        },
-        columnStyles: {
-          0: { cellWidth: 10 },
-          1: { cellWidth: 30 },
-          2: { cellWidth: 50 },
-          3: { cellWidth: 13 },
-          4: { cellWidth: 13 },
-          5: { cellWidth: 13 },
-          6: { cellWidth: 50 },
-        },
-        margin: { left: margin, right: margin },
-      };
-
-      (doc as any).autoTable(tableConfig);
-
-      currentY = doc.autoTable.previous.finalY + 10;
-      if (currentY > 270) {
-        doc.addPage();
-        addHeader();
-        currentY = topMargin + 25;
-      }
-    });
-
-    const pdfBlob = doc.output('blob');
-    if (showPreview) {
-      return pdfBlob;
-    } else {
-      let fileName = 'faculty_preferences_report.pdf';
-
-      if (isAll && coursesArray.length > 0) {
-        const firstCourse = coursesArray[0][0];
-        fileName = `${this.sanitizeFileName(
-          this.facultyName
-        )}_preferences_report.pdf`;
-      }
-
-      doc.save(fileName);
+      return doc.output('blob');
+    } catch (error) {
+      console.error('Failed to generate PDF:', error);
+      throw error;
     }
   }
 
@@ -327,7 +285,7 @@ export class DialogPrefComponent implements OnInit, OnDestroy {
           pref.start_time === '07:00:00' && pref.end_time === '21:00:00'
             ? 'Whole Day'
             : `${this.convertTo12HourFormat(
-                pref.start_time
+                pref.start_time,
               )} - ${this.convertTo12HourFormat(pref.end_time)}`;
         return `${pref.day} (${time})`;
       })

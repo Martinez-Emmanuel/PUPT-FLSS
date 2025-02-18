@@ -16,7 +16,7 @@ import { LoadingComponent } from '../../../../../../shared/loading/loading.compo
 import { fadeAnimation, pageFloatUpAnimation } from '../../../../../animations/animations';
 
 import { CurriculumService, Curriculum, Program, YearLevel, Semester, Course, CourseRequirement } from '../../../../../services/superadmin/curriculum/curriculum.service';
-import { LogoCacheService } from '../../../../../services/cache/logo-cache.service';
+import { ReportHeaderService } from '../../../../../services/report-header/report-header.service';
 
 import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
@@ -48,7 +48,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
   public showPreview: boolean = false;
   public isLoading: boolean = true;
   public isManagingPrograms: boolean = false;
-  private logoBase64: string = '';
 
   headerInputFields: InputField[] = [
     {
@@ -96,7 +95,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private cdr: ChangeDetectorRef,
-    private logoCacheService: LogoCacheService
+    private reportHeaderService: ReportHeaderService,
   ) {}
 
   // ===========================
@@ -108,7 +107,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
       this.fetchCurriculum(curriculumYear);
     }
 
-    this.initializeLogo();
     this.updateCustomExportOptions();
   }
 
@@ -120,15 +118,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
   // ===========================
   // Data Fetching and Updating
   // ===========================
-
-  private initializeLogo() {
-    this.logoCacheService
-      .getLogoBase64()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((base64) => {
-        this.logoBase64 = base64;
-      });
-  }
 
   fetchCurriculum(year: string) {
     this.isLoading = true;
@@ -178,7 +167,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
               'Please check your network connection and try again.'
             }`,
             'Close',
-            { duration: 3000 }
+            { duration: 3000 },
           );
           this.isLoading = false;
         },
@@ -193,7 +182,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
       })) || [];
 
     const selectedProgramData = this.curriculum?.programs.find(
-      (p) => p.curricula_program_id === Number(this.selectedProgram)
+      (p) => p.curricula_program_id === Number(this.selectedProgram),
     );
 
     const yearLevelOptions = selectedProgramData
@@ -223,7 +212,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
     const selectedProgram = this.curriculum?.programs.find(
       (program) =>
         program.curricula_program_id === this.selectedProgram ||
-        program.name === this.selectedProgram
+        program.name === this.selectedProgram,
     );
 
     this.customExportOptions = {
@@ -305,7 +294,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
             'Close',
             {
               duration: 3000,
-            }
+            },
           );
           return;
         }
@@ -356,17 +345,17 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
         this.curriculumService
           .updateCourse(course.course_id, updatedCourse)
           .subscribe({
-            next: (response) => {
+            next: () => {
               this.snackBar.open(
                 `Course '${course.course_code} - ${course.course_title}' updated successfully.`,
                 'Close',
                 {
                   duration: 3000,
-                }
+                },
               );
 
               const programIndex = this.curriculum!.programs.findIndex(
-                (p) => p.curricula_program_id === this.selectedProgram
+                (p) => p.curricula_program_id === this.selectedProgram,
               );
               if (programIndex !== -1) {
                 const yearLevelIndex = this.curriculum!.programs[
@@ -376,7 +365,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                   const semesterIndex = this.curriculum!.programs[
                     programIndex
                   ].year_levels[yearLevelIndex].semesters.findIndex(
-                    (s) => s.semester_id === semester.semester_id
+                    (s) => s.semester_id === semester.semester_id,
                   );
                   if (semesterIndex !== -1) {
                     const courseIndex = this.curriculum!.programs[
@@ -384,7 +373,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                     ].year_levels[yearLevelIndex].semesters[
                       semesterIndex
                     ].courses.findIndex(
-                      (c) => c.course_id === course.course_id
+                      (c) => c.course_id === course.course_id,
                     );
                     if (courseIndex !== -1) {
                       this.curriculum!.programs[programIndex].year_levels[
@@ -397,11 +386,11 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                         course_id: course.course_id,
                         prerequisites:
                           this.getPrerequisitesOrCorequisitesByTitles(
-                            result.pre_req
+                            result.pre_req,
                           ),
                         corequisites:
                           this.getPrerequisitesOrCorequisitesByTitles(
-                            result.co_req
+                            result.co_req,
                           ),
                       };
 
@@ -418,7 +407,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                 'Close',
                 {
                   duration: 3000,
-                }
+                },
               );
             },
           });
@@ -434,11 +423,11 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
           'Close',
           {
             duration: 3000,
-          }
+          },
         );
 
         const programIndex = this.curriculum!.programs.findIndex(
-          (p) => p.curricula_program_id === this.selectedProgram
+          (p) => p.curricula_program_id === this.selectedProgram,
         );
         if (programIndex !== -1) {
           const yearLevelIndex = this.curriculum!.programs[
@@ -449,7 +438,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
               yearLevelIndex
             ].semesters.forEach((semester) => {
               semester.courses = semester.courses.filter(
-                (c) => c.course_id !== course.course_id
+                (c) => c.course_id !== course.course_id,
               );
             });
             this.updateSelectedSemesters();
@@ -461,7 +450,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
         this.snackBar.open(
           `Error deleting course '${course.course_code}'. Please try again.`,
           'Close',
-          { duration: 3000 }
+          { duration: 3000 },
         );
       },
     });
@@ -492,7 +481,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
       this.snackBar.open(
         'Error: Missing curriculum, program, or year level information.',
         'Close',
-        { duration: 3000 }
+        { duration: 3000 },
       );
       return;
     }
@@ -500,7 +489,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
     const semesterId = semester.semester_id;
     const dialogConfig = this.getCourseDialogConfig(
       undefined,
-      semester.semester
+      semester.semester,
     );
     const dialogRef = this.dialog.open(TableDialogComponent, {
       data: dialogConfig,
@@ -559,11 +548,11 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
               'Close',
               {
                 duration: 3000,
-              }
+              },
             );
 
             const programIndex = this.curriculum!.programs.findIndex(
-              (p) => p.curricula_program_id === this.selectedProgram
+              (p) => p.curricula_program_id === this.selectedProgram,
             );
             if (programIndex !== -1) {
               const yearLevelIndex = this.curriculum!.programs[
@@ -573,17 +562,17 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                 const semesterIndex = this.curriculum!.programs[
                   programIndex
                 ].year_levels[yearLevelIndex].semesters.findIndex(
-                  (s) => s.semester_id === semester.semester_id
+                  (s) => s.semester_id === semester.semester_id,
                 );
                 if (semesterIndex !== -1) {
                   const addedCourse: Course = {
                     ...result,
                     course_id: response.course.course_id,
                     prerequisites: this.getPrerequisitesOrCorequisitesByTitles(
-                      result.pre_req
+                      result.pre_req,
                     ),
                     corequisites: this.getPrerequisitesOrCorequisitesByTitles(
-                      result.co_req
+                      result.co_req,
                     ),
                   };
                   this.curriculum!.programs[programIndex].year_levels[
@@ -602,7 +591,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
               'Close',
               {
                 duration: 3000,
-              }
+              },
             );
           },
         });
@@ -616,7 +605,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
       .flatMap((yearLevel) => yearLevel.semesters)
       .flatMap((sem) => sem.courses)
       .find(
-        (course) => `${course.course_code} - ${course.course_title}` === title
+        (course) => `${course.course_code} - ${course.course_title}` === title,
       );
     return course?.course_id;
   }
@@ -651,7 +640,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
         }
 
         const associatedPrograms = new Set(
-          curriculumDetails.programs.map((program) => program.name)
+          curriculumDetails.programs.map((program) => program.name),
         );
 
         const dialogConfig: DialogConfig = {
@@ -666,7 +655,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
           })),
           initialValue: allPrograms.reduce((acc, program) => {
             acc[program.program_code] = associatedPrograms.has(
-              program.program_code
+              program.program_code,
             );
             return acc;
           }, {} as { [key: string]: boolean }),
@@ -688,7 +677,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
             allPrograms.forEach((program) => {
               const isSelected = result[program.program_code];
               const isInCurriculum = associatedPrograms.has(
-                program.program_code
+                program.program_code,
               );
 
               if (isSelected && !isInCurriculum) {
@@ -701,10 +690,10 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                         this.snackBar.open(
                           `'${program.program_title}' has been added to this curriculum.`,
                           'Close',
-                          { duration: 3000 }
+                          { duration: 3000 },
                         );
-                      })
-                    )
+                      }),
+                    ),
                 );
               } else if (!isSelected && isInCurriculum) {
                 programsChanged = true;
@@ -712,17 +701,17 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                   this.curriculumService
                     .removeProgramFromCurriculum(
                       curriculumYear,
-                      program.program_id
+                      program.program_id,
                     )
                     .pipe(
                       tap(() => {
                         this.snackBar.open(
                           `'${program.program_title}' removed from this curriculum.`,
                           'Close',
-                          { duration: 3000 }
+                          { duration: 3000 },
                         );
-                      })
-                    )
+                      }),
+                    ),
                 );
               }
             });
@@ -736,8 +725,8 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                     this.isManagingPrograms = false;
                   }),
                   switchMap(() =>
-                    this.curriculumService.getCurriculumByYear(curriculumYear)
-                  )
+                    this.curriculumService.getCurriculumByYear(curriculumYear),
+                  ),
                 )
                 .subscribe({
                   next: (updatedCurriculum) => {
@@ -746,7 +735,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                     const programStillExists = updatedCurriculum.programs.some(
                       (p) =>
                         p.curricula_program_id ===
-                        Number(currentlySelectedProgramId)
+                        Number(currentlySelectedProgramId),
                     );
 
                     if (!programStillExists || programsChanged) {
@@ -767,7 +756,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                       error.error?.message ||
                         'Error updating curriculum. Please refresh the page.',
                       'Close',
-                      { duration: 3000 }
+                      { duration: 3000 },
                     );
                   },
                 });
@@ -781,7 +770,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
         this.snackBar.open(
           'Error loading programs. Please try again.',
           'Close',
-          { duration: 3000 }
+          { duration: 3000 },
         );
       },
     });
@@ -792,7 +781,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
   // ===========================
   private getCourseDialogConfig(
     course?: Course,
-    semester?: number
+    semester?: number,
   ): DialogConfig {
     const program = this.getProgram();
     const availableCourseTitles =
@@ -805,13 +794,13 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
     let existingPreReqs: string[] = [];
     if (course?.prerequisites) {
       existingPreReqs = course.prerequisites.map(
-        (p) => `${p.course_code} - ${p.course_title}`
+        (p) => `${p.course_code} - ${p.course_title}`,
       );
     }
     let existingCoReqs: string[] = [];
     if (course?.corequisites) {
       existingCoReqs = course.corequisites.map(
-        (c) => `${c.course_code} - ${c.course_title}`
+        (c) => `${c.course_code} - ${c.course_title}`,
       );
     }
 
@@ -908,7 +897,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
   }
 
   getPrerequisitesOrCorequisitesByTitles(
-    titles: string[]
+    titles: string[],
   ): CourseRequirement[] {
     if (!titles || titles.length === 0 || titles[0] === 'None') return [];
 
@@ -920,7 +909,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
           .flatMap((sem) => sem.courses)
           .find(
             (course) =>
-              `${course.course_code} - ${course.course_title}` === title
+              `${course.course_code} - ${course.course_title}` === title,
           );
 
         return course
@@ -939,7 +928,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
   // ===========================
   private getProgram(): Program | undefined {
     return this.curriculum?.programs.find(
-      (p) => p.curricula_program_id === Number(this.selectedProgram)
+      (p) => p.curricula_program_id === Number(this.selectedProgram),
     );
   }
 
@@ -961,7 +950,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
       this.openPdfPreviewDialog(false);
     }
   }
-  
+
   openPdfPreviewDialog(exportAll: boolean): void {
     const dialogRef = this.dialog.open(DialogExportComponent, {
       data: {
@@ -972,13 +961,13 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
       maxWidth: '70rem',
       width: '100%',
     });
-  
-    dialogRef.afterClosed().subscribe((result) => {});
+
+    dialogRef.afterClosed().subscribe(() => {});
   }
-  
+
   generatePDF(showPreview: boolean = false, exportAll: boolean = false): void {
     const doc = new jsPDF('p', 'mm', 'letter') as any;
-  
+
     if (this.curriculum) {
       if (exportAll) {
         this.curriculum.programs.forEach((program, index) => {
@@ -994,7 +983,7 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
           return;
         }
       }
-  
+
       const pdfBlob = doc.output('blob');
       if (showPreview) {
         return pdfBlob;
@@ -1006,261 +995,221 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
       return;
     }
   }
-  
+
   private addProgramToPDF(
     doc: any,
     program: Program,
-    isFirstProgram: boolean
+    isFirstProgram: boolean,
   ): void {
-    const pageWidth = doc.internal.pageSize.width;
     const pageHeight = doc.internal.pageSize.height;
     const margin = 10;
     const topMargin = 15;
     const bottomMargin = 15;
-    const logoSize = 22;
-  
+
     if (!isFirstProgram) {
       doc.addPage();
     }
-    let currentY = this.drawHeader(
-      doc,
-      topMargin,
-      pageWidth,
-      margin,
-      logoSize,
-      `Curriculum Year ${this.curriculum?.curriculum_year || ''}`
-    );
-  
-    if (!program || !program.year_levels || program.year_levels.length === 0) {
-      console.warn('No valid program or year levels found');
-      return;
-    }
-  
-    const sortedYearLevels = program.year_levels.sort(
-      (a, b) => a.year - b.year
-    );
-  
-    for (const yearLevel of sortedYearLevels) {
-      const hasCoursesInYear = yearLevel.semesters.some(
-        (semester) => semester.courses && semester.courses.length > 0
-      );
-  
-      if (!hasCoursesInYear) continue;
-  
-      if (currentY + 20 > pageHeight - bottomMargin) {
-        doc.addPage();
-        currentY = this.drawHeader(
-          doc,
-          topMargin,
-          pageWidth,
-          margin,
-          logoSize,
-          `Curriculum Year ${this.curriculum?.curriculum_year || ''}`
+
+    let currentY = topMargin;
+
+    // Use the report header service for each page
+    this.reportHeaderService
+      .addHeader(
+        doc,
+        `Curriculum Year ${this.curriculum?.curriculum_year || ''}`,
+        currentY,
+      )
+      .subscribe((newY) => {
+        currentY = newY;
+
+        if (
+          !program ||
+          !program.year_levels ||
+          program.year_levels.length === 0
+        ) {
+          console.warn('No valid program or year levels found');
+          return;
+        }
+
+        const sortedYearLevels = program.year_levels.sort(
+          (a, b) => a.year - b.year,
         );
-      }
-  
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(15);
-      doc.text(`${program.name} - Year ${yearLevel.year}`, margin, currentY);
-      currentY += 10;
-  
-      const sortedSemesters = yearLevel.semesters.sort(
-        (a, b) => a.semester - b.semester
-      );
-  
-      for (const semester of sortedSemesters) {
-        if (!semester.courses || semester.courses.length === 0) continue;
-        if (currentY + 40 > pageHeight - bottomMargin) {
-          doc.addPage();
-          currentY = this.drawHeader(
-            doc,
-            topMargin,
-            pageWidth,
-            margin,
-            logoSize,
-            `Curriculum Year ${this.curriculum?.curriculum_year || ''}`
+
+        for (const yearLevel of sortedYearLevels) {
+          const hasCoursesInYear = yearLevel.semesters.some(
+            (semester) => semester.courses && semester.courses.length > 0,
           );
+
+          if (!hasCoursesInYear) continue;
+
+          if (currentY + 20 > pageHeight - bottomMargin) {
+            doc.addPage();
+            this.reportHeaderService
+              .addHeader(
+                doc,
+                `Curriculum Year ${this.curriculum?.curriculum_year || ''}`,
+                topMargin,
+              )
+              .subscribe((newPageY) => {
+                currentY = newPageY;
+              });
+          }
+
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(15);
           doc.text(
-            `${program.name} - Year ${yearLevel.year} (continued)`,
+            `${program.name} - Year ${yearLevel.year}`,
             margin,
-            currentY
+            currentY,
           );
           currentY += 10;
-        }
-  
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(13);
-        doc.text(`Semester ${semester.semester}`, margin, currentY);
-        currentY += 6;
-  
-        const tableData: (string | TableCell)[][] = semester.courses.map(
-          (course) => {
-          const processedCourse = this.populateCourseRequisites(course);
-          return [
-            processedCourse.course_code || 'N/A',
-            Array.isArray(
-              processedCourse.pre_req)
-              ? processedCourse.pre_req.join(', ') : 'None',
-            Array.isArray(
-              processedCourse.co_req)
-              ? processedCourse.co_req.join(', ') : 'None',
-            processedCourse.course_title || 'N/A',
-            processedCourse.lec_hours?.toString() || '0',
-            processedCourse.lab_hours?.toString() || '0',
-            processedCourse.units?.toString() || '0',
-            processedCourse.tuition_hours?.toString() || '0',
-          ];
-        });
-  
-        // Calculate totals
-        const totalUnits = semester.courses.reduce(
-          (sum, course) => sum + (course.units || 0), 0
-        );
-        const totalTuitionHours = semester.courses.reduce(
-          (sum, course) => sum + (course.tuition_hours || 0), 0
-        );
-  
-        // Add total row with merged cells and aligned values
-        tableData.push([
-          { 
-            content: 'TOTAL: ', 
-            colSpan: 6,
-            styles: { halign: 'left' }
-          } as TableCell,
-          { 
-            content: totalUnits.toString(),
-            styles: { halign: 'center' }
-          } as TableCell,
-          { 
-            content: totalTuitionHours.toString(),
-            styles: { halign: 'center' }
-          } as TableCell
-        ]);
-  
-        doc.autoTable({
-          startY: currentY,
-          head: [
-            [
-              'Code',
-              'Pre-req',
-              'Co-req',
-              'Title',
-              'Lec',
-              'Lab',
-              'Units',
-              'Tuition',
-            ],
-          ],
-          body: tableData as Array<(string | TableCell)[]>,
-          theme: 'grid',
-          headStyles: {
-            fillColor: [128, 0, 0],
-            textColor: [255, 255, 255],
-            fontSize: 10,
-            halign: 'center',
-            cellPadding: 1,
-          },
-          bodyStyles: {
-            fontSize: 9,
-            textColor: [0, 0, 0],
-          },
-          styles: {
-            lineWidth: 0.1,
-            overflow: 'linebreak',
-            cellPadding: 0.5,
-          },
-          columnStyles: {
-            0: { cellWidth: 'auto' },
-            1: { cellWidth: 'auto' },
-            2: { cellWidth: 'auto' },
-            3: { cellWidth: 'auto' },
-            4: { cellWidth: 'auto', halign: 'center' },
-            5: { cellWidth: 'auto', halign: 'center' },
-            6: { cellWidth: 'auto', halign: 'center' },
-            7: { cellWidth: 'auto', halign: 'center' },
-          },
-          didParseCell: function(data: {
-            row: { index: number };
-            column: { index: number };
-            cell: { styles: any; colSpan?: number };
-          }) {
-            // Style for total row
-            if (data.row.index === tableData.length - 1) {
-              data.cell.styles.fontStyle = 'bold';
-              data.cell.styles.lineWidth = 0.5;
-            }
-          },
-          margin: { left: 10, right: 10 },
-        });
-        currentY = (doc as any).lastAutoTable.finalY + 8;
-      }
-      currentY += 5;
-  
-      const yearTotalUnits = yearLevel.semesters
-        .flatMap(sem => sem.courses)
-        .reduce((sum, course) => sum + (course.units || 0), 0);
-      const yearTotalTuitionHours = yearLevel.semesters
-        .flatMap(sem => sem.courses)
-        .reduce((sum, course) => sum + (course.tuition_hours || 0), 0);
-  
-      doc.setFont('helvetica', 'bold');
-      doc.setFontSize(11);
-      currentY += 10;
-    }
-  }
-  
-  private drawHeader(
-    doc: jsPDF,
-    startY: number,
-    pageWidth: number,
-    margin: number,
-    logoSize: number,
-    title: string
-  ): number {
-    doc.setTextColor(0, 0, 0);
 
-    if (this.logoBase64) {
-      doc.addImage(this.logoBase64, 'PNG', margin, 10, logoSize, logoSize);
-    };
-  
-    const centerX = pageWidth / 2;
-  
-    let currentY = startY;
-  
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-  
-    doc.text(
-      'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
-      centerX,
-      currentY,
-      { align: 'center' }
-    );
-  
-    currentY += 5;
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-  
-    doc.text('Gen. Santos Ave. Upper Bicutan, Taguig City', centerX, currentY, {
-      align: 'center',
-    });
-  
-    currentY += 10;
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-  
-    doc.text(title, centerX, currentY, { align: 'center' });
-    currentY += 8;
-  
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.5);
-    doc.line(margin, currentY, pageWidth - margin, currentY);
-    currentY += 7;
-  
-    return currentY;
+          const sortedSemesters = yearLevel.semesters.sort(
+            (a, b) => a.semester - b.semester,
+          );
+
+          for (const semester of sortedSemesters) {
+            if (!semester.courses || semester.courses.length === 0) continue;
+            if (currentY + 40 > pageHeight - bottomMargin) {
+              doc.addPage();
+              this.reportHeaderService
+                .addHeader(
+                  doc,
+                  `Curriculum Year ${this.curriculum?.curriculum_year || ''}`,
+                  topMargin,
+                )
+                .subscribe((newPageY) => {
+                  currentY = newPageY;
+                });
+              doc.setFont('helvetica', 'bold');
+              doc.setFontSize(15);
+              doc.text(
+                `${program.name} - Year ${yearLevel.year} (continued)`,
+                margin,
+                currentY,
+              );
+              currentY += 10;
+            }
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(13);
+            doc.text(`Semester ${semester.semester}`, margin, currentY);
+            currentY += 6;
+
+            const tableData: (string | TableCell)[][] = semester.courses.map(
+              (course) => {
+                const processedCourse = this.populateCourseRequisites(course);
+                return [
+                  processedCourse.course_code || 'N/A',
+                  Array.isArray(processedCourse.pre_req)
+                    ? processedCourse.pre_req.join(', ')
+                    : 'None',
+                  Array.isArray(processedCourse.co_req)
+                    ? processedCourse.co_req.join(', ')
+                    : 'None',
+                  processedCourse.course_title || 'N/A',
+                  processedCourse.lec_hours?.toString() || '0',
+                  processedCourse.lab_hours?.toString() || '0',
+                  processedCourse.units?.toString() || '0',
+                  processedCourse.tuition_hours?.toString() || '0',
+                ];
+              },
+            );
+
+            // Calculate totals
+            const totalUnits = semester.courses.reduce(
+              (sum, course) => sum + (course.units || 0),
+              0,
+            );
+            const totalTuitionHours = semester.courses.reduce(
+              (sum, course) => sum + (course.tuition_hours || 0),
+              0,
+            );
+
+            // Add total row with merged cells and aligned values
+            tableData.push([
+              {
+                content: 'TOTAL: ',
+                colSpan: 6,
+                styles: { halign: 'left' },
+              } as TableCell,
+              {
+                content: totalUnits.toString(),
+                styles: { halign: 'center' },
+              } as TableCell,
+              {
+                content: totalTuitionHours.toString(),
+                styles: { halign: 'center' },
+              } as TableCell,
+            ]);
+
+            doc.autoTable({
+              startY: currentY,
+              head: [
+                [
+                  'Code',
+                  'Pre-req',
+                  'Co-req',
+                  'Title',
+                  'Lec',
+                  'Lab',
+                  'Units',
+                  'Tuition',
+                ],
+              ],
+              body: tableData as Array<(string | TableCell)[]>,
+              theme: 'grid',
+              headStyles: {
+                fillColor: [128, 0, 0],
+                textColor: [255, 255, 255],
+                fontSize: 10,
+                halign: 'center',
+                cellPadding: 1,
+              },
+              bodyStyles: {
+                fontSize: 9,
+                textColor: [0, 0, 0],
+              },
+              styles: {
+                lineWidth: 0.1,
+                overflow: 'linebreak',
+                cellPadding: 0.5,
+              },
+              columnStyles: {
+                0: { cellWidth: 'auto' },
+                1: { cellWidth: 'auto' },
+                2: { cellWidth: 'auto' },
+                3: { cellWidth: 'auto' },
+                4: { cellWidth: 'auto', halign: 'center' },
+                5: { cellWidth: 'auto', halign: 'center' },
+                6: { cellWidth: 'auto', halign: 'center' },
+                7: { cellWidth: 'auto', halign: 'center' },
+              },
+              didParseCell: function (data: {
+                row: { index: number };
+                column: { index: number };
+                cell: { styles: any; colSpan?: number };
+              }) {
+                // Style for total row
+                if (data.row.index === tableData.length - 1) {
+                  data.cell.styles.fontStyle = 'bold';
+                  data.cell.styles.lineWidth = 0.5;
+                }
+              },
+              margin: { left: 10, right: 10 },
+            });
+            currentY = (doc as any).lastAutoTable.finalY + 8;
+          }
+          currentY += 5;
+
+
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(11);
+          currentY += 10;
+        }
+      });
   }
+
 
   cancelPreview(): void {
     this.showPreview = false;

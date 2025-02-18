@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { BehaviorSubject, Observable, of } from 'rxjs';
+import { BehaviorSubject, Observable, of, forkJoin } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 
 import { LogoService } from '../logo/logo.service';
@@ -10,53 +10,92 @@ import { LogoService } from '../logo/logo.service';
   providedIn: 'root',
 })
 export class LogoCacheService {
-  private readonly CACHE_KEY = 'pupt_logo_cache';
-  private readonly VERSION_KEY = 'pupt_logo_version';
-  private logoBase64Subject = new BehaviorSubject<string>('');
-  public logo$ = this.logoBase64Subject.asObservable();
+  private readonly UNIVERSITY_CACHE_KEY = 'pupt_university_logo_cache';
+  private readonly GOVERNMENT_CACHE_KEY = 'pupt_government_logo_cache';
+  private readonly UNIVERSITY_VERSION_KEY = 'pupt_university_logo_version';
+  private readonly GOVERNMENT_VERSION_KEY = 'pupt_government_logo_version';
+
+  private universityLogoSubject = new BehaviorSubject<string>('');
+  private governmentLogoSubject = new BehaviorSubject<string>('');
+
+  public universityLogo$ = this.universityLogoSubject.asObservable();
+  public governmentLogo$ = this.governmentLogoSubject.asObservable();
 
   constructor(private logoService: LogoService, private http: HttpClient) {
     this.initializeCache();
   }
 
   private initializeCache(): void {
-    const cachedLogo = localStorage.getItem(this.CACHE_KEY);
-    const cachedVersion = localStorage.getItem(this.VERSION_KEY);
+    this.initializeLogo('university');
+    this.initializeLogo('government');
+  }
 
-    this.logoService.getLogo('university').subscribe({
+  private initializeLogo(type: 'university' | 'government'): void {
+    const cacheKey =
+      type === 'university'
+        ? this.UNIVERSITY_CACHE_KEY
+        : this.GOVERNMENT_CACHE_KEY;
+    const versionKey =
+      type === 'university'
+        ? this.UNIVERSITY_VERSION_KEY
+        : this.GOVERNMENT_VERSION_KEY;
+    const subject =
+      type === 'university'
+        ? this.universityLogoSubject
+        : this.governmentLogoSubject;
+
+    const cachedLogo = localStorage.getItem(cacheKey);
+    const cachedVersion = localStorage.getItem(versionKey);
+
+    this.logoService.getLogo(type).subscribe({
       next: (logo) => {
         const currentVersion = logo ? logo.id.toString() : '0';
 
         if (!cachedLogo || !cachedVersion || cachedVersion !== currentVersion) {
-          this.cacheLogoImage();
+          this.cacheLogoImage(type);
         } else {
-          this.logoBase64Subject.next(cachedLogo);
+          subject.next(cachedLogo);
         }
       },
       error: () => {
         if (cachedLogo) {
-          this.logoBase64Subject.next(cachedLogo);
+          subject.next(cachedLogo);
         } else {
-          this.cacheLogoImage();
+          this.cacheLogoImage(type);
         }
       },
     });
   }
 
-  private cacheLogoImage(): void {
+  private cacheLogoImage(type: 'university' | 'government'): void {
+    const cacheKey =
+      type === 'university'
+        ? this.UNIVERSITY_CACHE_KEY
+        : this.GOVERNMENT_CACHE_KEY;
+    const versionKey =
+      type === 'university'
+        ? this.UNIVERSITY_VERSION_KEY
+        : this.GOVERNMENT_VERSION_KEY;
+    const subject =
+      type === 'university'
+        ? this.universityLogoSubject
+        : this.governmentLogoSubject;
+    const defaultLogo =
+      type === 'university' ? 'pup_taguig_logo.png' : 'government_logo.png';
+
     this.logoService
-      .getLogo('university')
+      .getLogo(type)
       .pipe(
         catchError(() => of(null)),
         switchMap((logo) => {
           if (!logo) {
-            return this.cacheDefaultLogo();
+            return this.cacheDefaultLogo(defaultLogo);
           }
 
-          localStorage.setItem(this.VERSION_KEY, logo.id.toString());
+          localStorage.setItem(versionKey, logo.id.toString());
 
           const timestamp = new Date().getTime();
-          const imageUrl = `${this.logoService.apiUrl}/image/university?t=${timestamp}`;
+          const imageUrl = `${this.logoService.apiUrl}/image/${type}?t=${timestamp}`;
           return this.http
             .get(imageUrl, {
               responseType: 'blob',
@@ -66,23 +105,23 @@ export class LogoCacheService {
             })
             .pipe(
               switchMap((blob) => this.blobToBase64(blob)),
-              catchError(() => this.cacheDefaultLogo()),
+              catchError(() => this.cacheDefaultLogo(defaultLogo)),
             );
         }),
       )
       .subscribe({
         next: (base64) => {
           if (base64) {
-            this.logoBase64Subject.next(base64);
-            localStorage.setItem(this.CACHE_KEY, base64);
+            subject.next(base64);
+            localStorage.setItem(cacheKey, base64);
           }
         },
         error: () => {
-          this.cacheDefaultLogo().subscribe((base64) => {
+          this.cacheDefaultLogo(defaultLogo).subscribe((base64) => {
             if (base64) {
-              this.logoBase64Subject.next(base64);
-              localStorage.setItem(this.CACHE_KEY, base64);
-              localStorage.setItem(this.VERSION_KEY, '0');
+              subject.next(base64);
+              localStorage.setItem(cacheKey, base64);
+              localStorage.setItem(versionKey, '0');
             }
           });
         },
@@ -104,7 +143,7 @@ export class LogoCacheService {
     });
   }
 
-  private cacheDefaultLogo(): Observable<string> {
+  private cacheDefaultLogo(filename: string): Observable<string> {
     return new Observable((observer) => {
       const img = new Image();
       img.crossOrigin = 'Anonymous';
@@ -127,16 +166,26 @@ export class LogoCacheService {
         observer.complete();
       };
 
-      img.src = 'assets/images/pup_taguig_logo.png';
+      img.src = `assets/images/${filename}`;
     });
   }
 
-  public getLogoBase64(): Observable<string> {
-    return this.logo$;
+  public getUniversityLogoBase64(): Observable<string> {
+    return this.universityLogo$;
   }
 
-  public refreshCache(): void {
-    localStorage.removeItem(this.CACHE_KEY);
-    this.cacheLogoImage();
+  public getGovernmentLogoBase64(): Observable<string> {
+    return this.governmentLogo$;
+  }
+
+  public refreshCache(type?: 'university' | 'government'): void {
+    if (!type || type === 'university') {
+      localStorage.removeItem(this.UNIVERSITY_CACHE_KEY);
+      this.cacheLogoImage('university');
+    }
+    if (!type || type === 'government') {
+      localStorage.removeItem(this.GOVERNMENT_CACHE_KEY);
+      this.cacheLogoImage('government');
+    }
   }
 }

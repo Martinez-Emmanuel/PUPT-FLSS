@@ -15,7 +15,7 @@ import { LoadingComponent } from '../../../../../shared/loading/loading.componen
 import { DialogExportComponent } from '../../../../../shared/dialog-export/dialog-export.component';
 
 import { Program, ProgramsService, AddProgramRequest, UpdateProgramRequest } from '../../../../services/superadmin/programs/programs.service';
-import { LogoCacheService } from '../../../../services/cache/logo-cache.service';
+import { ReportHeaderService } from '../../../../services/report-header/report-header.service';
 
 import { fadeAnimation } from '../../../../animations/animations';
 
@@ -23,25 +23,24 @@ import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 
 @Component({
-    selector: 'app-programs',
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        TableGenericComponent,
-        TableHeaderComponent,
-        LoadingComponent,
-    ],
-    templateUrl: './programs.component.html',
-    styleUrls: ['./programs.component.scss'],
-    animations: [fadeAnimation],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-programs',
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TableGenericComponent,
+    TableHeaderComponent,
+    LoadingComponent,
+  ],
+  templateUrl: './programs.component.html',
+  styleUrls: ['./programs.component.scss'],
+  animations: [fadeAnimation],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ProgramsComponent implements OnInit, OnDestroy {
   programStatuses = ['Active', 'Inactive'];
   programYears = [1, 2, 3, 4, 5];
   isLoading = true;
 
-  private logoBase64: string = '';
   private destroy$ = new Subject<void>();
   private allPrograms: Program[] = [];
   private programsSubject = new BehaviorSubject<Program[]>([]);
@@ -80,11 +79,10 @@ export class ProgramsComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private programService: ProgramsService,
-    private logoCacheService: LogoCacheService
+    private reportHeaderService: ReportHeaderService,
   ) {}
 
   ngOnInit() {
-    this.initializeLogo();
     this.fetchPrograms();
     this.setupSearch();
   }
@@ -94,22 +92,13 @@ export class ProgramsComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
 
-  private initializeLogo() {
-    this.logoCacheService
-      .getLogoBase64()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((base64) => {
-        this.logoBase64 = base64;
-      });
-  }
-
   fetchPrograms() {
     this.isLoading = true;
     this.programService
       .getPrograms()
       .pipe(
         map((programs) => this.formatPrograms(programs)),
-        catchError((err) => {
+        catchError(() => {
           this.snackBar.open('Failed to load programs.', 'Close', {
             duration: 3000,
           });
@@ -119,7 +108,7 @@ export class ProgramsComponent implements OnInit, OnDestroy {
           this.isLoading = false;
           this.cdr.markForCheck();
         }),
-        takeUntil(this.destroy$)
+        takeUntil(this.destroy$),
       )
       .subscribe((formattedPrograms: Program[]) => {
         this.allPrograms = formattedPrograms;
@@ -136,7 +125,7 @@ export class ProgramsComponent implements OnInit, OnDestroy {
           const filteredPrograms = this.allPrograms.filter(
             (program: Program) =>
               program.program_title.toLowerCase().includes(term) ||
-              program.program_code.toLowerCase().includes(term)
+              program.program_code.toLowerCase().includes(term),
           );
           this.programsSubject.next(filteredPrograms);
         } else {
@@ -229,12 +218,12 @@ export class ProgramsComponent implements OnInit, OnDestroy {
             .addProgram(addRequest)
             .pipe(
               takeUntil(this.destroy$),
-              catchError((err) => {
+              catchError(() => {
                 this.snackBar.open('Failed to add program.', 'Close', {
                   duration: 3000,
                 });
                 return [];
-              })
+              }),
             )
             .subscribe((newProgram) => {
               const formattedProgram = this.formatPrograms([newProgram])[0];
@@ -243,7 +232,7 @@ export class ProgramsComponent implements OnInit, OnDestroy {
               this.snackBar.open(
                 `Program ${newProgram.program_code} has been added successfully.`,
                 'Close',
-                { duration: 3000 }
+                { duration: 3000 },
               );
             });
         }
@@ -272,24 +261,24 @@ export class ProgramsComponent implements OnInit, OnDestroy {
       .updateProgram(program_id, updatedProgram)
       .pipe(
         takeUntil(this.destroy$),
-        catchError((err) => {
+        catchError(() => {
           this.snackBar.open('Failed to update program.', 'Close', {
             duration: 3000,
           });
           return [];
-        })
+        }),
       )
       .subscribe((program) => {
         const updatedFormattedProgram = this.formatPrograms([program])[0];
         const currentPrograms = this.programsSubject.getValue();
         const updatedPrograms = currentPrograms.map((p) =>
-          p.program_id === program_id ? updatedFormattedProgram : p
+          p.program_id === program_id ? updatedFormattedProgram : p,
         );
         this.programsSubject.next(updatedPrograms);
         this.snackBar.open(
           `Program ${program.program_code} has been updated successfully.`,
           'Close',
-          { duration: 3000 }
+          { duration: 3000 },
         );
       });
   }
@@ -303,13 +292,13 @@ export class ProgramsComponent implements OnInit, OnDestroy {
           if (response.success) {
             const currentPrograms = this.programsSubject.getValue();
             const updatedPrograms = currentPrograms.filter(
-              (p) => p.program_id !== program.program_id
+              (p) => p.program_id !== program.program_id,
             );
             this.programsSubject.next(updatedPrograms);
             this.snackBar.open(
               `Program "${program.program_title}" has been deleted successfully.`,
               'Close',
-              { duration: 3000 }
+              { duration: 3000 },
             );
           } else {
             this.snackBar.open(response.message, 'Close', {
@@ -317,15 +306,15 @@ export class ProgramsComponent implements OnInit, OnDestroy {
             });
           }
         },
-        (err) => {
+        () => {
           this.snackBar.open(
             'Failed to delete program due to a server error.',
             'Close',
             {
               duration: 3000,
-            }
+            },
           );
-        }
+        },
       );
   }
 
@@ -335,99 +324,79 @@ export class ProgramsComponent implements OnInit, OnDestroy {
 
   createPdfBlob(): Blob {
     const doc = new jsPDF('p', 'mm', 'legal');
-    const pageWidth = doc.internal.pageSize.width;
     const margin = 10;
-    const logoSize = 22;
-    const topMargin = 15;
-    let currentY = topMargin;
+    let currentY = 15;
 
-    if (this.logoBase64) {
-      doc.addImage(this.logoBase64, 'PNG', margin, 10, logoSize, logoSize);
+    try {
+      // Add header using the report header service
+      this.reportHeaderService
+        .addHeader(doc, 'Program Report', currentY)
+        .subscribe((newY) => {
+          currentY = newY;
+
+          const programs = this.programsSubject.getValue();
+          const bodyData = programs.map((program, index) => [
+            (index + 1).toString(),
+            program.program_code,
+            program.program_title,
+            program.program_info,
+            program.status,
+            program.number_of_years.toString(),
+            program.curriculum_years,
+          ]);
+
+          (doc as any).autoTable({
+            startY: currentY,
+            head: [
+              [
+                '#',
+                'Program Code',
+                'Program Title',
+                'Program Info',
+                'Status',
+                'Years',
+                'Curriculum Year',
+              ],
+            ],
+            body: bodyData,
+            theme: 'grid',
+            headStyles: {
+              fillColor: [128, 0, 0],
+              textColor: [255, 255, 255],
+              fontSize: 9,
+            },
+            bodyStyles: {
+              fontSize: 8,
+              textColor: [0, 0, 0],
+            },
+            styles: {
+              lineWidth: 0.1,
+              overflow: 'linebreak',
+              cellPadding: 2,
+            },
+            columnStyles: {
+              0: { cellWidth: 10 },
+              1: { cellWidth: 30 },
+              2: { cellWidth: 40 },
+              3: { cellWidth: 45 },
+              4: { cellWidth: 20 },
+              5: { cellWidth: 15 },
+              6: { cellWidth: 30 },
+            },
+            margin: { left: margin, right: margin },
+            didDrawPage: (data: any) => {
+              currentY = data.cursor.y + 10;
+            },
+          });
+        });
+
+      return doc.output('blob');
+    } catch (error) {
+      this.snackBar.open('Failed to generate PDF.', 'Close', {
+        duration: 3000,
+      });
+      throw error;
     }
-
-    doc.setFontSize(12);
-    doc.setFont('times', 'bold');
-    doc.text(
-      'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
-      pageWidth / 2,
-      currentY,
-      { align: 'center' }
-    );
-    currentY += 5;
-    doc.setFontSize(12);
-    doc.text(
-      'Gen. Santos Ave. Upper Bicutan, Taguig City',
-      pageWidth / 2,
-      currentY,
-      { align: 'center' }
-    );
-    currentY += 10;
-    doc.setFontSize(15);
-    doc.text('Program Report', pageWidth / 2, currentY, {
-      align: 'center',
-    });
-    currentY += 8;
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.5);
-    doc.line(margin, currentY, pageWidth - margin, currentY);
-    currentY += 7;
-
-    const programs = this.programsSubject.getValue();
-    const bodyData = programs.map((program, index) => [
-      (index + 1).toString(),
-      program.program_code,
-      program.program_title,
-      program.program_info,
-      program.status,
-      program.number_of_years.toString(),
-      program.curriculum_years,
-    ]);
-
-    (doc as any).autoTable({
-      startY: currentY,
-      head: [
-        [
-          '#',
-          'Program Code',
-          'Program Title',
-          'Program Info',
-          'Status',
-          'Years',
-          'Curriculum Year',
-        ],
-      ],
-      body: bodyData,
-      theme: 'grid',
-      headStyles: {
-        fillColor: [128, 0, 0],
-        textColor: [255, 255, 255],
-        fontSize: 9,
-      },
-      bodyStyles: {
-        fontSize: 8,
-        textColor: [0, 0, 0],
-      },
-      styles: {
-        lineWidth: 0.1,
-        overflow: 'linebreak',
-        cellPadding: 2,
-      },
-      columnStyles: {
-        0: { cellWidth: 10 },
-        1: { cellWidth: 30 },
-        2: { cellWidth: 40 },
-        3: { cellWidth: 45 },
-        4: { cellWidth: 20 },
-        5: { cellWidth: 15 },
-        6: { cellWidth: 30 },
-      },
-      margin: { left: margin, right: margin },
-      didDrawPage: (data: any) => {
-        currentY = data.cursor.y + 10;
-      },
-    });
-
-    return doc.output('blob');
   }
 
   onExport() {
@@ -438,7 +407,7 @@ export class ProgramsComponent implements OnInit, OnDestroy {
         exportType: 'all',
         entity: 'Programs',
         customTitle: 'Export All Programs',
-        generatePdfFunction: (showPreview: boolean) => {
+        generatePdfFunction: () => {
           return this.createPdfBlob();
         },
         generateFileNameFunction: () => 'pup_taguig_programs_offered.pdf',

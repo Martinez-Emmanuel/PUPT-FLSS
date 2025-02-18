@@ -4,7 +4,7 @@ import { Observable, forkJoin, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 
 import { ReportsService } from '../reports/reports.service';
-import { LogoCacheService } from '../../cache/logo-cache.service';
+import { ReportHeaderService } from '../../report-header/report-header.service';
 
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -57,22 +57,10 @@ interface Room {
   providedIn: 'root',
 })
 export class ReportGenerationService {
-  private logoBase64: string = '';
-
   constructor(
     private reportsService: ReportsService,
-    private logoCacheService: LogoCacheService
-  ) {
-    this.initializeLogo();
-  }
-
-  private initializeLogo(): void {
-    this.logoCacheService.getLogoBase64().subscribe(
-      (base64) => {
-        this.logoBase64 = base64;
-      }
-    );
-  }
+    private reportHeaderService: ReportHeaderService,
+  ) {}
 
   /**
    * Generate all selected reports and return an array of { type: string; blob: Blob; }
@@ -111,14 +99,14 @@ export class ReportGenerationService {
     }
 
     const observablesWithType = reportObservables.map((r) =>
-      r.observable.pipe(map((blob) => ({ type: r.type, blob })))
+      r.observable.pipe(map((blob) => ({ type: r.type, blob }))),
     );
 
     return forkJoin(observablesWithType).pipe(
       catchError((error) => {
         console.error('Error generating selected reports:', error);
         return of([]);
-      })
+      }),
     );
   }
 
@@ -139,7 +127,7 @@ export class ReportGenerationService {
             schedules: faculty.schedules || [],
             academicYear: `${response.faculty_schedule_reports.year_start}-${response.faculty_schedule_reports.year_end}`,
             semester: this.getSemesterDisplay(
-              response.faculty_schedule_reports.semester
+              response.faculty_schedule_reports.semester,
             ),
           }));
 
@@ -162,7 +150,7 @@ export class ReportGenerationService {
             margin,
             logoSize,
             `${faculty.facultyName} Schedule`,
-            this.getAcademicYearSubtitle(faculty)
+            this.getAcademicYearSubtitle(faculty),
           );
 
           // Draw schedule table
@@ -171,7 +159,7 @@ export class ReportGenerationService {
             faculty.schedules ?? [],
             currentY,
             margin,
-            pageWidth
+            pageWidth,
           );
         });
 
@@ -180,7 +168,7 @@ export class ReportGenerationService {
       catchError((error) => {
         console.error('Error generating faculty report:', error);
         return of(new Blob());
-      })
+      }),
     );
   }
 
@@ -206,7 +194,7 @@ export class ReportGenerationService {
             section_selected: 'All',
             academicYear: `${response.programs_schedule_reports.year_start}-${response.programs_schedule_reports.year_end}`,
             semester: this.getSemesterDisplay(
-              response.programs_schedule_reports.semester
+              response.programs_schedule_reports.semester,
             ),
           }));
 
@@ -231,7 +219,7 @@ export class ReportGenerationService {
                 margin,
                 logoSize,
                 `${program.program_code} - Year ${yearLevel.year_level} - Section ${section.section_name}`,
-                this.getAcademicYearSubtitle(program)
+                this.getAcademicYearSubtitle(program),
               );
 
               // Draw schedule table
@@ -240,7 +228,7 @@ export class ReportGenerationService {
                 section.schedules ?? [],
                 currentY,
                 margin,
-                pageWidth
+                pageWidth,
               );
             });
           });
@@ -251,7 +239,7 @@ export class ReportGenerationService {
       catchError((error) => {
         console.error('Error generating programs report:', error);
         return of(new Blob());
-      })
+      }),
     );
   }
 
@@ -271,9 +259,9 @@ export class ReportGenerationService {
             schedules: room.schedules,
             academicYear: `${response.room_schedule_reports.year_start}-${response.room_schedule_reports.year_end}`,
             semester: this.getSemesterDisplay(
-              response.room_schedule_reports.semester
+              response.room_schedule_reports.semester,
             ),
-          })
+          }),
         );
 
         const doc = new jsPDF('landscape', 'mm', 'a4');
@@ -295,7 +283,7 @@ export class ReportGenerationService {
             margin,
             logoSize,
             `Room ${room.roomCode} Schedule`,
-            this.getAcademicYearSubtitle(room)
+            this.getAcademicYearSubtitle(room),
           );
 
           // Draw schedule table
@@ -304,7 +292,7 @@ export class ReportGenerationService {
             room.schedules ?? [],
             currentY,
             margin,
-            pageWidth
+            pageWidth,
           );
         });
 
@@ -313,7 +301,7 @@ export class ReportGenerationService {
       catchError((error) => {
         console.error('Error generating rooms report:', error);
         return of(new Blob());
-      })
+      }),
     );
   }
 
@@ -327,52 +315,16 @@ export class ReportGenerationService {
     margin: number,
     logoSize: number,
     title: string,
-    subtitle: string
+    subtitle: string,
   ): number {
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text(
-      'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
-      pageWidth / 2,
-      startY,
-      { align: 'center' }
-    );
+    let currentY = startY;
 
-    if (this.logoBase64) {
-      const logoXPosition = pageWidth / 25 + 25;
-      doc.addImage(this.logoBase64, 'PNG', logoXPosition, startY - 5, logoSize, logoSize);
-    }
-
-    let currentY = startY + 5;
-
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(
-      'Gen. Santos Ave. Upper Bicutan, Taguig City',
-      pageWidth / 2,
-      currentY,
-      { align: 'center' }
-    );
-
-    currentY += 10;
-
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text(title, pageWidth / 2, currentY, { align: 'center' });
-    currentY += 8;
-
-    if (subtitle) {
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text(subtitle, pageWidth / 2, currentY, { align: 'center' });
-      currentY += 8;
-    }
-
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.5);
-    doc.line(margin, currentY, pageWidth - margin, currentY);
-    currentY += 7;
+    // Use the report header service with subtitle
+    this.reportHeaderService
+      .addHeader(doc, title, currentY, subtitle)
+      .subscribe((newY) => {
+        currentY = newY;
+      });
 
     return currentY;
   }
@@ -385,7 +337,7 @@ export class ReportGenerationService {
     scheduleData: any[],
     startY: number,
     margin: number,
-    pageWidth: number
+    pageWidth: number,
   ): void {
     const hasSchedules = scheduleData && scheduleData.length > 0;
 
@@ -438,7 +390,7 @@ export class ReportGenerationService {
         .filter((item: any) => item.day === day)
         .sort(
           (a: any, b: any) =>
-            this.timeToMinutes(a.start_time) - this.timeToMinutes(b.start_time)
+            this.timeToMinutes(a.start_time) - this.timeToMinutes(b.start_time),
         );
 
       if (daySchedule.length > 0) {
@@ -456,7 +408,7 @@ export class ReportGenerationService {
               pageWidth - margin,
               startY,
               pageWidth - margin,
-              maxYPosition
+              maxYPosition,
             );
 
             // Add new page and redraw headers
@@ -468,7 +420,7 @@ export class ReportGenerationService {
               margin,
               22,
               'Faculty Schedule (Continued)',
-              this.getAcademicYearSubtitle(scheduleData[0])
+              this.getAcademicYearSubtitle(scheduleData[0]),
             );
 
             // Redraw day headers
@@ -523,7 +475,7 @@ export class ReportGenerationService {
                 xPosition + 5,
                 textYPosition - 4,
                 xPosition + 5 + timeTextWidth,
-                textYPosition - 4
+                textYPosition - 4,
               );
             }
           });
@@ -555,7 +507,7 @@ export class ReportGenerationService {
     scheduleData: any[],
     startY: number,
     margin: number,
-    pageWidth: number
+    pageWidth: number,
   ): void {
     const hasSchedules = scheduleData && scheduleData.length > 0;
 
@@ -608,7 +560,7 @@ export class ReportGenerationService {
         .filter((item: any) => item.day === day)
         .sort(
           (a: any, b: any) =>
-            this.timeToMinutes(a.start_time) - this.timeToMinutes(b.start_time)
+            this.timeToMinutes(a.start_time) - this.timeToMinutes(b.start_time),
         );
 
       if (daySchedule.length > 0) {
@@ -626,7 +578,7 @@ export class ReportGenerationService {
               pageWidth - margin,
               startY,
               pageWidth - margin,
-              maxYPosition
+              maxYPosition,
             );
 
             // Add new page and redraw headers
@@ -638,7 +590,7 @@ export class ReportGenerationService {
               margin,
               22,
               'Program Schedule (Continued)',
-              this.getAcademicYearSubtitle(scheduleData[0])
+              this.getAcademicYearSubtitle(scheduleData[0]),
             );
 
             // Redraw day headers
@@ -693,7 +645,7 @@ export class ReportGenerationService {
                 xPosition + 5,
                 textYPosition - 4,
                 xPosition + 5 + timeTextWidth,
-                textYPosition - 4
+                textYPosition - 4,
               );
             }
           });
@@ -725,7 +677,7 @@ export class ReportGenerationService {
     scheduleData: any[],
     startY: number,
     margin: number,
-    pageWidth: number
+    pageWidth: number,
   ): void {
     const hasSchedules = scheduleData && scheduleData.length > 0;
 
@@ -778,7 +730,7 @@ export class ReportGenerationService {
         .filter((item: any) => item.day === day)
         .sort(
           (a: any, b: any) =>
-            this.timeToMinutes(a.start_time) - this.timeToMinutes(b.start_time)
+            this.timeToMinutes(a.start_time) - this.timeToMinutes(b.start_time),
         );
 
       if (daySchedule.length > 0) {
@@ -796,7 +748,7 @@ export class ReportGenerationService {
               pageWidth - margin,
               startY,
               pageWidth - margin,
-              maxYPosition
+              maxYPosition,
             );
 
             // Add new page and redraw headers
@@ -808,7 +760,7 @@ export class ReportGenerationService {
               margin,
               22,
               'Room Schedule (Continued)',
-              this.getAcademicYearSubtitle(scheduleData[0])
+              this.getAcademicYearSubtitle(scheduleData[0]),
             );
 
             // Redraw day headers
@@ -863,7 +815,7 @@ export class ReportGenerationService {
                 xPosition + 5,
                 textYPosition - 4,
                 xPosition + 5 + timeTextWidth,
-                textYPosition - 4
+                textYPosition - 4,
               );
             }
           });
@@ -941,7 +893,7 @@ export class ReportGenerationService {
     startY: number,
     margin: number,
     pageWidth: number,
-    entityType: 'faculty' | 'program' | 'room'
+    entityType: 'faculty' | 'program' | 'room',
   ): void {
     /* Implementation can be similar to the specific tables above
      This is a placeholder for potential future use

@@ -7,7 +7,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { DialogViewScheduleComponent } from '../dialog-view-schedule/dialog-view-schedule.component';
-import { LogoCacheService } from '../../core/services/cache/logo-cache.service';
+import { ReportHeaderService } from '../../core/services/report-header/report-header.service';
 
 import { fadeAnimation, fabAnimation } from '../../core/animations/animations';
 
@@ -77,15 +77,13 @@ export class FacultyScheduleTimetableComponent
   timeSlots: TimeSlot[] = [];
   scheduleBlocks: ScheduleBlock[] = [];
 
-  private logoBase64: string = '';
-  private logoCacheService = inject(LogoCacheService);
+  private reportHeaderService = inject(ReportHeaderService);
 
   constructor(private dialog: MatDialog) {}
 
   ngOnInit() {
     this.generateTimeSlots();
     this.processScheduleData();
-    this.initializeLogo();
   }
 
   ngAfterViewInit() {
@@ -311,12 +309,6 @@ export class FacultyScheduleTimetableComponent
     return `${formattedName}_Schedules_${academicYear}_${semester}`;
   }
 
-  private initializeLogo(): void {
-    this.logoCacheService.getLogoBase64().subscribe((base64: string) => {
-      this.logoBase64 = base64;
-    });
-  }
-
   private drawHeader(
     doc: jsPDF,
     startY: number,
@@ -326,58 +318,14 @@ export class FacultyScheduleTimetableComponent
     title: string,
     subtitle: string,
   ): number {
-    doc.setTextColor(0, 0, 0);
+    let currentY = startY;
 
-    if (this.logoBase64) {
-      const logoXPosition = pageWidth / 25 + 25;
-      doc.addImage(
-        this.logoBase64,
-        'PNG',
-        logoXPosition,
-        startY - 5,
-        logoSize,
-        logoSize,
-      );
-    }
-
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text(
-      'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
-      pageWidth / 2,
-      startY,
-      { align: 'center' },
-    );
-
-    let currentY = startY + 5;
-
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(
-      'Gen. Santos Ave. Upper Bicutan, Taguig City',
-      pageWidth / 2,
-      currentY,
-      { align: 'center' },
-    );
-
-    currentY += 10;
-
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text(title, pageWidth / 2, currentY, { align: 'center' });
-    currentY += 8;
-
-    if (subtitle) {
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text(subtitle, pageWidth / 2, currentY, { align: 'center' });
-      currentY += 8;
-    }
-
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.5);
-    doc.line(margin, currentY, pageWidth - margin, currentY);
-    currentY += 7;
+    // Use the report header service with subtitle
+    this.reportHeaderService
+      .addHeader(doc, title, currentY, subtitle)
+      .subscribe((newY) => {
+        currentY = newY;
+      });
 
     return currentY;
   }

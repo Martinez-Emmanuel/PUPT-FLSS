@@ -21,7 +21,7 @@ import { DialogActionComponent } from '../../../../../shared/dialog-action/dialo
 import { DialogViewScheduleComponent } from '../../../../../shared/dialog-view-schedule/dialog-view-schedule.component';
 
 import { ReportsService } from '../../../../services/admin/reports/reports.service';
-import { LogoCacheService } from '../../../../services/cache/logo-cache.service';
+import { ReportHeaderService } from '../../../../services/report-header/report-header.service';
 
 import { fadeAnimation } from '../../../../animations/animations';
 
@@ -90,7 +90,6 @@ export class ReportFacultyComponent
   sendEmail = true;
 
   private searchInput$ = new Subject<string>();
-  private logoBase64: string = '';
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -98,12 +97,11 @@ export class ReportFacultyComponent
     private reportsService: ReportsService,
     public dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private logoCacheService: LogoCacheService,
+    private reportHeaderService: ReportHeaderService,
   ) {}
 
   ngOnInit(): void {
     this.fetchFacultyData();
-    this.initializeLogo();
     this.searchInput$
       .pipe(debounceTime(300), distinctUntilChanged())
       .subscribe((searchQuery) => {
@@ -220,7 +218,7 @@ export class ReportFacultyComponent
   }
 
   onView(faculty: Faculty): void {
-    const generatePdfFunction = (preview: boolean): Blob | void => {
+    const generatePdfFunction = (): Blob | void => {
       return this.createPdfBlob(faculty);
     };
 
@@ -248,7 +246,7 @@ export class ReportFacultyComponent
       return;
     }
 
-    const generatePdfFunction = (preview: boolean): Blob | void => {
+    const generatePdfFunction = (): Blob | void => {
       return this.generateAllSchedulesPdfBlob();
     };
 
@@ -446,12 +444,6 @@ export class ReportFacultyComponent
     return doc.output('blob');
   }
 
-  private initializeLogo(): void {
-    this.logoCacheService.getLogoBase64().subscribe((base64) => {
-      this.logoBase64 = base64;
-    });
-  }
-
   // Helper method to draw the header
   private drawHeader(
     doc: jsPDF,
@@ -462,61 +454,14 @@ export class ReportFacultyComponent
     title: string,
     subtitle: string,
   ): number {
-    doc.setTextColor(0, 0, 0);
+    let currentY = startY;
 
-    if (this.logoBase64) {
-      const logoXPosition = pageWidth / 25 + 25;
-      doc.addImage(
-        this.logoBase64,
-        'PNG',
-        logoXPosition,
-        startY - 5,
-        logoSize,
-        logoSize,
-      );
-    }
-
-    // Add the university name
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text(
-      'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
-      pageWidth / 2,
-      startY,
-      { align: 'center' },
-    );
-
-    let currentY = startY + 5;
-
-    // Add the university address
-    doc.setFontSize(10);
-    doc.setFont('helvetica', 'normal');
-    doc.text(
-      'Gen. Santos Ave. Upper Bicutan, Taguig City',
-      pageWidth / 2,
-      currentY,
-      { align: 'center' },
-    );
-
-    currentY += 10;
-
-    // Add the title
-    doc.setFontSize(12);
-    doc.setFont('helvetica', 'bold');
-    doc.text(title, pageWidth / 2, currentY, { align: 'center' });
-    currentY += 8;
-
-    if (subtitle) {
-      doc.setFontSize(10);
-      doc.setFont('helvetica', 'normal');
-      doc.text(subtitle, pageWidth / 2, currentY, { align: 'center' });
-      currentY += 8;
-    }
-    // Draw a horizontal line under the header
-    doc.setDrawColor(0, 0, 0);
-    doc.setLineWidth(0.5);
-    doc.line(margin, currentY, pageWidth - margin, currentY);
-    currentY += 7;
+    // Use the report header service with subtitle
+    this.reportHeaderService
+      .addHeader(doc, title, currentY, subtitle)
+      .subscribe((newY) => {
+        currentY = newY;
+      });
 
     return currentY;
   }

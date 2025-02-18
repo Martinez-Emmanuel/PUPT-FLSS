@@ -22,7 +22,7 @@ import { DialogExportComponent } from '../../../../shared/dialog-export/dialog-e
 import { DialogTogglePreferencesComponent, DialogTogglePreferencesData } from '../../../../shared/dialog-toggle-preferences/dialog-toggle-preferences.component';
 
 import { PreferencesService } from '../../../services/faculty/preference/preferences.service';
-import { LogoCacheService } from '../../../services/cache/logo-cache.service';
+import { ReportHeaderService } from '../../../services/report-header/report-header.service';
 import { ActiveSemester } from '../../../models/preferences.model';
 
 import { fadeAnimation } from '../../../animations/animations';
@@ -68,7 +68,9 @@ interface ToggleState {
   styleUrls: ['./manage-preferences.component.scss'],
   animations: [fadeAnimation],
 })
-export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDestroy {
+export class ManagePreferencesComponent
+  implements OnInit, AfterViewInit, OnDestroy
+{
   inputFields: InputField[] = [
     {
       type: 'text',
@@ -116,8 +118,6 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
   // Search Subject
   private searchSubject = new Subject<string>();
 
-  private logoBase64: string = '';
-
   @ViewChild(MatPaginator) paginator?: MatPaginator;
 
   // Add the destroy$ Subject property
@@ -128,14 +128,13 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
     private snackBar: MatSnackBar,
     private dialog: MatDialog,
     private cdr: ChangeDetectorRef,
-    private logoCacheService: LogoCacheService
+    private reportHeaderService: ReportHeaderService,
   ) {}
 
   ngOnInit(): void {
     this.preferencesService.clearPreferencesCache();
     this.loadFacultyPreferences();
     this.setupFilterPredicate();
-    this.initializeLogo();
     this.searchSubject
       .pipe(debounceTime(300), distinctUntilChanged())
       .subscribe((searchValue) => {
@@ -157,15 +156,6 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
   // ===========================
   // Data Loading and Handling
   // ===========================
-
-  private initializeLogo() {
-    this.logoCacheService
-      .getLogoBase64()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((base64) => {
-        this.logoBase64 = base64;
-      });
-  }
 
   /**
    * Sets up the filter predicate for the data source.
@@ -217,10 +207,10 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
           this.snackBar.open(
             'Error loading faculty preferences. Please try again.',
             'Close',
-            { duration: 3000 }
+            { duration: 3000 },
           );
           this.isLoading.next(false);
-        }
+        },
       );
   }
 
@@ -235,7 +225,7 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
       this.filteredData = [...this.allData];
     } else {
       this.filteredData = this.allData.filter((faculty) =>
-        this.filterPredicate(faculty, this.currentFilter)
+        this.filterPredicate(faculty, this.currentFilter),
       );
     }
 
@@ -293,14 +283,14 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
     const allEnabled = this.filteredData.every((faculty) => faculty.is_enabled);
     const isGlobalDeadlineSet = this.allData.some((faculty) =>
       faculty.active_semesters?.some(
-        (semester) => semester.global_deadline !== null
-      )
+        (semester) => semester.global_deadline !== null,
+      ),
     );
 
     this.isToggleAllChecked = allEnabled && isGlobalDeadlineSet;
 
     this.isAnyIndividualToggleOn = this.filteredData.some(
-      (faculty) => faculty.is_enabled
+      (faculty) => faculty.is_enabled,
     );
 
     this.isEnabled = allEnabled;
@@ -312,8 +302,8 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
   checkGlobalStartDate(): void {
     this.isGlobalStartDateSet = this.allData.some((faculty) =>
       faculty.active_semesters?.some(
-        (semester) => semester.global_start_date !== null
-      )
+        (semester) => semester.global_start_date !== null,
+      ),
     );
   }
 
@@ -323,8 +313,8 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
   checkIndividualStartDate(): void {
     this.isIndividualStartDateSet = this.allData.some((faculty) =>
       faculty.active_semesters?.some(
-        (semester) => semester.individual_start_date !== null
-      )
+        (semester) => semester.individual_start_date !== null,
+      ),
     );
   }
 
@@ -333,7 +323,7 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
    */
   updateHasAnyPreferences(): void {
     this.hasAnyPreferences = this.allData.some((faculty) =>
-      this.hasSubmittedPreferences(faculty)
+      this.hasSubmittedPreferences(faculty),
     );
   }
 
@@ -345,7 +335,7 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
       faculty.active_semesters &&
       faculty.active_semesters.length > 0 &&
       faculty.active_semesters.some(
-        (semester) => semester.courses && semester.courses.length > 0
+        (semester) => semester.courses && semester.courses.length > 0,
       )
     );
   }
@@ -360,8 +350,8 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
           semester.individual_deadline &&
           (!semester.global_deadline ||
             new Date(semester.individual_deadline) !==
-              new Date(semester.global_deadline))
-      )
+              new Date(semester.global_deadline)),
+      ),
     );
   }
 
@@ -374,8 +364,8 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
       faculty.active_semesters?.some(
         (semester) =>
           semester.global_start_date !== null ||
-          semester.global_deadline !== null
-      )
+          semester.global_deadline !== null,
+      ),
     );
   }
 
@@ -396,7 +386,7 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
     this.allData.forEach((faculty: Faculty) => {
       this.facultyScheduledState.set(
         faculty.faculty_id,
-        this.calculateIsIndividuallyScheduled(faculty)
+        this.calculateIsIndividuallyScheduled(faculty),
       );
     });
   }
@@ -411,7 +401,7 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
       faculty.active_semesters?.some(
         (semester) =>
           semester.individual_start_date !== null ||
-          semester.individual_deadline !== null
+          semester.individual_deadline !== null,
       ) ?? false
     );
   }
@@ -422,7 +412,7 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
    */
   onToggleAllPreferences(
     event: MatSlideToggleChange | MouseEvent,
-    isScheduledClick = false
+    isScheduledClick = false,
   ): void {
     if (!isScheduledClick && event instanceof MatSlideToggleChange) {
       event.source.checked = this.isToggleAllChecked;
@@ -460,7 +450,7 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
       if (confirmed && !isScheduledClick) {
         const newStatus = this.isToggleAllChecked;
         this.filteredData.forEach(
-          (faculty) => (faculty.is_enabled = newStatus)
+          (faculty) => (faculty.is_enabled = newStatus),
         );
         this.isToggleAllChecked = newStatus;
         this.updateDisplayedData();
@@ -477,7 +467,7 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
   onToggleSinglePreferences(
     faculty: Faculty,
     event: MatSlideToggleChange | MouseEvent,
-    isScheduledClick = false
+    isScheduledClick = false,
   ): void {
     if (!isScheduledClick && event instanceof MatSlideToggleChange) {
       event.source.checked = faculty.is_enabled;
@@ -514,7 +504,7 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
       if (confirmed && !isScheduledClick) {
         this.preferencesService.getPreferences().subscribe((response) => {
           const updatedFaculty = response?.preferences?.find(
-            (item: any) => item.faculty_id === faculty.faculty_id
+            (item: any) => item.faculty_id === faculty.faculty_id,
           );
 
           if (updatedFaculty) {
@@ -562,21 +552,21 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
       this.snackBar.open(
         'No faculty preferences available for export.',
         'Close',
-        { duration: 3000 }
+        { duration: 3000 },
       );
       return;
     }
 
     const firstActiveSemesterFaculty = this.allData.find(
       (faculty) =>
-        faculty.active_semesters && faculty.active_semesters.length > 0
+        faculty.active_semesters && faculty.active_semesters.length > 0,
     );
 
     if (!firstActiveSemesterFaculty) {
       this.snackBar.open(
         'No active semester data available for export.',
         'Close',
-        { duration: 3000 }
+        { duration: 3000 },
       );
       return;
     }
@@ -600,7 +590,7 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
         generateFileNameFunction: () =>
           `${academic_year.replace(
             '/',
-            '_'
+            '_',
           )}_${semester_label.toLowerCase()}_faculty_preferences_report.pdf`,
       },
       disableClose: true,
@@ -629,7 +619,7 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
     this.snackBar.open(
       `Downloading PDF for ${faculty.facultyName}...`,
       'Close',
-      { duration: 3000 }
+      { duration: 3000 },
     );
   }
 
@@ -639,191 +629,169 @@ export class ManagePreferencesComponent implements OnInit, AfterViewInit, OnDest
   generateFacultyPDF(
     isAll: boolean,
     faculties: Faculty[],
-    showPreview: boolean = false
+    showPreview: boolean = false,
   ): Blob | void {
     const doc = new jsPDF('p', 'mm', 'legal') as any;
     const pageWidth = doc.internal.pageSize.width;
-    const margin = 10;
-    const topMargin = 15;
-    const logoSize = 22;
-    let currentY = topMargin;
+    let currentY = 15;
 
-    const headerFont = { font: 'times', style: 'bold', size: 12 };
-    const normalFont = { font: 'times', style: 'normal', size: 12 };
-    const centerAlign = { align: 'center' };
+    try {
+      // Add header using the report header service
+      this.reportHeaderService
+        .addHeader(
+          doc,
+          isAll
+            ? 'All Faculty Preferences Report'
+            : 'Faculty Preferences Report',
+          currentY,
+        )
+        .subscribe((newY) => {
+          currentY = newY;
 
-    /**
-     * Adds the header to the PDF.
-     */
-    const addHeader = () => {
-      if (this.logoBase64) {
-        doc.addImage(this.logoBase64, 'PNG', margin, 10, logoSize, logoSize);
-      }
+          faculties.forEach((faculty, facultyIndex) => {
+            const activeSemester = faculty.active_semesters?.[0];
 
-      doc.setFontSize(headerFont.size);
-      doc.setFont(headerFont.font, headerFont.style);
-      doc.text(
-        'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
-        pageWidth / 2,
-        topMargin,
-        centerAlign
-      );
-      doc.text(
-        'Gen. Santos Ave. Upper Bicutan, Taguig City',
-        pageWidth / 2,
-        topMargin + 5,
-        centerAlign
-      );
-      doc.setFontSize(15);
+            if (!activeSemester || !activeSemester.courses?.length) return;
 
-      if (isAll) {
-        doc.text(
-          'All Faculty Preferences Report',
-          pageWidth / 2,
-          topMargin + 15,
-          centerAlign
-        );
-      } else {
-        doc.text(
-          'Faculty Preferences Report',
-          pageWidth / 2,
-          topMargin + 15,
-          centerAlign
-        );
-      }
+            // Faculty Info Section
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            const facultyInfo = [
+              `Faculty Name: ${faculty.facultyName}`,
+              `Faculty Code: ${faculty.facultyCode}`,
+              `Academic Year: ${activeSemester.academic_year}`,
+              `Semester: ${activeSemester.semester_label}`,
+            ];
 
-      doc.setDrawColor(0, 0, 0);
-      doc.setLineWidth(0.5);
-      doc.line(margin, topMargin + 20, pageWidth - margin, topMargin + 20);
+            facultyInfo.forEach((info) => {
+              doc.text(info, 10, currentY);
+              currentY += 5;
+            });
+            currentY += 5;
 
-      currentY = topMargin + 25;
-    };
+            const courseData = activeSemester.courses.map(
+              (course: any, index: number) => {
+                const preferredDays = course.preferred_days || [];
+                const formattedDayTimes = preferredDays
+                  .map((pd: any) => {
+                    const day = pd.day;
+                    const startTime = pd.start_time
+                      ? this.formatTimeTo12Hour(pd.start_time)
+                      : 'N/A';
+                    const endTime = pd.end_time
+                      ? this.formatTimeTo12Hour(pd.end_time)
+                      : 'N/A';
+                    return `${day} - ${startTime} to ${endTime}`;
+                  })
+                  .join('\n');
 
-    addHeader();
+                return [
+                  (index + 1).toString(),
+                  course.course_details?.course_code || 'N/A',
+                  course.course_details?.course_title || 'N/A',
+                  course.lec_hours.toString(),
+                  course.lab_hours.toString(),
+                  course.units.toString(),
+                  formattedDayTimes || 'N/A',
+                ];
+              },
+            );
 
-    faculties.forEach((faculty, facultyIndex) => {
-      const activeSemester = faculty.active_semesters?.[0];
+            // Table Configuration
+            const tableHead = [
+              [
+                '#',
+                'Course Code',
+                'Course Title',
+                'Lec',
+                'Lab',
+                'Units',
+                'Preferred Day & Time',
+              ],
+            ];
+            const tableConfig = {
+              startY: currentY,
+              head: tableHead,
+              body: courseData,
+              theme: 'grid',
+              headStyles: {
+                fillColor: [128, 0, 0],
+                textColor: [255, 255, 255],
+                fontSize: 9,
+              },
+              bodyStyles: {
+                fontSize: 8,
+                textColor: [0, 0, 0],
+              },
+              styles: {
+                lineWidth: 0.1,
+                overflow: 'linebreak',
+                cellPadding: 2,
+              },
+              columnStyles: {
+                0: { cellWidth: 10 },
+                1: { cellWidth: 30 },
+                2: { cellWidth: 50 },
+                3: { cellWidth: 13 },
+                4: { cellWidth: 13 },
+                5: { cellWidth: 13 },
+                6: { cellWidth: 55 },
+              },
+              margin: { left: 10, right: 10 },
+            };
 
-      if (!activeSemester || !activeSemester.courses?.length) return;
+            (doc as any).autoTable(tableConfig);
 
-      // Faculty Info Section
-      doc.setFontSize(normalFont.size);
-      doc.setFont(normalFont.font, normalFont.style);
-      const facultyInfo = [
-        `Faculty Name: ${faculty.facultyName}`,
-        `Faculty Code: ${faculty.facultyCode}`,
-        `Academic Year: ${activeSemester.academic_year}`,
-        `Semester: ${activeSemester.semester_label}`,
-      ];
+            currentY = doc.autoTable.previous.finalY + 10;
+            if (currentY > 270) {
+              doc.addPage();
+              this.reportHeaderService
+                .addHeader(
+                  doc,
+                  isAll
+                    ? 'All Faculty Preferences Report'
+                    : 'Faculty Preferences Report',
+                  15,
+                )
+                .subscribe((newPageY) => {
+                  currentY = newPageY;
+                });
+            }
+          });
 
-      facultyInfo.forEach((info) => {
-        doc.text(info, margin, currentY);
-        currentY += 5;
+          const pdfBlob = doc.output('blob');
+          if (showPreview) {
+            return pdfBlob;
+          } else {
+            let fileName = 'faculty_preferences_report.pdf';
+
+            if (isAll) {
+              const firstFaculty = faculties[0];
+              const activeSemester = firstFaculty.active_semesters?.[0];
+              if (activeSemester) {
+                const academicYear = activeSemester.academic_year.replace(
+                  '/',
+                  '_',
+                );
+                const semester = activeSemester.semester_label.toLowerCase();
+                fileName = `${academicYear}_${semester}_faculty_preferences.pdf`;
+              }
+            } else {
+              fileName = `${this.sanitizeFileName(
+                faculties[0].facultyName,
+              )}_preferences_report.pdf`;
+            }
+
+            doc.save(fileName);
+          }
+        });
+
+      return doc.output('blob');
+    } catch (error) {
+      this.snackBar.open('Failed to generate PDF.', 'Close', {
+        duration: 3000,
       });
-      currentY += 5;
-
-      const courseData = activeSemester.courses.map(
-        (course: any, index: number) => {
-          const preferredDays = course.preferred_days || [];
-          const formattedDayTimes = preferredDays
-            .map((pd: any) => {
-              const day = pd.day;
-              const startTime = pd.start_time
-                ? this.formatTimeTo12Hour(pd.start_time)
-                : 'N/A';
-              const endTime = pd.end_time
-                ? this.formatTimeTo12Hour(pd.end_time)
-                : 'N/A';
-              return `${day} - ${startTime} to ${endTime}`;
-            })
-            .join('\n');
-
-          return [
-            (index + 1).toString(),
-            course.course_details?.course_code || 'N/A',
-            course.course_details?.course_title || 'N/A',
-            course.lec_hours.toString(),
-            course.lab_hours.toString(),
-            course.units.toString(),
-            formattedDayTimes || 'N/A',
-          ];
-        }
-      );
-
-      // Table Configuration
-      const tableHead = [
-        [
-          '#',
-          'Course Code',
-          'Course Title',
-          'Lec',
-          'Lab',
-          'Units',
-          'Preferred Day & Time',
-        ],
-      ];
-      const tableConfig = {
-        startY: currentY,
-        head: tableHead,
-        body: courseData,
-        theme: 'grid',
-        headStyles: {
-          fillColor: [128, 0, 0],
-          textColor: [255, 255, 255],
-          fontSize: 9,
-        },
-        bodyStyles: {
-          fontSize: 8,
-          textColor: [0, 0, 0],
-        },
-        styles: {
-          lineWidth: 0.1,
-          overflow: 'linebreak',
-          cellPadding: 2,
-        },
-        columnStyles: {
-          0: { cellWidth: 10 },
-          1: { cellWidth: 30 },
-          2: { cellWidth: 50 },
-          3: { cellWidth: 13 },
-          4: { cellWidth: 13 },
-          5: { cellWidth: 13 },
-          6: { cellWidth: 55 },
-        },
-        margin: { left: margin, right: margin },
-      };
-
-      (doc as any).autoTable(tableConfig);
-
-      currentY = doc.autoTable.previous.finalY + 10;
-      if (currentY > 270) {
-        doc.addPage();
-        addHeader();
-        currentY = topMargin + 25;
-      }
-    });
-
-    const pdfBlob = doc.output('blob');
-    if (showPreview) {
-      return pdfBlob;
-    } else {
-      let fileName = 'faculty_preferences_report.pdf';
-
-      if (isAll) {
-        const firstFaculty = faculties[0];
-        const activeSemester = firstFaculty.active_semesters?.[0];
-        if (activeSemester) {
-          const academicYear = activeSemester.academic_year.replace('/', '_');
-          const semester = activeSemester.semester_label.toLowerCase();
-          fileName = `${academicYear}_${semester}_faculty_preferences.pdf`;
-        }
-      } else {
-        fileName = `${this.sanitizeFileName(
-          faculties[0].facultyName
-        )}_preferences_report.pdf`;
-      }
-
-      doc.save(fileName);
+      throw error;
     }
   }
 

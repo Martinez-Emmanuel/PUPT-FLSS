@@ -15,7 +15,7 @@ import { LoadingComponent } from '../../../../../shared/loading/loading.componen
 import { DialogExportComponent } from '../../../../../shared/dialog-export/dialog-export.component';
 
 import { Building, BuildingsService } from '../../../../services/superadmin/buildings/buildings.service';
-import { LogoCacheService } from '../../../../services/cache/logo-cache.service';
+import { ReportHeaderService } from '../../../../services/report-header/report-header.service';
 
 import { fadeAnimation } from '../../../../animations/animations';
 
@@ -40,7 +40,6 @@ export class BuildingsComponent implements OnInit, OnDestroy {
   private buildingsSubject = new BehaviorSubject<Building[]>([]);
   buildings$ = this.buildingsSubject.asObservable();
   private allBuildings: Building[] = [];
-  private logoBase64: string = '';
 
   columns = [
     { key: 'index', label: '#' },
@@ -65,11 +64,10 @@ export class BuildingsComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private buildingsService: BuildingsService,
-    private logoCacheService: LogoCacheService
+    private reportHeaderService: ReportHeaderService,
   ) {}
 
   ngOnInit() {
-    this.initializeLogo();
     this.fetchBuildings();
     this.setupSearch();
   }
@@ -77,15 +75,6 @@ export class BuildingsComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     this.destroy$.next();
     this.destroy$.complete();
-  }
-
-  private initializeLogo() {
-    this.logoCacheService
-      .getLogoBase64()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((base64) => {
-        this.logoBase64 = base64;
-      });
   }
 
   private fetchBuildings() {
@@ -97,7 +86,7 @@ export class BuildingsComponent implements OnInit, OnDestroy {
         finalize(() => {
           this.isLoading = false;
           this.cdr.markForCheck();
-        })
+        }),
       )
       .subscribe({
         next: (buildings) => {
@@ -111,7 +100,7 @@ export class BuildingsComponent implements OnInit, OnDestroy {
             'Close',
             {
               duration: 3000,
-            }
+            },
           );
           this.isLoading = false;
           this.cdr.markForCheck();
@@ -128,7 +117,7 @@ export class BuildingsComponent implements OnInit, OnDestroy {
           const filteredBuildings = this.allBuildings.filter(
             (building: Building) =>
               building.building_name.toLowerCase().includes(term) ||
-              building.floor_levels.toString().includes(term)
+              building.floor_levels.toString().includes(term),
           );
           this.buildingsSubject.next(filteredBuildings);
         } else {
@@ -225,7 +214,7 @@ export class BuildingsComponent implements OnInit, OnDestroy {
             'Close',
             {
               duration: 3000,
-            }
+            },
           );
           this.fetchBuildings();
         },
@@ -250,7 +239,7 @@ export class BuildingsComponent implements OnInit, OnDestroy {
             'Close',
             {
               duration: 3000,
-            }
+            },
           );
           this.fetchBuildings();
         },
@@ -272,76 +261,53 @@ export class BuildingsComponent implements OnInit, OnDestroy {
     const doc = new jsPDF('p', 'mm', 'legal');
     const pageWidth = doc.internal.pageSize.width;
     const margin = 10;
-    const logoSize = 22;
-    const topMargin = 15;
-    let currentY = topMargin;
+    let currentY = 15;
 
     try {
-      if (this.logoBase64) {
-        doc.addImage(this.logoBase64, 'PNG', margin, 10, logoSize, logoSize);
-      }
-      doc.setFontSize(12);
-      doc.setFont('times', 'bold');
-      doc.text(
-        'POLYTECHNIC UNIVERSITY OF THE PHILIPPINES – TAGUIG BRANCH',
-        pageWidth / 2,
-        currentY,
-        { align: 'center' }
-      );
-      currentY += 5;
-      doc.setFontSize(12);
-      doc.text(
-        'Gen. Santos Ave. Upper Bicutan, Taguig City',
-        pageWidth / 2,
-        currentY,
-        { align: 'center' }
-      );
-      currentY += 10;
-      doc.setFontSize(15);
-      doc.setTextColor(0, 0, 0);
-      doc.text('Buildings Report', pageWidth / 2, currentY, {
-        align: 'center',
-      });
-      currentY += 8;
-      doc.setDrawColor(0, 0, 0);
-      doc.setLineWidth(0.5);
-      doc.line(margin, currentY, pageWidth - margin, currentY);
-      currentY += 7;
-      const buildings = this.buildingsSubject.getValue();
-      const bodyData = buildings.map((building, index) => [
-        (index + 1).toString(),
-        building.building_name,
-        building.floor_levels.toString(),
-      ]);
-      (doc as any).autoTable({
-        startY: currentY,
-        head: [['#', 'Building Name', 'Floor Levels']],
-        body: bodyData,
-        theme: 'grid',
-        headStyles: {
-          fillColor: [128, 0, 0],
-          textColor: [255, 255, 255],
-          fontSize: 9,
-        },
-        bodyStyles: {
-          fontSize: 8,
-          textColor: [0, 0, 0],
-        },
-        styles: {
-          lineWidth: 0.1,
-          overflow: 'linebreak',
-          cellPadding: 2,
-        },
-        columnStyles: {
-          0: { cellWidth: 15 },
-          1: { cellWidth: 100 },
-          2: { cellWidth: 40 },
-        },
-        margin: { left: margin, right: margin },
-        didDrawPage: (data: any) => {
-          currentY = data.cursor.y + 10;
-        },
-      });
+      // Add header using the report header service
+      this.reportHeaderService
+        .addHeader(doc, 'Buildings Report', currentY)
+        .subscribe((newY) => {
+          currentY = newY;
+
+          const buildings = this.buildingsSubject.getValue();
+          const bodyData = buildings.map((building, index) => [
+            (index + 1).toString(),
+            building.building_name,
+            building.floor_levels.toString(),
+          ]);
+
+          (doc as any).autoTable({
+            startY: currentY,
+            head: [['#', 'Building Name', 'Floor Levels']],
+            body: bodyData,
+            theme: 'grid',
+            headStyles: {
+              fillColor: [128, 0, 0],
+              textColor: [255, 255, 255],
+              fontSize: 9,
+            },
+            bodyStyles: {
+              fontSize: 8,
+              textColor: [0, 0, 0],
+            },
+            styles: {
+              lineWidth: 0.1,
+              overflow: 'linebreak',
+              cellPadding: 2,
+            },
+            columnStyles: {
+              0: { cellWidth: 15 },
+              1: { cellWidth: 100 },
+              2: { cellWidth: 40 },
+            },
+            margin: { left: margin, right: margin },
+            didDrawPage: (data: any) => {
+              currentY = data.cursor.y + 10;
+            },
+          });
+        });
+
       return doc.output('blob');
     } catch (error) {
       this.snackBar.open('Failed to generate PDF.', 'Close', {
