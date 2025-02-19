@@ -140,10 +140,11 @@ export class LogosComponent implements OnInit {
   private handleSuccessfulUpload(type: string, logo: Logo): void {
     if (type === LogosComponent.LOGO_TYPES.UNIVERSITY) {
       this.universityLogo = logo;
-      this.logoCacheService.refreshCache();
     } else {
       this.governmentLogo = logo;
     }
+
+    this.logoCacheService.refreshCache(type as LogoType);
 
     this.showSuccessMessage(
       `${
@@ -220,10 +221,11 @@ export class LogosComponent implements OnInit {
   private handleSuccessfulDeletion(type: string): void {
     if (type === LogosComponent.LOGO_TYPES.UNIVERSITY) {
       this.universityLogo = null;
-      this.logoCacheService.refreshCache();
     } else {
       this.governmentLogo = null;
     }
+
+    this.logoCacheService.refreshCache(type as LogoType);
 
     this.showSuccessMessage(
       `${

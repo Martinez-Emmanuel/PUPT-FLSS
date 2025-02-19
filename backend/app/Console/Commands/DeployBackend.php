@@ -71,6 +71,7 @@ class DeployBackend extends Command
             'favicon.ico',
             'index.php',
             'robots.txt',
+            'logos',
         ];
 
         foreach ($deployPublicFiles as $file) {

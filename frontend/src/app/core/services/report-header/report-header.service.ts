@@ -1,7 +1,10 @@
 import { Injectable } from '@angular/core';
+
 import { Observable, combineLatest } from 'rxjs';
 import { map } from 'rxjs/operators';
+
 import { LogoCacheService } from '../cache/logo-cache.service';
+
 import jsPDF from 'jspdf';
 
 @Injectable({

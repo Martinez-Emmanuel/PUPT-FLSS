@@ -21,8 +21,8 @@ class LogoController extends Controller
     private const MAX_FILENAME_LENGTH       = 100;
     private const SANITIZED_FILENAME_LENGTH = 80;
     private const ALLOWED_MIME_TYPES        = 'jpeg,png,jpg';
-    private const STORAGE_DISK              = 'public';
-    private const STORAGE_PATH              = 'logos';
+    private const STORAGE_DISK              = 'logos';
+    private const STORAGE_PATH              = '';
 
     /**
      * Retrieve all logos stored in the system.
@@ -63,7 +63,7 @@ class LogoController extends Controller
         $this->deleteExistingLogo($type);
 
         $finalFileName = $this->sanitizeFileName($file);
-        $path          = $file->store(self::STORAGE_PATH, self::STORAGE_DISK);
+        $path          = $file->storeAs(self::STORAGE_PATH, $type . '_' . $finalFileName, self::STORAGE_DISK);
 
         $logo = Logo::create([
             'type'      => $type,
@@ -89,21 +89,19 @@ class LogoController extends Controller
     {
         $logo = Logo::where('type', $type)->first();
 
-        if (! $logo || ! Storage::disk(self::STORAGE_DISK)->exists($logo->file_path)) {
+        if (! $logo) {
             return $this->notFoundResponse();
         }
 
-        $path = Storage::disk(self::STORAGE_DISK)->path($logo->file_path);
+        if (! Storage::disk(self::STORAGE_DISK)->exists($logo->file_path)) {
+            return $this->notFoundResponse();
+        }
 
-        $fileContent = file_get_contents($path);
+        $file = Storage::disk(self::STORAGE_DISK)->get($logo->file_path);
 
-        return response($fileContent)
+        return response($file)
             ->header('Content-Type', $logo->mime_type)
-            ->header('Access-Control-Allow-Origin', '*')
-            ->header('Access-Control-Allow-Methods', 'GET, OPTIONS')
-            ->header('Access-Control-Allow-Headers', 'Content-Type, Accept')
-            ->header('Cache-Control', 'public, max-age=3600')
-            ->header('Content-Length', strlen($fileContent));
+            ->header('Cache-Control', 'public, max-age=3600');
     }
 
     /**
@@ -237,7 +235,10 @@ class LogoController extends Controller
      */
     private function addUrlToLogo(array $logo): array
     {
-        $logo['url'] = url('storage/' . $logo['file_path']);
+        $logo['url'] = env('APP_ENV') === 'production'
+        ? env('APP_URL') . '/logos/' . $logo['file_path']
+        : asset('logos/' . $logo['file_path']);
+
         return $logo;
     }
 

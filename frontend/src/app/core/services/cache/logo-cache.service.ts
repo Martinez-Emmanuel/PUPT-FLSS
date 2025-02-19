@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 
-import { BehaviorSubject, Observable, of, forkJoin } from 'rxjs';
+import { BehaviorSubject, Observable, of } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
 
 import { LogoService } from '../logo/logo.service';
@@ -43,14 +43,27 @@ export class LogoCacheService {
       type === 'university'
         ? this.universityLogoSubject
         : this.governmentLogoSubject;
+    const defaultLogo =
+      type === 'university' ? 'pup_taguig_logo.png' : 'government_logo.png';
 
     const cachedLogo = localStorage.getItem(cacheKey);
     const cachedVersion = localStorage.getItem(versionKey);
 
     this.logoService.getLogo(type).subscribe({
       next: (logo) => {
-        const currentVersion = logo ? logo.id.toString() : '0';
+        if (!logo) {
+          // If no logo exists, use default logo
+          this.cacheDefaultLogo(defaultLogo).subscribe((base64) => {
+            if (base64) {
+              subject.next(base64);
+              localStorage.setItem(cacheKey, base64);
+              localStorage.setItem(versionKey, '0');
+            }
+          });
+          return;
+        }
 
+        const currentVersion = logo.id.toString();
         if (!cachedLogo || !cachedVersion || cachedVersion !== currentVersion) {
           this.cacheLogoImage(type);
         } else {
@@ -181,11 +194,13 @@ export class LogoCacheService {
   public refreshCache(type?: 'university' | 'government'): void {
     if (!type || type === 'university') {
       localStorage.removeItem(this.UNIVERSITY_CACHE_KEY);
-      this.cacheLogoImage('university');
+      localStorage.removeItem(this.UNIVERSITY_VERSION_KEY);
+      this.initializeLogo('university');
     }
     if (!type || type === 'government') {
       localStorage.removeItem(this.GOVERNMENT_CACHE_KEY);
-      this.cacheLogoImage('government');
+      localStorage.removeItem(this.GOVERNMENT_VERSION_KEY);
+      this.initializeLogo('government');
     }
   }
 }
