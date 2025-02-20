@@ -7,14 +7,12 @@ import { TitleService } from './core/services/title/title.service';
 import { routeAnimation } from './core/animations/animations';
 import { OfflineStatusComponent } from './shared/offline-status/offline-status.component';
 
-
 @Component({
   selector: 'app-root',
   imports: [CommonModule, RouterOutlet, OfflineStatusComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss',
   animations: [routeAnimation],
-
 })
 export class AppComponent implements OnInit {
   constructor(

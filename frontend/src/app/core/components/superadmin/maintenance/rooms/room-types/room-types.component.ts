@@ -59,7 +59,7 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
     private roomTypesService: RoomTypesService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -81,7 +81,7 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
         finalize(() => {
           this.isLoading = false;
           this.cdr.markForCheck();
-        })
+        }),
       )
       .subscribe({
         next: (roomTypes) => {
@@ -94,7 +94,7 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
             'Close',
             {
               duration: 3000,
-            }
+            },
           );
           this.isLoading = false;
           this.cdr.markForCheck();
@@ -113,7 +113,7 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
 
         const term = searchTerm.toLowerCase();
         const filteredRoomTypes = this.allRoomTypes.filter((roomType) =>
-          roomType.type_name.toLowerCase().includes(term)
+          roomType.type_name.toLowerCase().includes(term),
         );
         this.roomTypesSubject.next(filteredRoomTypes);
       });
@@ -163,7 +163,7 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
                 'Close',
                 {
                   duration: 3000,
-                }
+                },
               );
               this.fetchRoomTypes();
             },
@@ -173,7 +173,7 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
                 'Close',
                 {
                   duration: 3000,
-                }
+                },
               );
             },
           });
@@ -198,7 +198,7 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
                 'Close',
                 {
                   duration: 3000,
-                }
+                },
               );
               this.fetchRoomTypes();
             },
@@ -208,7 +208,7 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
                 'Close',
                 {
                   duration: 3000,
-                }
+                },
               );
             },
           });
@@ -227,7 +227,7 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
             'Close',
             {
               duration: 3000,
-            }
+            },
           );
           this.fetchRoomTypes();
         },
@@ -237,7 +237,7 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
             'Close',
             {
               duration: 3000,
-            }
+            },
           );
         },
       });

@@ -54,7 +54,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   constructor(
     private themeService: ThemeService,
     private dialog: MatDialog,
-    private authService: AuthService
+    private authService: AuthService,
   ) {
     this.isDarkTheme$ = this.themeService.isDarkTheme$;
   }

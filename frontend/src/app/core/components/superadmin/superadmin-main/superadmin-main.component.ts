@@ -40,7 +40,9 @@ import { DialogChangePasswordComponent } from '../../../../shared/dialog-change-
   ],
   animations: [fadeAnimation, slideInAnimation],
 })
-export class SuperadminMainComponent implements OnInit, AfterViewInit, OnDestroy {
+export class SuperadminMainComponent
+  implements OnInit, AfterViewInit, OnDestroy
+{
   @ViewChild('drawer') drawer!: MatSidenav;
 
   private breakpointObserver = inject(BreakpointObserver);
@@ -65,7 +67,7 @@ export class SuperadminMainComponent implements OnInit, AfterViewInit, OnDestroy
     .observe(Breakpoints.Handset)
     .pipe(
       map((result) => result.matches),
-      shareReplay()
+      shareReplay(),
     );
 
   constructor(
@@ -77,17 +79,16 @@ export class SuperadminMainComponent implements OnInit, AfterViewInit, OnDestroy
     private cookieService: CookieService,
     private el: ElementRef,
     private renderer: Renderer2,
-    private ngZone: NgZone
-  ) {
-  }
+    private ngZone: NgZone,
+  ) {}
 
   ngOnInit(): void {
     this.initializeUserData();
     this.router.events
       .pipe(
         filter(
-          (event): event is NavigationEnd => event instanceof NavigationEnd
-        )
+          (event): event is NavigationEnd => event instanceof NavigationEnd,
+        ),
       )
       .subscribe(() => this.setPageTitle());
 
@@ -138,7 +139,7 @@ export class SuperadminMainComponent implements OnInit, AfterViewInit, OnDestroy
             this.closeDropdown();
           });
         }
-      }
+      },
     );
   }
 

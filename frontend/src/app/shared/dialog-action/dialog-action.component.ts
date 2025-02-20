@@ -65,7 +65,7 @@ export class DialogActionComponent {
     private dialogRef: MatDialogRef<DialogActionComponent>,
     private snackBar: MatSnackBar,
     private reportsService: ReportsService,
-    private reportGenerationService: ReportGenerationService
+    private reportGenerationService: ReportGenerationService,
   ) {
     this.initializeDialogContent();
   }
@@ -123,7 +123,7 @@ export class DialogActionComponent {
       .pipe(
         finalize(() => {
           this.isProcessing = false;
-        })
+        }),
       )
       .subscribe({
         next: () => {
@@ -164,7 +164,7 @@ export class DialogActionComponent {
           return this.reportsService.sendAllSchedulesEmail();
         }
         return of(null);
-      })
+      }),
     );
   }
 
@@ -178,14 +178,14 @@ export class DialogActionComponent {
 
     let publish$ = this.reportsService.togglePublishSingleSchedule(
       facultyId,
-      isPublished
+      isPublished,
     );
 
     if (this.sendEmail && isPublished === 1) {
       publish$ = publish$.pipe(
         switchMap(() =>
-          this.reportsService.sendSingleFacultyScheduleEmail(facultyId)
-        )
+          this.reportsService.sendSingleFacultyScheduleEmail(facultyId),
+        ),
       );
     }
 
@@ -200,7 +200,7 @@ export class DialogActionComponent {
       this.snackBar.open(
         'Please select at least one report to generate.',
         'Close',
-        { duration: this.SNACKBAR_DURATION }
+        { duration: this.SNACKBAR_DURATION },
       );
       return;
     }
@@ -218,7 +218,7 @@ export class DialogActionComponent {
       .pipe(
         finalize(() => {
           this.isProcessing = false;
-        })
+        }),
       )
       .subscribe({
         next: (reports) => {
@@ -253,7 +253,7 @@ export class DialogActionComponent {
           this.snackBar.open(
             'Selected reports have been generated and downloaded successfully.',
             'Close',
-            { duration: this.SNACKBAR_DURATION }
+            { duration: this.SNACKBAR_DURATION },
           );
 
           this.dialogRef.close(true);
@@ -262,7 +262,7 @@ export class DialogActionComponent {
           this.snackBar.open(
             'Failed to generate reports. Please try again later.',
             'Close',
-            { duration: this.SNACKBAR_DURATION }
+            { duration: this.SNACKBAR_DURATION },
           );
           this.dialogRef.close(false);
         },

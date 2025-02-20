@@ -110,7 +110,7 @@ export class ScheduleTimelineComponent implements OnInit {
 
   isScheduleBlockStart(day: string, slotIndex: number): boolean {
     return this.scheduleBlocks.some(
-      (b) => b.day === day && slotIndex === b.startSlot
+      (b) => b.day === day && slotIndex === b.startSlot,
     );
   }
 
@@ -146,7 +146,7 @@ export class ScheduleTimelineComponent implements OnInit {
   getBlockProperty(
     day: string,
     slotIndex: number,
-    property: keyof ScheduleBlock
+    property: keyof ScheduleBlock,
   ): any {
     const block = this.getScheduleBlock(day, slotIndex);
     return block ? block[property] : null;
@@ -159,11 +159,11 @@ export class ScheduleTimelineComponent implements OnInit {
         (s: any) =>
           s.day === day &&
           this.convertTimeToMinutes(s.start_time) ===
-            this.timeSlots[slotIndex].minutes
+            this.timeSlots[slotIndex].minutes,
       );
       if (schedule) {
         return `${this.formatTimeTo12Hour(
-          schedule.start_time
+          schedule.start_time,
         )} - ${this.formatTimeTo12Hour(schedule.end_time)}`;
       }
     }
@@ -224,13 +224,13 @@ export class ScheduleTimelineComponent implements OnInit {
 
   private getScheduleBlock(
     day: string,
-    slotIndex: number
+    slotIndex: number,
   ): ScheduleBlock | undefined {
     return this.scheduleBlocks.find(
       (b) =>
         b.day === day &&
         slotIndex >= b.startSlot &&
-        slotIndex < b.startSlot + b.duration
+        slotIndex < b.startSlot + b.duration,
     );
   }
 }

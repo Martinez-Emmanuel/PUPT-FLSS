@@ -1192,14 +1192,12 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
           }
           currentY += 5;
 
-
           doc.setFont('helvetica', 'bold');
           doc.setFontSize(11);
           currentY += 10;
         }
       });
   }
-
 
   cancelPreview(): void {
     this.showPreview = false;

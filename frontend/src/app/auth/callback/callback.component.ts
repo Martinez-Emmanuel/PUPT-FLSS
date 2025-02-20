@@ -36,7 +36,7 @@ export class CallbackComponent implements OnInit, OnDestroy {
     private router: Router,
     private authService: AuthService,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
   ) {}
 
   ngOnInit() {
@@ -45,15 +45,13 @@ export class CallbackComponent implements OnInit, OnDestroy {
       .subscribe((params) => {
         const { code, state, error } = params;
 
-        // Store the original state if available
         if (state) {
           try {
             const decodedState = JSON.parse(atob(state));
             if (decodedState.originalParams) {
               this.originalOAuthParams = decodedState.originalParams;
             }
-          } catch (e) {
-          }
+          } catch (e) {}
         }
 
         if (error === 'access_denied') {
@@ -79,9 +77,9 @@ export class CallbackComponent implements OnInit, OnDestroy {
           .handleCallback(code, state)
           .pipe(
             switchMap((response) =>
-              minimumDelay.pipe(finalize(() => response))
+              minimumDelay.pipe(finalize(() => response)),
             ),
-            takeUntil(this.unsubscribe$)
+            takeUntil(this.unsubscribe$),
           )
           .subscribe({
             next: (response) => {

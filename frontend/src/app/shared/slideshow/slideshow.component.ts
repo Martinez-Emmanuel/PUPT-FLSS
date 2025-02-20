@@ -28,7 +28,7 @@ export class SlideshowComponent implements OnInit, OnDestroy {
 
   constructor(
     private imagePreloadService: ImagePreloadService,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit() {
@@ -71,9 +71,9 @@ export class SlideshowComponent implements OnInit, OnDestroy {
     from(nextIndexes)
       .pipe(
         concatMap((index) =>
-          this.imagePreloadService.preloadImage(this.images[index])
+          this.imagePreloadService.preloadImage(this.images[index]),
         ),
-        takeUntil(this.destroy$)
+        takeUntil(this.destroy$),
       )
       .subscribe((state) => {
         const index = this.images.indexOf(state.url);

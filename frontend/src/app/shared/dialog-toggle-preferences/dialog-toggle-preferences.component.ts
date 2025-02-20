@@ -112,7 +112,7 @@ export class DialogTogglePreferencesComponent {
     @Inject(MAT_DIALOG_DATA) public data: DialogTogglePreferencesData,
     private dialogRef: MatDialogRef<DialogTogglePreferencesComponent>,
     private snackBar: MatSnackBar,
-    private preferencesService: PreferencesService
+    private preferencesService: PreferencesService,
   ) {
     this.initializeDialogContent();
 
@@ -209,7 +209,7 @@ export class DialogTogglePreferencesComponent {
       .pipe(
         finalize(() => {
           this.isProcessing = false;
-        })
+        }),
       )
       .subscribe({
         next: () => {
@@ -314,7 +314,7 @@ export class DialogTogglePreferencesComponent {
         false,
         null,
         null,
-        false
+        false,
       );
       successMessage = 'Scheduled submission canceled successfully.';
     } else if (this.data.type === 'single_preferences') {
@@ -323,7 +323,7 @@ export class DialogTogglePreferencesComponent {
         false,
         null,
         null,
-        false
+        false,
       );
       successMessage = `Scheduled submission for ${this.data.facultyName} canceled successfully.`;
     } else {
@@ -334,7 +334,7 @@ export class DialogTogglePreferencesComponent {
       .pipe(
         finalize(() => {
           this.isProcessing = false;
-        })
+        }),
       )
       .subscribe({
         next: () => {
@@ -377,7 +377,7 @@ export class DialogTogglePreferencesComponent {
       newStatus,
       formattedDeadline,
       formattedStartDate,
-      this.sendEmail
+      this.sendEmail,
     );
   }
 
@@ -403,7 +403,7 @@ export class DialogTogglePreferencesComponent {
       newStatus,
       formattedDeadline,
       formattedStartDate,
-      this.sendEmail
+      this.sendEmail,
     );
   }
 

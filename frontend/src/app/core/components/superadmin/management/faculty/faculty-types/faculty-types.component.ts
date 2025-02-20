@@ -64,7 +64,7 @@ export class FacultyTypesComponent implements OnInit, OnDestroy {
   constructor(
     private facultyTypeService: FacultyTypeService,
     private dialog: MatDialog,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
   ) {}
 
   ngOnInit(): void {
@@ -97,7 +97,7 @@ export class FacultyTypesComponent implements OnInit, OnDestroy {
           type.additional_units.toString().includes(lowerSearch) ||
           (type.regular_units + type.additional_units)
             .toString()
-            .includes(lowerSearch)
+            .includes(lowerSearch),
       );
     }
   }
@@ -117,7 +117,7 @@ export class FacultyTypesComponent implements OnInit, OnDestroy {
       .getFacultyTypes()
       .pipe(
         takeUntil(this.destroy$),
-        finalize(() => (this.isLoading = false))
+        finalize(() => (this.isLoading = false)),
       )
       .subscribe({
         next: (types) => {
@@ -205,7 +205,7 @@ export class FacultyTypesComponent implements OnInit, OnDestroy {
                     'Close',
                     {
                       duration: 3000,
-                    }
+                    },
                   );
                 },
                 error: () => {
@@ -221,7 +221,7 @@ export class FacultyTypesComponent implements OnInit, OnDestroy {
               .subscribe({
                 next: (updatedType) => {
                   const index = this.facultyTypes.findIndex(
-                    (type) => type.faculty_type_id === data.faculty_type_id
+                    (type) => type.faculty_type_id === data.faculty_type_id,
                   );
                   if (index !== -1) {
                     const typeWithTotal = {
@@ -239,7 +239,7 @@ export class FacultyTypesComponent implements OnInit, OnDestroy {
                     'Close',
                     {
                       duration: 3000,
-                    }
+                    },
                   );
                 },
                 error: () => {
@@ -260,7 +260,7 @@ export class FacultyTypesComponent implements OnInit, OnDestroy {
       .subscribe({
         next: () => {
           this.facultyTypes = this.facultyTypes.filter(
-            (type) => type.faculty_type_id !== data.faculty_type_id
+            (type) => type.faculty_type_id !== data.faculty_type_id,
           );
           this.filteredFacultyTypes = [...this.facultyTypes];
           this.snackBar.open('Faculty type deleted successfully', 'Close', {

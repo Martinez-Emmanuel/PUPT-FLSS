@@ -45,14 +45,19 @@ export class ResetPasswordComponent implements OnInit {
   ) {
     this.resetForm = this.formBuilder.group({
       password: ['', [Validators.required, Validators.minLength(8)]],
-      password_confirmation: ['', [
-        Validators.required,
-        (control: AbstractControl): ValidationErrors | null => {
-          if (!control.value) return null;
-          const password = this.resetForm?.get('password')?.value;
-          return password === control.value ? null : { passwordMismatch: true };
-        }
-      ]],
+      password_confirmation: [
+        '',
+        [
+          Validators.required,
+          (control: AbstractControl): ValidationErrors | null => {
+            if (!control.value) return null;
+            const password = this.resetForm?.get('password')?.value;
+            return password === control.value
+              ? null
+              : { passwordMismatch: true };
+          },
+        ],
+      ],
     });
 
     this.resetForm.get('password')?.valueChanges.subscribe(() => {

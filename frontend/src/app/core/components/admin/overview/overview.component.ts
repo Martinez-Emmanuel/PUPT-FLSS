@@ -82,7 +82,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
     private overviewService: OverviewService,
     private preferencesService: PreferencesService,
     private cookieService: CookieService,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -130,7 +130,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
         },
         error: (error) => {
           this.handleError('Failed to load data. Please try again later.')(
-            error
+            error,
           );
           this.isLoading = false;
           this.notificationsLoaded = true;
@@ -143,7 +143,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
    */
   private handleOverviewData(
     data: OverviewDetails,
-    resetAnimation: boolean
+    resetAnimation: boolean,
   ): void {
     // Update non-progress data
     this.updateBasicInfo(data);
@@ -279,7 +279,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
       'Go to Scheduling',
       {
         duration: this.SNACKBAR_DURATION,
-      }
+      },
     );
 
     snackBarRef.onAction().subscribe(() => {
@@ -326,7 +326,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
             next: () => {
               this.isAnimatingOut = true;
               this.requestNotifications = this.requestNotifications.filter(
-                (r) => r.faculty_id !== request.faculty_id
+                (r) => r.faculty_id !== request.faculty_id,
               );
               this.cdr.detectChanges();
 
@@ -336,11 +336,11 @@ export class OverviewComponent implements OnInit, OnDestroy {
               }, 600);
 
               this.showSuccessMessage(
-                'Faculty preferences access has been enabled.'
+                'Faculty preferences access has been enabled.',
               );
             },
             error: this.handleError(
-              'Failed to process request. Please try again.'
+              'Failed to process request. Please try again.',
             ),
           });
       }
@@ -352,14 +352,14 @@ export class OverviewComponent implements OnInit, OnDestroy {
 
     this.isAnimatingOut = true;
     this.requestNotifications = this.requestNotifications.filter(
-      (r) => r.faculty_id !== request.faculty_id
+      (r) => r.faculty_id !== request.faculty_id,
     );
     this.cdr.detectChanges();
 
     const snackBarRef = this.snackBar.open(
       'Faculty request has been discarded.',
       'Undo',
-      { duration: 3000 }
+      { duration: 3000 },
     );
 
     const cancelAction = new Subject<void>();
@@ -406,7 +406,7 @@ export class OverviewComponent implements OnInit, OnDestroy {
                 ];
                 this.cdr.detectChanges();
                 this.handleError(
-                  'Failed to discard request. Please try again.'
+                  'Failed to discard request. Please try again.',
                 )(error);
               },
             });

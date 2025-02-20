@@ -71,7 +71,7 @@ export class DialogDayTimeComponent implements OnInit {
     public dialogRef: MatDialogRef<DialogDayTimeComponent>,
     @Inject(MAT_DIALOG_DATA) public data: DialogData,
     private preferencesService: PreferencesService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
   ) {}
 
   ngOnInit(): void {
@@ -114,7 +114,7 @@ export class DialogDayTimeComponent implements OnInit {
         options.push(
           `${hour12.toString().padStart(2, '0')}:${minute
             .toString()
-            .padStart(2, '0')} ${ampm}`
+            .padStart(2, '0')} ${ampm}`,
         );
       }
     }
@@ -126,7 +126,7 @@ export class DialogDayTimeComponent implements OnInit {
   // ===========================
 
   private setSelectedDays(
-    selectedDays: Array<{ day: string; start_time: string; end_time: string }>
+    selectedDays: Array<{ day: string; start_time: string; end_time: string }>,
   ): void {
     if (!selectedDays) return;
     selectedDays.forEach((selectedDay) => {
@@ -135,7 +135,7 @@ export class DialogDayTimeComponent implements OnInit {
         if (selectedDay.start_time && selectedDay.end_time) {
           dayButton.selected = true;
           dayButton.startTime = this.convertTo12HourFormat(
-            selectedDay.start_time
+            selectedDay.start_time,
           );
           dayButton.endTime = this.convertTo12HourFormat(selectedDay.end_time);
           this.updateEndTimeOptions(dayButton);
@@ -212,7 +212,7 @@ export class DialogDayTimeComponent implements OnInit {
           'Close',
           {
             duration: 3000,
-          }
+          },
         );
         this.isSaving = false;
         this.dialogRef.close({ days: selectedDays });

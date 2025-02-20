@@ -24,7 +24,7 @@ export class DialogRedirectComponent implements OnInit {
   constructor(
     private dialogRef: MatDialogRef<DialogRedirectComponent>,
     private authService: AuthService,
-    @Inject(MAT_DIALOG_DATA) public data: any
+    @Inject(MAT_DIALOG_DATA) public data: any,
   ) {
     this.checkingFesr = data.checkingFesr;
     this.redirecting = false;

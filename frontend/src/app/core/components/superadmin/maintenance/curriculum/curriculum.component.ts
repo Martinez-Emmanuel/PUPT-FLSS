@@ -18,18 +18,18 @@ import { fadeAnimation } from '../../../../animations/animations';
 import { CurriculumService, Curriculum, Program } from '../../../../services/superadmin/curriculum/curriculum.service';
 
 @Component({
-    selector: 'app-curriculum',
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        TableGenericComponent,
-        TableHeaderComponent,
-        LoadingComponent,
-    ],
-    templateUrl: './curriculum.component.html',
-    styleUrls: ['./curriculum.component.scss'],
-    animations: [fadeAnimation],
-    changeDetection: ChangeDetectionStrategy.OnPush
+  selector: 'app-curriculum',
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    TableGenericComponent,
+    TableHeaderComponent,
+    LoadingComponent,
+  ],
+  templateUrl: './curriculum.component.html',
+  styleUrls: ['./curriculum.component.scss'],
+  animations: [fadeAnimation],
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CurriculumComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
@@ -60,7 +60,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private curriculumService: CurriculumService,
-    private router: Router
+    private router: Router,
   ) {}
 
   ngOnInit() {
@@ -106,7 +106,9 @@ export class CurriculumComponent implements OnInit, OnDestroy {
           this.curricula = curricula.filter(
             (curriculum) =>
               curriculum.curriculum_year.includes(searchTerm) ||
-              curriculum.status.toLowerCase().includes(searchTerm.toLowerCase())
+              curriculum.status
+                .toLowerCase()
+                .includes(searchTerm.toLowerCase()),
           );
           this.cdr.markForCheck();
         },
@@ -147,7 +149,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
       error: (errorResponse) => {
         if (errorResponse.error?.message?.includes('already exists')) {
           this.showErrorMessage(
-            `${newCurriculum.curriculum_year} Curriculum already exists.`
+            `${newCurriculum.curriculum_year} Curriculum already exists.`,
           );
         } else {
           this.showErrorMessage('Error adding curriculum. Please try again.');
@@ -186,14 +188,14 @@ export class CurriculumComponent implements OnInit, OnDestroy {
           } else {
             this.showSuccessMessage(response.message);
             this.curricula = this.curricula.filter(
-              (c) => c.curriculum_id !== curriculum.curriculum_id
+              (c) => c.curriculum_id !== curriculum.curriculum_id,
             );
             this.updateCurriculaList(this.curricula);
           }
         },
         error: (error) => {
           this.showErrorMessage(
-            'Error during the deletion process. Please try again.'
+            'Error during the deletion process. Please try again.',
           );
         },
       });
@@ -212,7 +214,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
         next: (programs) => {
           // Check if no programs exist or all programs are inactive
           const activePrograms = programs.filter(
-            (program) => program.status === 'Active'
+            (program) => program.status === 'Active',
           );
 
           if (
@@ -221,7 +223,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
             activePrograms.length === 0
           ) {
             this.showErrorMessage(
-              'No programs found. Add at least one active program to create a curriculum.'
+              'No programs found. Add at least one active program to create a curriculum.',
             );
             return;
           }
@@ -251,7 +253,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
               },
               error: () => {
                 this.showErrorMessage(
-                  'Error fetching available curricula. Please try again.'
+                  'Error fetching available curricula. Please try again.',
                 );
               },
             });
@@ -271,7 +273,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
   openCurriculumDialog(curriculum?: Curriculum) {
     const availableCurricula = curriculum
       ? this.curricula.filter(
-          (c) => c.curriculum_id !== curriculum.curriculum_id
+          (c) => c.curriculum_id !== curriculum.curriculum_id,
         )
       : this.curricula;
     const config = this.getDialogConfig(availableCurricula, curriculum);
@@ -303,7 +305,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
     const newCurriculumYear = copyData.curriculum_year;
 
     const curriculumToCopy = this.curricula.find(
-      (curriculum) => curriculum.curriculum_year === curriculumYearToCopyFrom
+      (curriculum) => curriculum.curriculum_year === curriculumYearToCopyFrom,
     );
 
     if (curriculumToCopy && curriculumToCopy.curriculum_id) {
@@ -314,13 +316,13 @@ export class CurriculumComponent implements OnInit, OnDestroy {
         .subscribe({
           next: () => {
             this.showSuccessMessage(
-              'Curriculum copied successfully with new curriculum ID.'
+              'Curriculum copied successfully with new curriculum ID.',
             );
             this.fetchCurricula();
           },
           error: (error) => {
             this.showErrorMessage(
-              'Error copying curriculum. Please try again.'
+              'Error copying curriculum. Please try again.',
             );
           },
         });
@@ -335,7 +337,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
 
   getDialogConfig(
     availableCurricula: Curriculum[],
-    existingCurriculum?: Curriculum
+    existingCurriculum?: Curriculum,
   ): DialogConfig {
     const isEdit = !!existingCurriculum;
     return {
@@ -366,7 +368,7 @@ export class CurriculumComponent implements OnInit, OnDestroy {
                 options: [
                   'None',
                   ...availableCurricula.map(
-                    (curriculum) => `${curriculum.curriculum_year} Curriculum`
+                    (curriculum) => `${curriculum.curriculum_year} Curriculum`,
                   ),
                 ],
                 required: false,

@@ -60,8 +60,8 @@ export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
   ]).pipe(
     map(
       ([loadingAcademicYears, loadingScheduleHistory]) =>
-        loadingAcademicYears || loadingScheduleHistory
-    )
+        loadingAcademicYears || loadingScheduleHistory,
+    ),
   );
 
   hasLoadedData$ = this.hasLoadedDataSubject.asObservable();
@@ -75,7 +75,7 @@ export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
   constructor(
     private reportsService: ReportsService,
     private cookieService: CookieService,
-    private dialogRef: MatDialogRef<DialogScheduleHistoryComponent>
+    private dialogRef: MatDialogRef<DialogScheduleHistoryComponent>,
   ) {}
 
   ngOnInit(): void {
@@ -100,7 +100,7 @@ export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
         finalize(() => {
           this.loadingAcademicYearsSubject.next(false);
           this.hasLoadedDataSubject.next(true);
-        })
+        }),
       )
       .subscribe({
         next: (years: AcademicYear[]) => {
@@ -119,7 +119,7 @@ export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
 
   private getLatestAcademicYear(years: AcademicYear[]): AcademicYear {
     return years.reduce((prev, current) =>
-      prev.academic_year_id > current.academic_year_id ? prev : current
+      prev.academic_year_id > current.academic_year_id ? prev : current,
     );
   }
 
@@ -130,7 +130,7 @@ export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
     }
 
     const selectedYear = this.academicYears.find(
-      (ay) => ay.academic_year_id === this.selectedYear
+      (ay) => ay.academic_year_id === this.selectedYear,
     );
 
     if (selectedYear?.semesters.length) {
@@ -157,13 +157,10 @@ export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
     this.facultySchedule = null;
 
     this.reportsService
-      .getFacultyScheduleHistory(
-        facultyId,
-        this.selectedSemester!
-      )
+      .getFacultyScheduleHistory(facultyId, this.selectedSemester!)
       .pipe(
         takeUntil(this.destroy$),
-        finalize(() => this.loadingScheduleHistorySubject.next(false))
+        finalize(() => this.loadingScheduleHistorySubject.next(false)),
       )
       .subscribe({
         next: (data) => {

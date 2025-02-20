@@ -101,7 +101,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     private academicYearService: AcademicYearService,
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
-    private cdr: ChangeDetectorRef
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -116,7 +116,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     })
       .pipe(
         takeUntil(this.destroy$),
-        switchMap(() => this.setDefaultSelections())
+        switchMap(() => this.setDefaultSelections()),
       )
       .subscribe({
         next: () => {
@@ -181,7 +181,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       catchError((error) => {
         this.handleError('Failed to load active year and semester')(error);
         return of(void 0);
-      })
+      }),
     );
   }
 
@@ -198,14 +198,14 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           })),
         }));
         this.headerInputFields.find(
-          (field) => field.key === 'program'
+          (field) => field.key === 'program',
         )!.options = this.programOptions.map((p) => p.display);
       }),
       map(() => this.programOptions),
       catchError((error) => {
         this.handleError('Failed to load programs')(error);
         return of([]);
-      })
+      }),
     );
   }
 
@@ -223,11 +223,11 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         this.yearLevelOptions = defaultProgram.year_levels;
 
         this.headerInputFields.find(
-          (field) => field.key === 'program'
+          (field) => field.key === 'program',
         )!.options = this.programOptions.map((p) => p.display);
 
         this.headerInputFields.find(
-          (field) => field.key === 'yearLevel'
+          (field) => field.key === 'yearLevel',
         )!.options = this.yearLevelOptions.map((year) => year.year_level);
 
         if (this.yearLevelOptions.length > 0) {
@@ -237,13 +237,13 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           this.selectedCurriculumId = defaultYearLevel.curriculum_id;
 
           this.sectionOptions = defaultYearLevel.sections.sort((a, b) =>
-            a.section_name.localeCompare(b.section_name)
+            a.section_name.localeCompare(b.section_name),
           );
 
           this.headerInputFields.find(
-            (field) => field.key === 'section'
+            (field) => field.key === 'section',
           )!.options = this.sectionOptions.map(
-            (section) => section.section_name
+            (section) => section.section_name,
           );
 
           if (this.sectionOptions.length > 0) {
@@ -251,24 +251,24 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
             // Fetch courses with default selections
             const selectedProgram = this.programOptions.find(
-              (p) => p.display === this.selectedProgram
+              (p) => p.display === this.selectedProgram,
             );
             const selectedSection = this.sectionOptions.find(
-              (section) => section.section_name === this.selectedSection
+              (section) => section.section_name === this.selectedSection,
             );
 
             if (selectedProgram && selectedSection) {
               this.fetchCourses(
                 selectedProgram.id,
                 this.selectedYear,
-                selectedSection.section_id
+                selectedSection.section_id,
               ).subscribe({
                 next: () => {
                   observer.next();
                   observer.complete();
                 },
                 error: this.handleError(
-                  'Failed to fetch courses on initial load'
+                  'Failed to fetch courses on initial load',
                 ),
               });
             } else {
@@ -299,7 +299,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     let yearLevelChanged = selectedYearLevel !== this.previousYear;
 
     const selectedProgram = this.programOptions.find(
-      (p) => p.display === selectedProgramDisplay
+      (p) => p.display === selectedProgramDisplay,
     );
 
     if (!selectedProgram) {
@@ -326,7 +326,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     }
 
     const selectedYearLevelObj = this.yearLevelOptions.find(
-      (year) => year.year_level === this.selectedYear
+      (year) => year.year_level === this.selectedYear,
     );
 
     if (!selectedYearLevelObj) {
@@ -336,7 +336,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
     this.selectedCurriculumId = selectedYearLevelObj.curriculum_id;
     this.sectionOptions = selectedYearLevelObj.sections.sort((a, b) =>
-      a.section_name.localeCompare(b.section_name)
+      a.section_name.localeCompare(b.section_name),
     );
 
     this.headerInputFields.find((field) => field.key === 'section')!.options =
@@ -353,7 +353,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     }
 
     const selectedSection = this.sectionOptions.find(
-      (section) => section.section_name === this.selectedSection
+      (section) => section.section_name === this.selectedSection,
     );
 
     if (!selectedSection) {
@@ -364,7 +364,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
     this.fetchCourses(
       selectedProgram.id,
       this.selectedYear,
-      selectedSection.section_id
+      selectedSection.section_id,
     ).subscribe({
       next: () => {},
       error: this.handleError('Failed to fetch courses'),
@@ -376,12 +376,12 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   private fetchCourses(
     programId: number,
     yearLevel: number,
-    sectionId: number
+    sectionId: number,
   ): Observable<Schedule[]> {
     return this.schedulingService.populateSchedules().pipe(
       tap((response: PopulateSchedulesResponse) => {
         const program = response.programs.find(
-          (p) => p.program_id === programId
+          (p) => p.program_id === programId,
         );
         if (!program) {
           this.schedules = [];
@@ -389,7 +389,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         }
 
         const yearLevelData = program.year_levels.find(
-          (yl) => yl.year_level === yearLevel
+          (yl) => yl.year_level === yearLevel,
         );
         if (!yearLevelData) {
           this.schedules = [];
@@ -397,7 +397,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         }
 
         const semesterData = yearLevelData.semesters.find(
-          (s) => s.semester === response.semester_id
+          (s) => s.semester === response.semester_id,
         );
         if (!semesterData) {
           this.schedules = [];
@@ -405,7 +405,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
         }
 
         const sectionData = semesterData.sections.find(
-          (s) => s.section_per_program_year_id === sectionId
+          (s) => s.section_per_program_year_id === sectionId,
         );
         if (!sectionData) {
           this.schedules = [];
@@ -433,7 +433,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
               day: course.schedule?.day || 'Not set',
               time: this.getFormattedTime(
                 course.schedule?.start_time,
-                course.schedule?.end_time
+                course.schedule?.end_time,
               ),
               professor: course.professor || 'Not set',
               room: course.room?.room_code || 'Not set',
@@ -445,7 +445,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
               is_copy: course.is_copy || 0,
               isLastInGroup,
             };
-          }
+          },
         );
 
         // Sort schedules for a consistent display order
@@ -462,7 +462,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       catchError((error) => {
         this.handleError('Failed to fetch courses')(error);
         return of([]);
-      })
+      }),
     );
   }
 
@@ -494,12 +494,12 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
           this.academicYearOptions = academicYears;
           const academicYearOptions = academicYears.map(
-            (year: AcademicYear) => year.academic_year
+            (year: AcademicYear) => year.academic_year,
           );
 
           const semesterOptions =
             academicYears[0]?.semesters?.map(
-              (semester: Semester) => semester.semester_number
+              (semester: Semester) => semester.semester_number,
             ) || [];
 
           const fields = [
@@ -550,13 +550,13 @@ export class SchedulingComponent implements OnInit, OnDestroy {
             ?.valueChanges.pipe(takeUntil(this.destroy$))
             .subscribe((selectedYear: string) => {
               const selectedYearObj = academicYears.find(
-                (year) => year.academic_year === selectedYear
+                (year) => year.academic_year === selectedYear,
               );
               if (selectedYearObj) {
                 dialogRef.componentInstance.form.get('semester')?.reset();
                 dialogRef.componentInstance.data.fields[1].options =
                   selectedYearObj.semesters.map(
-                    (semester: Semester) => semester.semester_number
+                    (semester: Semester) => semester.semester_number,
                   );
 
                 if (selectedYearObj.semesters.length > 0) {
@@ -581,12 +581,12 @@ export class SchedulingComponent implements OnInit, OnDestroy {
               const selectedYearObj = academicYears.find(
                 (year) =>
                   year.academic_year ===
-                  dialogRef.componentInstance.form.get('academicYear')?.value
+                  dialogRef.componentInstance.form.get('academicYear')?.value,
               );
               if (selectedYearObj) {
                 const selectedSemesterObj = selectedYearObj.semesters.find(
                   (semester) =>
-                    semester.semester_number === selectedSemesterNumber
+                    semester.semester_number === selectedSemesterNumber,
                 );
 
                 if (selectedSemesterObj) {
@@ -607,18 +607,18 @@ export class SchedulingComponent implements OnInit, OnDestroy {
               switchMap((result) => {
                 if (result) {
                   const selectedYearObj = academicYears.find(
-                    (year) => year.academic_year === result.academicYear
+                    (year) => year.academic_year === result.academicYear,
                   );
                   const selectedSemesterObj = selectedYearObj?.semesters.find(
-                    (semester) => semester.semester_number === result.semester
+                    (semester) => semester.semester_number === result.semester,
                   );
 
                   if (selectedYearObj && selectedSemesterObj) {
                     const formattedStartDate = this.formatDateToYMD(
-                      new Date(result.startDate)
+                      new Date(result.startDate),
                     );
                     const formattedEndDate = this.formatDateToYMD(
-                      new Date(result.endDate)
+                      new Date(result.endDate),
                     );
 
                     this.schedulingService.resetCaches([
@@ -633,11 +633,11 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                         selectedYearObj.academic_year_id,
                         selectedSemesterObj.semester_id,
                         formattedStartDate,
-                        formattedEndDate
+                        formattedEndDate,
                       )
                       .pipe(
                         switchMap(() =>
-                          this.academicYearService.getActiveYearAndSemester()
+                          this.academicYearService.getActiveYearAndSemester(),
                         ),
                         switchMap((activeYearData) => {
                           this.activeYear = result.academicYear;
@@ -655,14 +655,14 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                                 year_level: year.year_level,
                                 curriculum_id: year.curriculum_id,
                                 sections: year.sections,
-                              })
+                              }),
                             ),
                           }));
 
                           this.headerInputFields.find(
-                            (field) => field.key === 'program'
+                            (field) => field.key === 'program',
                           )!.options = this.programOptions.map(
-                            (p) => p.display
+                            (p) => p.display,
                           );
                         }),
                         switchMap(() => this.setDefaultSelections()),
@@ -673,26 +673,26 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                             this.selectedSection
                           ) {
                             const program = this.programOptions.find(
-                              (p) => p.display === this.selectedProgram
+                              (p) => p.display === this.selectedProgram,
                             );
                             const section = this.sectionOptions.find(
-                              (s) => s.section_name === this.selectedSection
+                              (s) => s.section_name === this.selectedSection,
                             );
                             if (program && section) {
                               return this.fetchCourses(
                                 program.id,
                                 this.selectedYear,
-                                section.section_id
+                                section.section_id,
                               );
                             }
                           }
                           return of([]);
-                        })
+                        }),
                       );
                   }
                 }
                 return of(null);
-              })
+              }),
             )
             .subscribe({
               next: (result) => {
@@ -700,17 +700,17 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                   this.snackBar.open(
                     'New active year and semester has been set successfully.',
                     'Close',
-                    { duration: 3000 }
+                    { duration: 3000 },
                   );
                 }
               },
               error: (err) => {
                 this.handleError('Error updating active year and semester')(
-                  err
+                  err,
                 );
               },
             });
-        })
+        }),
       )
       .subscribe({
         error: this.handleError('Error fetching academic years'),
@@ -736,21 +736,21 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       next: ({ rooms, faculty, preferences }) => {
         this.loadingScheduleId = null;
         const availableRooms = rooms.rooms.filter(
-          (room) => room.status === 'Available'
+          (room) => room.status === 'Available',
         );
 
         const roomOptions = availableRooms.map((room) => room.room_code);
         const professorOptions = faculty.faculty.map(
-          (professor) => professor.name
+          (professor) => professor.name,
         );
         const program = this.programOptions.find(
-          (p) => p.display === this.selectedProgram
+          (p) => p.display === this.selectedProgram,
         );
 
         const selectedProgramInfo = `${schedule?.program_code} ${this.selectedYear}-${this.selectedSection}`;
         const selectedCourseInfo = `${schedule.course_code} - ${schedule.course_title}`;
         const section = this.sectionOptions.find(
-          (s) => s.section_name === schedule.section
+          (s) => s.section_name === schedule.section,
         );
 
         const sectionId = section ? section.section_id : null;
@@ -775,7 +775,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
         preferences.preferences.forEach((pref) => {
           const facultyDetails = faculty.faculty.find(
-            (f) => f.faculty_id === pref.faculty_id
+            (f) => f.faculty_id === pref.faculty_id,
           );
           if (!facultyDetails) {
             return;
@@ -785,7 +785,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
             semester.courses.forEach((course) => {
               if (course.course_details.course_id === schedule.course_id) {
                 const existingFaculty = suggestedFaculty.find(
-                  (f) => f.faculty_id === facultyDetails.faculty_id
+                  (f) => f.faculty_id === facultyDetails.faculty_id,
                 );
 
                 const facultyPref: SuggestedFaculty = {
@@ -795,7 +795,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
                   preferences: course.preferred_days.map((prefDay) => ({
                     day: prefDay.day,
                     time: `${this.formatTimeFromBackend(
-                      prefDay.start_time
+                      prefDay.start_time,
                     )} - ${this.formatTimeFromBackend(prefDay.end_time)}`,
                   })),
                   prefIndex: 0,
@@ -853,7 +853,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
               `Schedule for ${schedule.course_code} - ${schedule.course_title} 
                 has been successfully updated.`,
               'Close',
-              { duration: 3000 }
+              { duration: 3000 },
             );
             this.schedulingService.resetCaches([CacheType.Schedules]);
             this.onInputChange({
@@ -867,7 +867,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       error: (error) => {
         this.loadingScheduleId = null;
         this.handleError('Failed to fetch necessary data for editing schedule')(
-          error
+          error,
         );
       },
     });
@@ -889,13 +889,13 @@ export class SchedulingComponent implements OnInit, OnDestroy {
               ?.id || 0,
             this.selectedYear,
             this.sectionOptions.find(
-              (s) => s.section_name === this.selectedSection
-            )?.section_id || 0
+              (s) => s.section_name === this.selectedSection,
+            )?.section_id || 0,
           );
         }),
         finalize(() => {
           this.processingCourseId = null;
-        })
+        }),
       )
       .subscribe({
         next: (updatedSchedules) => {
@@ -909,7 +909,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
           this.snackBar.open(
             `${scheduleIndex} schedule successfully added for ${element.course_code} - ${element.course_title}`,
             'Close',
-            { duration: 3000 }
+            { duration: 3000 },
           );
         },
         error: (error) => {
@@ -927,7 +927,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
       data: {
         title: `Remove ${this.getOrdinalSuffix(scheduleIndex)} schedule`,
         content: `Are you sure you want to remove the ${this.getOrdinalSuffix(
-          scheduleIndex
+          scheduleIndex,
         )} schedule for ${courseCode} - ${courseTitle}? This action cannot be undone.`,
         actionText: 'Remove',
         cancelText: 'Cancel',
@@ -947,22 +947,22 @@ export class SchedulingComponent implements OnInit, OnDestroy {
             }),
             switchMap(() => {
               const program = this.programOptions.find(
-                (p) => p.display === this.selectedProgram
+                (p) => p.display === this.selectedProgram,
               );
               const section = this.sectionOptions.find(
-                (s) => s.section_name === this.selectedSection
+                (s) => s.section_name === this.selectedSection,
               );
               return program && section
                 ? this.fetchCourses(
                     program.id,
                     this.selectedYear,
-                    section.section_id
+                    section.section_id,
                   )
                 : of([]);
             }),
             finalize(() => {
               this.processingCourseId = null;
-            })
+            }),
           )
           .subscribe({
             next: (updatedSchedules) => {
@@ -971,10 +971,10 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
               this.snackBar.open(
                 `${this.getOrdinalSuffix(
-                  scheduleIndex
+                  scheduleIndex,
                 )} schedule for ${courseCode} - ${courseTitle} removed successfully.`,
                 'Close',
-                { duration: 3000 }
+                { duration: 3000 },
               );
             },
             error: this.handleError('Failed to remove course copy'),
@@ -1082,7 +1082,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
   protected hasCopies(element: Schedule): boolean {
     return (
       this.schedules.filter(
-        (schedule) => schedule.course_code === element.course_code
+        (schedule) => schedule.course_code === element.course_code,
       ).length > 1
     );
   }
@@ -1104,7 +1104,7 @@ export class SchedulingComponent implements OnInit, OnDestroy {
 
   protected getScheduleCount(element: Schedule): number {
     return this.schedules.filter(
-      (schedule) => schedule.course_code === element.course_code
+      (schedule) => schedule.course_code === element.course_code,
     ).length;
   }
 

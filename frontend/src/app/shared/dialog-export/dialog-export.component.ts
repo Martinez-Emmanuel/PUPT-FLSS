@@ -18,21 +18,21 @@ interface ExportDialogData {
   customTitle?: string;
   subtitle?: string;
   generatePdfFunction?: (showPreview: boolean) => Blob | void;
-  generateFileNameFunction?: () => string; 
+  generateFileNameFunction?: () => string;
 }
 
 @Component({
-    selector: 'app-dialog-export',
-    imports: [
-        CommonModule,
-        LoadingComponent,
-        MatTableModule,
-        MatButtonModule,
-        MatIconModule,
-    ],
-    templateUrl: './dialog-export.component.html',
-    styleUrls: ['./dialog-export.component.scss'],
-    animations: [fadeAnimation]
+  selector: 'app-dialog-export',
+  imports: [
+    CommonModule,
+    LoadingComponent,
+    MatTableModule,
+    MatButtonModule,
+    MatIconModule,
+  ],
+  templateUrl: './dialog-export.component.html',
+  styleUrls: ['./dialog-export.component.scss'],
+  animations: [fadeAnimation],
 })
 export class DialogExportComponent implements OnInit, AfterViewInit {
   title: string = '';
@@ -46,7 +46,7 @@ export class DialogExportComponent implements OnInit, AfterViewInit {
   constructor(
     public dialogRef: MatDialogRef<DialogExportComponent>,
     @Inject(MAT_DIALOG_DATA) public data: ExportDialogData,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
   ) {}
 
   ngOnInit(): void {
@@ -65,16 +65,16 @@ export class DialogExportComponent implements OnInit, AfterViewInit {
 
   private setTitleAndSubtitle(): void {
     const { customTitle, entityData, subtitle } = this.data;
-  
+
     if (entityData) {
-      this.title = entityData.name || entityData.title || customTitle || 'Export to PDF';
+      this.title =
+        entityData.name || entityData.title || customTitle || 'Export to PDF';
       this.subtitle = this.getSubtitle(entityData);
     } else {
       this.title = customTitle || 'Export to PDF';
-      this.subtitle = subtitle || ''; 
+      this.subtitle = subtitle || '';
     }
   }
-  
 
   private getSubtitle(entityData: any): string {
     if (entityData.academic_year && entityData.semester_label) {
@@ -95,16 +95,16 @@ export class DialogExportComponent implements OnInit, AfterViewInit {
     const pdfBlob = this.data.generatePdfFunction?.(true);
     if (pdfBlob) {
       const blobUrl = URL.createObjectURL(pdfBlob);
-      this.pdfBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl); 
-  
+      this.pdfBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl);
+
       if (this.pdfIframe?.nativeElement) {
-        this.pdfIframe.nativeElement.src = blobUrl; 
+        this.pdfIframe.nativeElement.src = blobUrl;
       }
     }
   }
-  
+
   public downloadPdf(): void {
-    const pdfBlob = this.data.generatePdfFunction?.(false); 
+    const pdfBlob = this.data.generatePdfFunction?.(false);
     if (pdfBlob) {
       let fileName;
       if (this.data.generateFileNameFunction) {
@@ -112,13 +112,13 @@ export class DialogExportComponent implements OnInit, AfterViewInit {
       } else {
         fileName = `${this.title.replace(/ /g, '_').toLowerCase()}.pdf`;
       }
-  
+
       const blobUrl = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = blobUrl;
       link.download = fileName;
       link.click();
-      URL.revokeObjectURL(blobUrl); 
+      URL.revokeObjectURL(blobUrl);
     }
   }
 

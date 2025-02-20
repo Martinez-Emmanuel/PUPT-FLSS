@@ -1,29 +1,9 @@
-import {
-  Component,
-  Output,
-  EventEmitter,
-  Inject,
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Injectable,
-} from '@angular/core';
-import {
-  FormBuilder,
-  FormGroup,
-  Validators,
-  ReactiveFormsModule,
-  AbstractControl,
-  ValidationErrors,
-  ValidatorFn,
-} from '@angular/forms';
+import { Component, Output, EventEmitter, Inject, ChangeDetectionStrategy, ChangeDetectorRef, Injectable } from '@angular/core';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 
-import {
-  MAT_DIALOG_DATA,
-  MatDialogRef,
-  MatDialogModule,
-} from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
@@ -35,12 +15,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDatepickerModule } from '@angular/material/datepicker';
-import {
-  DateAdapter,
-  MAT_DATE_FORMATS,
-  NativeDateAdapter,
-  provideNativeDateAdapter,
-} from '@angular/material/core';
+import { DateAdapter, MAT_DATE_FORMATS, NativeDateAdapter, provideNativeDateAdapter } from '@angular/material/core';
 
 import { AdminService } from '../../core/services/superadmin/management/admin/admin.service';
 import { TwoDigitInputDirective } from '../../core/imports/two-digit-input.directive';
@@ -69,7 +44,6 @@ class CustomDateAdapter extends NativeDateAdapter {
   }
 }
 
-// Custom date formats
 const CUSTOM_DATE_FORMATS = {
   parse: {
     dateInput: { month: 'long', year: 'numeric', day: 'numeric' },
@@ -171,7 +145,7 @@ export class TableDialogComponent {
     private cdr: ChangeDetectorRef,
     private router: Router,
     private adminService: AdminService,
-    @Inject(MAT_DIALOG_DATA) public data: DialogConfig
+    @Inject(MAT_DIALOG_DATA) public data: DialogConfig,
   ) {
     this.initializeComponent();
   }
@@ -230,16 +204,16 @@ export class TableDialogComponent {
         if (buildingId) {
           // Find the building field to get its options
           const buildingField = this.data.fields.find(
-            (f) => f.formControlName === 'building_id'
+            (f) => f.formControlName === 'building_id',
           );
           const floorLevelField = this.data.fields.find(
-            (f) => f.formControlName === 'floor_level'
+            (f) => f.formControlName === 'floor_level',
           );
 
           if (buildingField && floorLevelField) {
             // Find the selected building from options
             const selectedBuilding = buildingField.options?.find(
-              (opt) => this.isSelectOption(opt) && opt.value === buildingId
+              (opt) => this.isSelectOption(opt) && opt.value === buildingId,
             );
 
             if (selectedBuilding && this.isSelectOption(selectedBuilding)) {
@@ -248,7 +222,7 @@ export class TableDialogComponent {
                 building_id: parseInt(selectedBuilding.value.toString()),
                 building_name: selectedBuilding.label,
                 floor_levels: parseInt(
-                  selectedBuilding.metadata?.['floor_levels'] || '0'
+                  selectedBuilding.metadata?.['floor_levels'] || '0',
                 ),
               };
 
@@ -262,7 +236,7 @@ export class TableDialogComponent {
                     value: ordinal,
                     label: `${ordinal} Floor`,
                   };
-                }
+                },
               );
 
               // Update the floor level field options
@@ -330,7 +304,7 @@ export class TableDialogComponent {
   }
 
   private yearEndGreaterThanYearStartValidator(
-    control: AbstractControl
+    control: AbstractControl,
   ): ValidationErrors | null {
     const yearStart = this.form.get('yearStart')?.value;
     const yearEnd = control.value;
@@ -449,7 +423,7 @@ export class TableDialogComponent {
 
   public updateEndTimeOptions(newOptions: string[]): void {
     const endTimeFieldConfig = this.data.fields.find(
-      (f) => f.formControlName === 'endTime'
+      (f) => f.formControlName === 'endTime',
     );
 
     if (endTimeFieldConfig) {
@@ -518,7 +492,7 @@ export class TableDialogComponent {
   }
 
   private passwordMatchValidator(
-    control: AbstractControl
+    control: AbstractControl,
   ): ValidationErrors | null {
     const password = this.form.get('password')?.value;
     const confirmPassword = control.value;
@@ -633,7 +607,7 @@ export class TableDialogComponent {
   }
 
   isSelectOption(
-    option: string | number | SelectOption
+    option: string | number | SelectOption,
   ): option is SelectOption {
     return typeof option === 'object' && 'value' in option && 'label' in option;
   }
