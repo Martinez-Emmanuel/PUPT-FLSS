@@ -129,7 +129,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (curriculum) => {
-          console.log('Fetched Curriculum:', curriculum);
           if (curriculum) {
             this.curriculum = curriculum;
 
@@ -160,7 +159,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
           this.isLoading = false;
         },
         error: (error) => {
-          console.error('Error fetching curriculum:', error);
           this.snackBar.open(
             `Error fetching curriculum: ${
               error.message ||
@@ -401,7 +399,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
               }
             },
             error: (error) => {
-              console.error('Error updating course:', error);
               this.snackBar.open(
                 `Error updating course '${course.course_code}'. Please try again.`,
                 'Close',
@@ -446,7 +443,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        console.error('Error deleting course:', error);
         this.snackBar.open(
           `Error deleting course '${course.course_code}'. Please try again.`,
           'Close',
@@ -585,7 +581,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
             }
           },
           error: (error) => {
-            console.error('Error adding course:', error);
             this.snackBar.open(
               'Error adding course. Please try again.',
               'Close',
@@ -751,7 +746,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
                     this.cdr.detectChanges();
                   },
                   error: (error) => {
-                    console.error('Error updating curriculum:', error);
                     this.snackBar.open(
                       error.error?.message ||
                         'Error updating curriculum. Please refresh the page.',
@@ -766,7 +760,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
       },
       error: (error) => {
         this.isManagingPrograms = false;
-        console.error('Error loading programs:', error);
         this.snackBar.open(
           'Error loading programs. Please try again.',
           'Close',
@@ -979,7 +972,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
         if (currentProgram) {
           this.addProgramToPDF(doc, currentProgram, true);
         } else {
-          console.error('No current program available for export');
           return;
         }
       }
@@ -991,7 +983,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
         doc.save('curriculum_report.pdf');
       }
     } else {
-      console.error('No curriculum data available');
       return;
     }
   }
@@ -1027,7 +1018,6 @@ export class CurriculumDetailComponent implements OnInit, OnDestroy {
           !program.year_levels ||
           program.year_levels.length === 0
         ) {
-          console.warn('No valid program or year levels found');
           return;
         }
 

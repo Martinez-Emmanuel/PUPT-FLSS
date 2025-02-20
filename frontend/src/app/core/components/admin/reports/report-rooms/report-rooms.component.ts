@@ -137,7 +137,6 @@ export class ReportRoomsComponent
       },
       error: (error) => {
         this.isLoading = false;
-        console.error('Error fetching room data:', error);
       },
     });
   }
@@ -239,10 +238,6 @@ export class ReportRoomsComponent
     URL.revokeObjectURL(blobUrl);
   }
 
-  updateDisplayedData() {
-    console.log('Paginator updated');
-  }
-
   generateAllRoomsPdfBlob(): Blob {
     const doc = new jsPDF('landscape', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.width;
@@ -251,7 +246,6 @@ export class ReportRoomsComponent
     const logoSize = 22;
 
     if (this.filteredData.length === 0) {
-      console.error('No data available to export.');
       return new Blob();
     }
 

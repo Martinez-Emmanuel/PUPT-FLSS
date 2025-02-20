@@ -104,7 +104,6 @@ export class ReportGenerationService {
 
     return forkJoin(observablesWithType).pipe(
       catchError((error) => {
-        console.error('Error generating selected reports:', error);
         return of([]);
       }),
     );
@@ -166,7 +165,6 @@ export class ReportGenerationService {
         return doc.output('blob');
       }),
       catchError((error) => {
-        console.error('Error generating faculty report:', error);
         return of(new Blob());
       }),
     );
@@ -237,7 +235,6 @@ export class ReportGenerationService {
         return doc.output('blob');
       }),
       catchError((error) => {
-        console.error('Error generating programs report:', error);
         return of(new Blob());
       }),
     );
@@ -299,7 +296,6 @@ export class ReportGenerationService {
         return doc.output('blob');
       }),
       catchError((error) => {
-        console.error('Error generating rooms report:', error);
         return of(new Blob());
       }),
     );

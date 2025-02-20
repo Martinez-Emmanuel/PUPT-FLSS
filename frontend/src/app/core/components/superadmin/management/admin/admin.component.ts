@@ -272,7 +272,6 @@ export class AdminComponent implements OnInit, OnDestroy {
                     duration: 3000,
                   },
                 );
-                console.error('Error adding admin:', error);
               },
             });
           }
@@ -286,7 +285,6 @@ export class AdminComponent implements OnInit, OnDestroy {
             duration: 3000,
           },
         );
-        console.error('Error generating admin code:', error);
       },
     });
   }
@@ -345,7 +343,6 @@ export class AdminComponent implements OnInit, OnDestroy {
         this.snackBar.open('Error updating admin. Please try again.', 'Close', {
           duration: 3000,
         });
-        console.error('Error updating admin:', error);
       },
     });
   }

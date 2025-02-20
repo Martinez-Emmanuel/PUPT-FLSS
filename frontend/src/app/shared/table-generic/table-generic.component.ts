@@ -75,8 +75,6 @@ export class TableGenericComponent<T> implements OnInit, AfterViewInit {
       this.paginator.page.subscribe(() => {
         this.dataSource.paginator = this.paginator;
       });
-    } else {
-      console.error('Paginator is not defined');
     }
   }
 

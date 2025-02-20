@@ -57,9 +57,7 @@ export class AuthService {
   // Initiate OAuth flow
   initiateFesrLogin(): void {
     const state = this.generateRandomState();
-    console.log('Generated state:', state);
 
-    // Store state in localStorage instead of cookies/sessionStorage
     localStorage.setItem('oauth_state', state);
 
     const params = new URLSearchParams({
@@ -76,18 +74,13 @@ export class AuthService {
 
   // Handle OAuth callback
   handleCallback(code: string, state: string): Observable<OAuthTokenResponse> {
-    console.log('Handling callback with state:', state);
-
     const savedState = localStorage.getItem('oauth_state');
-    console.log('Saved state:', savedState);
 
     if (!savedState) {
-      console.error('No saved state found in localStorage');
       throw new Error('No saved state found');
     }
 
     if (state !== savedState) {
-      console.error('State mismatch:', { received: state, saved: savedState });
       throw new Error('Invalid state parameter');
     }
 

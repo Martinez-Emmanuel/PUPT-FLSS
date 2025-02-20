@@ -73,7 +73,6 @@ export class RoomTypesService {
       errorMessage = error.error?.message || errorMessage;
     }
 
-    console.error('An error occurred:', error);
     return throwError(() => new Error(errorMessage));
   }
 }

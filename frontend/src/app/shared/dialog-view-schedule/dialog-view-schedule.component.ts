@@ -82,7 +82,6 @@ export class DialogViewScheduleComponent implements OnInit {
         );
         this.generateAndDisplayPdf();
       } else {
-        console.warn('No schedule groups available for programs.');
         this.scheduleData = [];
       }
     } else if (this.data.entity === 'faculty' || this.data.entity === 'room') {
@@ -95,10 +94,6 @@ export class DialogViewScheduleComponent implements OnInit {
       ) {
         this.scheduleData = this.data.entityData;
       } else {
-        console.warn(
-          'No schedules found or invalid data structure:',
-          this.data.entityData,
-        );
         this.scheduleData = this.data.entityData || [];
       }
     }
@@ -159,24 +154,20 @@ export class DialogViewScheduleComponent implements OnInit {
         this.pdfBlobUrl =
           this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl);
       } else {
-        console.error('generatePdfFunction did not return a Blob.');
         this.pdfBlobUrl = null;
       }
     } else {
-      console.error('No generatePdfFunction provided.');
       this.pdfBlobUrl = null;
     }
   }
 
   downloadPdf(): void {
     if (!this.data.generatePdfFunction) {
-      console.error('No PDF generation function provided');
       return;
     }
 
     const pdfResult = this.data.generatePdfFunction(false);
     if (!(pdfResult instanceof Blob)) {
-      console.error('PDF generation failed');
       return;
     }
 

@@ -134,7 +134,6 @@ export class DialogActionComponent {
           this.dialogRef.close(true);
         },
         error: (error) => {
-          console.error('Operation failed:', error);
           const errorMessage = this.getErrorMessage();
           this.snackBar.open(errorMessage, 'Close', {
             duration: this.SNACKBAR_DURATION,
@@ -260,7 +259,6 @@ export class DialogActionComponent {
           this.dialogRef.close(true);
         },
         error: (error) => {
-          console.error('Error generating reports:', error);
           this.snackBar.open(
             'Failed to generate reports. Please try again later.',
             'Close',

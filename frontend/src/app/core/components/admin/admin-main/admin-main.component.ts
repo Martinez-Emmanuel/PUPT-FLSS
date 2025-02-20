@@ -148,7 +148,6 @@ export class AdminMainComponent implements OnInit {
         this.router.navigate(['/login']);
       },
       error: (error) => {
-        console.error('Logout failed', error);
         loadingDialogRef.close();
       },
     });

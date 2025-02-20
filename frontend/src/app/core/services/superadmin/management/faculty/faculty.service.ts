@@ -84,7 +84,6 @@ export class FacultyService {
         }));
       }),
       catchError((error) => {
-        console.error('Error fetching faculty:', error);
         return of([]);
       })
     );

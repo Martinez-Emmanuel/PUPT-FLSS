@@ -271,10 +271,6 @@ export class OverviewComponent implements OnInit, OnDestroy {
       },
       disableClose: true,
     });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      console.log('Export All dialog closed', result);
-    });
   }
 
   private showSchedulingRedirectMessage(): void {
@@ -432,7 +428,6 @@ export class OverviewComponent implements OnInit, OnDestroy {
 
   private handleError(errorMessage: string) {
     return (error: any) => {
-      console.error('Operation failed:', error);
       this.showErrorMessage(errorMessage);
       this.isLoading = false;
     };

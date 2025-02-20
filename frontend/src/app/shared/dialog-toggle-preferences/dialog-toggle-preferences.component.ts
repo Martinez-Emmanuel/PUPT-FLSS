@@ -220,7 +220,6 @@ export class DialogTogglePreferencesComponent {
           this.dialogRef.close(true);
         },
         error: (error) => {
-          console.error('Operation failed:', error);
           const errorMessage = this.getErrorMessage();
           this.snackBar.open(errorMessage, 'Close', {
             duration: this.SNACKBAR_DURATION,
@@ -345,7 +344,6 @@ export class DialogTogglePreferencesComponent {
           this.dialogRef.close(true);
         },
         error: (error) => {
-          console.error('Operation failed:', error);
           const errorMessage = 'Failed to cancel scheduled submission.';
           this.snackBar.open(errorMessage, 'Close', {
             duration: this.SNACKBAR_DURATION,

@@ -99,11 +99,7 @@ export class DialogExportComponent implements OnInit, AfterViewInit {
   
       if (this.pdfIframe?.nativeElement) {
         this.pdfIframe.nativeElement.src = blobUrl; 
-      } else {
-        console.error('No PDF iframe element found.');
       }
-    } else {
-      console.error('PDF Blob is undefined or null.');
     }
   }
   

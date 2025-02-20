@@ -181,7 +181,6 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
       .getFaculty()
       .pipe(
         catchError((error) => {
-          console.error('Error fetching faculty:', error);
           this.snackBar.open(
             'Error fetching faculty. Please try again.',
             'Close',
@@ -194,7 +193,6 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
         takeUntil(this.destroy$),
       )
       .subscribe((faculty) => {
-        console.log('Fetched faculty:', faculty); // Debug log
         this.faculty = faculty;
         this.filteredFaculty = [...this.faculty];
         this.isLoading = false;
@@ -378,7 +376,6 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
           .addFaculty(result)
           .pipe(
             catchError((error) => {
-              console.error('Error adding faculty:', error);
               this.snackBar.open(
                 'Error adding faculty. Please try again.',
                 'Close',
@@ -457,7 +454,6 @@ export class FacultyComponent implements OnInit, OnDestroy, AfterViewInit {
           .updateFaculty(facultyId, updatedFaculty)
           .pipe(
             catchError((error) => {
-              console.error('Error updating faculty:', error);
               this.snackBar.open(
                 'Error updating faculty. Please try again.',
                 'Close',

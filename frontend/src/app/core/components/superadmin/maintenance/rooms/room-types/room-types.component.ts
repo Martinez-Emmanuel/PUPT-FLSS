@@ -89,7 +89,6 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
           this.roomTypesSubject.next(roomTypes || []);
         },
         error: (error) => {
-          console.error('Error fetching room types:', error);
           this.snackBar.open(
             'Error loading room types. Please try again.',
             'Close',
@@ -169,7 +168,6 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
               this.fetchRoomTypes();
             },
             error: (error) => {
-              console.error('Error adding room type:', error);
               this.snackBar.open(
                 error.message || 'Error adding room type',
                 'Close',
@@ -205,7 +203,6 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
               this.fetchRoomTypes();
             },
             error: (error) => {
-              console.error('Error updating room type:', error);
               this.snackBar.open(
                 error.message || 'Error updating room type',
                 'Close',
@@ -235,7 +232,6 @@ export class RoomTypesComponent implements OnInit, OnDestroy {
           this.fetchRoomTypes();
         },
         error: (error) => {
-          console.error('Error deleting room type:', error);
           this.snackBar.open(
             error.message || 'Error deleting room type',
             'Close',

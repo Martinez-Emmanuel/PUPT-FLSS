@@ -53,9 +53,6 @@ export class CallbackComponent implements OnInit, OnDestroy {
               this.originalOAuthParams = decodedState.originalParams;
             }
           } catch (e) {
-            console.debug(
-              'State is not a complex object, continuing with simple state validation'
-            );
           }
         }
 
@@ -91,7 +88,6 @@ export class CallbackComponent implements OnInit, OnDestroy {
               this.router.navigate(['/faculty/home']);
             },
             error: (error) => {
-              console.error('OAuth callback error:', error);
               this.handleError(error.message || 'Failed to process login');
             },
           });

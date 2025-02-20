@@ -95,7 +95,6 @@ export class LoginComponent implements OnInit, OnDestroy {
         }
       },
       error: (error) => {
-        console.error('Error checking FESR health:', error);
         dialogRef.close();
         this.openFacultyLoginDialog();
       },

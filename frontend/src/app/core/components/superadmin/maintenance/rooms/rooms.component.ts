@@ -139,7 +139,6 @@ export class RoomsComponent implements OnInit, OnDestroy {
           this.roomsSubject.next(rooms);
         },
         error: (error) => {
-          console.error('Error fetching data:', error);
           this.snackBar.open('Error fetching data', 'Close', {
             duration: 3000,
           });
@@ -314,7 +313,6 @@ export class RoomsComponent implements OnInit, OnDestroy {
               this.fetchInitialData();
             },
             error: (error) => {
-              console.error('Error adding room:', error);
               this.snackBar.open('Error adding room', 'Close', {
                 duration: 3000,
               });
@@ -342,7 +340,6 @@ export class RoomsComponent implements OnInit, OnDestroy {
               this.fetchInitialData();
             },
             error: (error) => {
-              console.error('Error updating room:', error);
               this.snackBar.open('Error updating room', 'Close', {
                 duration: 3000,
               });

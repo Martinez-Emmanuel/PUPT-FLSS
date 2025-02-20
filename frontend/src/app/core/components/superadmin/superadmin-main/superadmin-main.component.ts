@@ -213,7 +213,6 @@ export class SuperadminMainComponent implements OnInit, AfterViewInit, OnDestroy
         this.router.navigate(['/login']);
       },
       error: (error) => {
-        console.error('Logout failed', error);
         loadingDialogRef.close();
       },
     });

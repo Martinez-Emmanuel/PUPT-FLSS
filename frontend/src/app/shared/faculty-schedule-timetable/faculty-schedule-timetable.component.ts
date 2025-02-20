@@ -140,11 +140,6 @@ export class FacultyScheduleTimetableComponent
           };
         },
       );
-    } else {
-      console.warn(
-        'No schedules found or invalid data structure:',
-        this.facultySchedule,
-      );
     }
   }
 

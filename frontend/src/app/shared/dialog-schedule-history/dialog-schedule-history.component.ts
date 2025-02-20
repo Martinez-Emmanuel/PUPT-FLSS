@@ -112,7 +112,6 @@ export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
           }
         },
         error: (error) => {
-          console.error('Error fetching academic years:', error);
           this.academicYears = [];
         },
       });
@@ -170,8 +169,6 @@ export class DialogScheduleHistoryComponent implements OnInit, OnDestroy {
         next: (data) => {
           this.facultySchedule = data.faculty_schedule;
         },
-        error: (error) =>
-          console.error('Error fetching schedule history:', error),
       });
   }
 

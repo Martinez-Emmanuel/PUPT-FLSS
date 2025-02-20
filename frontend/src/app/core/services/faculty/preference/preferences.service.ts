@@ -41,10 +41,9 @@ export class PreferencesService {
         })),
         shareReplay(1),
         catchError((error) => {
-          console.error('Error fetching programs:', error);
           this.programsCache$ = null;
           return throwError(() => error);
-        })
+        }),
       );
     }
     return this.programsCache$;
@@ -74,7 +73,6 @@ export class PreferencesService {
           this.preferencesSubject.next(response);
         },
         error: (error) => {
-          console.error('Error fetching preferences:', error);
           this.preferencesSubject.error(error);
         },
       });
@@ -87,7 +85,6 @@ export class PreferencesService {
    */
   getPreferencesByFacultyId(facultyId: string): Observable<any> {
     if (!facultyId) {
-      console.error('Invalid faculty ID provided.');
       return throwError(() => new Error('Invalid faculty ID'));
     }
 
@@ -99,13 +96,9 @@ export class PreferencesService {
     const preferences$ = this.http.get(url).pipe(
       shareReplay(1),
       catchError((error) => {
-        console.error(
-          `Error fetching preferences for faculty ID ${facultyId}:`,
-          error
-        );
         this.preferencesCache.delete(facultyId);
         return throwError(() => error);
-      })
+      }),
     );
 
     this.preferencesCache.set(facultyId, preferences$);
@@ -125,9 +118,8 @@ export class PreferencesService {
     return this.http.post(url, preference).pipe(
       tap(() => this.clearCaches(preference.faculty_id.toString())),
       catchError((error) => {
-        console.error('Error submitting single preference:', error);
         return throwError(() => error);
-      })
+      }),
     );
   }
 
@@ -137,7 +129,7 @@ export class PreferencesService {
   deletePreference(
     preferenceId: number,
     facultyId: string,
-    activeSemesterId: number
+    activeSemesterId: number,
   ): Observable<any> {
     const params = new HttpParams()
       .set('faculty_id', facultyId)
@@ -147,9 +139,8 @@ export class PreferencesService {
     return this.http.delete(url, { params }).pipe(
       tap(() => this.clearCaches(facultyId)),
       catchError((error) => {
-        console.error(`Error deleting preference ID ${preferenceId}:`, error);
         return throwError(() => error);
-      })
+      }),
     );
   }
 
@@ -161,7 +152,7 @@ export class PreferencesService {
     status: boolean,
     deadline: string | null,
     startDate: string | null,
-    sendEmail: boolean
+    sendEmail: boolean,
   ): Observable<any> {
     return this.http
       .post(`${this.baseUrl}/toggle-all-preferences`, {
@@ -175,9 +166,8 @@ export class PreferencesService {
           this.fetchPreferences();
         }),
         catchError((error) => {
-          console.error('Error toggling all preferences:', error);
           return throwError(() => error);
-        })
+        }),
       );
   }
 
@@ -190,7 +180,7 @@ export class PreferencesService {
     status: boolean,
     individual_deadline: string | null,
     individual_start_date: string | null,
-    sendEmail: boolean
+    sendEmail: boolean,
   ): Observable<any> {
     return this.http
       .post(`${this.baseUrl}/toggle-single-preferences`, {
@@ -205,12 +195,8 @@ export class PreferencesService {
           this.fetchPreferences();
         }),
         catchError((error) => {
-          console.error(
-            `Error toggling preferences for faculty ID ${faculty_id}:`,
-            error
-          );
           return throwError(() => error);
-        })
+        }),
       );
   }
 
@@ -224,9 +210,8 @@ export class PreferencesService {
         this.updatePreferencesCache(facultyId);
       }),
       catchError((error) => {
-        console.error('Error requesting access:', error);
         return throwError(() => error);
-      })
+      }),
     );
   }
 
@@ -240,9 +225,8 @@ export class PreferencesService {
         this.updatePreferencesCache(facultyId);
       }),
       catchError((error) => {
-        console.error('Error cancelling access request:', error);
         return throwError(() => error);
-      })
+      }),
     );
   }
 
@@ -252,15 +236,7 @@ export class PreferencesService {
   updatePreferencesCache(facultyId: string): void {
     this.preferencesCache.delete(facultyId);
     this.getPreferencesByFacultyId(facultyId).subscribe({
-      next: () => {
-        console.log(`Preferences cache updated for faculty ID ${facultyId}.`);
-      },
-      error: (error) => {
-        console.error(
-          `Error updating preferences cache for faculty ID ${facultyId}:`,
-          error
-        );
-      },
+      error: (error) => {},
     });
   }
 

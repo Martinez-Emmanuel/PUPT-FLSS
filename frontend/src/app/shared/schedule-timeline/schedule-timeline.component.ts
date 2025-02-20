@@ -93,11 +93,6 @@ export class ScheduleTimelineComponent implements OnInit {
           return;
         }
       });
-    } else {
-      console.warn(
-        'No schedules found or invalid data structure:',
-        this.scheduleData
-      );
     }
   }
 

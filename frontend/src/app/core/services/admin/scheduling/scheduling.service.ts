@@ -29,7 +29,7 @@ export class SchedulingService {
 
   constructor(
     private http: HttpClient,
-    private scheduleValidationService: ScheduleValidationService
+    private scheduleValidationService: ScheduleValidationService,
   ) {}
 
   /**
@@ -38,7 +38,7 @@ export class SchedulingService {
   getSections(program: string, year: number): Observable<string[]> {
     return this.http
       .get<string[]>(
-        `${this.baseUrl}/programs/${program}/year/${year}/sections`
+        `${this.baseUrl}/programs/${program}/year/${year}/sections`,
       )
       .pipe(catchError(this.handleError));
   }
@@ -53,7 +53,7 @@ export class SchedulingService {
   }
 
   /**
-   * Retrieves and caches all schedules. 
+   * Retrieves and caches all schedules.
    * Subsequent calls return the cached data unless reset.
    */
   populateSchedules(): Observable<PopulateSchedulesResponse> {
@@ -66,7 +66,7 @@ export class SchedulingService {
   }
 
   /**
-   * Retrieves and caches all available rooms. 
+   * Retrieves and caches all available rooms.
    * Subsequent calls return the cached data unless reset.
    */
   getAllRooms(): Observable<{ rooms: Room[] }> {
@@ -94,11 +94,11 @@ export class SchedulingService {
   /**
    * Retrieves and caches submitted preferences for the active semester.
    * Subsequent calls return the cached data unless forced to refresh.
-   * @param forceRefresh A boolean indicating whether to 
+   * @param forceRefresh A boolean indicating whether to
    * force a refresh of the cached data. Defaults to false.
    */
   getSubmittedPreferencesForActiveSemester(
-    forceRefresh: boolean = false
+    forceRefresh: boolean = false,
   ): Observable<SubmittedPrefResponse> {
     if (forceRefresh || !this.submittedPreferences$) {
       this.submittedPreferences$ = this.http
@@ -108,7 +108,7 @@ export class SchedulingService {
           catchError((error) => {
             this.submittedPreferences$ = undefined;
             return this.handleError(error);
-          })
+          }),
         );
     }
     return this.submittedPreferences$;
@@ -126,7 +126,7 @@ export class SchedulingService {
     end_time: string | null,
     program_id: number,
     year_level: number,
-    section_id: number
+    section_id: number,
   ): Observable<any> {
     const payload = {
       schedule_id,
@@ -138,7 +138,7 @@ export class SchedulingService {
     };
     return this.http.post<any>(`${this.baseUrl}/assign-schedule`, payload).pipe(
       tap(() => this.resetCaches([CacheType.Schedules])),
-      catchError(this.handleError)
+      catchError(this.handleError),
     );
   }
 
@@ -152,7 +152,7 @@ export class SchedulingService {
       })
       .pipe(
         tap(() => this.resetCaches([CacheType.Schedules])),
-        catchError(this.handleError)
+        catchError(this.handleError),
       );
   }
 
@@ -179,7 +179,7 @@ export class SchedulingService {
     end_time: string,
     section_id: number,
     faculty_id: number | null,
-    room_id: number | null
+    room_id: number | null,
   ): Observable<{ hasConflicts: boolean; messages: string[] }> {
     return forkJoin([this.populateSchedules(), this.getAllRooms()]).pipe(
       map(([schedules, rooms]) => {
@@ -196,14 +196,14 @@ export class SchedulingService {
             section_id,
             faculty_id,
             room_id,
-          }
+          },
         );
       }),
       catchError(() => {
         return throwError(
-          () => new Error('An error occurred during conflict detection.')
+          () => new Error('An error occurred during conflict detection.'),
         );
-      })
+      }),
     );
   }
 
@@ -235,7 +235,7 @@ export class SchedulingService {
           this.submittedPreferences$ = undefined;
           break;
         default:
-          console.warn(`Unknown CacheType: ${type}`);
+          throw new Error(`Invalid cache type: ${type}`);
       }
     });
   }

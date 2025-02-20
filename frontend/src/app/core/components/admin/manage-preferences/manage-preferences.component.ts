@@ -203,7 +203,6 @@ export class ManagePreferencesComponent
           this.isLoading.next(false);
         },
         (error) => {
-          console.error('Error loading faculty preferences:', error);
           this.snackBar.open(
             'Error loading faculty preferences. Please try again.',
             'Close',
@@ -594,10 +593,6 @@ export class ManagePreferencesComponent
           )}_${semester_label.toLowerCase()}_faculty_preferences_report.pdf`,
       },
       disableClose: true,
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      console.log('Export All dialog closed', result);
     });
   }
 

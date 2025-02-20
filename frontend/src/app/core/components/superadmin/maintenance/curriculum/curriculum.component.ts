@@ -195,7 +195,6 @@ export class CurriculumComponent implements OnInit, OnDestroy {
           this.showErrorMessage(
             'Error during the deletion process. Please try again.'
           );
-          console.error('Error:', error);
         },
       });
   }
@@ -323,7 +322,6 @@ export class CurriculumComponent implements OnInit, OnDestroy {
             this.showErrorMessage(
               'Error copying curriculum. Please try again.'
             );
-            console.error('Error:', error);
           },
         });
     } else {
@@ -401,7 +399,6 @@ export class CurriculumComponent implements OnInit, OnDestroy {
   }
 
   private showErrorMessage(message: string) {
-    console.error(message);
     this.snackBar.open(message, 'Close', { duration: 3000 });
   }
 }

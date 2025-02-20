@@ -107,7 +107,6 @@ export class DialogPrefComponent implements OnInit, OnDestroy {
           }
         },
         (error) => {
-          console.error('Error loading faculty preferences:', error);
           this.isLoading = false;
         },
       );
@@ -126,8 +125,6 @@ export class DialogPrefComponent implements OnInit, OnDestroy {
     if (pdfBlob instanceof Blob) {
       const blobUrl = URL.createObjectURL(pdfBlob);
       this.pdfBlobUrl = this.sanitizer.bypassSecurityTrustResourceUrl(blobUrl);
-    } else {
-      console.error('generateFacultyPDF did not return a Blob.');
     }
   }
 
@@ -270,7 +267,6 @@ export class DialogPrefComponent implements OnInit, OnDestroy {
 
       return doc.output('blob');
     } catch (error) {
-      console.error('Failed to generate PDF:', error);
       throw error;
     }
   }

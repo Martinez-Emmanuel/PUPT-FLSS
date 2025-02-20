@@ -179,7 +179,6 @@ export class ReportProgramsComponent implements OnInit {
       },
       error: (error) => {
         this.isLoading = false;
-        console.error('Error fetching programs data:', error);
         this.snackBar.open(
           'Failed to load programs data. Please try again later.',
           'Close',
@@ -486,7 +485,6 @@ export class ReportProgramsComponent implements OnInit {
     const logoSize = 22;
 
     if (this.filteredData.length === 0) {
-      console.error('No data available to export.');
       return doc;
     }
 
@@ -529,7 +527,6 @@ export class ReportProgramsComponent implements OnInit {
     const logoSize = 22;
 
     if (program.year_levels.length === 0) {
-      console.error('No data available to export.');
       return new Blob();
     }
 
@@ -576,15 +573,6 @@ export class ReportProgramsComponent implements OnInit {
         );
       });
     });
-
-    if (
-      filteredYearLevels.length === 0 ||
-      filteredYearLevels.every((yl) => yl.sections.length === 0)
-    ) {
-      console.error(
-        'No matching year levels or sections found for the selected options.',
-      );
-    }
 
     return doc.output('blob');
   }

@@ -188,7 +188,7 @@ export class ReportsService {
         }
         break;
       default:
-        console.warn('Invalid cache type specified');
+        throw new Error(`Invalid cache type: ${cacheType}`);
     }
   }
 
@@ -205,7 +205,6 @@ export class ReportsService {
   }
 
   private handleError(error: HttpErrorResponse) {
-    console.error('An error occurred:', error);
     return throwError(
       () => new Error('Something went wrong. Please try again later.')
     );

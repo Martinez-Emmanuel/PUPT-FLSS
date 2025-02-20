@@ -147,7 +147,6 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
         },
         (error) => {
           this.isLoading = false;
-          console.error('Error loading data:', error);
           this.snackBar.open('Failed to load data.', 'Close', {
             duration: 3000,
           });
@@ -190,7 +189,6 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
           }
         },
         (error) => {
-          console.error('Error loading academic years:', error);
           this.snackBar.open('Failed to load academic years.', 'Close', {
             duration: 3000,
           });
@@ -234,7 +232,6 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
         },
         (error) => {
           this.isLoading = false;
-          console.error('Error fetching program details: ', error);
           this.snackBar.open('Failed to fetch program details.', 'Close', {
             duration: 3000,
           });
@@ -272,11 +269,7 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
   onManageCurriculum(program: Program) {
     const fields: DialogFieldConfig[] = [];
 
-    console.log('Fetched Program ID:', program.program_id);
-
     this.curriculumService.getCurricula().subscribe((curricula) => {
-      console.log(curricula);
-
       const curriculumOptions = curricula.map((curriculum) => ({
         year: curriculum.curriculum_year,
         id: curriculum.curriculum_id,
@@ -287,10 +280,6 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
       );
 
       if (!Array.isArray(program.year_levels)) {
-        console.error(
-          'Expected year_levels to be an array, but got:',
-          program.year_levels
-        );
         return;
       }
 
@@ -348,9 +337,6 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
       dialogRef.afterClosed().subscribe((result) => {
         if (result) {
           if (!Array.isArray(program.year_levels)) {
-            console.error(
-              'Expected year_levels to be an array after dialog close.'
-            );
             return;
           }
 
@@ -387,12 +373,9 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
                   );
                   this.fetchProgramsForAcademicYear(this.selectedAcademicYear);
                 },
-                (error) => {
-                  console.error('Failed to update year levels:', error);
-                }
+                (error) => {}
               );
           } else {
-            console.error('selectedAcademicYearId is null or undefined.');
           }
         }
       });
@@ -422,10 +405,6 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
     );
 
     if (!Array.isArray(sortedYearLevels)) {
-      console.error(
-        'Expected year_levels to be an array, but got:',
-        sortedYearLevels
-      );
       return;
     }
 
@@ -586,7 +565,6 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
               }
             );
         } else {
-          console.error('selectedAcademicYearId is null or undefined.');
           this.snackBar.open('Invalid academic year selection.', 'Close', {
             duration: 3000,
           });
@@ -727,7 +705,6 @@ export class AcademicYearComponent implements OnInit, OnDestroy {
         });
       },
       error: (error) => {
-        console.error('Error fetching academic years:', error);
         this.snackBar.open('Failed to fetch academic years.', 'Close', {
           duration: 3000,
         });

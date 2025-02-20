@@ -94,7 +94,6 @@ export class BuildingsComponent implements OnInit, OnDestroy {
           this.buildingsSubject.next(buildings || []);
         },
         error: (error) => {
-          console.error('Error fetching buildings:', error);
           this.snackBar.open(
             'Error loading buildings. Please try again.',
             'Close',
@@ -179,7 +178,6 @@ export class BuildingsComponent implements OnInit, OnDestroy {
               this.fetchBuildings();
             },
             error: (error) => {
-              console.error('Error adding building:', error);
               const errorMessage =
                 error.error?.message || 'Error adding building';
               this.snackBar.open(errorMessage, 'Close', {

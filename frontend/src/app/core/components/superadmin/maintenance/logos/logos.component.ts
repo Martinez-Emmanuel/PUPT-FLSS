@@ -96,7 +96,6 @@ export class LogosComponent implements OnInit {
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error loading logos:', error);
         this.showErrorMessage(
           'Unable to load logos. Please try refreshing the page.',
         );
@@ -164,7 +163,6 @@ export class LogosComponent implements OnInit {
   private handleUploadError(error: any, type: string): void {
     const errorMessage = this.extractErrorMessage(error, type);
     this.showErrorMessage(`${errorMessage} Please try again.`);
-    console.error('Error uploading logo:', error);
   }
 
   private extractErrorMessage(error: any, type: string): string {
@@ -252,7 +250,6 @@ export class LogosComponent implements OnInit {
         type as LogoType
       ].toLowerCase()}. Please try again.`,
     );
-    console.error('Error removing logo:', error);
   }
 
   private showSuccessMessage(message: string): void {

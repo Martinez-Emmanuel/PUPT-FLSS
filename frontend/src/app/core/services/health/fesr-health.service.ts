@@ -104,15 +104,10 @@ export class FesrHealthService {
           delay: (error, retryCount) => {
             const retryDelay =
               this.INITIAL_RETRY_DELAY_MS * Math.pow(2, retryCount - 1);
-            console.warn(
-              `Health check retry attempt ${retryCount}/${this.MAX_RETRIES}`,
-              error,
-            );
             return timer(retryDelay);
           },
         }),
         catchError((error) => {
-          console.error('Health check failed after retries:', error);
           this.cacheHealthStatus(false);
           return of(false);
         }),
@@ -137,8 +132,6 @@ export class FesrHealthService {
    * @returns {boolean} True if system is operational
    */
   private evaluateHealthStatus(response: HealthCheckResponse): boolean {
-    console.debug('Health Check Metrics:', response);
-
     const isApiHealthy = response.services.api.status === 'healthy';
     const isDatabaseAcceptable =
       response.services.database.status === 'healthy' ||
@@ -162,19 +155,10 @@ export class FesrHealthService {
     ) {
       return true;
     } else if (isApiHealthy && isDatabaseAcceptable) {
-      console.warn(
-        `FESR system metrics show warnings, but API and Database are acceptable
-        for basic functionality. Proceeding with caution.`,
-      );
       return true;
     } else if (isApiHealthy) {
-      console.warn(
-        `FESR database has issues, but API is healthy.
-        OAuth might work, data transfer might be affected.`,
-      );
       return true;
     } else {
-      console.error(`FESR API is unhealthy. Blocking access.`);
       return false;
     }
   }

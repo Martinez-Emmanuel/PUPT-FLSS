@@ -426,9 +426,6 @@ export class TableDialogComponent {
           codeControl.setValue(nextCode);
           this.cdr.markForCheck();
         },
-        error: (error) => {
-          console.error('Error generating admin code:', error);
-        },
       });
     }
   }

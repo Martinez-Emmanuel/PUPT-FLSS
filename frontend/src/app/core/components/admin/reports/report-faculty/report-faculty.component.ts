@@ -162,7 +162,6 @@ export class ReportFacultyComponent
       },
       error: (error) => {
         this.isLoading = false;
-        console.error('Error fetching faculty data:', error);
       },
     });
   }
@@ -366,10 +365,6 @@ export class ReportFacultyComponent
         event.source.checked = element.isEnabled;
       }
     });
-  }
-
-  updateDisplayedData() {
-    console.log('Paginator updated');
   }
 
   generateAllSchedulesPdfBlob(): Blob {
