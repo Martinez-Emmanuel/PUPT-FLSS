@@ -16,7 +16,6 @@ interface ScheduleDialogData {
 
 @Component({
   selector: 'app-dialog-schedule-details',
-  standalone: true,
   imports: [MatSymbolDirective],
   templateUrl: './dialog-schedule-details.component.html',
   styleUrls: ['./dialog-schedule-details.component.scss'],

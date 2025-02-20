@@ -22,7 +22,6 @@ type LogoType = 'university' | 'government';
 
 @Component({
   selector: 'app-logos',
-  standalone: true,
   imports: [
     CommonModule,
     MatCardModule,
