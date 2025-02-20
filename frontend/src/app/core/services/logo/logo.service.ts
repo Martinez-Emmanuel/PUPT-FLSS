@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { environment } from '../../../../environments/environment.dev';
 
 export interface Logo {
@@ -22,11 +23,13 @@ export class LogoService {
   constructor(private http: HttpClient) {}
 
   getAllLogos(): Observable<Logo[]> {
-    return this.http.get<Logo[]>(this.apiUrl);
+    return this.http.get<Logo[]>(this.apiUrl).pipe(catchError(() => of([])));
   }
 
-  getLogo(type: string): Observable<Logo> {
-    return this.http.get<Logo>(`${this.apiUrl}/details/${type}`);
+  getLogo(type: string): Observable<Logo | null> {
+    return this.http
+      .get<Logo>(`${this.apiUrl}/details/${type}`)
+      .pipe(catchError(() => of(null)));
   }
 
   uploadLogo(type: string, file: File): Observable<Logo> {

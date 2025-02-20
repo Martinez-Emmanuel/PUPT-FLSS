@@ -40,8 +40,8 @@ export class ReportHeaderService {
     const topMargin = currentY;
 
     return combineLatest([
-      this.logoCacheService.getUniversityLogoBase64(),
-      this.logoCacheService.getGovernmentLogoBase64(),
+      this.logoCacheService.universityLogo$,
+      this.logoCacheService.governmentLogo$,
     ]).pipe(
       map(([universityLogo, governmentLogo]) => {
         currentY = topMargin;
