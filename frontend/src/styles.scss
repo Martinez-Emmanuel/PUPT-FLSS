@@ -397,6 +397,10 @@ span[mat-symbol] {
   min-width: 25vw !important;
 }
 
+.mat-drawer-inner-container {
+  @include mixins.hide-scrollbar;
+}
+
 .export-pdf-fab {
   &.mat-mdc-extended-fab {
     padding-left: 0 !important;

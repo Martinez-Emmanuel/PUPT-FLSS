@@ -1,4 +1,4 @@
-@use "../../../../../../styles/mixins";
+@use '../../../../../../styles/mixins';
 
 .fesr-status-banner {
   @include mixins.flex-layout(
@@ -6,10 +6,9 @@
     $justify: center,
     $gap: var(--spacing-xs)
   );
-  padding: var(--spacing-xs) var(--spacing-sm);
+  padding: var(--spacing-xxs) var(--spacing-sm);
   margin-bottom: var(--spacing-sm);
-  border-radius: var(--border-radius-sm);
-  font-weight: 500;
+  border-radius: var(--border-radius-xsx);
   transition: all 0.3s ease;
 
   &.online {

@@ -11,11 +11,11 @@
     [ngClass]="{ online: isFesrHealthy, offline: !isFesrHealthy }">
     <span [mat-symbol]="isFesrHealthy ? 'cloud_done' : 'cloud_off'"></span>
     <span>
-      FESR is {{ isFesrHealthy ? 'online' : 'offline' }}.
+      FESR is {{ isFesrHealthy ? 'online' : 'unavailable' }}.
       {{
         isFesrHealthy
           ? 'Faculty management is read-only. Please make changes in FESR.'
-          : 'Faculty can be managed here while FESR is offline.'
+          : 'Faculty can be managed here.'
       }}
     </span>
   </div>
