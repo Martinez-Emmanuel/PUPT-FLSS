@@ -83,12 +83,6 @@ export const ADMIN_ROUTES: Routes = [
         ],
       },
       {
-        path: 'help',
-        loadComponent: () =>
-          import('./help/help.component').then((m) => m.HelpComponent),
-        data: { pageTitle: 'Help' },
-      },
-      {
         path: '**',
         redirectTo: 'overview',
       },

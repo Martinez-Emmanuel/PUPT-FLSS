@@ -10,14 +10,6 @@ export const SUPERADMIN_ROUTES: Routes = [
     children: [
       { path: '', redirectTo: 'admin', pathMatch: 'full' },
       {
-        path: 'dashboard',
-        loadComponent: () =>
-          import('./dashboard/dashboard.component').then(
-            (m) => m.DashboardComponent,
-          ),
-        data: { pageTitle: 'Dashboard' },
-      },
-      {
         path: 'admin',
         loadComponent: () =>
           import('./management/admin/admin.component').then(
