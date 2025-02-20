@@ -18,9 +18,13 @@
         </mat-card-subtitle>
       </mat-card-header>
 
-      <!-- Content -->
+      <!-- University Logo Card Content -->
       <mat-card-content class="logo-content">
-        @if (universityLogo) {
+        @if (isUniversityLogoLoading) {
+        <div class="loading-state">
+          <mat-spinner class="custom-spinner" diameter="40"></mat-spinner>
+        </div>
+        } @else if (universityLogo) {
         <div class="logo-preview">
           <img
             [src]="universityLogo.url"
@@ -35,17 +39,22 @@
         }
       </mat-card-content>
 
-      <!-- Actions -->
+      <!-- University Logo Card Actions -->
       <mat-card-actions class="logo-actions">
         <button
           mat-button
           color="primary"
+          [disabled]="isUniversityLogoLoading"
           (click)="triggerFileInput('university')">
           <mat-icon>{{ universityLogo ? 'loop' : 'upload' }}</mat-icon>
           {{ universityLogo ? 'Change Logo' : 'Upload Logo' }}
         </button>
         @if (universityLogo) {
-        <button mat-button color="warn" (click)="confirmDelete('university')">
+        <button
+          mat-button
+          color="warn"
+          [disabled]="isUniversityLogoLoading"
+          (click)="confirmDelete('university')">
           <mat-icon>delete</mat-icon>
           Remove
         </button>
@@ -66,9 +75,13 @@
         </mat-card-subtitle>
       </mat-card-header>
 
-      <!-- Content -->
+      <!-- Government Logo Card Content -->
       <mat-card-content class="logo-content">
-        @if (governmentLogo) {
+        @if (isGovernmentLogoLoading) {
+        <div class="loading-state">
+          <mat-spinner class="custom-spinner" diameter="40"></mat-spinner>
+        </div>
+        } @else if (governmentLogo) {
         <div class="logo-preview">
           <img
             [src]="governmentLogo.url"
@@ -83,17 +96,22 @@
         }
       </mat-card-content>
 
-      <!-- Actions -->
+      <!-- Government Logo Card Actions -->
       <mat-card-actions class="logo-actions">
         <button
           mat-button
           color="primary"
+          [disabled]="isGovernmentLogoLoading"
           (click)="triggerFileInput('government')">
           <mat-icon>{{ governmentLogo ? 'loop' : 'upload' }}</mat-icon>
           {{ governmentLogo ? 'Change Logo' : 'Upload Logo' }}
         </button>
         @if (governmentLogo) {
-        <button mat-button color="warn" (click)="confirmDelete('government')">
+        <button
+          mat-button
+          color="warn"
+          [disabled]="isGovernmentLogoLoading"
+          (click)="confirmDelete('government')">
           <mat-icon>delete</mat-icon>
           Remove
         </button>

@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatDialog } from '@angular/material/dialog';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSymbolDirective } from '../../../../imports/mat-symbol.directive';
 
 import { DialogGenericComponent } from '../../../../../shared/dialog-generic/dialog-generic.component';
@@ -29,6 +30,7 @@ type LogoType = 'university' | 'government';
     MatIconModule,
     MatSymbolDirective,
     MatTooltipModule,
+    MatProgressSpinnerModule,
     LoadingComponent,
   ],
   templateUrl: './logos.component.html',
@@ -40,6 +42,8 @@ export class LogosComponent implements OnInit {
   @ViewChild('governmentInput') governmentInput!: ElementRef<HTMLInputElement>;
 
   isLoading = true;
+  isUniversityLogoLoading = false;
+  isGovernmentLogoLoading = false;
 
   private static readonly LOGO_TYPES = {
     UNIVERSITY: 'university' as LogoType,
@@ -126,12 +130,16 @@ export class LogosComponent implements OnInit {
   }
 
   private uploadLogo(file: File, type: string, input: HTMLInputElement): void {
+    this.setLogoLoadingState(type, true);
+
     this.logoService.uploadLogo(type, file).subscribe({
       next: (logo) => {
         this.handleSuccessfulUpload(type, logo);
+        this.setLogoLoadingState(type, false);
       },
       error: (error) => {
         this.handleUploadError(error, type);
+        this.setLogoLoadingState(type, false);
         input.value = '';
       },
     });
@@ -208,12 +216,16 @@ export class LogosComponent implements OnInit {
   }
 
   private deleteLogo(type: string): void {
+    this.setLogoLoadingState(type, true);
+
     this.logoService.deleteLogo(type).subscribe({
       next: () => {
         this.handleSuccessfulDeletion(type);
+        this.setLogoLoadingState(type, false);
       },
       error: (error) => {
         this.handleDeletionError(error, type);
+        this.setLogoLoadingState(type, false);
       },
     });
   }
@@ -253,5 +265,13 @@ export class LogosComponent implements OnInit {
     this.snackBar.open(message, 'Close', {
       duration: LogosComponent.SNACKBAR_DURATION.LONG,
     });
+  }
+
+  private setLogoLoadingState(type: string, loading: boolean): void {
+    if (type === LogosComponent.LOGO_TYPES.UNIVERSITY) {
+      this.isUniversityLogoLoading = loading;
+    } else {
+      this.isGovernmentLogoLoading = loading;
+    }
   }
 }

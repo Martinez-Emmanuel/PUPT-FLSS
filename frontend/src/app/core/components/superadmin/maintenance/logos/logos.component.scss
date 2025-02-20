@@ -1,5 +1,9 @@
 @use '../../../../../../styles/mixins.scss';
 
+:host {
+  @include mixins.custom-spinner(var(--primary-text));
+}
+
 .logos-container {
   @include mixins.flex-layout($align: stretch);
   height: 100%;
@@ -48,6 +52,13 @@
 
 .logo-content {
   height: 100%;
+
+  /* Loading state */
+  .loading-state {
+    @include mixins.flex-layout($direction: column, $gap: var(--spacing-sm));
+    min-height: 10rem;
+    height: 100%;
+  }
 
   /* No logo */
   .no-logo {
